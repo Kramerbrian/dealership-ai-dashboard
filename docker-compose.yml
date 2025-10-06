@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dealership-ai-db
+    environment:
+      POSTGRES_DB: dealershipai
+      POSTGRES_USER: ${DB_USER:-dealershipai}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dealershipai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dealership-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dealership-ai-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dealership-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend-builder
+    container_name: dealership-ai-backend
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-dealershipai}:${DB_PASSWORD:-changeme}@postgres:5432/dealershipai
+      REDIS_URL: redis://redis:6379
+      PYTHONUNBUFFERED: 1
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./dealership_ai_multi_agent.py:/app/dealership_ai_multi_agent.py
+      - ./api:/app/api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - dealership-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-builder
+    container_name: dealership-ai-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8000
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./pages:/app/pages
+      - ./components:/app/components
+      - ./public:/app/public
+    command: npm run dev
+    networks:
+      - dealership-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: dealership-ai-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - dealership-network
+
+networks:
+  dealership-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
