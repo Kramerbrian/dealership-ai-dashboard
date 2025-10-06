@@ -1,0 +1,83 @@
+// Generator: prisma-client-js
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  dealerships Dealership[]
+  analyses    Analysis[]
+  
+  @@map("users")
+}
+
+model Dealership {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  website     String?
+  phone       String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses    Analysis[]
+  
+  @@map("dealerships")
+}
+
+model Analysis {
+  id            String   @id @default(cuid())
+  dealershipId  String
+  userId        String
+  data          Json
+  analysisType  String   @default("full")
+  status        AnalysisStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  dealership    Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("analyses")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  name      String
+  key       String   @unique
+  platform  String   // 'openai', 'google', 'perplexity', etc.
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("api_keys")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AnalysisStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}

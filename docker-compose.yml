@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: dealership_ai
+      POSTGRES_USER: dealership_user
+      POSTGRES_PASSWORD: dealership_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dealership_user -d dealership_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and background tasks
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - DATABASE_URL=postgresql://dealership_user:dealership_password@postgres:5432/dealership_ai
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_SEARCH_API_KEY=${GOOGLE_SEARCH_API_KEY}
+      - GOOGLE_SEARCH_ENGINE_ID=${GOOGLE_SEARCH_ENGINE_ID}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    environment:
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - DATABASE_URL=postgresql://dealership_user:dealership_password@postgres:5432/dealership_ai
+      - BACKEND_API_URL=http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - postgres
+
+  # Background worker for async tasks
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: celery -A app.worker worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://dealership_user:dealership_password@postgres:5432/dealership_ai
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_SEARCH_API_KEY=${GOOGLE_SEARCH_API_KEY}
+      - GOOGLE_SEARCH_ENGINE_ID=${GOOGLE_SEARCH_ENGINE_ID}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:

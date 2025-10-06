@@ -1,0 +1,119 @@
+# Production deployment using Docker Compose
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt_data:/letsencrypt
+    labels:
+      - "traefik.enable=true"
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: dealership_ai
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d dealership_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - DATABASE_URL=postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/dealership_ai
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_SEARCH_API_KEY=${GOOGLE_SEARCH_API_KEY}
+      - GOOGLE_SEARCH_ENGINE_ID=${GOOGLE_SEARCH_ENGINE_ID}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    environment:
+      - NEXTAUTH_URL=https://${DOMAIN}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - DATABASE_URL=postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/dealership_ai
+      - BACKEND_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: celery -A app.worker worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/dealership_ai
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_SEARCH_API_KEY=${GOOGLE_SEARCH_API_KEY}
+      - GOOGLE_SEARCH_ENGINE_ID=${GOOGLE_SEARCH_ENGINE_ID}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  letsencrypt_data:
