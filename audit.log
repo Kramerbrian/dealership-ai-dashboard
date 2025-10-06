@@ -1,0 +1,4 @@
+2025-10-06 00:49:22,565 - AUDIT - WARNING - PERMISSION_DENIED - User: manager, Endpoint: dealership:honda_ftmyers, Required: dealership:access, IP: 127.0.0.1
+2025-10-06 00:49:22,565 - AUDIT - WARNING - PERMISSION_DENIED - User: manager, Endpoint: dealership:chevrolet_bonita, Required: dealership:access, IP: 127.0.0.1
+2025-10-06 00:49:22,566 - AUDIT - WARNING - PERMISSION_DENIED - User: viewer, Endpoint: dealership:honda_ftmyers, Required: dealership:access, IP: 127.0.0.1
+2025-10-06 00:49:22,566 - AUDIT - WARNING - PERMISSION_DENIED - User: viewer, Endpoint: dealership:chevrolet_bonita, Required: dealership:access, IP: 127.0.0.1
