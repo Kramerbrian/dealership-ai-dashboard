@@ -1,0 +1,223 @@
+// DealershipAI Enterprise Prisma Schema
+// This schema matches the Supabase database structure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Multi-tenant architecture
+model Tenant {
+  id                String   @id @default(uuid())
+  name              String
+  type              TenantType @default(SINGLE)
+  parent_id         String?
+  parent            Tenant?  @relation("TenantHierarchy", fields: [parent_id], references: [id], onDelete: Cascade)
+  children          Tenant[] @relation("TenantHierarchy")
+  clerk_org_id      String?  @unique @map("clerk_org_id")
+  subscription_tier SubscriptionTier @default(TEST_DRIVE)
+  subscription_status SubscriptionStatus @default(ACTIVE)
+  mrr               Decimal  @default(0) @db.Decimal(10, 2)
+  rooftop_count     Int      @default(1) @map("rooftop_count")
+  settings          Json     @default("{}")
+  created_at        DateTime @default(now()) @map("created_at")
+  updated_at        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users             User[]
+  dealershipData    DealershipData[]
+  aiQueryResults    AIQueryResult[]
+  auditLogs         AuditLog[]
+  apiKeys           APIKey[]
+  reviews           Review[]
+  reviewTemplates   ReviewTemplate[]
+
+  @@map("tenants")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  clerk_id    String   @unique @map("clerk_id")
+  tenant_id   String   @map("tenant_id")
+  tenant      Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  email       String
+  full_name   String?  @map("full_name")
+  role        UserRole @default(USER)
+  permissions String[] @default(["view:own_data"])
+  last_seen_at DateTime? @map("last_seen_at")
+  created_at  DateTime @default(now()) @map("created_at")
+  updated_at  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  auditLogs           AuditLog[]
+  notificationSettings NotificationSetting[]
+
+  @@map("users")
+}
+
+model DealershipData {
+  id                String   @id @default(uuid())
+  tenant_id         String   @map("tenant_id")
+  tenant            Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  ai_visibility_score Int?   @map("ai_visibility_score")
+  seo_score         Int?
+  aeo_score         Int?
+  geo_score         Int?
+  chatgpt_score     Int?
+  google_aio_score  Int?     @map("google_aio_score")
+  perplexity_score  Int?
+  gemini_score      Int?
+  schema_audit      Json?    @map("schema_audit")
+  cwv_metrics       Json?    @map("cwv_metrics")
+  website_health    Json?    @map("website_health")
+  review_data       Json?    @map("review_data")
+  ugc_health_score  Int?     @map("ugc_health_score")
+  competitor_analysis Json?  @map("competitor_analysis")
+  created_at        DateTime @default(now()) @map("created_at")
+  updated_at        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  reviews           Review[]
+
+  @@map("dealership_data")
+}
+
+model AIQueryResult {
+  id          String   @id @default(uuid())
+  tenant_id   String   @map("tenant_id")
+  tenant      Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  prompt_id   String   @map("prompt_id")
+  engine      String
+  query_text  String   @map("query_text")
+  response_text String? @map("response_text")
+  position    Int?
+  cited       Boolean  @default(false)
+  sentiment   ReviewSentiment?
+  cost_cents  Int?     @map("cost_cents")
+  latency_ms  Int?     @map("latency_ms")
+  created_at  DateTime @default(now()) @map("created_at")
+
+  @@map("ai_query_results")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  tenant_id    String   @map("tenant_id")
+  tenant       Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  user_id      String?  @map("user_id")
+  user         User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  action       String
+  resource_type String? @map("resource_type")
+  resource_id  String?  @map("resource_id")
+  changes      Json?
+  ip_address   String?  @map("ip_address")
+  user_agent   String?  @map("user_agent")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model APIKey {
+  id           String    @id @default(uuid())
+  tenant_id    String    @map("tenant_id")
+  tenant       Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  name         String
+  key_hash     String    @map("key_hash")
+  permissions  String[]  @default(["read"])
+  last_used_at DateTime? @map("last_used_at")
+  expires_at   DateTime? @map("expires_at")
+  created_at   DateTime  @default(now()) @map("created_at")
+
+  @@map("api_keys")
+}
+
+model NotificationSetting {
+  id        String           @id @default(uuid())
+  user_id   String           @map("user_id")
+  user      User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  type      NotificationType
+  enabled   Boolean          @default(true)
+  settings  Json             @default("{}")
+  created_at DateTime        @default(now()) @map("created_at")
+  updated_at DateTime        @updatedAt @map("updated_at")
+
+  @@map("notification_settings")
+}
+
+model Review {
+  id             String         @id @default(uuid())
+  tenant_id      String         @map("tenant_id")
+  tenant         Tenant         @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  dealership_id  String?        @map("dealership_id")
+  dealership     DealershipData? @relation(fields: [dealership_id], references: [id], onDelete: Cascade)
+  platform       String
+  rating         Int?
+  text           String?
+  author         String?
+  date           DateTime?
+  sentiment      ReviewSentiment?
+  needs_response Boolean        @default(false) @map("needs_response")
+  response_text  String?        @map("response_text")
+  response_date  DateTime?      @map("response_date")
+  created_at     DateTime       @default(now()) @map("created_at")
+  updated_at     DateTime       @updatedAt @map("updated_at")
+
+  @@map("reviews")
+}
+
+model ReviewTemplate {
+  id            String   @id @default(uuid())
+  tenant_id     String   @map("tenant_id")
+  tenant        Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  name          String
+  template_text String   @map("template_text")
+  created_at    DateTime @default(now()) @map("created_at")
+  updated_at    DateTime @updatedAt @map("updated_at")
+
+  @@map("review_templates")
+}
+
+// Enums
+enum TenantType {
+  SINGLE
+  DEALERSHIP
+  ENTERPRISE
+}
+
+enum UserRole {
+  SUPERADMIN
+  ENTERPRISE_ADMIN
+  DEALERSHIP_ADMIN
+  USER
+}
+
+enum SubscriptionTier {
+  TEST_DRIVE
+  TIER_1
+  TIER_2
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIALING
+}
+
+enum ReviewSentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+  WEBHOOK
+}

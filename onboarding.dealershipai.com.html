@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://js.clerk.com https://clerk.dealershipai.com https://vercel.live https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob:; connect-src 'self' https://api.stripe.com https://clerk.dealershipai.com https://api.clerk.com https://vercel.live wss: https:; frame-src 'self' https://js.stripe.com https://clerk.dealershipai.com https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; worker-src 'self' blob:; child-src 'self' blob:;">
+    <title>DealershipAI Onboarding - Get Started</title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background: #F2F2F7;
+            --surface: #FFFFFF;
+            --border: #C6C6C8;
+            --text-primary: #000000;
+            --text-secondary: #3C3C43;
+            --text-tertiary: #3C3C4399;
+            --radius: 12px;
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .onboarding-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--border);
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            background: #F8F9FA;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .step.active {
+            color: var(--primary-color);
+        }
+
+        .step.completed {
+            color: var(--success-color);
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--border);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+            font-weight: 600;
+        }
+
+        .step.active .step-number {
+            background: var(--primary-color);
+        }
+
+        .step.completed .step-number {
+            background: var(--success-color);
+        }
+
+        .step-content {
+            padding: 3rem;
+        }
+
+        .step-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .step-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-label.required::after {
+            content: " *";
+            color: var(--error-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+        }
+
+        .checkbox-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .checkbox-label a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--background);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: #F8F9FA;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .pricing-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-period {
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .pricing-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pricing-features li::before {
+            content: "✓";
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .success-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Welcome to DealershipAI</h1>
+            <p>Let's get your dealership set up with AI-powered insights and optimization tools</p>
+        </div>
+
+        <!-- Onboarding Card -->
+        <div class="onboarding-card">
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step-1">
+                    <div class="step-number">1</div>
+                    <span>Business Info</span>
+                </div>
+                <div class="step" id="step-2">
+                    <div class="step-number">2</div>
+                    <span>Digital Presence</span>
+                </div>
+                <div class="step" id="step-3">
+                    <div class="step-number">3</div>
+                    <span>Goals & Preferences</span>
+                </div>
+                <div class="step" id="step-4">
+                    <div class="step-number">4</div>
+                    <span>Review & Complete</span>
+                </div>
+            </div>
+
+            <!-- Step Content -->
+            <div class="step-content">
+                <!-- Step 1: Business Information -->
+                <div id="step-content-1" class="step-content-panel">
+                    <h2 class="step-title">Tell us about your dealership</h2>
+                    <p class="step-description">We need some basic information to personalize your AI dashboard and analysis.</p>
+
+                    <form id="business-info-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Dealership Name</label>
+                                <input type="text" class="form-input" name="dealershipName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Your Name</label>
+                                <input type="text" class="form-input" name="contactName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Email Address</label>
+                                <input type="email" class="form-input" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Phone Number</label>
+                                <input type="tel" class="form-input" name="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Dealership Website</label>
+                                <input type="url" class="form-input" name="website" placeholder="https://yourdealership.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Physical Address</label>
+                                <input type="text" class="form-input" name="address" placeholder="123 Main St, City, State, ZIP" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Years in Business</label>
+                                <select class="form-select" name="yearsInBusiness" required>
+                                    <option value="">Select years</option>
+                                    <option value="0-1">Less than 1 year</option>
+                                    <option value="1-5">1-5 years</option>
+                                    <option value="5-10">5-10 years</option>
+                                    <option value="10-20">10-20 years</option>
+                                    <option value="20+">20+ years</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Number of Employees</label>
+                                <select class="form-select" name="employeeCount" required>
+                                    <option value="">Select range</option>
+                                    <option value="1-10">1-10 employees</option>
+                                    <option value="11-25">11-25 employees</option>
+                                    <option value="26-50">26-50 employees</option>
+                                    <option value="51-100">51-100 employees</option>
+                                    <option value="100+">100+ employees</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <div></div>
+                            <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                Continue
+                                <span>→</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Step 2: Digital Presence -->
+                <div id="step-content-2" class="step-content-panel hidden">
+                    <h2 class="step-title">Your digital presence</h2>
+                    <p class="step-description">Help us understand your current online presence so we can provide better insights.</p>
+
+                    <form id="digital-presence-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Google My Business Profile</label>
+                                <input type="url" class="form-input" name="googleMyBusiness" placeholder="https://g.page/yourdealership">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Facebook Page</label>
+                                <input type="url" class="form-input" name="facebook" placeholder="https://facebook.com/yourdealership">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Instagram Profile</label>
+                                <input type="url" class="form-input" name="instagram" placeholder="https://instagram.com/yourdealership">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Yelp Business Page</label>
+                                <input type="url" class="form-input" name="yelp" placeholder="https://yelp.com/biz/yourdealership">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Current Monthly Website Visitors</label>
+                                <select class="form-select" name="monthlyVisitors">
+                                    <option value="">Select range</option>
+                                    <option value="0-1000">0-1,000 visitors</option>
+                                    <option value="1000-5000">1,000-5,000 visitors</option>
+                                    <option value="5000-10000">5,000-10,000 visitors</option>
+                                    <option value="10000-25000">10,000-25,000 visitors</option>
+                                    <option value="25000+">25,000+ visitors</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Current SEO Agency/Team</label>
+                                <select class="form-select" name="seoAgency">
+                                    <option value="">Select option</option>
+                                    <option value="none">No SEO agency</option>
+                                    <option value="internal">Internal team</option>
+                                    <option value="agency">External agency</option>
+                                    <option value="freelancer">Freelancer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Current Marketing Challenges</label>
+                            <textarea class="form-textarea" name="marketingChallenges" placeholder="What are your biggest challenges with online marketing and lead generation?"></textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                                <span>←</span>
+                                Back
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                Continue
+                                <span>→</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Step 3: Goals & Preferences -->
+                <div id="step-content-3" class="step-content-panel hidden">
+                    <h2 class="step-title">Your goals and preferences</h2>
+                    <p class="step-description">Tell us what you want to achieve and how you'd like to work with DealershipAI.</p>
+
+                    <form id="goals-preferences-form">
+                        <div class="form-group">
+                            <label class="form-label required">Primary Business Goals</label>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="goals" value="increase-leads" id="goal-leads">
+                                <label for="goal-leads" class="checkbox-label">Increase lead generation</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="goals" value="improve-seo" id="goal-seo">
+                                <label for="goal-seo" class="checkbox-label">Improve search engine rankings</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="goals" value="social-media" id="goal-social">
+                                <label for="goal-social" class="checkbox-label">Enhance social media presence</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="goals" value="online-reputation" id="goal-reputation">
+                                <label for="goal-reputation" class="checkbox-label">Improve online reputation</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="goals" value="competitor-analysis" id="goal-competitor">
+                                <label for="goal-competitor" class="checkbox-label">Monitor competitors</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Preferred Plan</label>
+                            <div class="pricing-card">
+                                <div class="pricing-title">Pro Tier</div>
+                                <div class="pricing-price">$599</div>
+                                <div class="pricing-period">per month</div>
+                                <ul class="pricing-features">
+                                    <li>Unlimited dealership analyses</li>
+                                    <li>Detailed action plans</li>
+                                    <li>Competitor tracking & analysis</li>
+                                    <li>Weekly monitoring alerts</li>
+                                    <li>Priority support</li>
+                                    <li>Custom reporting</li>
+                                    <li>API access</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Communication Preferences</label>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="communication" value="email" id="comm-email" checked>
+                                <label for="comm-email" class="checkbox-label">Email updates and reports</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="communication" value="phone" id="comm-phone">
+                                <label for="comm-phone" class="checkbox-label">Phone calls for important updates</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" class="checkbox" name="communication" value="sms" id="comm-sms">
+                                <label for="comm-sms" class="checkbox-label">SMS alerts for urgent issues</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Additional Information</label>
+                            <textarea class="form-textarea" name="additionalInfo" placeholder="Any other information that would help us serve you better?"></textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                                <span>←</span>
+                                Back
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                Continue
+                                <span>→</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Step 4: Review & Complete -->
+                <div id="step-content-4" class="step-content-panel hidden">
+                    <h2 class="step-title">Review your information</h2>
+                    <p class="step-description">Please review all the information you've provided before we create your account.</p>
+
+                    <div id="review-content">
+                        <!-- Review content will be populated by JavaScript -->
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" class="checkbox" name="terms" id="terms" required>
+                            <label for="terms" class="checkbox-label">
+                                I agree to the <a href="/terms" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" class="checkbox" name="marketing" id="marketing">
+                            <label for="marketing" class="checkbox-label">
+                                I'd like to receive marketing communications and product updates
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                            <span>←</span>
+                            Back
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="completeOnboarding()" id="complete-btn">
+                            Complete Setup
+                            <span>✓</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Success Step -->
+                <div id="step-content-success" class="step-content-panel hidden">
+                    <div class="success-message">
+                        <div class="success-icon">🎉</div>
+                        <h2 class="success-title">Welcome to DealershipAI!</h2>
+                        <p class="success-description">
+                            Your account has been created successfully. We're setting up your personalized dashboard and will send you a confirmation email shortly.
+                        </p>
+                        <div class="button-group">
+                            <a href="/dealership-ai-dashboard.html" class="btn btn-primary">
+                                Access Your Dashboard
+                                <span>→</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="onboarding-card">
+            <div class="step-content">
+                <h2 class="step-title">What you'll get with DealershipAI</h2>
+                <p class="step-description">Powerful AI-driven tools to optimize your dealership's online presence</p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3 class="feature-title">AI-Powered Analysis</h3>
+                        <p class="feature-description">Get comprehensive insights into your website performance, SEO, and online presence</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">Real-Time Monitoring</h3>
+                        <p class="feature-description">Track your performance with live updates and automated alerts</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">Actionable Recommendations</h3>
+                        <p class="feature-description">Receive specific, implementable strategies to improve your results</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏆</div>
+                        <h3 class="feature-title">Competitor Analysis</h3>
+                        <p class="feature-description">Stay ahead with detailed insights into your competition</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        const formData = {};
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            
+            // Update step indicators
+            for (let i = 1; i <= totalSteps; i++) {
+                const step = document.getElementById(`step-${i}`);
+                if (i < currentStep) {
+                    step.className = 'step completed';
+                } else if (i === currentStep) {
+                    step.className = 'step active';
+                } else {
+                    step.className = 'step';
+                }
+            }
+        }
+
+        function showStep(step) {
+            // Hide all step content
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step-content-${i}`).classList.add('hidden');
+            }
+            
+            // Show current step
+            document.getElementById(`step-content-${step}`).classList.remove('hidden');
+            updateProgress();
+        }
+
+        function nextStep() {
+            if (validateCurrentStep()) {
+                // Use immediate save for step transitions
+                saveCurrentStepData();
+                console.log('Form data after step', currentStep, ':', formData);
+                
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    showStep(currentStep);
+                    
+                    if (currentStep === 4) {
+                        // Defer heavy DOM operations
+                        requestAnimationFrame(() => {
+                            populateReviewContent();
+                        });
+                    }
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        // Debounced validation to prevent INP issues
+        let validationTimeout;
+        
+        function validateCurrentStep() {
+            const currentForm = document.querySelector(`#step-content-${currentStep} form`);
+            if (!currentForm) return true;
+
+            const requiredFields = currentForm.querySelectorAll('[required]');
+            let isValid = true;
+            let errorMessage = '';
+
+            // Use requestAnimationFrame to defer DOM updates
+            requestAnimationFrame(() => {
+                // Clear previous error styles
+                requiredFields.forEach(field => {
+                    field.style.borderColor = 'var(--border)';
+                });
+
+                // Validate required fields
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.style.borderColor = 'var(--error-color)';
+                        isValid = false;
+                        if (!errorMessage) {
+                            errorMessage = `Please fill in the required field: ${field.name || field.placeholder || 'this field'}`;
+                        }
+                    }
+                });
+
+                // Special validation for checkboxes in step 3
+                if (currentStep === 3) {
+                    const goalCheckboxes = document.querySelectorAll('input[name="goals"]:checked');
+                    if (goalCheckboxes.length === 0) {
+                        errorMessage = 'Please select at least one business goal.';
+                        isValid = false;
+                    }
+                }
+
+                // Special validation for terms acceptance in step 4
+                if (currentStep === 4) {
+                    const termsCheckbox = document.querySelector('input[name="terms"]');
+                    if (!termsCheckbox || !termsCheckbox.checked) {
+                        errorMessage = 'Please accept the Terms of Service and Privacy Policy to continue.';
+                        isValid = false;
+                    }
+                }
+
+                if (!isValid && errorMessage) {
+                    alert(errorMessage);
+                }
+            });
+
+            return isValid;
+        }
+
+        // Debounced validation for real-time feedback
+        function debouncedValidate() {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(() => {
+                validateCurrentStep();
+            }, 150); // 150ms debounce
+        }
+
+        // Debounced data saving to prevent INP issues
+        let saveDataTimeout;
+        
+        function saveCurrentStepData() {
+            const currentForm = document.querySelector(`#step-content-${currentStep} form`);
+            if (!currentForm) return;
+
+            // Use requestAnimationFrame to defer heavy operations
+            requestAnimationFrame(() => {
+                const formDataObj = new FormData(currentForm);
+                
+                // Process form data more efficiently
+                for (let [key, value] of formDataObj.entries()) {
+                    if (formData[key]) {
+                        if (Array.isArray(formData[key])) {
+                            if (!formData[key].includes(value)) {
+                                formData[key].push(value);
+                            }
+                        } else {
+                            formData[key] = [formData[key], value];
+                        }
+                    } else {
+                        formData[key] = value;
+                    }
+                }
+
+                // Handle checkboxes more efficiently
+                const checkboxes = currentForm.querySelectorAll('input[type="checkbox"]:checked');
+                checkboxes.forEach(checkbox => {
+                    const name = checkbox.name;
+                    const value = checkbox.value;
+                    
+                    if (formData[name]) {
+                        if (Array.isArray(formData[name])) {
+                            if (!formData[name].includes(value)) {
+                                formData[name].push(value);
+                            }
+                        } else {
+                            formData[name] = [formData[name], value];
+                        }
+                    } else {
+                        formData[name] = [value];
+                    }
+                });
+            });
+        }
+
+        // Debounced data saving for real-time updates
+        function debouncedSaveData() {
+            clearTimeout(saveDataTimeout);
+            saveDataTimeout = setTimeout(() => {
+                saveCurrentStepData();
+            }, 100); // 100ms debounce
+        }
+
+        function populateReviewContent() {
+            const reviewContent = document.getElementById('review-content');
+            if (!reviewContent) return;
+
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            const container = document.createElement('div');
+            container.className = 'form-grid';
+
+            // Business Information
+            const businessInfo = createReviewSection('Business Information', [
+                ['Dealership', formData.dealershipName],
+                ['Contact', formData.contactName],
+                ['Email', formData.email],
+                ['Phone', formData.phone],
+                ['Website', formData.website],
+                ['Address', formData.address]
+            ]);
+            container.appendChild(businessInfo);
+
+            // Digital Presence
+            const digitalPresence = createReviewSection('Digital Presence', [
+                ['Google My Business', formData.googleMyBusiness],
+                ['Facebook', formData.facebook],
+                ['Instagram', formData.instagram],
+                ['Yelp', formData.yelp],
+                ['Monthly Visitors', formData.monthlyVisitors]
+            ]);
+            container.appendChild(digitalPresence);
+
+            // Goals
+            const goals = Array.isArray(formData.goals) ? formData.goals : [formData.goals];
+            const goalsList = goals && goals.length > 0 
+                ? goals.map(goal => goal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ')
+                : 'No goals selected';
+            
+            const businessGoals = createReviewSection('Business Goals', [
+                ['Selected Goals', goalsList]
+            ]);
+            container.appendChild(businessGoals);
+
+            fragment.appendChild(container);
+            reviewContent.innerHTML = '';
+            reviewContent.appendChild(fragment);
+        }
+
+        function createReviewSection(title, items) {
+            const section = document.createElement('div');
+            section.className = 'form-group';
+            
+            const titleEl = document.createElement('h3');
+            titleEl.textContent = title;
+            section.appendChild(titleEl);
+
+            items.forEach(([label, value]) => {
+                const p = document.createElement('p');
+                p.innerHTML = `<strong>${label}:</strong> ${value || 'Not provided'}`;
+                section.appendChild(p);
+            });
+
+            return section;
+        }
+
+        async function completeOnboarding() {
+            const completeBtn = document.getElementById('complete-btn');
+            const originalText = completeBtn.innerHTML;
+            
+            completeBtn.innerHTML = '<div class="spinner"></div> Creating Account...';
+            completeBtn.disabled = true;
+
+            try {
+                // Debug: Log form data before submission
+                console.log('Submitting form data:', formData);
+
+                // Submit data to API
+                const response = await fetch('/api/onboarding/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('API response:', result);
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to create account');
+                }
+
+                // Save data to localStorage for demo purposes
+                localStorage.setItem('dealership_data', JSON.stringify(formData));
+                localStorage.setItem('user_email', formData.email);
+                localStorage.setItem('onboarding_id', result.onboardingId);
+
+                // Show success step
+                document.getElementById('step-content-4').classList.add('hidden');
+                document.getElementById('step-content-success').classList.remove('hidden');
+                
+                // Update progress to show completion
+                document.getElementById('progress-fill').style.width = '100%';
+                document.getElementById('step-4').className = 'step completed';
+
+                console.log('Onboarding completed successfully:', result);
+
+            } catch (error) {
+                console.error('Onboarding failed:', error);
+                
+                // Check if it's a network error (server not running)
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    console.log('Server not available, using demo mode');
+                    
+                    // Demo mode - save data locally and show success
+                    localStorage.setItem('dealership_data', JSON.stringify(formData));
+                    localStorage.setItem('user_email', formData.email);
+                    localStorage.setItem('onboarding_id', 'demo_' + Date.now());
+
+                    // Show success step
+                    document.getElementById('step-content-4').classList.add('hidden');
+                    document.getElementById('step-content-success').classList.remove('hidden');
+                    
+                    // Update progress to show completion
+                    document.getElementById('progress-fill').style.width = '100%';
+                    document.getElementById('step-4').className = 'step completed';
+
+                    console.log('Onboarding completed in demo mode');
+                } else {
+                    alert(`There was an error creating your account: ${error.message}. Please try again.`);
+                    completeBtn.innerHTML = originalText;
+                    completeBtn.disabled = false;
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            
+            // Add optimized event listeners to prevent INP issues
+            setupOptimizedEventListeners();
+        });
+
+        function setupOptimizedEventListeners() {
+            // Use event delegation for better performance
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input, textarea, select')) {
+                    // Use debounced functions to prevent blocking
+                    debouncedSaveData();
+                    debouncedValidate();
+                }
+            }, { passive: true });
+
+            // Optimize checkbox changes
+            document.addEventListener('change', function(e) {
+                if (e.target.matches('input[type="checkbox"]')) {
+                    debouncedSaveData();
+                    debouncedValidate();
+                }
+            }, { passive: true });
+
+            // Optimize form submissions
+            document.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Use immediate validation for form submission
+                if (validateCurrentStep()) {
+                    saveCurrentStepData();
+                    nextStep();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

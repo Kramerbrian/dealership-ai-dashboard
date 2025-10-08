@@ -1,0 +1,69 @@
+/**
+ * Performance Optimizations for INP (Interaction to Next Paint)
+ * Reduces input delay and improves render performance
+ */
+
+/* CSS Containment for better rendering isolation */
+.tab-content {
+    contain: layout style paint;
+    content-visibility: auto;
+}
+
+.tab-content.active {
+    content-visibility: visible;
+}
+
+/* Optimize tab buttons for faster interaction */
+.nav-item,
+.apple-tab {
+    contain: layout style;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Reduce layout thrashing on inputs */
+input,
+textarea,
+select {
+    contain: layout style;
+}
+
+/* Optimize cards and sections */
+.section,
+.card,
+.metric-card {
+    contain: layout style paint;
+    will-change: auto;
+}
+
+/* GPU acceleration for animations */
+.tab-content.active {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Prevent layout shifts on hover states */
+button,
+.btn {
+    contain: layout style;
+}
+
+/* Optimize heavy DOM sections */
+.dashboard-grid,
+.metrics-container {
+    contain: layout;
+}
+
+/* Reduce paint cost on scrollable areas */
+.scrollable-content {
+    contain: layout style paint;
+    will-change: scroll-position;
+}
+
+/* Critical performance hint for interaction elements */
+[data-tab],
+[onclick] {
+    touch-action: manipulation;
+    cursor: pointer;
+}

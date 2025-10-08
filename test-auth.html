@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealershipAI - Auth Test</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007AFF; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <h1>DealershipAI Authentication Test</h1>
+    
+    <div class="test-section">
+        <h2>Authentication Status</h2>
+        <div id="auth-status">Loading...</div>
+        <button class="btn-primary" onclick="testAuth()">Test Authentication</button>
+        <button class="btn-secondary" onclick="testSignIn()">Test Sign In</button>
+        <button class="btn-secondary" onclick="testSignUp()">Test Sign Up</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Logs</h2>
+        <div id="console-logs" style="background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Clerk Frontend API Script -->
+    <script
+        async
+        crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_ZXhjaXRpbmctcXVhZ2dhLTY1LmNsZXJrLmFjY291bnRzLmRldiQ"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@4/dist/clerk.browser.js"
+        type="text/javascript"
+    ></script>
+
+    <script>
+        // Safe localStorage wrapper
+        const safeStorage = {
+            getItem: (key) => {
+                try {
+                    return localStorage.getItem(key);
+                } catch (error) {
+                    log('Storage access blocked by extension: ' + error.message, 'error');
+                    return null;
+                }
+            },
+            setItem: (key, value) => {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (error) {
+                    log('Storage access blocked by extension: ' + error.message, 'error');
+                }
+            },
+            removeItem: (key) => {
+                try {
+                    localStorage.removeItem(key);
+                } catch (error) {
+                    log('Storage access blocked by extension: ' + error.message, 'error');
+                }
+            }
+        };
+
+        // Logging function
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('console-logs');
+            const color = type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#2196F3';
+            logElement.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        // Clerk Authentication Manager
+        class ClerkAuthManager {
+            constructor() {
+                this.clerk = null;
+                this.initialized = false;
+                this.initPromise = this.initialize();
+            }
+
+            async initialize() {
+                try {
+                    log('Starting Clerk initialization...', 'info');
+                    await this.waitForClerk();
+                    this.clerk = window.Clerk;
+                    
+                    await this.clerk.load({
+                        publishableKey: 'pk_test_ZXhjaXRpbmctcXVhZ2dhLTY1LmNsZXJrLmFjY291bnRzLmRldiQ',
+                        fallbackRedirectUrl: window.location.href,
+                        isSatellite: true,
+                        domain: 'dash.dealershipai.com',
+                        signInUrl: 'https://marketing.dealershipai.com/sign-in',
+                        signUpUrl: 'https://marketing.dealershipai.com/sign-up'
+                    });
+                    
+                    this.initialized = true;
+                    log('✅ Clerk initialized successfully', 'success');
+                    return true;
+                } catch (error) {
+                    log('❌ Clerk initialization failed: ' + error.message, 'error');
+                    return false;
+                }
+            }
+
+            waitForClerk(timeout = 10000) {
+                return new Promise((resolve, reject) => {
+                    const startTime = Date.now();
+                    const checkClerk = () => {
+                        if (window.Clerk) {
+                            resolve();
+                        } else if (Date.now() - startTime > timeout) {
+                            reject(new Error('Clerk failed to load within timeout'));
+                        } else {
+                            setTimeout(checkClerk, 100);
+                        }
+                    };
+                    checkClerk();
+                });
+            }
+
+            async getUser() {
+                await this.initPromise;
+                return this.clerk?.user || null;
+            }
+
+            async isAuthenticated() {
+                const user = await this.getUser();
+                return !!user;
+            }
+
+            async signIn(redirectUrl = window.location.href) {
+                await this.initPromise;
+                if (!this.clerk) {
+                    log('Clerk not initialized', 'error');
+                    return;
+                }
+
+                try {
+                    log('Attempting to open sign-in...', 'info');
+                    await this.clerk.openSignIn({
+                        fallbackRedirectUrl: redirectUrl,
+                        forceRedirectUrl: redirectUrl
+                    });
+                } catch (error) {
+                    log('Sign-in failed: ' + error.message, 'error');
+                    const signInUrl = `https://marketing.dealershipai.com/sign-in?__clerk_redirect_url=${encodeURIComponent(redirectUrl)}`;
+                    log('Falling back to direct redirect: ' + signInUrl, 'info');
+                    window.location.href = signInUrl;
+                }
+            }
+
+            async signUp(redirectUrl = window.location.href) {
+                await this.initPromise;
+                if (!this.clerk) {
+                    log('Clerk not initialized', 'error');
+                    return;
+                }
+
+                try {
+                    log('Attempting to open sign-up...', 'info');
+                    await this.clerk.openSignUp({
+                        fallbackRedirectUrl: redirectUrl,
+                        forceRedirectUrl: redirectUrl
+                    });
+                } catch (error) {
+                    log('Sign-up failed: ' + error.message, 'error');
+                    const signUpUrl = `https://marketing.dealershipai.com/sign-up?__clerk_redirect_url=${encodeURIComponent(redirectUrl)}`;
+                    log('Falling back to direct redirect: ' + signUpUrl, 'info');
+                    window.location.href = signUpUrl;
+                }
+            }
+
+            async getUserEmail() {
+                const user = await this.getUser();
+                return user?.primaryEmailAddress?.emailAddress || null;
+            }
+
+            async signOut() {
+                await this.initPromise;
+                if (this.clerk) {
+                    await this.clerk.signOut();
+                    window.location.href = 'https://marketing.dealershipai.com';
+                }
+            }
+        }
+
+        // Initialize auth manager
+        let clerkAuth;
+        try {
+            clerkAuth = new ClerkAuthManager();
+        } catch (error) {
+            log('Failed to initialize Clerk auth manager: ' + error.message, 'error');
+            clerkAuth = {
+                isAuthenticated: () => Promise.resolve(false),
+                getUser: () => Promise.resolve(null),
+                getUserEmail: () => Promise.resolve(null),
+                signIn: () => {
+                    window.location.href = 'https://marketing.dealershipai.com/sign-in?__clerk_redirect_url=' + encodeURIComponent(window.location.href);
+                },
+                signUp: () => {
+                    window.location.href = 'https://marketing.dealershipai.com/sign-up?__clerk_redirect_url=' + encodeURIComponent(window.location.href);
+                },
+                signOut: () => {
+                    window.location.href = 'https://marketing.dealershipai.com';
+                }
+            };
+        }
+
+        // Test functions
+        async function testAuth() {
+            log('Testing authentication...', 'info');
+            try {
+                const isAuth = await clerkAuth.isAuthenticated();
+                const user = await clerkAuth.getUser();
+                const email = await clerkAuth.getUserEmail();
+                
+                document.getElementById('auth-status').innerHTML = `
+                    <div class="${isAuth ? 'success' : 'error'}">
+                        <strong>Status:</strong> ${isAuth ? 'Authenticated' : 'Not Authenticated'}
+                    </div>
+                    ${user ? `<div class="info"><strong>User ID:</strong> ${user.id}</div>` : ''}
+                    ${email ? `<div class="info"><strong>Email:</strong> ${email}</div>` : ''}
+                `;
+                
+                log(`Authentication test completed. Authenticated: ${isAuth}`, isAuth ? 'success' : 'info');
+            } catch (error) {
+                log('Authentication test failed: ' + error.message, 'error');
+                document.getElementById('auth-status').innerHTML = `<div class="error">Test failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testSignIn() {
+            log('Testing sign-in...', 'info');
+            await clerkAuth.signIn();
+        }
+
+        async function testSignUp() {
+            log('Testing sign-up...', 'info');
+            await clerkAuth.signUp();
+        }
+
+        // Auto-test on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded, starting auto-test...', 'info');
+            setTimeout(testAuth, 2000); // Wait 2 seconds for Clerk to initialize
+        });
+    </script>
+</body>
+</html>
+
+

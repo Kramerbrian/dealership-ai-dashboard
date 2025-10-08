@@ -1,0 +1,381 @@
+# ==============================================================
+# Appraisal Penetration Analysis Agent
+# ==============================================================
+# This agent analyzes a dealership's appraisal form penetration
+# across AI platforms and provides optimization recommendations
+
+name: appraisal-penetration-agent
+version: 1.0.0
+description: Analyzes dealership appraisal form visibility and conversion rates across AI platforms
+
+# Agent Configuration
+config:
+  model: gpt-4-turbo-preview
+  temperature: 0.3
+  max_tokens: 2000
+
+# Input Schema
+inputs:
+  dealership_url:
+    type: string
+    required: true
+    description: Dealership website URL
+
+  dealership_name:
+    type: string
+    required: true
+    description: Dealership name
+
+  location:
+    type: string
+    required: true
+    description: Dealership location (city, state)
+
+  forms_data:
+    type: object
+    required: false
+    description: Existing appraisal form data
+    properties:
+      form_urls:
+        type: array
+        items: string
+      form_types:
+        type: array
+        items:
+          enum: [online_appraisal, trade_in_form, value_my_trade, instant_appraisal]
+      conversion_rate:
+        type: number
+        minimum: 0
+        maximum: 100
+
+# Agent Workflow
+workflow:
+  steps:
+    - name: discover_forms
+      description: Find all appraisal forms on dealership website
+      action: scrape_website
+      params:
+        url: ${inputs.dealership_url}
+        selectors:
+          - "form[action*='appraisal']"
+          - "form[action*='trade']"
+          - "form[action*='value']"
+          - "a[href*='appraisal']"
+          - "a[href*='trade-in']"
+      output: forms_discovered
+
+    - name: analyze_form_quality
+      description: Evaluate form UX, fields, and conversion optimization
+      action: analyze
+      params:
+        forms: ${steps.discover_forms.output}
+        criteria:
+          - field_count
+          - required_fields
+          - progressive_disclosure
+          - mobile_optimization
+          - trust_signals
+          - instant_value_display
+      output: form_quality_score
+
+    - name: test_ai_platforms
+      description: Query AI platforms for appraisal form visibility
+      action: multi_query
+      params:
+        platforms:
+          - chatgpt
+          - claude
+          - perplexity
+          - gemini
+        queries:
+          - "How do I get my car appraised at {dealership_name} in {location}?"
+          - "What's my car worth at {dealership_name}?"
+          - "Online appraisal form {dealership_name}"
+          - "Trade-in value calculator {dealership_name}"
+          - "Instant car value {dealership_name}"
+      output: ai_visibility_results
+
+    - name: analyze_ai_citations
+      description: Check if appraisal forms are cited by AI platforms
+      action: analyze
+      params:
+        results: ${steps.test_ai_platforms.output}
+        check_for:
+          - form_url_mentioned
+          - form_process_described
+          - direct_link_provided
+          - instant_value_mentioned
+      output: citation_analysis
+
+    - name: benchmark_competitors
+      description: Compare against competitor appraisal forms
+      action: benchmark
+      params:
+        competitors: auto_discover
+        location: ${inputs.location}
+        metrics:
+          - form_prominence
+          - field_count
+          - instant_value_feature
+          - mobile_optimization
+          - ai_visibility_score
+      output: competitive_benchmark
+
+    - name: generate_recommendations
+      description: Create actionable improvement recommendations
+      action: generate
+      params:
+        based_on:
+          - form_quality_score
+          - ai_visibility_results
+          - citation_analysis
+          - competitive_benchmark
+        prioritize_by:
+          - impact_on_leads
+          - implementation_difficulty
+          - cost
+      output: recommendations
+
+# Output Schema
+outputs:
+  penetration_score:
+    type: number
+    description: Overall appraisal penetration score (0-100)
+    minimum: 0
+    maximum: 100
+
+  form_quality_score:
+    type: number
+    description: Form UX and conversion optimization score
+
+  ai_visibility_score:
+    type: number
+    description: Visibility across AI platforms
+
+  forms_discovered:
+    type: array
+    description: List of discovered appraisal forms
+    items:
+      type: object
+      properties:
+        url: string
+        type: string
+        field_count: number
+        has_instant_value: boolean
+
+  ai_platform_results:
+    type: object
+    description: Results from each AI platform
+    properties:
+      chatgpt:
+        type: object
+        properties:
+          mentioned: boolean
+          citation_type: string
+          direct_link: boolean
+      claude:
+        type: object
+      perplexity:
+        type: object
+      gemini:
+        type: object
+
+  competitive_analysis:
+    type: object
+    description: Comparison with competitors
+    properties:
+      your_rank: number
+      total_competitors: number
+      average_score: number
+      top_performer_score: number
+
+  recommendations:
+    type: array
+    description: Prioritized recommendations
+    items:
+      type: object
+      properties:
+        title: string
+        description: string
+        priority: number
+        impact: string
+        effort: string
+        estimated_lead_increase: string
+
+  detailed_analysis:
+    type: object
+    description: Comprehensive analysis report
+    properties:
+      form_analysis:
+        type: object
+      ai_penetration:
+        type: object
+      competitive_gaps:
+        type: array
+      optimization_opportunities:
+        type: array
+
+# Scoring Criteria
+scoring:
+  weights:
+    form_quality: 0.30
+    ai_visibility: 0.35
+    competitive_position: 0.20
+    conversion_optimization: 0.15
+
+  form_quality_factors:
+    - name: field_count
+      ideal: 8-12
+      weight: 0.15
+      scoring:
+        excellent: 8-12 fields
+        good: 6-7 or 13-15 fields
+        poor: <6 or >15 fields
+
+    - name: instant_value_display
+      weight: 0.25
+      scoring:
+        excellent: Shows instant value immediately
+        good: Shows value after minimal input
+        poor: No instant value feature
+
+    - name: mobile_optimization
+      weight: 0.20
+      scoring:
+        excellent: Fully responsive, thumb-friendly
+        good: Responsive but some UX issues
+        poor: Not mobile optimized
+
+    - name: trust_signals
+      weight: 0.15
+      scoring:
+        excellent: Multiple trust signals (reviews, BBB, guarantees)
+        good: Some trust signals present
+        poor: No trust signals
+
+    - name: progressive_disclosure
+      weight: 0.15
+      scoring:
+        excellent: Multi-step with progress indicator
+        good: Single page with smart field ordering
+        poor: Long single page form
+
+    - name: required_fields
+      weight: 0.10
+      scoring:
+        excellent: 3-5 required fields
+        good: 6-8 required fields
+        poor: >8 required fields
+
+  ai_visibility_factors:
+    - name: direct_citations
+      weight: 0.40
+      scoring:
+        excellent: Cited by 3+ platforms
+        good: Cited by 2 platforms
+        poor: Cited by 0-1 platforms
+
+    - name: form_url_mentioned
+      weight: 0.30
+      scoring:
+        excellent: Direct URL provided
+        good: Process described without URL
+        poor: Not mentioned
+
+    - name: instant_value_mentioned
+      weight: 0.30
+      scoring:
+        excellent: Instant value feature highlighted
+        good: Appraisal process mentioned
+        poor: Not mentioned
+
+# Recommendation Templates
+recommendation_templates:
+  - condition: form_quality_score < 60
+    title: "Redesign Appraisal Form for Higher Conversion"
+    description: "Your appraisal form has UX issues that may be reducing conversions. Consider simplifying fields, adding instant value display, and implementing progressive disclosure."
+    priority: 1
+    impact: high
+    effort: medium
+
+  - condition: ai_visibility_score < 50
+    title: "Improve AI Platform Visibility"
+    description: "Your appraisal forms are not being cited by AI platforms. Add structured data, improve content around your forms, and ensure form URLs are crawlable."
+    priority: 1
+    impact: high
+    effort: medium
+
+  - condition: instant_value_feature == false
+    title: "Add Instant Valuation Feature"
+    description: "Competitors offering instant valuations see 40% higher conversion rates. Integrate KBB, Black Book, or build a custom instant value calculator."
+    priority: 2
+    impact: high
+    effort: high
+
+  - condition: mobile_score < 70
+    title: "Optimize for Mobile Devices"
+    description: "70%+ of appraisal form traffic comes from mobile. Ensure your form is thumb-friendly, loads quickly, and has a streamlined mobile experience."
+    priority: 1
+    impact: high
+    effort: low
+
+  - condition: field_count > 15
+    title: "Reduce Form Field Count"
+    description: "Forms with 8-12 fields convert 2x better than longer forms. Remove non-essential fields or implement progressive disclosure."
+    priority: 2
+    impact: medium
+    effort: low
+
+  - condition: competitive_rank > 3
+    title: "Learn from Top-Performing Competitors"
+    description: "Your competitors are outperforming you in appraisal penetration. Analyze their forms, instant value features, and AI visibility strategies."
+    priority: 3
+    impact: medium
+    effort: low
+
+# Error Handling
+error_handling:
+  retry_strategy:
+    max_attempts: 3
+    backoff: exponential
+
+  fallbacks:
+    - if: website_unreachable
+      then: use_cached_data
+
+    - if: ai_platform_timeout
+      then: continue_with_available_platforms
+
+    - if: competitor_discovery_failed
+      then: use_predefined_competitor_list
+
+# Caching
+caching:
+  form_discovery:
+    ttl: 7_days
+
+  ai_platform_results:
+    ttl: 24_hours
+
+  competitive_analysis:
+    ttl: 30_days
+
+# Monitoring & Logging
+monitoring:
+  track_metrics:
+    - execution_time
+    - ai_platform_success_rate
+    - forms_discovered_count
+    - recommendation_count
+
+  alerts:
+    - condition: execution_time > 60_seconds
+      severity: warning
+
+    - condition: forms_discovered_count == 0
+      severity: error
+      message: "No appraisal forms found on website"
+
+    - condition: ai_platform_success_rate < 0.5
+      severity: warning
+      message: "More than 50% of AI platform queries failed"

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DealershipAI - Conversational Shopping</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    .message-enter {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .product-card {
+      transition: all 0.3s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .chat-container {
+      height: calc(100vh - 200px);
+      max-height: 700px;
+    }
+
+    .typing-indicator span {
+      animation: pulse 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes pulse {
+      0%, 60%, 100% {
+        opacity: 0.4;
+      }
+      30% {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-6xl mx-auto p-6">
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">DealershipAI Shop</h1>
+      <p class="text-gray-600">Chat with our AI assistant to find the perfect plan for your dealership</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Chat Interface -->
+      <div class="lg:col-span-2 bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Chat Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
+          <h2 class="text-xl font-semibold">Shopping Assistant</h2>
+          <p class="text-blue-100 text-sm">Ask me anything about our plans!</p>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="chatMessages" class="chat-container overflow-y-auto p-6 space-y-4">
+          <!-- Welcome message -->
+          <div class="flex items-start message-enter">
+            <div class="flex-shrink-0 bg-blue-100 rounded-full p-2 mr-3">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="bg-gray-100 rounded-lg p-4 max-w-lg">
+                <p class="text-gray-800">👋 Hi! I'm your DealershipAI shopping assistant. I can help you:</p>
+                <ul class="mt-2 space-y-1 text-gray-700 text-sm">
+                  <li>• Browse our Pro and Premium+ plans</li>
+                  <li>• Compare features and pricing</li>
+                  <li>• Start your 7-day free trial</li>
+                  <li>• Answer questions about features</li>
+                </ul>
+                <p class="mt-2 text-gray-800">What would you like to know?</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="border-t border-gray-200 p-4 bg-gray-50">
+          <div class="flex items-center space-x-2">
+            <input
+              type="text"
+              id="messageInput"
+              placeholder="Type your message..."
+              class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <button
+              id="sendButton"
+              class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Send
+            </button>
+          </div>
+          <div class="mt-2 text-xs text-gray-500 text-center">
+            Press Enter to send
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart/Summary Sidebar -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-lg p-6 sticky top-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Selection</h3>
+
+          <div id="cartItems" class="space-y-3 mb-6">
+            <p class="text-gray-500 text-sm">No items selected yet</p>
+          </div>
+
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Subtotal:</span>
+              <span id="subtotal">$0.00</span>
+            </div>
+            <div class="flex justify-between text-lg font-bold text-gray-900 mb-4">
+              <span>Total:</span>
+              <span id="total">$0.00</span>
+            </div>
+
+            <div id="checkoutSection" class="hidden">
+              <button
+                id="checkoutButton"
+                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-semibold shadow-md hover:shadow-lg"
+              >
+                Proceed to Checkout
+              </button>
+              <p class="text-xs text-center text-gray-500 mt-2">
+                🎁 Start with a 7-day free trial
+              </p>
+            </div>
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="mt-6 pt-6 border-t border-gray-200">
+            <p class="text-xs text-gray-600 mb-3">We accept:</p>
+            <div class="flex items-center space-x-3">
+              <div class="text-gray-400">💳 Visa</div>
+              <div class="text-gray-400">💳 Mastercard</div>
+              <div class="text-gray-400">💳 Amex</div>
+            </div>
+            <div class="mt-3 flex items-center text-xs text-green-600">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Secure checkout powered by Stripe
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div id="checkoutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-semibold text-gray-900">Complete Your Purchase</h3>
+        <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="checkoutForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input
+            type="email"
+            id="buyerEmail"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="your@email.com"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+          <input
+            type="text"
+            id="buyerName"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="John Doe"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Dealership Name</label>
+          <input
+            type="text"
+            id="dealershipName"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Your Dealership LLC"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Card Information</label>
+          <div id="cardElement" class="px-4 py-3 border border-gray-300 rounded-lg"></div>
+          <div id="cardErrors" class="text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <button
+          type="submit"
+          id="submitPayment"
+          class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span id="buttonText">Start Free Trial</span>
+          <span id="spinner" class="hidden">Processing...</span>
+        </button>
+
+        <p class="text-xs text-center text-gray-500">
+          You won't be charged until after your 7-day free trial ends. Cancel anytime.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const API_BASE = window.location.origin;
+    const stripe = Stripe('pk_test_YOUR_PUBLISHABLE_KEY'); // Replace with your actual key
+    const elements = stripe.elements();
+
+    // State
+    let currentSessionId = null;
+    let cartItems = [];
+    let conversationHistory = [];
+
+    // Products catalog
+    const products = {
+      pro: {
+        id: 'pro',
+        name: 'Pro Tier',
+        price: 599,
+        features: [
+          'Unlimited analyses',
+          'Detailed reports',
+          'Competitor tracking',
+          'Real-time alerts',
+          'Priority support'
+        ]
+      },
+      premium: {
+        id: 'premium',
+        name: 'Premium+ Tier',
+        price: 999,
+        features: [
+          'Everything in Pro',
+          'White-label branding',
+          'API access',
+          'Dedicated account manager',
+          'Custom integrations',
+          'SLA guarantee'
+        ]
+      }
+    };
+
+    // Initialize Stripe Card Element
+    const cardElement = elements.create('card', {
+      style: {
+        base: {
+          fontSize: '16px',
+          color: '#32325d',
+          '::placeholder': {
+            color: '#aab7c4'
+          }
+        },
+        invalid: {
+          color: '#fa755a',
+        }
+      }
+    });
+    cardElement.mount('#cardElement');
+
+    cardElement.on('change', (event) => {
+      const displayError = document.getElementById('cardErrors');
+      if (event.error) {
+        displayError.textContent = event.error.message;
+      } else {
+        displayError.textContent = '';
+      }
+    });
+
+    // DOM Elements
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const checkoutButton = document.getElementById('checkoutButton');
+    const checkoutModal = document.getElementById('checkoutModal');
+    const closeModal = document.getElementById('closeModal');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const checkoutSection = document.getElementById('checkoutSection');
+
+    // Add message to chat
+    function addMessage(content, isUser = false, isProduct = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'flex items-start message-enter ' + (isUser ? 'justify-end' : '');
+
+      if (isUser) {
+        messageDiv.innerHTML = `
+          <div class="flex-1 flex justify-end">
+            <div class="bg-blue-600 text-white rounded-lg p-4 max-w-lg">
+              <p>${escapeHtml(content)}</p>
+            </div>
+          </div>
+          <div class="flex-shrink-0 bg-blue-600 rounded-full p-2 ml-3">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          <div class="flex-shrink-0 bg-blue-100 rounded-full p-2 mr-3">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="bg-gray-100 rounded-lg p-4 max-w-lg">
+              ${content}
+            </div>
+          </div>
+        `;
+      }
+
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Show typing indicator
+    function showTyping() {
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'typingIndicator';
+      typingDiv.className = 'flex items-start';
+      typingDiv.innerHTML = `
+        <div class="flex-shrink-0 bg-blue-100 rounded-full p-2 mr-3">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <div class="bg-gray-100 rounded-lg p-4 inline-block">
+            <div class="typing-indicator flex space-x-1">
+              <span class="w-2 h-2 bg-gray-500 rounded-full"></span>
+              <span class="w-2 h-2 bg-gray-500 rounded-full"></span>
+              <span class="w-2 h-2 bg-gray-500 rounded-full"></span>
+            </div>
+          </div>
+        </div>
+      `;
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideTyping() {
+      const typing = document.getElementById('typingIndicator');
+      if (typing) typing.remove();
+    }
+
+    // Process user message with AI
+    async function processMessage(message) {
+      conversationHistory.push({ role: 'user', content: message });
+
+      showTyping();
+
+      // Simple intent detection (in production, use real NLP/LLM)
+      const lowerMessage = message.toLowerCase();
+
+      setTimeout(() => {
+        hideTyping();
+
+        if (lowerMessage.includes('plan') || lowerMessage.includes('pricing') || lowerMessage.includes('cost') || lowerMessage.includes('price')) {
+          showProducts();
+        } else if (lowerMessage.includes('pro') && !lowerMessage.includes('premium')) {
+          showProductCard('pro');
+        } else if (lowerMessage.includes('premium')) {
+          showProductCard('premium');
+        } else if (lowerMessage.includes('compare') || lowerMessage.includes('difference')) {
+          showComparison();
+        } else if (lowerMessage.includes('feature') || lowerMessage.includes('include') || lowerMessage.includes('what do')) {
+          addMessage('<p class="text-gray-800 mb-2">Our plans include powerful features:</p>' +
+            '<ul class="space-y-2 text-gray-700">' +
+            '<li><strong>Pro Tier:</strong> Unlimited analyses, detailed reports, competitor tracking, and priority support</li>' +
+            '<li><strong>Premium+ Tier:</strong> Everything in Pro plus white-label branding, API access, and dedicated account manager</li>' +
+            '</ul>' +
+            '<p class="mt-3 text-gray-800">Which plan interests you?</p>');
+        } else if (lowerMessage.includes('trial') || lowerMessage.includes('free')) {
+          addMessage('<p class="text-gray-800">Yes! All our plans come with a <strong>7-day free trial</strong>. 🎁</p>' +
+            '<p class="mt-2 text-gray-700">You can test all features risk-free and cancel anytime before the trial ends. No credit card required upfront!</p>' +
+            '<p class="mt-2 text-gray-800">Would you like to start your trial?</p>');
+        } else {
+          addMessage('<p class="text-gray-800">I\'d be happy to help! I can show you:</p>' +
+            '<ul class="mt-2 space-y-1 text-gray-700">' +
+            '<li>• Our <button class="text-blue-600 hover:underline" onclick="showProducts()">plans and pricing</button></li>' +
+            '<li>• <button class="text-blue-600 hover:underline" onclick="showComparison()">Feature comparisons</button></li>' +
+            '<li>• Information about our <button class="text-blue-600 hover:underline" onclick="addMessage(\'Yes! All our plans come with a <strong>7-day free trial</strong>. 🎁\')">free trial</button></li>' +
+            '</ul>' +
+            '<p class="mt-2 text-gray-800">What would you like to know more about?</p>');
+        }
+
+        conversationHistory.push({ role: 'assistant', content: 'Response sent' });
+      }, 800);
+    }
+
+    // Show product cards
+    function showProducts() {
+      const content = `
+        <p class="text-gray-800 mb-4">Here are our available plans:</p>
+        <div class="space-y-4">
+          ${createProductCard('pro')}
+          ${createProductCard('premium')}
+        </div>
+      `;
+      addMessage(content);
+    }
+
+    function showProductCard(productId) {
+      const content = `
+        <p class="text-gray-800 mb-3">Here's the ${products[productId].name}:</p>
+        ${createProductCard(productId)}
+      `;
+      addMessage(content);
+    }
+
+    function createProductCard(productId) {
+      const product = products[productId];
+      const isInCart = cartItems.some(item => item.product_id === productId);
+
+      return `
+        <div class="product-card border border-gray-200 rounded-lg p-4 bg-white">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h4 class="font-semibold text-gray-900">${product.name}</h4>
+              <p class="text-2xl font-bold text-blue-600 mt-1">$${product.price}<span class="text-sm text-gray-500">/mo</span></p>
+            </div>
+            ${isInCart ?
+              '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">In Cart</span>' :
+              ''
+            }
+          </div>
+          <ul class="space-y-2 mb-4 text-sm text-gray-700">
+            ${product.features.map(f => `<li class="flex items-start"><svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg><span>${f}</span></li>`).join('')}
+          </ul>
+          <button
+            onclick="addToCart('${productId}')"
+            class="w-full ${isInCart ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 rounded-lg transition-colors font-medium"
+            ${isInCart ? 'disabled' : ''}
+          >
+            ${isInCart ? 'Added to Cart' : 'Add to Cart'}
+          </button>
+        </div>
+      `;
+    }
+
+    function showComparison() {
+      const content = `
+        <p class="text-gray-800 mb-3">Here's a comparison of our plans:</p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="border-b">
+                <th class="text-left py-2 pr-4">Feature</th>
+                <th class="text-center py-2 px-2">Pro</th>
+                <th class="text-center py-2 px-2">Premium+</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-700">
+              <tr class="border-b"><td class="py-2 pr-4">Price</td><td class="text-center">$599/mo</td><td class="text-center">$999/mo</td></tr>
+              <tr class="border-b"><td class="py-2 pr-4">Analyses</td><td class="text-center">✅</td><td class="text-center">✅</td></tr>
+              <tr class="border-b"><td class="py-2 pr-4">Detailed Reports</td><td class="text-center">✅</td><td class="text-center">✅</td></tr>
+              <tr class="border-b"><td class="py-2 pr-4">Competitor Tracking</td><td class="text-center">✅</td><td class="text-center">✅</td></tr>
+              <tr class="border-b"><td class="py-2 pr-4">White-Label</td><td class="text-center">❌</td><td class="text-center">✅</td></tr>
+              <tr class="border-b"><td class="py-2 pr-4">API Access</td><td class="text-center">❌</td><td class="text-center">✅</td></tr>
+              <tr class="border-b"><td class="py-2 pr-4">Support</td><td class="text-center">Priority</td><td class="text-center">Dedicated</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-3 text-gray-800">Which plan works best for your dealership?</p>
+      `;
+      addMessage(content);
+    }
+
+    // Cart management
+    function addToCart(productId) {
+      if (cartItems.some(item => item.product_id === productId)) {
+        return;
+      }
+
+      cartItems.push({
+        product_id: productId,
+        quantity: 1
+      });
+
+      updateCart();
+      addMessage(`<p class="text-green-700">✅ ${products[productId].name} added to your cart! Ready to checkout?</p>`);
+    }
+
+    function removeFromCart(productId) {
+      cartItems = cartItems.filter(item => item.product_id !== productId);
+      updateCart();
+    }
+
+    function updateCart() {
+      const cartItemsDiv = document.getElementById('cartItems');
+      const subtotalEl = document.getElementById('subtotal');
+      const totalEl = document.getElementById('total');
+
+      if (cartItems.length === 0) {
+        cartItemsDiv.innerHTML = '<p class="text-gray-500 text-sm">No items selected yet</p>';
+        subtotalEl.textContent = '$0.00';
+        totalEl.textContent = '$0.00';
+        checkoutSection.classList.add('hidden');
+        return;
+      }
+
+      let total = 0;
+      cartItemsDiv.innerHTML = cartItems.map(item => {
+        const product = products[item.product_id];
+        total += product.price;
+        return `
+          <div class="flex justify-between items-center text-sm">
+            <div>
+              <p class="font-medium text-gray-900">${product.name}</p>
+              <p class="text-gray-600">$${product.price}/mo</p>
+            </div>
+            <button onclick="removeFromCart('${product.id}')" class="text-red-600 hover:text-red-800">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      subtotalEl.textContent = `$${total.toFixed(2)}`;
+      totalEl.textContent = `$${total.toFixed(2)}`;
+      checkoutSection.classList.remove('hidden');
+    }
+
+    // Checkout flow
+    checkoutButton.addEventListener('click', () => {
+      checkoutModal.classList.remove('hidden');
+    });
+
+    closeModal.addEventListener('click', () => {
+      checkoutModal.classList.add('hidden');
+    });
+
+    checkoutForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitButton = document.getElementById('submitPayment');
+      const buttonText = document.getElementById('buttonText');
+      const spinner = document.getElementById('spinner');
+
+      submitButton.disabled = true;
+      buttonText.classList.add('hidden');
+      spinner.classList.remove('hidden');
+
+      try {
+        // Step 1: Create checkout session
+        const sessionResponse = await fetch(`${API_BASE}/api/acp-checkout/checkout_sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            buyer: {
+              email: document.getElementById('buyerEmail').value,
+              name: document.getElementById('buyerName').value
+            },
+            items: cartItems,
+            metadata: {
+              dealership_name: document.getElementById('dealershipName').value
+            }
+          })
+        });
+
+        const sessionData = await sessionResponse.json();
+        if (!sessionResponse.ok) throw new Error(sessionData.error || 'Failed to create session');
+
+        currentSessionId = sessionData.session_id;
+
+        // Step 2: Create payment method with Stripe
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+          billing_details: {
+            name: document.getElementById('buyerName').value,
+            email: document.getElementById('buyerEmail').value,
+          }
+        });
+
+        if (error) throw new Error(error.message);
+
+        // Step 3: Complete checkout with payment token
+        const completeResponse = await fetch(`${API_BASE}/api/acp-checkout/checkout_sessions/${currentSessionId}/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            payment_token: paymentMethod.id,
+            payment_method: 'card'
+          })
+        });
+
+        const completeData = await completeResponse.json();
+        if (!completeResponse.ok) throw new Error(completeData.error || 'Payment failed');
+
+        // Success!
+        checkoutModal.classList.add('hidden');
+        addMessage(`<p class="text-green-700 font-semibold">🎉 Success! Your order is confirmed.</p>
+          <p class="text-gray-700 mt-2">Order ID: ${completeData.order_id}</p>
+          <p class="text-gray-700">Your 7-day free trial has started. Check your email for confirmation!</p>`);
+
+        cartItems = [];
+        updateCart();
+
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      } finally {
+        submitButton.disabled = false;
+        buttonText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+      }
+    });
+
+    // Message sending
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, true);
+      messageInput.value = '';
+
+      await processMessage(message);
+    }
+
+    // Utility function
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

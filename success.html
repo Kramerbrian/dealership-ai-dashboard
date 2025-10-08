@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to DealershipAI Pro! - Success</title>
+    <style>
+        :root {
+            --apple-blue: #007AFF;
+            --apple-green: #34C759;
+            --apple-orange: #FF9500;
+            --white: #FFFFFF;
+            --gray-50: #FAFAFA;
+            --gray-100: #F5F5F7;
+            --gray-200: #E5E5EA;
+            --gray-500: #8E8E93;
+            --gray-600: #636366;
+            --gray-800: #1C1C1E;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--apple-blue), #AF52DE);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .success-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--apple-green), var(--apple-blue));
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--apple-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 40px;
+            color: var(--white);
+            animation: bounce 1s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .success-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .success-subtitle {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        .features-list {
+            text-align: left;
+            margin-bottom: 40px;
+        }
+
+        .features-list h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .feature-item::before {
+            content: '✓';
+            color: var(--apple-green);
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            padding: 16px 32px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .cta-button.primary {
+            background: var(--apple-blue);
+            color: var(--white);
+        }
+
+        .cta-button.primary:hover {
+            background: #0051D8;
+            transform: translateY(-2px);
+        }
+
+        .cta-button.secondary {
+            background: var(--gray-100);
+            color: var(--text-primary);
+        }
+
+        .cta-button.secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .trial-info {
+            background: var(--gray-50);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .trial-info strong {
+            color: var(--text-primary);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--apple-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .success-card {
+                padding: 40px 20px;
+            }
+            
+            .success-title {
+                font-size: 28px;
+            }
+            
+            .success-subtitle {
+                font-size: 18px;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cta-button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-card">
+            <div class="success-icon">🎉</div>
+            <h1 class="success-title">Welcome to DealershipAI Pro!</h1>
+            <p class="success-subtitle">Your AI Visibility journey starts now</p>
+            
+            <div class="features-list">
+                <h3>What you get with Pro:</h3>
+                <div class="feature-item">Unlimited dealership analyses</div>
+                <div class="feature-item">Detailed action plans with step-by-step instructions</div>
+                <div class="feature-item">Competitor tracking and analysis</div>
+                <div class="feature-item">Weekly monitoring alerts</div>
+                <div class="feature-item">Priority support</div>
+                <div class="feature-item">Custom reporting and insights</div>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="/dealership-ai-dashboard.html" class="cta-button primary" id="dashboardBtn">
+                    Go to Your Dashboard
+                </a>
+                <button class="cta-button secondary" onclick="openPortal()" id="portalBtn">
+                    Manage Subscription
+                </button>
+            </div>
+
+            <div class="trial-info">
+                <strong>7-Day Free Trial Active</strong><br>
+                You won't be charged until your trial ends. You can cancel anytime from your account settings.
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Setting up your account...</p>
+        </div>
+    </div>
+
+    <script>
+        // Get session ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+
+        if (sessionId) {
+            // Verify the session with Stripe and update user subscription
+            verifySession(sessionId);
+        }
+
+        async function verifySession(sessionId) {
+            try {
+                // Get current user session
+                const dealershipSession = localStorage.getItem('dealership_session');
+                const userData = localStorage.getItem('dealership_user');
+
+                if (!userData) {
+                    console.warn('No user session found');
+                    return;
+                }
+
+                const user = JSON.parse(userData);
+
+                // Call backend to verify Stripe session and update subscription
+                // This should be implemented server-side for security
+                const response = await fetch('/api/verify-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        user_id: user.id,
+                        email: user.email
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Update user subscription status in localStorage
+                    const updatedUser = {
+                        ...user,
+                        subscription: {
+                            status: 'active',
+                            plan: 'pro',
+                            stripeCustomerId: data.customer_id,
+                            stripeSubscriptionId: data.subscription_id,
+                            trialEnd: data.trial_end,
+                            currentPeriodEnd: data.current_period_end
+                        }
+                    };
+
+                    localStorage.setItem('dealership_user', JSON.stringify(updatedUser));
+                    console.log('Subscription activated:', data);
+                } else {
+                    console.error('Failed to verify session:', await response.text());
+                }
+            } catch (error) {
+                console.error('Session verification failed:', error);
+                // Still show success page - subscription may still be active
+            }
+        }
+
+        async function openPortal() {
+            const button = document.getElementById('portalBtn');
+            const originalText = button.textContent;
+            
+            button.textContent = 'Loading...';
+            button.disabled = true;
+
+            try {
+                const email = localStorage.getItem('user_email');
+                if (!email) {
+                    alert('Please log in first');
+                    return;
+                }
+
+                const response = await fetch('/api/portal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Failed to create portal session');
+                }
+
+            } catch (error) {
+                console.error('Portal error:', error);
+                alert('Failed to open billing portal. Please try again.');
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // Add some celebration effects
+        setTimeout(() => {
+            // Add confetti effect (simple version)
+            for (let i = 0; i < 50; i++) {
+                createConfetti();
+            }
+        }, 1000);
+
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.top = '-10px';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.backgroundColor = ['#007AFF', '#34C759', '#FF9500', '#AF52DE'][Math.floor(Math.random() * 4)];
+            confetti.style.borderRadius = '50%';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.zIndex = '1000';
+            confetti.style.animation = 'confettiFall 3s linear forwards';
+            
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 3000);
+        }
+
+        // Add confetti animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes confettiFall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+

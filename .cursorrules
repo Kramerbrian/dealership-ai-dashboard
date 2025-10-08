@@ -1,0 +1,89 @@
+# DealershipAI - Cursor AI Rules
+
+## Project Overview
+This is DealershipAI, an enterprise SaaS platform for automotive dealerships with AI visibility analytics. The system supports multi-tenancy with 4-tier RBAC and handles 5,000+ dealerships.
+
+## Architecture
+- **Frontend**: Next.js 14 with App Router, TypeScript, Tailwind CSS
+- **Backend**: Express.js with TypeScript, tRPC for type-safe APIs
+- **Database**: PostgreSQL with Supabase, Row-Level Security (RLS)
+- **Auth**: Clerk with multi-tenant support
+- **Caching**: Redis (Upstash) for cost optimization
+- **Deployment**: Vercel with cron jobs
+
+## Key Patterns
+
+### Multi-Tenant Queries
+Always filter by tenant_id to prevent data leakage:
+```typescript
+// ✅ CORRECT
+const data = await db.dealership_data.findMany({
+  where: { tenant_id: ctx.user.tenant_id }
+})
+
+// ❌ WRONG - Leaks data
+const data = await db.dealership_data.findMany()
+```
+
+### RBAC Enforcement
+Always check permissions before sensitive operations:
+```typescript
+// ✅ CORRECT
+if (!ctx.user.can('delete:users')) {
+  throw new TRPCError({ code: 'FORBIDDEN' })
+}
+```
+
+### Cache-First Data Fetching
+Use cache manager for all expensive operations:
+```typescript
+// ✅ CORRECT
+const scores = await cacheManager.getOrCompute(
+  `scores:${dealerId}`,
+  () => computeScores(dealerId),
+  { strategy: 'pool', pool: `${city}:${state}` }
+)
+```
+
+## User Hierarchy
+1. **SuperAdmin** - System-wide access, manage all tenants
+2. **Enterprise Admin** - Manage enterprise groups (up to 350 rooftops)
+3. **Dealership Admin** - Manage single dealership
+4. **User** - View-only access
+
+## File Structure
+- `app/` - Next.js app directory (pages, API routes)
+- `src/components/` - React components
+- `src/lib/` - Utilities, caching, monitoring
+- `backend/src/` - Express.js backend
+- `scripts/` - Automation scripts (cron jobs)
+
+## Code Style
+- Use TypeScript for all new files
+- Follow existing naming conventions
+- Add proper error handling
+- Include JSDoc comments for complex functions
+- Use Zod for input validation
+- Implement proper logging with monitoring
+
+## Security Requirements
+- Always validate user permissions
+- Use tenant isolation middleware
+- Sanitize all inputs
+- Log sensitive operations
+- Use environment variables for secrets
+
+## Performance
+- Cache expensive operations
+- Use geographic pooling for similar queries
+- Implement proper error boundaries
+- Monitor API response times
+- Optimize database queries
+
+## When generating code:
+1. Follow the existing patterns in the codebase
+2. Include proper TypeScript types
+3. Add error handling and logging
+4. Consider multi-tenant implications
+5. Use the established component structure
+6. Include proper imports and exports

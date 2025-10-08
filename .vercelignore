@@ -1,0 +1,9 @@
+pages/
+node_modules/
+.next/
+.git/
+dealershipai-enterprise/
+dealershipai-enterprise.disabled/
+backend/
+backend.disabled/
+*.disabled/

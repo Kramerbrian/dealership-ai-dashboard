@@ -1,0 +1,21 @@
+# DealershipAI Dashboard - Direct Access Configuration
+# This file ensures users go directly to the main dashboard
+
+# Redirect root and index to main dashboard
+RewriteEngine On
+RewriteRule ^$ dealership-ai-dashboard.html [R=301,L]
+RewriteRule ^index\.html$ dealership-ai-dashboard.html [R=301,L]
+
+# Optional: Redirect common dashboard paths
+RewriteRule ^dashboard/?$ dealership-ai-dashboard.html [R=301,L]
+RewriteRule ^home/?$ dealership-ai-dashboard.html [R=301,L]
+
+# Cache control for better performance
+<Files "dealership-ai-dashboard.html">
+    Header set Cache-Control "public, max-age=3600"
+</Files>
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"

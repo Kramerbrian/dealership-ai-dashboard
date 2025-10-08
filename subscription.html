@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Subscribe to a cool new product</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://js.stripe.com/clover/stripe.js"></script>
+  </head>
+  <body>
+    <section>
+      <div class="product">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="14px" height="16px" viewBox="0 0 14 16" version="1.1">
+            <defs/>
+            <g id="Flow" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="0-Default" transform="translate(-121.000000, -40.000000)" fill="#E184DF">
+                    <path d="M127,50 L126,50 C123.238576,50 121,47.7614237 121,45 C121,42.2385763 123.238576,40 126,40 L135,40 L135,56 L133,56 L133,42 L129,42 L129,56 L127,56 L127,50 Z M127,48 L127,42 L126,42 C124.343146,42 123,43.3431458 123,45 C123,46.6568542 124.343146,48 126,48 L127,48 Z" id="Pilcrow"/>
+                </g>
+            </g>
+        </svg>
+        <div class="description">
+          <h3>Pro Tier</h3>
+          <h5>$599.00 / month</h5>
+        </div>
+      </div>
+      <form id="checkout-form">
+        <button id="checkout-and-portal-button" type="submit">Start 7-Day Free Trial</button>
+      </form>
+    </section>
+
+    <script>
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = document.getElementById('checkout-and-portal-button');
+            const originalText = button.textContent;
+            
+            button.textContent = 'Loading...';
+            button.disabled = true;
+            button.classList.add('loading');
+
+            try {
+                // Get user email from localStorage or prompt
+                let email = localStorage.getItem('user_email');
+                if (!email) {
+                    email = prompt('Please enter your email address:');
+                    if (!email) {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                        button.classList.remove('loading');
+                        return;
+                    }
+                    localStorage.setItem('user_email', email);
+                }
+
+                // Get dealership URL from localStorage or prompt
+                let dealershipUrl = localStorage.getItem('dealership_url');
+                if (!dealershipUrl) {
+                    dealershipUrl = prompt('Please enter your dealership website URL:');
+                    if (!dealershipUrl) {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                        button.classList.remove('loading');
+                        return;
+                    }
+                    localStorage.setItem('dealership_url', dealershipUrl);
+                }
+
+                const response = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        dealershipUrl: dealershipUrl,
+                        plan: 'monthly',
+                        tier: 'pro'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Failed to create checkout session');
+                }
+
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('Failed to start checkout. Please try again.');
+                button.textContent = originalText;
+                button.disabled = false;
+                button.classList.remove('loading');
+            }
+        });
+    </script>
+  </body>
+</html>

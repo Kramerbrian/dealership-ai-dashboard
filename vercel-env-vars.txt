@@ -1,0 +1,41 @@
+╔═══════════════════════════════════════════════════════════════════════╗
+║  COPY & PASTE THESE INTO VERCEL ENVIRONMENT VARIABLES PAGE          ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Add these one by one in Vercel Dashboard:
+https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  NEXT_PUBLIC_SUPABASE_URL
+   Value: https://vxrdvkhkombwlhjvtsmw.supabase.co
+   Environments: ✅ Production ✅ Preview ✅ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2️⃣  NEXT_PUBLIC_SUPABASE_ANON_KEY
+   Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4cmR2a2hrb21id2xoanZ0c213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NjgwMDQsImV4cCI6MjA3MTA0NDAwNH0.5GEWgoolAs5l1zd0ftOBG7MfYZ20sKuxcR-w93VeF7s
+   Environments: ✅ Production ✅ Preview ✅ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3️⃣  SUPABASE_SERVICE_ROLE_KEY
+   Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4cmR2a2hrb21id2xoanZ0c213Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTQ2ODAwNCwiZXhwIjoyMDcxMDQ0MDA0fQ.lLQNZjVAWQ_DeObUYMzXL4cQ81_R6MnDzYPlqIIxoR0
+   Environments: ✅ Production ✅ Preview ✅ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4️⃣  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+   Value: pk_test_ZXhjaXRpbmctcXVhZ2dhLTY1LmNsZXJrLmFjY291bnRzLmRldiQ
+   Environments: ✅ Production ✅ Preview ✅ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5️⃣  CLERK_SECRET_KEY
+   Value: sk_test_jmXcOugvAaWVPBeVaGkSC7AMkziSHBlYvNQwZmfiMa
+   Environments: ✅ Production ✅ Preview ✅ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ After adding all variables, redeploy your app or it will use them automatically on next deployment!
+

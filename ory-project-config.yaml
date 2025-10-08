@@ -1,0 +1,445 @@
+cors_admin:
+  enabled: false
+  origins: []
+cors_public:
+  enabled: false
+  origins: []
+environment: dev
+home_region: us-east
+id: 360ebb8f-2337-48cd-9d25-fba49a262f9c
+name: briankramer's Project
+organizations: []
+revision_id: 86bc1a82-eef1-4685-92ba-eaca41af96e2
+services:
+  account_experience:
+    config:
+      default_locale: en
+      enabled: true
+      favicon_dark_url: ""
+      favicon_light_url: ""
+      locale_behavior: respect_accept_language
+      logo_dark_url: ""
+      logo_light_url: ""
+      theme_variables_dark: {}
+      theme_variables_light: {}
+  identity:
+    config:
+      clients:
+        web_hook:
+          header_allowlist:
+          - Accept
+          - Accept-Encoding
+          - Accept-Language
+          - Content-Length
+          - Content-Type
+          - Origin
+          - Priority
+          - Referer
+          - Sec-Ch-Ua
+          - Sec-Ch-Ua-Mobile
+          - Sec-Ch-Ua-Platform
+          - Sec-Fetch-Dest
+          - Sec-Fetch-Mode
+          - Sec-Fetch-Site
+          - Sec-Fetch-User
+          - True-Client-Ip
+          - User-Agent
+          - X-Forwarded-Host
+          - Ory-Base-Url-Rewrite
+          - Ory-Base-Url-Rewrite-Token
+          - X-Ory-Original-Host
+          - Ory-No-Custom-Domain-Redirect
+          - Cf-Ipcountry
+      cookies:
+        domain: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+        path: /
+        same_site: Lax
+      courier:
+        smtp:
+          from_name: briankramer's Project via Ory
+        templates:
+          login_code:
+            valid:
+              email:
+                body: {}
+              sms:
+                body: {}
+          recovery:
+            invalid:
+              email:
+                body: {}
+            valid:
+              email:
+                body: {}
+          recovery_code:
+            invalid:
+              email:
+                body: {}
+            valid:
+              email:
+                body: {}
+          registration_code:
+            valid:
+              email:
+                body: {}
+              sms:
+                body: {}
+          verification:
+            invalid:
+              email:
+                body: {}
+            valid:
+              email:
+                body: {}
+          verification_code:
+            invalid:
+              email:
+                body: {}
+            valid:
+              email:
+                body: {}
+              sms:
+                body: {}
+      feature_flags:
+        cacheable_sessions: false
+        cacheable_sessions_max_age: 2m30s
+        choose_recovery_address: true
+        faster_session_extend: true
+        legacy_continue_with_verification_ui: false
+        legacy_oidc_registration_node_group: false
+        legacy_require_verified_login_error: false
+        password_profile_registration_node_group: default
+        use_continue_with_transitions: true
+      identity:
+        default_schema_id: preset://email
+        schemas:
+        - id: preset://email
+          url: base64://ewogICIkaWQiOiAiaHR0cHM6Ly9zY2hlbWFzLm9yeS5zaC9wcmVzZXRzL2tyYXRvcy9pZGVudGl0eS5lbWFpbC5zY2hlbWEuanNvbiIsCiAgIiRzY2hlbWEiOiAiaHR0cDovL2pzb24tc2NoZW1hLm9yZy9kcmFmdC0wNy9zY2hlbWEjIiwKICAidGl0bGUiOiAiUGVyc29uIiwKICAidHlwZSI6ICJvYmplY3QiLAogICJwcm9wZXJ0aWVzIjogewogICAgInRyYWl0cyI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgImVtYWlsIjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJmb3JtYXQiOiAiZW1haWwiLAogICAgICAgICAgInRpdGxlIjogIkUtTWFpbCIsCiAgICAgICAgICAib3J5LnNoL2tyYXRvcyI6IHsKICAgICAgICAgICAgImNyZWRlbnRpYWxzIjogewogICAgICAgICAgICAgICJwYXNzd29yZCI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZQogICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgIndlYmF1dGhuIjogewogICAgICAgICAgICAgICAgImlkZW50aWZpZXIiOiB0cnVlCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAidG90cCI6IHsKICAgICAgICAgICAgICAgICJhY2NvdW50X25hbWUiOiB0cnVlCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAiY29kZSI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZSwKICAgICAgICAgICAgICAgICJ2aWEiOiAiZW1haWwiCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAicGFzc2tleSI6IHsKICAgICAgICAgICAgICAgICJkaXNwbGF5X25hbWUiOiB0cnVlCiAgICAgICAgICAgICAgfQogICAgICAgICAgICB9LAogICAgICAgICAgICAicmVjb3ZlcnkiOiB7CiAgICAgICAgICAgICAgInZpYSI6ICJlbWFpbCIKICAgICAgICAgICAgfSwKICAgICAgICAgICAgInZlcmlmaWNhdGlvbiI6IHsKICAgICAgICAgICAgICAidmlhIjogImVtYWlsIgogICAgICAgICAgICB9LAogICAgICAgICAgICAib3JnYW5pemF0aW9ucyI6IHsKICAgICAgICAgICAgICAibWF0Y2hlciI6ICJlbWFpbF9kb21haW4iCiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICAibWF4TGVuZ3RoIjogMzIwCiAgICAgICAgfQogICAgICB9LAogICAgICAicmVxdWlyZWQiOiBbCiAgICAgICAgImVtYWlsIgogICAgICBdLAogICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiBmYWxzZQogICAgfQogIH0KfQo=
+      oauth2_provider:
+        override_return_to: true
+      preview:
+        default_read_consistency_level: strong
+      security:
+        account_enumeration:
+          mitigate: false
+      selfservice:
+        allowed_return_urls:
+        - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+        - /ui/logout
+        - /ui/consent
+        - /ui/welcome
+        - /ui/sessions
+        - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/error
+        - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/login
+        - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/recovery
+        - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/settings
+        - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/registration
+        - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/verification
+        default_browser_return_url: /session
+        flows:
+          error:
+            ui_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/error
+          login:
+            after:
+              code:
+                hooks: []
+              hooks: []
+              lookup_secret:
+                hooks: []
+              oidc:
+                hooks: []
+              passkey:
+                hooks: []
+              password:
+                hooks: []
+              saml:
+                hooks: []
+              totp:
+                hooks: []
+              webauthn:
+                hooks: []
+            before:
+              hooks: []
+            style: identifier_first
+            ui_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/login
+          logout:
+            after: {}
+          recovery:
+            after:
+              hooks: []
+            before:
+              hooks: []
+            enabled: true
+            notify_unknown_recipients: false
+            ui_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/recovery
+            use: code
+          registration:
+            after:
+              code:
+                hooks:
+                - hook: session
+              hooks: []
+              oidc:
+                hooks:
+                - hook: session
+              passkey:
+                hooks:
+                - hook: session
+              password:
+                hooks:
+                - hook: session
+              saml:
+                hooks:
+                - hook: session
+              webauthn:
+                hooks:
+                - hook: session
+            before:
+              hooks: []
+            enable_legacy_one_step: true
+            login_hints: true
+            style: unified
+            ui_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/registration
+          settings:
+            after:
+              hooks: []
+              lookup_secret:
+                hooks: []
+              oidc:
+                hooks: []
+              passkey:
+                hooks: []
+              password:
+                hooks: []
+              profile:
+                hooks: []
+              saml:
+                hooks: []
+              totp:
+                hooks: []
+              webauthn:
+                hooks: []
+            before:
+              hooks: []
+            privileged_session_max_age: 15m0s
+            required_aal: highest_available
+            ui_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/settings
+          verification:
+            after:
+              hooks: []
+            before:
+              hooks: []
+            enabled: true
+            notify_unknown_recipients: false
+            ui_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/verification
+            use: code
+        methods:
+          b2b:
+            config:
+              organizations: []
+          captcha:
+            config:
+              legacy_inject_node: false
+              provider: cf-turnstile
+            enabled: false
+          code:
+            config:
+              max_submissions: 5
+              missing_credential_fallback_enabled: true
+          link:
+            config:
+              base_url: ""
+            enabled: true
+          lookup_secret: {}
+          oidc:
+            config:
+              providers: []
+            enabled: false
+          passkey:
+            config:
+              rp:
+                display_name: briankramer's Project
+                id: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+                origins:
+                - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+          password:
+            config: {}
+          profile: {}
+          totp:
+            config:
+              issuer: briankramer's Project
+          webauthn:
+            config:
+              passwordless: false
+              rp:
+                display_name: briankramer's Project
+                id: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+                origins:
+                - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+      serve:
+        admin:
+          base_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/
+          request_log:
+            disable_for_health: true
+        public:
+          base_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/
+          cors:
+            enabled: false
+          request_log:
+            disable_for_health: true
+      session:
+        cookie:
+          domain: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+          name: ory_session_optimistichaslett3r8udelhc2
+          path: /
+          same_site: Lax
+        lifespan: 72h0m0s
+        whoami:
+          required_aal: highest_available
+          tokenizer:
+            templates: {}
+  oauth2:
+    config:
+      clients:
+        http:
+          disallow_private_ip_ranges: true
+      dev: true
+      hsm:
+        enabled: false
+      oauth2:
+        client_credentials:
+          default_grant_allowed_scope: false
+        exclude_not_before_claim: false
+        expose_internal_errors: true
+        grant:
+          jwt:
+            iat_optional: false
+            jti_optional: false
+            max_ttl: 720h0m0s
+          refresh_token: {}
+        hashers:
+          algorithm: pbkdf2
+          pbkdf2:
+            iterations: 10000
+        pkce:
+          enforced: false
+          enforced_for_public_clients: false
+        session:
+          encrypt_at_rest: true
+      oidc:
+        dynamic_client_registration:
+          enabled: false
+        subject_identifiers: {}
+      serve:
+        admin:
+          cors:
+            allow_credentials: true
+            allowed_headers:
+            - Accept
+            - Content-Type
+            - Content-Length
+            - Accept-Language
+            - Content-Language
+            - Authorization
+            allowed_methods:
+            - POST
+            - GET
+            - PUT
+            - PATCH
+            - DELETE
+            - CONNECT
+            - HEAD
+            - OPTIONS
+            - TRACE
+            debug: false
+            enabled: false
+            exposed_headers:
+            - Cache-Control
+            - Expires
+            - Last-Modified
+            - Pragma
+            - Content-Length
+            - Content-Language
+            - Content-Type
+            max_age: 0
+          tls:
+            enabled: false
+        cookies:
+          domain: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+          names:
+            consent_csrf: ory_oauth2_consent_csrf_optimistichaslett3r8udelhc2
+            login_csrf: ory_oauth2_login_csrf_optimistichaslett3r8udelhc2
+            session_csrf: ory_oauth2_session_csrf_optimistichaslett3r8udelhc2
+          same_site_legacy_workaround: false
+          same_site_mode: Lax
+          secure: true
+        public:
+          cors:
+            allow_credentials: true
+            allowed_headers:
+            - Accept
+            - Content-Type
+            - Content-Length
+            - Accept-Language
+            - Content-Language
+            - Authorization
+            allowed_methods:
+            - POST
+            - GET
+            - PUT
+            - PATCH
+            - DELETE
+            - CONNECT
+            - HEAD
+            - OPTIONS
+            - TRACE
+            debug: false
+            enabled: false
+            exposed_headers:
+            - Cache-Control
+            - Expires
+            - Last-Modified
+            - Pragma
+            - Content-Length
+            - Content-Language
+            - Content-Type
+            max_age: 0
+          tls:
+            enabled: false
+        tls:
+          enabled: false
+      strategies:
+        access_token: opaque
+        jwt: {}
+        scope: wildcard
+      ttl:
+        access_token: 1h0m0s
+        auth_code: 30m0s
+        id_token: 1h0m0s
+        login_consent_request: 30m0s
+        refresh_token: 720h0m0s
+      urls:
+        consent: /consent
+        error: /error
+        login: /login
+        logout: /ui/logout
+        post_logout_redirect: /oauth2/fallbacks/logout/callback
+        registration: /registration
+        self:
+          admin: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/admin
+          issuer: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+          public: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+      webfinger:
+        jwks: {}
+        oidc_discovery:
+          auth_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/oauth2/auth
+          jwks_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/.well-known/jwks.json
+          token_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/oauth2/token
+          userinfo_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/userinfo
+  permission:
+    config:
+      namespaces: []
+slug: optimistic-haslett-3r8udelhc2
+state: running
+workspace_id: 83af532a-eee6-4ad8-96c4-f4802a90940a
+AdditionalProperties: {}

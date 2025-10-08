@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Testing Suite - DealershipAI Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-item {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-item.pass {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .test-item.fail {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        .test-item.pending {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .status {
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+        .status.pass { color: #28a745; }
+        .status.fail { color: #dc3545; }
+        .status.pending { color: #ffc107; }
+        .run-test-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .run-test-btn:hover {
+            background: #0051D8;
+        }
+        .summary {
+            font-size: 18px;
+            font-weight: 600;
+            padding: 16px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .manual-test {
+            background: #e7f3ff;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 8px 0;
+            border-left: 4px solid #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 DealershipAI Dashboard - Local Testing Suite</h1>
+    <p>Testing: <strong>http://localhost:8000/dealership-ai-dashboard.html</strong></p>
+
+    <!-- Automated Tests -->
+    <div class="test-section">
+        <h2>🤖 Automated Tests</h2>
+        <button class="run-test-btn" onclick="runAllTests()">Run All Automated Tests</button>
+        <div id="automated-results"></div>
+    </div>
+
+    <!-- Security Tests -->
+    <div class="test-section">
+        <h2>🔒 Security Tests</h2>
+        <div id="security-tests"></div>
+    </div>
+
+    <!-- Accessibility Tests -->
+    <div class="test-section">
+        <h2>♿ Accessibility Tests</h2>
+        <div id="accessibility-tests"></div>
+    </div>
+
+    <!-- Performance Tests -->
+    <div class="test-section">
+        <h2>⚡ Performance Tests</h2>
+        <div id="performance-tests"></div>
+    </div>
+
+    <!-- Manual Tests -->
+    <div class="test-section">
+        <h2>👆 Manual Tests (Please Verify)</h2>
+        <div class="manual-test">
+            <strong>Keyboard Navigation:</strong>
+            <ol>
+                <li>Open dashboard: <a href="http://localhost:8000/dealership-ai-dashboard.html" target="_blank">Open Dashboard</a></li>
+                <li>Press Tab repeatedly - focus should move through elements with visible outline</li>
+                <li>Press Enter or Space on buttons - should activate</li>
+                <li>Press Escape in a modal - should close</li>
+                <li>Use Arrow Left/Right on tabs - should navigate</li>
+            </ol>
+        </div>
+
+        <div class="manual-test">
+            <strong>Loading States:</strong>
+            <ol>
+                <li>Open browser console</li>
+                <li>Run: <code>showSkeleton('ai-health', 'metrics')</code></li>
+                <li>Wait 2 seconds</li>
+                <li>Run: <code>hideSkeleton('ai-health')</code></li>
+                <li>Verify skeleton appears and disappears smoothly</li>
+            </ol>
+        </div>
+
+        <div class="manual-test">
+            <strong>Error Handling:</strong>
+            <ol>
+                <li>Open browser console</li>
+                <li>Run: <code>handleApiError(new Error('Test error'), 'Testing')</code></li>
+                <li>Verify user-friendly notification appears</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Test Results Summary -->
+    <div class="test-section">
+        <h2>📊 Test Summary</h2>
+        <div id="summary" class="summary">Ready to run tests...</div>
+    </div>
+
+    <script>
+        const tests = {
+            security: [],
+            accessibility: [],
+            performance: []
+        };
+
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            total: 0
+        };
+
+        // Fetch and check dashboard in iframe
+        async function runAllTests() {
+            document.getElementById('summary').innerHTML = '⏳ Running tests...';
+            testResults = { passed: 0, failed: 0, total: 0 };
+
+            // Load dashboard in hidden iframe
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'http://localhost:8000/dealership-ai-dashboard.html';
+            document.body.appendChild(iframe);
+
+            await new Promise(resolve => {
+                iframe.onload = resolve;
+            });
+
+            const dashboardWindow = iframe.contentWindow;
+
+            // Run all test categories
+            await runSecurityTests(dashboardWindow);
+            await runAccessibilityTests(dashboardWindow);
+            await runPerformanceTests(dashboardWindow);
+
+            // Update summary
+            updateSummary();
+
+            // Cleanup
+            document.body.removeChild(iframe);
+        }
+
+        async function runSecurityTests(win) {
+            const container = document.getElementById('security-tests');
+            container.innerHTML = '';
+
+            // Test 1: Check if secure scripts are loaded
+            addTest('security', 'Secure API client loaded', () => {
+                return !!win.secureAPI;
+            });
+
+            addTest('security', 'Secure storage loaded', () => {
+                return !!win.secureStorage;
+            });
+
+            addTest('security', 'No exposed Supabase keys in HTML', async () => {
+                const html = await fetch('http://localhost:8000/dealership-ai-dashboard.html').then(r => r.text());
+                return !html.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI');
+            });
+
+            addTest('security', 'Error handler loaded', () => {
+                return !!win.errorHandler;
+            });
+
+            addTest('security', 'Secure storage encryption works', () => {
+                if (!win.secureStorage) return false;
+                win.secureStorage.setItem('test', { value: 'secret' });
+                const retrieved = win.secureStorage.getItem('test');
+                win.secureStorage.removeItem('test');
+                return retrieved && retrieved.value === 'secret';
+            });
+
+            // Execute tests
+            for (const test of tests.security) {
+                await executeTest(test, container);
+            }
+        }
+
+        async function runAccessibilityTests(win) {
+            const container = document.getElementById('accessibility-tests');
+            container.innerHTML = '';
+
+            addTest('accessibility', 'Accessibility manager loaded', () => {
+                return !!win.accessibilityManager;
+            });
+
+            addTest('accessibility', 'Event manager loaded', () => {
+                return !!win.eventManager;
+            });
+
+            addTest('accessibility', 'ARIA attributes present on tabs', () => {
+                const tabs = win.document.querySelectorAll('.apple-tab[role="tab"]');
+                return tabs.length > 0;
+            });
+
+            addTest('accessibility', 'Tab panels have role="tabpanel"', () => {
+                const panels = win.document.querySelectorAll('[role="tabpanel"]');
+                return panels.length > 0;
+            });
+
+            addTest('accessibility', 'Modals have role="dialog"', () => {
+                const modals = win.document.querySelectorAll('.cupertino-modal[role="dialog"]');
+                return modals.length > 0;
+            });
+
+            addTest('accessibility', 'Skip link present', () => {
+                const skipLink = win.document.querySelector('.skip-link');
+                return !!skipLink;
+            });
+
+            addTest('accessibility', 'Announce function available', () => {
+                return typeof win.announceToScreenReader === 'function';
+            });
+
+            // Execute tests
+            for (const test of tests.accessibility) {
+                await executeTest(test, container);
+            }
+        }
+
+        async function runPerformanceTests(win) {
+            const container = document.getElementById('performance-tests');
+            container.innerHTML = '';
+
+            addTest('performance', 'Loading manager loaded', () => {
+                return !!win.loadingManager;
+            });
+
+            addTest('performance', 'Performance CSS loaded', async () => {
+                const response = await fetch('http://localhost:8000/performance-optimizations.css');
+                return response.ok;
+            });
+
+            addTest('performance', 'Loading functions available', () => {
+                return typeof win.showLoading === 'function' &&
+                       typeof win.hideLoading === 'function' &&
+                       typeof win.showSkeleton === 'function';
+            });
+
+            addTest('performance', 'Skeleton styles injected', () => {
+                const skeletonStyles = win.document.getElementById('skeleton-styles');
+                return !!skeletonStyles;
+            });
+
+            // Execute tests
+            for (const test of tests.performance) {
+                await executeTest(test, container);
+            }
+        }
+
+        function addTest(category, name, testFn) {
+            tests[category].push({ name, testFn });
+        }
+
+        async function executeTest(test, container) {
+            testResults.total++;
+            let passed = false;
+            let error = null;
+
+            try {
+                const result = test.testFn();
+                passed = result instanceof Promise ? await result : result;
+            } catch (e) {
+                error = e.message;
+            }
+
+            if (passed) testResults.passed++;
+            else testResults.failed++;
+
+            const div = document.createElement('div');
+            div.className = `test-item ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <span>${test.name}</span>
+                <span class="status ${passed ? 'pass' : 'fail'}">${passed ? '✅ PASS' : '❌ FAIL'}</span>
+            `;
+            if (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'code';
+                errorDiv.textContent = error;
+                div.appendChild(errorDiv);
+            }
+            container.appendChild(div);
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            const passRate = ((testResults.passed / testResults.total) * 100).toFixed(1);
+
+            summary.innerHTML = `
+                <strong>Tests Complete:</strong><br>
+                ✅ Passed: ${testResults.passed}<br>
+                ❌ Failed: ${testResults.failed}<br>
+                📊 Total: ${testResults.total}<br>
+                📈 Pass Rate: ${passRate}%
+                ${passRate >= 95 ? '<br><br>🎉 <strong style="color: #28a745;">READY FOR DEPLOYMENT!</strong>' : ''}
+                ${passRate < 95 ? '<br><br>⚠️ <strong style="color: #dc3545;">FIX FAILING TESTS BEFORE DEPLOYMENT</strong>' : ''}
+            `;
+        }
+    </script>
+</body>
+</html>

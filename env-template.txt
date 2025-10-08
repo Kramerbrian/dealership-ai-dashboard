@@ -1,0 +1,80 @@
+# DealershipAI Environment Configuration
+# Copy this file to .env.local and fill in your actual values
+
+# ==========================================
+# GOOGLE SERVICES
+# ==========================================
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+GOOGLE_ANALYTICS_PROPERTY_ID=123456789
+GOOGLE_BUSINESS_ACCOUNT_ID=accounts/123456
+GOOGLE_BUSINESS_LOCATION_ID=locations/789012
+PAGESPEED_API_KEY=your_pagespeed_api_key_here
+
+# ==========================================
+# SEO & MARKETING TOOLS
+# ==========================================
+SEMRUSH_API_KEY=your_semrush_api_key_here
+AHREFS_API_KEY=your_ahrefs_api_key_here
+MOZ_ACCESS_ID=your_moz_access_id_here
+MOZ_SECRET_KEY=your_moz_secret_key_here
+
+# ==========================================
+# REVIEW PLATFORMS
+# ==========================================
+YELP_API_KEY=your_yelp_api_key_here
+YELP_BUSINESS_ID=your_yelp_business_id_here
+
+# ==========================================
+# AI SERVICES
+# ==========================================
+OPENAI_API_KEY=sk-your_openai_key_here
+ANTHROPIC_API_KEY=sk-ant-your_anthropic_key_here
+
+# ==========================================
+# DATABASE & CACHING
+# ==========================================
+DATABASE_URL=postgresql://username:password@localhost:5432/dealershipai
+UPSTASH_REDIS_REST_URL=your_upstash_redis_url_here
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token_here
+
+# ==========================================
+# AUTHENTICATION
+# ==========================================
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_key_here
+CLERK_SECRET_KEY=sk_test_your_clerk_secret_here
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+
+# ==========================================
+# APPLICATION CONFIGURATION
+# ==========================================
+NODE_ENV=development
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+FRONTEND_URL=http://localhost:3000
+PORT=3000
+
+# ==========================================
+# FEATURE FLAGS
+# ==========================================
+NEXT_PUBLIC_ENABLE_ANALYTICS=true
+NEXT_PUBLIC_ENABLE_PAGESPEED=true
+NEXT_PUBLIC_ENABLE_SEMRUSH=true
+NEXT_PUBLIC_ENABLE_YELP=true
+NEXT_PUBLIC_ENABLE_AI_CITATIONS=true
+
+# ==========================================
+# RATE LIMITING & COSTS
+# ==========================================
+MAX_DAILY_AI_QUERIES=50
+MAX_DAILY_PAGESPEED_REQUESTS=100
+MAX_DAILY_SEMRUSH_REQUESTS=1000
+
+# ==========================================
+# MONITORING & LOGGING
+# ==========================================
+SENTRY_DSN=your_sentry_dsn_here
+LOG_LEVEL=info
+ENABLE_PERFORMANCE_MONITORING=true

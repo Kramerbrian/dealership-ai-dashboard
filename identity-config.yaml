@@ -1,0 +1,311 @@
+clients:
+  web_hook:
+    header_allowlist:
+    - Accept
+    - Accept-Encoding
+    - Accept-Language
+    - Content-Length
+    - Content-Type
+    - Origin
+    - Priority
+    - Referer
+    - Sec-Ch-Ua
+    - Sec-Ch-Ua-Mobile
+    - Sec-Ch-Ua-Platform
+    - Sec-Fetch-Dest
+    - Sec-Fetch-Mode
+    - Sec-Fetch-Site
+    - Sec-Fetch-User
+    - True-Client-Ip
+    - User-Agent
+    - X-Forwarded-Host
+    - Ory-Base-Url-Rewrite
+    - Ory-Base-Url-Rewrite-Token
+    - X-Ory-Original-Host
+    - Ory-No-Custom-Domain-Redirect
+    - Cf-Ipcountry
+cookies:
+  domain: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+  path: /
+  same_site: Lax
+courier:
+  smtp:
+    from_name: briankramer's Project via Ory
+  templates:
+    login_code:
+      valid:
+        email:
+          body: {}
+        sms:
+          body: {}
+    recovery:
+      invalid:
+        email:
+          body: {}
+      valid:
+        email:
+          body: {}
+    recovery_code:
+      invalid:
+        email:
+          body: {}
+      valid:
+        email:
+          body: {}
+    registration_code:
+      valid:
+        email:
+          body: {}
+        sms:
+          body: {}
+    verification:
+      invalid:
+        email:
+          body: {}
+      valid:
+        email:
+          body: {}
+    verification_code:
+      invalid:
+        email:
+          body: {}
+      valid:
+        email:
+          body: {}
+        sms:
+          body: {}
+feature_flags:
+  cacheable_sessions: false
+  cacheable_sessions_max_age: 2m30s
+  choose_recovery_address: true
+  faster_session_extend: true
+  legacy_continue_with_verification_ui: false
+  legacy_oidc_registration_node_group: false
+  legacy_require_verified_login_error: false
+  password_profile_registration_node_group: default
+  use_continue_with_transitions: true
+identity:
+  default_schema_id: preset://email
+  schemas:
+  - id: preset://email
+    url: base64://ewogICIkaWQiOiAiaHR0cHM6Ly9zY2hlbWFzLm9yeS5zaC9wcmVzZXRzL2tyYXRvcy9pZGVudGl0eS5lbWFpbC5zY2hlbWEuanNvbiIsCiAgIiRzY2hlbWEiOiAiaHR0cDovL2pzb24tc2NoZW1hLm9yZy9kcmFmdC0wNy9zY2hlbWEjIiwKICAidGl0bGUiOiAiUGVyc29uIiwKICAidHlwZSI6ICJvYmplY3QiLAogICJwcm9wZXJ0aWVzIjogewogICAgInRyYWl0cyI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgImVtYWlsIjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJmb3JtYXQiOiAiZW1haWwiLAogICAgICAgICAgInRpdGxlIjogIkUtTWFpbCIsCiAgICAgICAgICAib3J5LnNoL2tyYXRvcyI6IHsKICAgICAgICAgICAgImNyZWRlbnRpYWxzIjogewogICAgICAgICAgICAgICJwYXNzd29yZCI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZQogICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgIndlYmF1dGhuIjogewogICAgICAgICAgICAgICAgImlkZW50aWZpZXIiOiB0cnVlCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAidG90cCI6IHsKICAgICAgICAgICAgICAgICJhY2NvdW50X25hbWUiOiB0cnVlCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAiY29kZSI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZSwKICAgICAgICAgICAgICAgICJ2aWEiOiAiZW1haWwiCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAicGFzc2tleSI6IHsKICAgICAgICAgICAgICAgICJkaXNwbGF5X25hbWUiOiB0cnVlCiAgICAgICAgICAgICAgfQogICAgICAgICAgICB9LAogICAgICAgICAgICAicmVjb3ZlcnkiOiB7CiAgICAgICAgICAgICAgInZpYSI6ICJlbWFpbCIKICAgICAgICAgICAgfSwKICAgICAgICAgICAgInZlcmlmaWNhdGlvbiI6IHsKICAgICAgICAgICAgICAidmlhIjogImVtYWlsIgogICAgICAgICAgICB9LAogICAgICAgICAgICAib3JnYW5pemF0aW9ucyI6IHsKICAgICAgICAgICAgICAibWF0Y2hlciI6ICJlbWFpbF9kb21haW4iCiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICAibWF4TGVuZ3RoIjogMzIwCiAgICAgICAgfQogICAgICB9LAogICAgICAicmVxdWlyZWQiOiBbCiAgICAgICAgImVtYWlsIgogICAgICBdLAogICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiBmYWxzZQogICAgfQogIH0KfQo=
+oauth2_provider:
+  override_return_to: true
+preview:
+  default_read_consistency_level: strong
+security:
+  account_enumeration:
+    mitigate: false
+selfservice:
+  allowed_return_urls:
+  - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+  - /ui/logout
+  - /ui/consent
+  - /ui/welcome
+  - /ui/sessions
+  - http://localhost:3000
+  - http://localhost:3000/error
+  - http://localhost:3000/sign-in
+  - http://localhost:3000/sign-up
+  - http://localhost:3000/recovery
+  - http://localhost:3000/settings
+  - http://localhost:3000/dashboard
+  - http://localhost:3000/verification
+  - http://localhost:3000/auth/callback
+  - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/error
+  - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/login
+  - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/recovery
+  - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/settings
+  - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/registration
+  - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/verification
+  default_browser_return_url: /session
+  flows:
+    error:
+      ui_url: http://localhost:3000/error
+    login:
+      after:
+        code:
+          hooks: []
+        hooks: []
+        lookup_secret:
+          hooks: []
+        oidc:
+          hooks: []
+        passkey:
+          hooks: []
+        password:
+          hooks: []
+        saml:
+          hooks: []
+        totp:
+          hooks: []
+        webauthn:
+          hooks: []
+      before:
+        hooks: []
+      lifespan: 30m0s
+      style: identifier_first
+      ui_url: http://localhost:3000/sign-in
+    logout:
+      after: {}
+    recovery:
+      after:
+        hooks: []
+      before:
+        hooks: []
+      enabled: true
+      lifespan: 30m0s
+      notify_unknown_recipients: false
+      ui_url: http://localhost:3000/recovery
+      use: code
+    registration:
+      after:
+        code:
+          hooks:
+          - hook: session
+        hooks: []
+        oidc:
+          hooks:
+          - hook: session
+        passkey:
+          hooks:
+          - hook: session
+        password:
+          hooks:
+          - hook: session
+        saml:
+          hooks:
+          - hook: session
+        webauthn:
+          hooks:
+          - hook: session
+      before:
+        hooks: []
+      enable_legacy_one_step: true
+      enabled: true
+      lifespan: 30m0s
+      login_hints: true
+      style: unified
+      ui_url: http://localhost:3000/sign-up
+    settings:
+      after:
+        hooks: []
+        lookup_secret:
+          hooks: []
+        oidc:
+          hooks: []
+        passkey:
+          hooks: []
+        password:
+          hooks: []
+        profile:
+          hooks: []
+        saml:
+          hooks: []
+        totp:
+          hooks: []
+        webauthn:
+          hooks: []
+      before:
+        hooks: []
+      lifespan: 30m0s
+      privileged_session_max_age: 15m0s
+      required_aal: highest_available
+      ui_url: http://localhost:3000/settings
+    verification:
+      after:
+        hooks: []
+      before:
+        hooks: []
+      enabled: true
+      lifespan: 30m0s
+      notify_unknown_recipients: false
+      ui_url: http://localhost:3000/verification
+      use: code
+  methods:
+    b2b:
+      config:
+        organizations: []
+    captcha:
+      config:
+        legacy_inject_node: false
+        provider: cf-turnstile
+      enabled: false
+    code:
+      config:
+        lifespan: 15m0s
+        max_submissions: 5
+        missing_credential_fallback_enabled: true
+      enabled: true
+      mfa_enabled: false
+      passwordless_enabled: false
+      passwordless_login_fallback_enabled: false
+    link:
+      config:
+        base_url: ""
+        lifespan: 15m0s
+      enabled: true
+    lookup_secret:
+      enabled: false
+    oidc:
+      config:
+        providers: []
+      enabled: false
+    passkey:
+      config:
+        rp:
+          display_name: briankramer's Project
+          id: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+          origins:
+          - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+      enabled: false
+    password:
+      config:
+        haveibeenpwned_enabled: true
+        identifier_similarity_check_enabled: true
+        ignore_network_errors: true
+        max_breaches: 1
+        min_password_length: 8
+      enabled: true
+    profile:
+      enabled: true
+    saml:
+      config:
+        providers: []
+      enabled: false
+    totp:
+      config:
+        issuer: briankramer's Project
+      enabled: false
+    webauthn:
+      config:
+        passwordless: false
+        rp:
+          display_name: briankramer's Project
+          id: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+          origins:
+          - https://optimistic-haslett-3r8udelhc2.projects.oryapis.com
+      enabled: false
+serve:
+  admin:
+    base_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/
+    request_log:
+      disable_for_health: true
+  public:
+    base_url: https://optimistic-haslett-3r8udelhc2.projects.oryapis.com/
+    cors:
+      enabled: false
+    request_log:
+      disable_for_health: true
+session:
+  cookie:
+    domain: optimistic-haslett-3r8udelhc2.projects.oryapis.com
+    name: ory_session_optimistichaslett3r8udelhc2
+    path: /
+    persistent: false
+    same_site: Lax
+  lifespan: 72h0m0s
+  whoami:
+    required_aal: highest_available
+    tokenizer:
+      templates: {}

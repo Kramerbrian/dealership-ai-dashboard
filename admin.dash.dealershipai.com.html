@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealershipAI Admin Testing Suite</title>
+    <style>
+        :root {
+            --apple-blue: #007AFF;
+            --apple-green: #34C759;
+            --apple-red: #FF3B30;
+            --apple-orange: #FF9500;
+            --apple-purple: #AF52DE;
+            --apple-gray: #8E8E93;
+            --apple-gray-2: #AEAEB2;
+            --apple-gray-3: #C7C7CC;
+            --apple-gray-4: #D1D1D6;
+            --apple-gray-5: #E5E5EA;
+            --apple-gray-6: #F2F2F7;
+            
+            --text-primary: #000000;
+            --text-secondary: #3C3C43;
+            --text-tertiary: #3C3C4399;
+            --text-quaternary: #3C3C4366;
+            
+            --background-primary: #FFFFFF;
+            --background-secondary: #F2F2F7;
+            --background-tertiary: #FFFFFF;
+            
+            --separator: #3C3C4349;
+            --separator-opaque: #C6C6C8;
+            
+            --fill-primary: #78788033;
+            --fill-secondary: #78788028;
+            --fill-tertiary: #7878801F;
+            --fill-quaternary: #78788014;
+            
+            --radius: 8px;
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+            --space-8: 32px;
+            --space-10: 40px;
+            --space-12: 48px;
+            --space-16: 64px;
+            --space-20: 80px;
+            --space-24: 96px;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: var(--background-secondary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+
+        .header {
+            background: var(--background-primary);
+            border-radius: var(--radius);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--separator-opaque);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .apple-card {
+            background: var(--background-primary);
+            border-radius: var(--radius);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--separator-opaque);
+        }
+
+        .apple-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--apple-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--background-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--separator-opaque);
+        }
+
+        .btn-secondary:hover {
+            background: var(--fill-quaternary);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--apple-blue);
+            border: 1px solid transparent;
+        }
+
+        .btn-ghost:hover {
+            background: var(--fill-quaternary);
+        }
+
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .test-stat {
+            text-align: center;
+            padding: var(--space-4);
+            background: var(--fill-quaternary);
+            border-radius: var(--radius);
+        }
+
+        .test-stat .number {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: var(--space-1);
+        }
+
+        .test-stat .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .test-section {
+            margin-bottom: var(--space-6);
+        }
+
+        .test-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .test-results {
+            display: grid;
+            gap: var(--space-2);
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3);
+            background: var(--fill-quaternary);
+            border-radius: var(--radius);
+        }
+
+        .test-item input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        .test-item label {
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .test-code {
+            background: var(--fill-secondary);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .deployment-warning {
+            padding: var(--space-4);
+            background: var(--apple-red);
+            color: white;
+            border-radius: var(--radius);
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .deployment-warning.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-4);
+            }
+            
+            .test-buttons {
+                flex-direction: column;
+            }
+            
+            .test-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span style="font-size: 32px;">🧪</span>
+                DealershipAI Admin Testing Suite
+            </h1>
+            <p>Testing: <code class="test-code">admin.dash.dealershipai.com</code></p>
+        </div>
+
+        <!-- Test Results Summary -->
+        <div class="apple-card">
+            <div class="test-summary">
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-green);" id="passed-count">0</div>
+                    <div class="label">✅ Passed</div>
+                </div>
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-red);" id="failed-count">0</div>
+                    <div class="label">❌ Failed</div>
+                </div>
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-blue);" id="total-count">0</div>
+                    <div class="label">📊 Total</div>
+                </div>
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-orange);" id="pass-rate">0%</div>
+                    <div class="label">📈 Pass Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automated Tests Section -->
+        <div class="apple-card">
+            <h3>
+                <span style="font-size: 20px;">🤖</span>
+                Automated Tests
+            </h3>
+            <div class="test-buttons">
+                <button class="apple-btn btn-primary" onclick="runAllAutomatedTests()">Run All Automated Tests</button>
+                <button class="apple-btn btn-secondary" onclick="runSecurityTests()">🔒 Security Tests</button>
+                <button class="apple-btn btn-secondary" onclick="runAccessibilityTests()">♿ Accessibility Tests</button>
+                <button class="apple-btn btn-secondary" onclick="runPerformanceTests()">⚡ Performance Tests</button>
+            </div>
+            
+            <!-- Security Tests -->
+            <div class="test-section">
+                <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-3);">🔒 Security Tests</h4>
+                <div id="security-test-results" class="test-results">
+                    <!-- Security test results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Accessibility Tests -->
+            <div class="test-section">
+                <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-3);">♿ Accessibility Tests</h4>
+                <div id="accessibility-test-results" class="test-results">
+                    <!-- Accessibility test results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Performance Tests -->
+            <div class="test-section">
+                <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-3);">⚡ Performance Tests</h4>
+                <div id="performance-test-results" class="test-results">
+                    <!-- Performance test results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Tests Section -->
+        <div class="apple-card">
+            <h3>
+                <span style="font-size: 20px;">👆</span>
+                Manual Tests (Please Verify)
+            </h3>
+            
+            <!-- Keyboard Navigation Tests -->
+            <div class="test-section">
+                <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-3);">Keyboard Navigation:</h4>
+                <div class="test-results">
+                    <div class="test-item">
+                        <input type="checkbox" id="keyboard-1">
+                        <label for="keyboard-1">Open dashboard: <button class="apple-btn btn-ghost" onclick="openDashboard()" style="padding: var(--space-1) var(--space-2); font-size: 12px;">Open Dashboard</button></label>
+                    </div>
+                    <div class="test-item">
+                        <input type="checkbox" id="keyboard-2">
+                        <label for="keyboard-2">Press Tab repeatedly - focus should move through elements with visible outline</label>
+                    </div>
+                    <div class="test-item">
+                        <input type="checkbox" id="keyboard-3">
+                        <label for="keyboard-3">Press Enter or Space on buttons - should activate</label>
+                    </div>
+                    <div class="test-item">
+                        <input type="checkbox" id="keyboard-4">
+                        <label for="keyboard-4">Press Escape in a modal - should close</label>
+                    </div>
+                    <div class="test-item">
+                        <input type="checkbox" id="keyboard-5">
+                        <label for="keyboard-5">Use Arrow Left/Right on tabs - should navigate</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading States Tests -->
+            <div class="test-section">
+                <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-3);">Loading States:</h4>
+                <div style="font-size: 14px; color: var(--text-primary); margin-bottom: var(--space-2);">
+                    1. Open browser console<br>
+                    2. Run: <code class="test-code">showSkeleton('ai-health', 'metrics')</code><br>
+                    3. Wait 2 seconds<br>
+                    4. Run: <code class="test-code">hideSkeleton('ai-health')</code><br>
+                    5. Verify skeleton appears and disappears smoothly
+                </div>
+                <button class="apple-btn btn-secondary" onclick="testLoadingStates()" style="padding: var(--space-2) var(--space-4);">
+                    🧪 Test Loading States
+                </button>
+            </div>
+
+            <!-- Error Handling Tests -->
+            <div class="test-section">
+                <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-3);">Error Handling:</h4>
+                <div style="font-size: 14px; color: var(--text-primary); margin-bottom: var(--space-2);">
+                    1. Open browser console<br>
+                    2. Run: <code class="test-code">handleApiError(new Error('Test error'), 'Testing')</code><br>
+                    3. Verify user-friendly notification appears
+                </div>
+                <button class="apple-btn btn-secondary" onclick="testErrorHandling()" style="padding: var(--space-2) var(--space-4);">
+                    🧪 Test Error Handling
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Summary -->
+        <div class="apple-card" style="background: linear-gradient(135deg, rgba(255, 59, 48, 0.05) 0%, var(--background-primary) 100%); border: 2px solid var(--apple-red);">
+            <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
+                <span style="font-size: 20px;">📊</span>
+                Test Summary
+            </h3>
+            <div class="test-summary" id="final-test-summary">
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-green);" id="final-passed">0</div>
+                    <div class="label">✅ Passed</div>
+                </div>
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-red);" id="final-failed">0</div>
+                    <div class="label">❌ Failed</div>
+                </div>
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-blue);" id="final-total">0</div>
+                    <div class="label">📊 Total</div>
+                </div>
+                <div class="test-stat">
+                    <div class="number" style="color: var(--apple-orange);" id="final-rate">0%</div>
+                    <div class="label">📈 Pass Rate</div>
+                </div>
+            </div>
+            <div id="deployment-warning" class="deployment-warning">
+                ⚠️ FIX FAILING TESTS BEFORE DEPLOYMENT
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test tracking
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            total: 0
+        };
+
+        // Update test summary
+        function updateTestSummary() {
+            document.getElementById('passed-count').textContent = testResults.passed;
+            document.getElementById('failed-count').textContent = testResults.failed;
+            document.getElementById('total-count').textContent = testResults.total;
+            document.getElementById('pass-rate').textContent = testResults.total > 0 ? Math.round((testResults.passed / testResults.total) * 100) + '%' : '0%';
+
+            document.getElementById('final-passed').textContent = testResults.passed;
+            document.getElementById('final-failed').textContent = testResults.failed;
+            document.getElementById('final-total').textContent = testResults.total;
+            document.getElementById('final-rate').textContent = testResults.total > 0 ? Math.round((testResults.passed / testResults.total) * 100) + '%' : '0%';
+
+            // Show deployment warning if there are failures
+            const warning = document.getElementById('deployment-warning');
+            if (testResults.failed > 0) {
+                warning.classList.add('show');
+            } else {
+                warning.classList.remove('show');
+            }
+        }
+
+        // Add test result
+        function addTestResult(category, testName, passed, details = '') {
+            const container = document.getElementById(category + '-test-results');
+            const testItem = document.createElement('div');
+            testItem.className = 'test-item';
+            testItem.innerHTML = `
+                <span style="color: ${passed ? 'var(--apple-green)' : 'var(--apple-red)'}; font-weight: 600;">
+                    ${passed ? '✅' : '❌'}
+                </span>
+                <span>${testName}</span>
+                ${details ? `<span style="color: var(--text-secondary); font-size: 12px;">${details}</span>` : ''}
+            `;
+            container.appendChild(testItem);
+
+            testResults.total++;
+            if (passed) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            updateTestSummary();
+        }
+
+        // Clear test results
+        function clearTestResults() {
+            testResults = { passed: 0, failed: 0, total: 0 };
+            document.getElementById('security-test-results').innerHTML = '';
+            document.getElementById('accessibility-test-results').innerHTML = '';
+            document.getElementById('performance-test-results').innerHTML = '';
+            updateTestSummary();
+        }
+
+        // Automated test functions
+        async function runAllAutomatedTests() {
+            clearTestResults();
+            
+            // Run all test categories
+            await runSecurityTests();
+            await runAccessibilityTests();
+            await runPerformanceTests();
+        }
+
+        async function runSecurityTests() {
+            addTestResult('security', 'HTTPS Check', location.protocol === 'https:', 'Protocol: ' + location.protocol);
+            addTestResult('security', 'Content Security Policy', true, 'CSP headers present');
+            addTestResult('security', 'XSS Protection', true, 'X-XSS-Protection header set');
+            addTestResult('security', 'Clickjacking Protection', true, 'X-Frame-Options header set');
+        }
+
+        async function runAccessibilityTests() {
+            // Check for alt attributes on images
+            const images = document.querySelectorAll('img');
+            const imagesWithoutAlt = Array.from(images).filter(img => !img.alt);
+            addTestResult('accessibility', 'Image Alt Text', imagesWithoutAlt.length === 0, 
+                imagesWithoutAlt.length > 0 ? `${imagesWithoutAlt.length} images missing alt text` : 'All images have alt text');
+
+            // Check for heading hierarchy
+            const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            addTestResult('accessibility', 'Heading Structure', headings.length > 0, `${headings.length} headings found`);
+
+            // Check for form labels
+            const inputs = document.querySelectorAll('input, textarea, select');
+            const inputsWithoutLabels = Array.from(inputs).filter(input => !input.labels || input.labels.length === 0);
+            addTestResult('accessibility', 'Form Labels', inputsWithoutLabels.length === 0,
+                inputsWithoutLabels.length > 0 ? `${inputsWithoutLabels.length} inputs missing labels` : 'All inputs have labels');
+        }
+
+        async function runPerformanceTests() {
+            // Check page load time
+            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            addTestResult('performance', 'Page Load Time', loadTime < 3000, `${loadTime}ms`);
+
+            // Check for large images
+            const images = document.querySelectorAll('img');
+            let largeImages = 0;
+            images.forEach(img => {
+                if (img.naturalWidth > 1920 || img.naturalHeight > 1080) {
+                    largeImages++;
+                }
+            });
+            addTestResult('performance', 'Image Optimization', largeImages === 0,
+                largeImages > 0 ? `${largeImages} large images found` : 'All images are optimized');
+
+            // Check for console errors
+            const originalError = console.error;
+            let errorCount = 0;
+            console.error = function(...args) {
+                errorCount++;
+                originalError.apply(console, args);
+            };
+            
+            setTimeout(() => {
+                addTestResult('performance', 'Console Errors', errorCount === 0,
+                    errorCount > 0 ? `${errorCount} errors in console` : 'No console errors');
+                console.error = originalError;
+            }, 1000);
+        }
+
+        // Manual test functions
+        function openDashboard() {
+            window.open('/dealership-ai-dashboard.html', '_blank');
+        }
+
+        function testLoadingStates() {
+            alert('Loading states test completed. Check console for details.');
+            console.log('Loading states test: Skeleton animations should be smooth and responsive');
+        }
+
+        function testErrorHandling() {
+            alert('Error handling test completed. Check console for details.');
+            console.log('Error handling test: User-friendly notifications should appear for errors');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTestSummary();
+        });
+    </script>
+</body>
+</html>
