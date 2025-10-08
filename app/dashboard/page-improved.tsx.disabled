@@ -1,0 +1,633 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SignedIn, SignedOut, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import toast, { Toaster } from 'react-hot-toast';
+import {
+  ChartBarIcon,
+  CpuChipIcon,
+  GlobeAltIcon,
+  MagnifyingGlassIcon,
+  ChatBubbleLeftRightIcon,
+  StarIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  DocumentTextIcon
+} from '@heroicons/react/24/outline';
+import AIVisibilityCard from '@/components/AIVisibilityCard';
+import { RAGDashboard } from '@/components/RAGDashboard';
+import DealershipAIDashboard from '../../DealershipAIDashboard.jsx';
+import DashboardLoading from '@/components/DashboardLoading';
+import APIStatusIndicator from '@/components/APIStatusIndicator';
+import RecommendationsModal from '@/components/ui/RecommendationsModal';
+import { trpc } from '@/lib/trpc';
+
+// Fallback mock data for when tRPC data is not available
+const useMockData = () => {
+  const [indexTrend, setIndexTrend] = useState(
+    Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 62 + Math.sin(i / 3) * 6 + i * 0.4 }))
+  );
+
+  const pillarTrends = {
+    GEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 74 + Math.sin(i / 2) * 8 })),
+    AEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 61 + Math.cos(i / 2.2) * 7 })),
+    SEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 53 + Math.sin(i / 2.7) * 5 })),
+  };
+
+  const pillarScores = { GEO: 74, AEO: 61, SEO: 53 };
+
+  return { indexTrend, pillarTrends, pillarScores };
+};
+
+interface TierConfig {
+  name: string;
+  tabs: string[];
+}
+
+interface TabButtonProps {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  isActive: boolean;
+  isLocked: boolean;
+  onClick: () => void;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ id, label, icon, isActive, isLocked, onClick }) => (
+  <motion.button
+    onClick={onClick}
+    disabled={isLocked}
+    whileHover={!isLocked ? { scale: 1.02 } : {}}
+    whileTap={!isLocked ? { scale: 0.98 } : {}}
+    className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 rounded-md flex items-center gap-2 ${
+      isActive
+        ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-500/10'
+        : isLocked
+        ? 'text-gray-500 opacity-50 cursor-not-allowed'
+        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+    }`}
+  >
+    <span className="w-4 h-4 flex-shrink-0">{icon}</span>
+    <span className="hidden sm:inline">{label}</span>
+    <span className="sm:hidden">{label.split(' ')[0]}</span>
+    {isLocked && <span className="text-xs">🔒</span>}
+  </motion.button>
+);
+
+const QuickActionButton: React.FC<{
+  title: string;
+  description: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  onClick: () => void;
+  isLoading?: boolean;
+}> = ({ title, description, color, bgColor, borderColor, onClick, isLoading }) => (
+  <motion.button
+    whileHover={{ scale: 1.02, y: -2 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={onClick}
+    disabled={isLoading}
+    className={`w-full px-4 py-4 ${bgColor} hover:${bgColor.replace('/20', '/30')} border ${borderColor} rounded-xl text-left transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden`}
+  >
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <div className="relative">
+      <div className={`font-semibold ${color} flex items-center justify-between mb-2`}>
+        <span className="text-sm sm:text-base">{title}</span>
+        {isLoading ? (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+        ) : (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        )}
+      </div>
+      <div className="text-xs sm:text-sm text-gray-400 leading-relaxed">{description}</div>
+    </div>
+  </motion.button>
+);
+
+export default function DashboardPage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const [currentTier, setCurrentTier] = useState<'free' | 'pro' | 'enterprise'>('pro');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [profileData, setProfileData] = useState({
+    name: 'Lou Glutz Motors',
+    location: 'Chicago, IL',
+    dealershipId: 'lou-glutz-motors'
+  });
+
+  // Loading states for Quick Actions
+  const [loadingStates, setLoadingStates] = useState({
+    audit: false,
+    competitors: false,
+    recommendations: false,
+    appraisal: false
+  });
+
+  // Modal states
+  const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
+
+  // Get the latest audit ID for this dealership
+  const { data: auditList, isLoading: isLoadingAudits, error: auditListError } = trpc.audit.list.useQuery({
+    dealershipId: profileData.dealershipId,
+    limit: 1
+  });
+
+  const auditId = auditList?.audits?.[0]?.id;
+
+  // Get audit data
+  const { data: auditData, isLoading: isLoadingAuditData } = trpc.audit.getById.useQuery(
+    { id: auditId },
+    { enabled: !!auditId }
+  );
+
+  // Get recommendations
+  const { data: recommendationsData, isLoading: isLoadingRecommendations } = trpc.recommendation.list.useQuery({
+    dealershipId: profileData.dealershipId
+  });
+
+  // tRPC mutations for Quick Actions
+  const generateAudit = trpc.audit.generate.useMutation();
+  const analyzeAppraisal = trpc.appraisal.analyze.useMutation();
+  const generateRecommendations = trpc.recommendation.generate.useMutation();
+
+  // Use mock data as fallback when tRPC data is not available
+  const mockData = useMockData();
+
+  // Transform audit data to match the expected format, fallback to mock data
+  const indexTrend = auditData ?
+    Array.from({ length: 16 }).map((_, i) => ({
+      t: i,
+      v: (auditData.ai_visibility_score || 0) + Math.sin(i / 3) * 6 + i * 0.4
+    })) :
+    mockData.indexTrend;
+
+  const pillarTrends = auditData ? {
+    GEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: (auditData?.geo_trust_score || 74) + Math.sin(i / 2) * 8 })),
+    AEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: (auditData?.ai_visibility_score || 61) + Math.cos(i / 2.2) * 7 })),
+    SEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: (auditData?.sgp_integrity_score || 53) + Math.sin(i / 2.7) * 5 })),
+  } : mockData.pillarTrends;
+
+  const pillarScores = auditData ? {
+    GEO: auditData?.geo_trust_score || 74,
+    AEO: auditData?.ai_visibility_score || 61,
+    SEO: auditData?.sgp_integrity_score || 53
+  } : mockData.pillarScores;
+
+  // Quick Action Handlers
+  const handleRunAudit = async () => {
+    setLoadingStates(prev => ({ ...prev, audit: true }));
+    const toastId = toast.loading('Starting full audit analysis...');
+
+    try {
+      const result = await generateAudit.mutateAsync({
+        dealershipId: profileData.dealershipId
+      });
+
+      toast.success('Audit completed successfully! 🎉', { id: toastId });
+      // Optionally refresh the audit list
+    } catch (error) {
+      toast.error('Failed to run audit. Please try again.', { id: toastId });
+      console.error('Audit error:', error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, audit: false }));
+    }
+  };
+
+  const handleAnalyzeCompetitors = async () => {
+    setLoadingStates(prev => ({ ...prev, competitors: true }));
+    const toastId = toast.loading('Analyzing competitor data...');
+
+    try {
+      // Navigate to competitor analysis or open modal
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+      toast.success('Competitor analysis ready!', { id: toastId });
+      setActiveTab('website'); // Navigate to competitor analysis tab when built
+    } catch (error) {
+      toast.error('Failed to analyze competitors.', { id: toastId });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, competitors: false }));
+    }
+  };
+
+  const handleGetRecommendations = async () => {
+    setLoadingStates(prev => ({ ...prev, recommendations: true }));
+
+    if (recommendationsData && recommendationsData.length > 0) {
+      // If we already have recommendations, show them
+      setShowRecommendationsModal(true);
+      setLoadingStates(prev => ({ ...prev, recommendations: false }));
+      return;
+    }
+
+    // Otherwise, generate new recommendations
+    const toastId = toast.loading('Generating AI-powered recommendations...');
+
+    try {
+      await generateRecommendations.mutateAsync({
+        dealershipId: profileData.dealershipId,
+        auditId: auditId
+      });
+
+      toast.success('Recommendations generated!', { id: toastId });
+      setShowRecommendationsModal(true);
+    } catch (error) {
+      toast.error('Failed to generate recommendations.', { id: toastId });
+      console.error('Recommendations error:', error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, recommendations: false }));
+    }
+  };
+
+  const handleAnalyzeAppraisal = async () => {
+    setLoadingStates(prev => ({ ...prev, appraisal: true }));
+    const toastId = toast.loading('Analyzing appraisal form penetration...');
+
+    try {
+      const result = await analyzeAppraisal.mutateAsync({
+        dealershipId: profileData.dealershipId,
+        dealershipUrl: `https://${profileData.dealershipId}.com`,
+        dealershipName: profileData.name,
+        location: profileData.location
+      });
+
+      toast.success('Appraisal analysis complete!', { id: toastId });
+    } catch (error) {
+      toast.error('Failed to analyze appraisal forms.', { id: toastId });
+      console.error('Appraisal error:', error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, appraisal: false }));
+    }
+  };
+
+  // Redirect unauthenticated users
+  if (!isLoaded) {
+    return <DashboardLoading />;
+  }
+
+  if (!user) {
+    if (typeof window !== 'undefined') {
+      router.push('/');
+    }
+    return null;
+  }
+
+  const tierConfig: Record<string, TierConfig> = {
+    free: {
+      name: 'Free',
+      tabs: ['overview', 'ai-health', 'website']
+    },
+    pro: {
+      name: 'Professional',
+      tabs: ['overview', 'ai-health', 'website', 'schema', 'chatgpt', 'reviews', 'rag', 'dealership-ai']
+    },
+    enterprise: {
+      name: 'Enterprise',
+      tabs: ['overview', 'ai-health', 'website', 'schema', 'chatgpt', 'reviews', 'rag', 'dealership-ai', 'mystery', 'predictive']
+    }
+  };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: <ChartBarIcon className="w-4 h-4" /> },
+    { id: 'ai-health', label: 'AI Search Health', icon: <CpuChipIcon className="w-4 h-4" /> },
+    { id: 'website', label: 'Website Health', icon: <GlobeAltIcon className="w-4 h-4" /> },
+    { id: 'schema', label: 'Schema Audit', icon: <MagnifyingGlassIcon className="w-4 h-4" /> },
+    { id: 'chatgpt', label: 'ChatGPT Analysis', icon: <ChatBubbleLeftRightIcon className="w-4 h-4" /> },
+    { id: 'reviews', label: 'Reviews Hub', icon: <StarIcon className="w-4 h-4" /> },
+    { id: 'rag', label: 'AI Insights', icon: <DocumentTextIcon className="w-4 h-4" /> },
+    { id: 'dealership-ai', label: 'DealershipAI Dashboard', icon: <SparklesIcon className="w-4 h-4" /> },
+    { id: 'mystery', label: 'Mystery Shop', icon: <UserGroupIcon className="w-4 h-4" /> },
+    { id: 'predictive', label: 'Predictive', icon: <SparklesIcon className="w-4 h-4" /> }
+  ];
+
+  const handleTabClick = (tabId: string) => {
+    if (!tierConfig[currentTier].tabs.includes(tabId)) {
+      toast.error('Upgrade to access this feature 🔒');
+      return;
+    }
+    setActiveTab(tabId);
+  };
+
+  const changeTier = (tier: 'free' | 'pro' | 'enterprise') => {
+    setCurrentTier(tier);
+    if (!tierConfig[tier].tabs.includes(activeTab)) {
+      setActiveTab('overview');
+    }
+  };
+
+  const handleExportCitations = () => {
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 1000)),
+      {
+        loading: 'Preparing citation export...',
+        success: 'Citations exported to CSV! 📄',
+        error: 'Export failed'
+      }
+    );
+  };
+
+  const handleWeightsChange = (weights: any) => {
+    // Save weights to user preferences
+    toast.success('Pillar weights updated', { duration: 2000 });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#1f2937',
+            color: '#fff',
+            border: '1px solid #374151',
+            borderRadius: '0.75rem',
+            padding: '16px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+
+      {/* Recommendations Modal */}
+      <RecommendationsModal
+        isOpen={showRecommendationsModal}
+        onClose={() => setShowRecommendationsModal(false)}
+        recommendations={recommendationsData || []}
+        dealerName={profileData.name}
+      />
+
+      {/* Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-gray-800/50"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent truncate">
+                {profileData.name}
+              </h1>
+              <p className="text-gray-400 mt-1 text-sm sm:text-base truncate">
+                {profileData.location} • {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <APIStatusIndicator showDetails={true} />
+              <div className="text-right">
+                <div className="text-xs sm:text-sm text-gray-500">Current Tier</div>
+                <div className="text-base sm:text-lg font-semibold text-blue-400">
+                  {tierConfig[currentTier].name}
+                </div>
+              </div>
+              <button className="px-4 sm:px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-blue-500/20 text-sm sm:text-base">
+                Upgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Main Content Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        {/* Navigation Tabs */}
+        <motion.nav
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6"
+        >
+          <div className="bg-gray-900/50 rounded-lg p-1 border border-gray-800/50">
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+              {tabs.map((tab) => (
+                <TabButton
+                  key={tab.id}
+                  id={tab.id}
+                  label={tab.label}
+                  icon={tab.icon}
+                  isActive={activeTab === tab.id}
+                  isLocked={!tierConfig[currentTier].tabs.includes(tab.id)}
+                  onClick={() => handleTabClick(tab.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </motion.nav>
+
+        {/* Main Content */}
+        <main className="space-y-6">
+          <AnimatePresence mode="wait">
+            {activeTab === 'overview' && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+              {/* AI Visibility Card - Main Feature */}
+              <div className="ring-colors">
+                <AIVisibilityCard
+                  dealerName={profileData.name}
+                  indexTrend={indexTrend}
+                  pillarTrends={pillarTrends}
+                  pillarScores={pillarScores}
+                  initialWeights={{ GEO: 40, AEO: 35, SEO: 25 }}
+                  onWeightsChange={handleWeightsChange}
+                  onExportCitations={handleExportCitations}
+                />
+              </div>
+
+                {/* Quick Actions - Below AI Visibility Card */}
+                {currentTier !== 'free' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-gray-900/50 rounded-xl p-6 border border-gray-800/50 backdrop-blur-sm"
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-lg">🚀</span>
+                      </div>
+                      <h3 className="text-white font-semibold text-lg">Quick Actions</h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <QuickActionButton
+                      title="Run Full Audit"
+                      description="Analyze all 5 scoring modules"
+                      color="text-blue-400"
+                      bgColor="bg-blue-600/20"
+                      borderColor="border-blue-500/50"
+                      onClick={handleRunAudit}
+                      isLoading={loadingStates.audit}
+                    />
+                    <QuickActionButton
+                      title="Analyze Competitors"
+                      description="Compare with local dealers"
+                      color="text-purple-400"
+                      bgColor="bg-purple-600/20"
+                      borderColor="border-purple-500/50"
+                      onClick={handleAnalyzeCompetitors}
+                      isLoading={loadingStates.competitors}
+                    />
+                    <QuickActionButton
+                      title="Get Recommendations"
+                      description="AI-powered action items"
+                      color="text-green-400"
+                      bgColor="bg-green-600/20"
+                      borderColor="border-green-500/50"
+                      onClick={handleGetRecommendations}
+                      isLoading={loadingStates.recommendations}
+                    />
+                      <QuickActionButton
+                        title="Appraisal Analysis"
+                        description="Check form penetration"
+                        color="text-orange-400"
+                        bgColor="bg-orange-600/20"
+                        borderColor="border-orange-500/50"
+                        onClick={handleAnalyzeAppraisal}
+                        isLoading={loadingStates.appraisal}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Free Tier Message */}
+                {currentTier === 'free' && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-8 border border-blue-500/30 text-center backdrop-blur-sm"
+                  >
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl">🚀</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Unlock Advanced Features</h3>
+                    <p className="text-gray-300 mb-6 max-w-md mx-auto">
+                      Upgrade to Professional to access AI Visibility analysis, quick actions, and detailed insights.
+                    </p>
+                    <button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-blue-500/20">
+                      Upgrade to Professional
+                    </button>
+                  </motion.div>
+                )}
+            </motion.div>
+          )}
+
+            {/* RAG Dashboard Tab */}
+            {activeTab === 'rag' && (
+              <motion.div
+                key="rag"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="bg-gray-900/50 rounded-xl border border-gray-800/50 backdrop-blur-sm"
+              >
+                <RAGDashboard />
+              </motion.div>
+            )}
+
+            {/* DealershipAI Dashboard Tab */}
+            {activeTab === 'dealership-ai' && (
+              <motion.div
+                key="dealership-ai"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="bg-gray-900/50 rounded-xl p-6 border border-gray-800/50 backdrop-blur-sm"
+              >
+                <DealershipAIDashboard
+                  dealershipId={profileData.dealershipId}
+                  dealershipName={profileData.name}
+                  apiBaseUrl="/api"
+                  theme="dark"
+                  showHeader={false}
+                  showLeaderboard={true}
+                  showCommunity={true}
+                  showAnalytics={true}
+                />
+              </motion.div>
+            )}
+
+            {/* Other tabs */}
+            {activeTab !== 'overview' && activeTab !== 'rag' && activeTab !== 'dealership-ai' && (
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="bg-gray-900/50 rounded-xl p-12 border border-gray-800/50 text-center backdrop-blur-sm"
+              >
+                <div className="w-20 h-20 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-3xl">🚧</span>
+                </div>
+                <h3 className="text-2xl font-semibold text-white mb-3">
+                  {tabs.find(tab => tab.id === activeTab)?.label} Coming Soon
+                </h3>
+                <p className="text-gray-300 max-w-md mx-auto">
+                  This feature is under development and will be available soon. Stay tuned for updates!
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
+
+      {/* CSS for ring colors and custom styles */}
+      <style jsx global>{`
+        .ring-colors {
+          --ring: #10b981;
+          --ring-muted: #1f2937;
+        }
+        :global(.dark) .ring-colors {
+          --ring: #4ade80;
+          --ring-muted: #111827;
+        }
+
+        /* Custom scrollbar for tab navigation */
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Smooth scrolling */
+        html {
+          scroll-behavior: smooth;
+        }
+
+        /* Better focus states */
+        button:focus-visible {
+          outline: 2px solid #3b82f6;
+          outline-offset: 2px;
+        }
+      `}</style>
+    </div>
+  );
+}

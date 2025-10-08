@@ -1,0 +1,392 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SignedIn, SignedOut, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import {
+  ChartBarIcon,
+  CpuChipIcon,
+  GlobeAltIcon,
+  MagnifyingGlassIcon,
+  ChatBubbleLeftRightIcon,
+  StarIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  DocumentTextIcon
+} from '@heroicons/react/24/outline';
+import AIVisibilityCard from '@/components/AIVisibilityCard';
+import { RAGDashboard } from '@/components/RAGDashboard';
+import DealershipAIDashboard from '../../DealershipAIDashboard.jsx';
+
+// For demo purposes - replace with real tRPC once deployed
+const useMockData = () => {
+  const [indexTrend, setIndexTrend] = useState(
+    Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 62 + Math.sin(i / 3) * 6 + i * 0.4 }))
+  );
+
+  const pillarTrends = {
+    GEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 74 + Math.sin(i / 2) * 8 })),
+    AEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 61 + Math.cos(i / 2.2) * 7 })),
+    SEO: Array.from({ length: 16 }).map((_, i) => ({ t: i, v: 53 + Math.sin(i / 2.7) * 5 })),
+  };
+
+  const pillarScores = { GEO: 74, AEO: 61, SEO: 53 };
+
+  return { indexTrend, pillarTrends, pillarScores };
+};
+
+interface TierConfig {
+  name: string;
+  tabs: string[];
+}
+
+interface TabButtonProps {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  isActive: boolean;
+  isLocked: boolean;
+  onClick: () => void;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ id, label, icon, isActive, isLocked, onClick }) => (
+  <button
+    onClick={onClick}
+    disabled={isLocked}
+    className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+      isActive
+        ? 'text-blue-400 border-b-2 border-blue-400'
+        : isLocked
+        ? 'text-gray-500 opacity-50 cursor-not-allowed'
+        : 'text-gray-400 hover:text-gray-200'
+    }`}
+  >
+    <span className="mr-2">{icon}</span>
+    {label}
+    {isLocked && <span className="ml-2 text-xs">🔒</span>}
+  </button>
+);
+
+const QuickActionButton: React.FC<{
+  title: string;
+  description: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  onClick: () => void;
+  isLoading?: boolean;
+}> = ({ title, description, color, bgColor, borderColor, onClick, isLoading }) => (
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={onClick}
+    disabled={isLoading}
+    className={`w-full px-4 py-3 ${bgColor} hover:${bgColor.replace('/20', '/30')} border ${borderColor} rounded-lg text-left transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
+  >
+    <div className={`font-medium ${color} flex items-center justify-between`}>
+      {title}
+      {isLoading && (
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+      )}
+    </div>
+    <div className="text-sm text-gray-400 mt-1">{description}</div>
+  </motion.button>
+);
+
+export default function DashboardPage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const [currentTier, setCurrentTier] = useState<'free' | 'pro' | 'enterprise'>('pro');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [profileData, setProfileData] = useState({
+    name: 'Terry Reid Hyundai',
+    location: 'Naples, FL',
+    dealershipId: 'terry-reid-hyundai'
+  });
+
+  // Mock data for demo - replace with tRPC
+  const { indexTrend, pillarTrends, pillarScores } = useMockData();
+
+  // Redirect unauthenticated users
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-200">Loading...</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    router.push('/');
+    return null;
+  }
+
+  const tierConfig: Record<string, TierConfig> = {
+    free: {
+      name: 'Free',
+      tabs: ['overview', 'ai-health', 'website']
+    },
+    pro: {
+      name: 'Professional',
+      tabs: ['overview', 'ai-health', 'website', 'schema', 'chatgpt', 'reviews', 'rag', 'dealership-ai']
+    },
+    enterprise: {
+      name: 'Enterprise',
+      tabs: ['overview', 'ai-health', 'website', 'schema', 'chatgpt', 'reviews', 'rag', 'dealership-ai', 'mystery', 'predictive']
+    }
+  };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: <ChartBarIcon className="w-4 h-4" /> },
+    { id: 'ai-health', label: 'AI Search Health', icon: <CpuChipIcon className="w-4 h-4" /> },
+    { id: 'website', label: 'Website Health', icon: <GlobeAltIcon className="w-4 h-4" /> },
+    { id: 'schema', label: 'Schema Audit', icon: <MagnifyingGlassIcon className="w-4 h-4" /> },
+    { id: 'chatgpt', label: 'ChatGPT Analysis', icon: <ChatBubbleLeftRightIcon className="w-4 h-4" /> },
+    { id: 'reviews', label: 'Reviews Hub', icon: <StarIcon className="w-4 h-4" /> },
+    { id: 'rag', label: 'AI Insights', icon: <DocumentTextIcon className="w-4 h-4" /> },
+    { id: 'dealership-ai', label: 'DealershipAI Dashboard', icon: <SparklesIcon className="w-4 h-4" /> },
+    { id: 'mystery', label: 'Mystery Shop', icon: <UserGroupIcon className="w-4 h-4" /> },
+    { id: 'predictive', label: 'Predictive', icon: <SparklesIcon className="w-4 h-4" /> }
+  ];
+
+  const handleTabClick = (tabId: string) => {
+    if (!tierConfig[currentTier].tabs.includes(tabId)) {
+      // Show upgrade modal for locked features
+      return;
+    }
+    setActiveTab(tabId);
+  };
+
+  const changeTier = (tier: 'free' | 'pro' | 'enterprise') => {
+    setCurrentTier(tier);
+    if (!tierConfig[tier].tabs.includes(activeTab)) {
+      setActiveTab('overview');
+    }
+  };
+
+  const handleExportCitations = () => {
+    console.log('Exporting citations...');
+    // Implement export logic
+  };
+
+  const handleWeightsChange = (weights: any) => {
+    console.log('Weights changed:', weights);
+    // Save weights to user preferences
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white p-6">
+      {/* Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+              {profileData.name}
+            </h1>
+            <p className="text-gray-400 mt-1">{profileData.location} • {user?.firstName || user?.emailAddresses[0]?.emailAddress}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="text-sm text-gray-500">Current Tier</div>
+              <div className="text-lg font-semibold text-blue-400">
+                {tierConfig[currentTier].name}
+              </div>
+            </div>
+            <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-blue-500/20">
+              Upgrade
+            </button>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Navigation Tabs */}
+      <motion.nav
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mb-6 border-b border-gray-800"
+      >
+        <div className="flex gap-1 overflow-x-auto">
+          {tabs.map((tab) => (
+            <TabButton
+              key={tab.id}
+              id={tab.id}
+              label={tab.label}
+              icon={tab.icon}
+              isActive={activeTab === tab.id}
+              isLocked={!tierConfig[currentTier].tabs.includes(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
+            />
+          ))}
+        </div>
+      </motion.nav>
+
+      {/* Main Content */}
+      <main>
+        <AnimatePresence mode="wait">
+          {activeTab === 'overview' && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* AI Visibility Card - Main Feature */}
+              <div className="ring-colors">
+                <AIVisibilityCard
+                  dealerName={profileData.name}
+                  indexTrend={indexTrend}
+                  pillarTrends={pillarTrends}
+                  pillarScores={pillarScores}
+                  initialWeights={{ GEO: 40, AEO: 35, SEO: 25 }}
+                  onWeightsChange={handleWeightsChange}
+                  onExportCitations={handleExportCitations}
+                />
+              </div>
+
+              {/* Quick Actions - Below AI Visibility Card */}
+              {currentTier !== 'free' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-gray-900/50 rounded-lg p-6 border border-gray-800"
+                >
+                  <h3 className="text-white font-semibold mb-4">🚀 Quick Actions</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <QuickActionButton
+                      title="Run Full Audit"
+                      description="Analyze all 5 scoring modules"
+                      color="text-blue-400"
+                      bgColor="bg-blue-600/20"
+                      borderColor="border-blue-500/50"
+                      onClick={() => console.log('Run audit')}
+                    />
+                    <QuickActionButton
+                      title="Analyze Competitors"
+                      description="Compare with local dealers"
+                      color="text-purple-400"
+                      bgColor="bg-purple-600/20"
+                      borderColor="border-purple-500/50"
+                      onClick={() => console.log('Analyze competitors')}
+                    />
+                    <QuickActionButton
+                      title="Get Recommendations"
+                      description="AI-powered action items"
+                      color="text-green-400"
+                      bgColor="bg-green-600/20"
+                      borderColor="border-green-500/50"
+                      onClick={() => console.log('Get recommendations')}
+                    />
+                    <QuickActionButton
+                      title="Appraisal Analysis"
+                      description="Check form penetration"
+                      color="text-orange-400"
+                      bgColor="bg-orange-600/20"
+                      borderColor="border-orange-500/50"
+                      onClick={() => console.log('Analyze appraisal')}
+                    />
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Free Tier Message */}
+              {currentTier === 'free' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg p-8 border border-blue-500/30 text-center"
+                >
+                  <div className="text-4xl mb-4">🚀</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Unlock Advanced Features</h3>
+                  <p className="text-gray-300 mb-4">
+                    Upgrade to Professional to access AI Visibility analysis, quick actions, and detailed insights.
+                  </p>
+                  <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
+                    Upgrade to Professional
+                  </button>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {/* RAG Dashboard Tab */}
+          {activeTab === 'rag' && (
+            <motion.div
+              key="rag"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <RAGDashboard />
+            </motion.div>
+          )}
+
+          {/* DealershipAI Dashboard Tab */}
+          {activeTab === 'dealership-ai' && (
+            <motion.div
+              key="dealership-ai"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white rounded-lg p-6">
+                <DealershipAIDashboard
+                  dealershipId={profileData.dealershipId}
+                  dealershipName={profileData.name}
+                  apiBaseUrl="/api"
+                  theme="dark"
+                  showLeaderboard={true}
+                  showCommunity={true}
+                  showAnalytics={true}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* Other tabs */}
+          {activeTab !== 'overview' && activeTab !== 'rag' && activeTab !== 'dealership-ai' && (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="bg-gray-900/50 rounded-lg p-8 border border-gray-800 text-center"
+            >
+              <div className="text-4xl mb-4">🚧</div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                {tabs.find(tab => tab.id === activeTab)?.label} Coming Soon
+              </h3>
+              <p className="text-gray-300">
+                This feature is under development and will be available soon.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* CSS for ring colors */}
+      <style jsx global>{`
+        .ring-colors {
+          --ring: #10b981;
+          --ring-muted: #1f2937;
+        }
+        :global(.dark) .ring-colors {
+          --ring: #4ade80;
+          --ring-muted: #111827;
+        }
+      `}</style>
+    </div>
+  );
+}
