@@ -32,8 +32,20 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">AI Visibility Dashboard</h1>
-          <p className="text-gray-400 mt-2">Track visibility across 6 AI engines with real-time scoring</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white">AI Visibility Dashboard</h1>
+              <p className="text-gray-400 mt-2">Track visibility across 6 AI engines with real-time scoring</p>
+            </div>
+            <div className="flex gap-3">
+              <a
+                href="/automation"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+              >
+                Automation Center
+              </a>
+            </div>
+          </div>
         </div>
         
         {/* Score Cards */}
