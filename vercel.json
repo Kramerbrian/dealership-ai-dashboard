@@ -4,5 +4,10 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "devCommand": "npm run dev",
-  "crons": []
+  "crons": [
+    {
+      "path": "/api/cron/sync-metrics",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
