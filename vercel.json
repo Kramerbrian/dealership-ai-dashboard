@@ -1,13 +1,16 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
   "crons": [
     {
-      "path": "/api/cron/sync-metrics",
-      "schedule": "0 * * * *"
+      "path": "/api/cron/monthly-scan",
+      "schedule": "0 0 1 * *"
     }
-  ]
+  ],
+  "functions": {
+    "app/api/cron/monthly-scan/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/scan-batch/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }

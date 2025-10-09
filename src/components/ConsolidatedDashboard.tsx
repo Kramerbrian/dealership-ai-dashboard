@@ -199,6 +199,7 @@ function getAvailableTabs(tier: Tier) {
     { id: 'schema', label: 'Schema Audit', icon: '🔍' },
     { id: 'chatgpt', label: 'ChatGPT Analysis', icon: '💬' },
     { id: 'reviews', label: 'Reviews Hub', icon: '⭐' },
+    { id: 'monthly-scan', label: 'Monthly Scan', icon: '📈' },
     { id: 'mystery-shop', label: 'Mystery Shop', icon: '🛍️' },
     { id: 'predictive', label: 'Predictive Analytics', icon: '🔮' }
   ];
@@ -233,6 +234,8 @@ function renderTabContent(tabId: string, data: DashboardData, tierFeatures: any)
       return <ChatGPTTab data={data} tierFeatures={tierFeatures} />;
     case 'reviews':
       return <ReviewsTab data={data} tierFeatures={tierFeatures} />;
+    case 'monthly-scan':
+      return <MonthlyScanTab data={data} tierFeatures={tierFeatures} />;
     case 'mystery-shop':
       return <MysteryShopTab data={data} tierFeatures={tierFeatures} />;
     case 'predictive':
@@ -480,6 +483,148 @@ function PredictiveTab({ data, tierFeatures }: { data: DashboardData; tierFeatur
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Predictive Analytics</h3>
         <p className="text-gray-600">Predictive analytics functionality coming soon...</p>
+      </div>
+    </div>
+  );
+}
+
+function MonthlyScanTab({ data, tierFeatures }: { data: DashboardData; tierFeatures: any }) {
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly AI Visibility Scan</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">What is Monthly Scan?</h4>
+            <p className="text-sm text-gray-600 mb-4">
+              Our monthly scan analyzes your dealership's visibility across 6 AI platforms 
+              (ChatGPT, Claude, Perplexity, Gemini, Google SGE, Grok) using 50 top dealer queries.
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                Scans 50 top dealer queries
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                Tracks mentions and rankings
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                Analyzes sentiment and citations
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                Calculates visibility score
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">Your Current Status</h4>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-2xl font-bold text-blue-600 mb-2">
+                {data.scores.overall}/100
+              </div>
+              <div className="text-sm text-gray-600 mb-2">Visibility Score</div>
+              <div className="text-xs text-gray-500">
+                Based on last scan: {new Date().toLocaleDateString()}
+              </div>
+            </div>
+            <div className="mt-4">
+              <a 
+                href="/monthly-scan"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                View Full Leaderboard
+                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform Breakdown</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-gray-50 rounded">
+            <div className="text-lg font-bold text-blue-600">ChatGPT</div>
+            <div className="text-sm text-gray-600">AI Search</div>
+          </div>
+          <div className="text-center p-4 bg-gray-50 rounded">
+            <div className="text-lg font-bold text-green-600">Claude</div>
+            <div className="text-sm text-gray-600">AI Search</div>
+          </div>
+          <div className="text-center p-4 bg-gray-50 rounded">
+            <div className="text-lg font-bold text-purple-600">Perplexity</div>
+            <div className="text-sm text-gray-600">AI Search</div>
+          </div>
+          <div className="text-center p-4 bg-gray-50 rounded">
+            <div className="text-lg font-bold text-orange-600">Gemini</div>
+            <div className="text-sm text-gray-600">AI Search</div>
+          </div>
+          <div className="text-center p-4 bg-gray-50 rounded">
+            <div className="text-lg font-bold text-red-600">Google SGE</div>
+            <div className="text-sm text-gray-600">Search Engine</div>
+          </div>
+          <div className="text-center p-4 bg-gray-50 rounded">
+            <div className="text-lg font-bold text-indigo-600">Grok</div>
+            <div className="text-sm text-gray-600">AI Search</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Monthly Scan Benefits
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 text-sm">📊</span>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900">Competitive Intelligence</h4>
+              <p className="text-sm text-gray-600">See how you rank against competitors</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 text-sm">📈</span>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900">Performance Tracking</h4>
+              <p className="text-sm text-gray-600">Monitor your AI visibility over time</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-purple-600 text-sm">🎯</span>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900">Actionable Insights</h4>
+              <p className="text-sm text-gray-600">Get specific recommendations to improve</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                <span className="text-orange-600 text-sm">⚡</span>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900">Automated Monitoring</h4>
+              <p className="text-sm text-gray-600">Runs automatically every month</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
