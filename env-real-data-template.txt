@@ -1,0 +1,85 @@
+# DealershipAI Enterprise SaaS Environment Variables
+# Copy this file to .env.local and fill in your actual values
+
+# ==========================================
+# SUPABASE DATABASE
+# ==========================================
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# ==========================================
+# AUTHENTICATION (CLERK)
+# ==========================================
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# ==========================================
+# APPLICATION CONFIGURATION
+# ==========================================
+NEXT_PUBLIC_APP_URL=https://dash.dealershipai.com
+NODE_ENV=production
+
+# ==========================================
+# EXTERNAL API KEYS
+# ==========================================
+# Google Analytics 4
+GOOGLE_ANALYTICS_KEY=your_ga4_key_here
+
+# SEMrush API
+SEMRUSH_API_KEY=your_semrush_key_here
+
+# Ahrefs API
+AHREFS_API_KEY=your_ahrefs_key_here
+
+# Google My Business API
+GOOGLE_MY_BUSINESS_API_KEY=your_gmb_key_here
+
+# Yelp API
+YELP_API_KEY=your_yelp_key_here
+
+# ==========================================
+# AI SERVICES
+# ==========================================
+OPENAI_API_KEY=sk-your_openai_key_here
+ANTHROPIC_API_KEY=sk-ant-your_anthropic_key_here
+
+# ==========================================
+# BILLING (STRIPE)
+# ==========================================
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ==========================================
+# CACHING (REDIS)
+# ==========================================
+UPSTASH_REDIS_REST_URL=your_upstash_redis_url_here
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token_here
+
+# ==========================================
+# CRON JOBS
+# ==========================================
+CRON_SECRET=your_secure_cron_secret_here
+
+# ==========================================
+# MONITORING & LOGGING
+# ==========================================
+SENTRY_DSN=your_sentry_dsn_here
+LOG_LEVEL=info
+ENABLE_PERFORMANCE_MONITORING=true
+
+# ==========================================
+# FEATURE FLAGS
+# ==========================================
+NEXT_PUBLIC_ENABLE_ANALYTICS=true
+NEXT_PUBLIC_ENABLE_AI_FEATURES=true
+NEXT_PUBLIC_ENABLE_BILLING=true
+NEXT_PUBLIC_ENABLE_COMPETITOR_ANALYSIS=true
+
+# ==========================================
+# RATE LIMITING
+# ==========================================
+MAX_DAILY_AI_QUERIES=50
+MAX_DAILY_API_REQUESTS=1000
+MAX_DAILY_SYNC_OPERATIONS=100

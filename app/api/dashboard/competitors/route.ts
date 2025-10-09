@@ -40,30 +40,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
-  // Fetch real metrics from your database
-  const { data: metrics, error } = await supabase
-    .from('dealer_metrics')
+  // Fetch competitor data
+  const { data: competitors, error } = await supabase
+    .from('dealer_competitors')
     .select(`
-      revenue_at_risk,
-      ai_visibility_score,
-      monthly_mentions,
-      conversion_rate,
-      voice_search_ready,
-      image_ai_score,
-      schema_health,
-      ymyl_score,
-      faq_coverage,
+      competitor_name,
+      ai_visibility,
+      monthly_leads,
+      avg_price,
+      trend,
       updated_at
     `)
     .eq('dealer_id', dealerId)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .single();
+    .order('ai_visibility', { ascending: false });
 
   if (error) {
-    console.error('Failed to fetch metrics:', error);
-    return NextResponse.json({ error: 'Failed to fetch metrics' }, { status: 500 });
+    console.error('Failed to fetch competitors:', error);
+    return NextResponse.json({ error: 'Failed to fetch competitors' }, { status: 500 });
   }
 
-  return NextResponse.json({ metrics, dealerId, userRole: access.role });
+  return NextResponse.json({ 
+    data: competitors || [], 
+    dealerId, 
+    userRole: access.role 
+  });
 }

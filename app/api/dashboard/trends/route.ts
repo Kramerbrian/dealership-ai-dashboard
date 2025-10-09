@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 
 export async function GET(req: NextRequest) {
   const dealerId = req.nextUrl.searchParams.get('dealerId');
+  const days = parseInt(req.nextUrl.searchParams.get('days') || '180');
   
   if (!dealerId) {
     return NextResponse.json({ error: 'Dealer ID required' }, { status: 400 });
@@ -40,30 +41,34 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
-  // Fetch real metrics from your database
-  const { data: metrics, error } = await supabase
-    .from('dealer_metrics')
+  // Calculate date range
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  // Fetch trend data
+  const { data: trends, error } = await supabase
+    .from('dealer_metrics_history')
     .select(`
-      revenue_at_risk,
-      ai_visibility_score,
-      monthly_mentions,
-      conversion_rate,
-      voice_search_ready,
-      image_ai_score,
-      schema_health,
-      ymyl_score,
-      faq_coverage,
-      updated_at
+      date,
+      visibility_score,
+      mentions,
+      revenue
     `)
     .eq('dealer_id', dealerId)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .single();
+    .gte('date', startDate.toISOString().split('T')[0])
+    .lte('date', endDate.toISOString().split('T')[0])
+    .order('date', { ascending: true });
 
   if (error) {
-    console.error('Failed to fetch metrics:', error);
-    return NextResponse.json({ error: 'Failed to fetch metrics' }, { status: 500 });
+    console.error('Failed to fetch trends:', error);
+    return NextResponse.json({ error: 'Failed to fetch trends' }, { status: 500 });
   }
 
-  return NextResponse.json({ metrics, dealerId, userRole: access.role });
+  return NextResponse.json({ 
+    data: trends || [], 
+    dealerId, 
+    days,
+    userRole: access.role 
+  });
 }

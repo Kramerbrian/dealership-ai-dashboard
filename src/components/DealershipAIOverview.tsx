@@ -219,36 +219,67 @@ export default function DealershipAIOverview() {
       </div>
 
       {/* BOTTOM ROW — Zeigarnik + Doherty + Jakob's */}
-      <Card>
-        <div className="mb-3 flex items-center justify-between">
-          <div className="text-xs text-white/60">Live Intelligence Feed</div>
-          <button className="rounded-lg border border-white/20 px-3 py-1 text-xs text-white/70 hover:border-white/40">
-            Open Recommendations
-          </button>
-        </div>
-        {loading ? (
-          <div className="space-y-2">
-            <Skeleton h={16} />
-            <Skeleton h={16} />
-            <Skeleton h={16} />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-xs text-white/60">Live Intelligence Feed</div>
+            <button className="rounded-lg border border-white/20 px-3 py-1 text-xs text-white/70 hover:border-white/40">
+              Open Recommendations
+            </button>
           </div>
-        ) : (
-          <ul className="space-y-2 text-sm">
-            <li className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3">
-              ⚠️ Critical: Revenue at Risk +$12K vs last week — <button className="underline">Fix Now</button>
-            </li>
-            <li className="rounded-lg border border-white/10 bg-white/5 p-3">
-              ✅ AI Overviews inclusion up 6% for "oil change naples fl"
-            </li>
-            <li className="rounded-lg border border-white/10 bg-white/5 p-3">
-              💬 Respond to 12 new Google reviews <button className="underline">Open Queue</button>
-            </li>
-          </ul>
-        )}
-        <div className="mt-2 text-[11px] text-white/50">
-          Zeigarnik: incomplete tasks ("Fix Now") maintain tension. Jakob's: feed patterns mimic familiar tools.
-        </div>
-      </Card>
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton h={16} />
+              <Skeleton h={16} />
+              <Skeleton h={16} />
+            </div>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              <li className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3">
+                ⚠️ Critical: Revenue at Risk +$12K vs last week — <button className="underline">Fix Now</button>
+              </li>
+              <li className="rounded-lg border border-white/10 bg-white/5 p-3">
+                ✅ AI Overviews inclusion up 6% for "oil change naples fl"
+              </li>
+              <li className="rounded-lg border border-white/10 bg-white/5 p-3">
+                💬 Respond to 12 new Google reviews <button className="underline">Open Queue</button>
+              </li>
+            </ul>
+          )}
+          <div className="mt-2 text-[11px] text-white/50">
+            Zeigarnik: incomplete tasks ("Fix Now") maintain tension. Jakob's: feed patterns mimic familiar tools.
+          </div>
+        </Card>
+
+        <Card>
+          <div className="mb-3 text-xs text-white/60">AI Assistant</div>
+          <AIAssistantQuery
+            context="dealership-overview"
+            data={aiContext}
+            theme="dark"
+            placeholder="Ask about your AI visibility metrics..."
+            onQuery={(query) => {
+              // Context-aware responses based on current metrics
+              if (query.includes('revenue')) {
+                return `Your $${(revenueAtRisk/1000).toFixed(0)}K revenue at risk is ${revenueAtRisk > 300000 ? 'critically high' : 'manageable'}. Focus on AI visibility optimization.`;
+              }
+              if (query.includes('visibility')) {
+                return `Your AI visibility is ${aiVisibility}%, which is ${aiVisibility >= 80 ? 'excellent' : aiVisibility >= 60 ? 'good' : 'needs improvement'}. ${aiVisibility < 80 ? 'Focus on E-E-A-T optimization.' : 'Great job maintaining visibility!'}`;
+              }
+              if (query.includes('trend')) {
+                const latest = impressions[impressions.length - 1]?.impressions || 0;
+                const previous = impressions[impressions.length - 2]?.impressions || 0;
+                const growth = latest > previous ? 'increasing' : 'decreasing';
+                return `Your impressions trend is ${growth} to ${latest.toLocaleString()}. This indicates ${latest > previous ? 'positive momentum' : 'optimization opportunities'} in AI search visibility.`;
+              }
+              return `Based on your current metrics (${aiVisibility}% AI visibility, $${(revenueAtRisk/1000).toFixed(0)}K revenue at risk), I can help you understand trends and optimization opportunities. What would you like to explore?`;
+            }}
+          />
+          <div className="mt-2 text-[11px] text-white/50">
+            AI-powered insights for your dealership's digital presence and optimization opportunities.
+          </div>
+        </Card>
+      </div>
 
       {/* Von Restorff — optional global alert (use sparingly) */}
       <div className="rounded-2xl border border-red-500/40 bg-red-500/15 p-4 text-sm">
