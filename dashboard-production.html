@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealershipAI - Production Dashboard</title>
+    <style>
+        /* CSS Variables for Easy Customization */
+        :root {
+            --primary: #2196F3;        /* Change brand color here */
+            --secondary: #667eea;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+            --border: #e9ecef;
+            --text: #2c3e50;
+            --text-muted: #6c757d;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header .badge {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            color: var(--text);
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .metric-card {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: var(--transition);
+        }
+
+        .metric-card:hover::before {
+            transform: scale(1);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .metric-change {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-good { background: rgba(76, 175, 80, 0.1); color: var(--success); }
+        .status-warning { background: rgba(255, 152, 0, 0.1); color: var(--warning); }
+        .status-danger { background: rgba(244, 67, 54, 0.1); color: var(--danger); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 4px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: calc(var(--radius) - 4px);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header { flex-direction: column; gap: 16px; text-align: center; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1 id="dealership-name">DealershipAI Dashboard</h1>
+                <p id="dealership-location" style="color: var(--text-muted); margin-top: 4px;">Loading...</p>
+            </div>
+            <div class="badge" id="plan-badge">PRO PLAN</div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+            <button class="tab" onclick="switchTab('ai-search')">🤖 AI Search</button>
+            <button class="tab" onclick="switchTab('website')">🌐 Website</button>
+            <button class="tab" onclick="switchTab('monthly-scan')">📈 Monthly Scan</button>
+            <button class="tab" onclick="switchTab('reviews')">⭐ Reviews</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="grid grid-4">
+                <div class="card metric-card">
+                    <div class="metric-value" id="overall-score">85</div>
+                    <div class="metric-label">Overall Score</div>
+                    <div class="metric-change">+5%</div>
+                </div>
+                <div class="card metric-card" style="background: linear-gradient(135deg, var(--success), #66BB6A);">
+                    <div class="metric-value" id="ai-visibility">78</div>
+                    <div class="metric-label">AI Visibility</div>
+                    <div class="metric-change">+12%</div>
+                </div>
+                <div class="card metric-card" style="background: linear-gradient(135deg, var(--warning), #FFB74D);">
+                    <div class="metric-value" id="website-health">92</div>
+                    <div class="metric-label">Website Health</div>
+                    <div class="metric-change">+3%</div>
+                </div>
+                <div class="card metric-card" style="background: linear-gradient(135deg, var(--danger), #EF5350);">
+                    <div class="metric-value" id="reviews-score">88</div>
+                    <div class="metric-label">Reviews Score</div>
+                    <div class="metric-change">+8%</div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Recent Activity</h3>
+                    <div id="recent-activity">
+                        <div class="list-item">
+                            <span>Monthly AI scan completed</span>
+                            <span class="status-indicator status-good">✓ Success</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Website optimization applied</span>
+                            <span class="status-indicator status-good">✓ Success</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Schema markup updated</span>
+                            <span class="status-indicator status-warning">⚠ Pending</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Quick Actions</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-primary" onclick="runQuickScan()">
+                            🔍 Run Quick Scan
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewMonthlyScan()">
+                            📈 View Monthly Scan
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportReport()">
+                            📊 Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Search Tab -->
+        <div id="ai-search" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>AI Platform Performance</h3>
+                    <div id="ai-platforms">
+                        <div class="list-item">
+                            <span>ChatGPT</span>
+                            <div style="flex: 1; margin: 0 16px;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <span>85%</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Claude</span>
+                            <div style="flex: 1; margin: 0 16px;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 78%"></div>
+                                </div>
+                            </div>
+                            <span>78%</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Perplexity</span>
+                            <div style="flex: 1; margin: 0 16px;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 72%"></div>
+                                </div>
+                            </div>
+                            <span>72%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Top Queries</h3>
+                    <div id="top-queries">
+                        <div class="list-item">
+                            <span>"best Toyota dealer near me"</span>
+                            <span class="status-indicator status-good">Rank #2</span>
+                        </div>
+                        <div class="list-item">
+                            <span>"Honda dealer reviews"</span>
+                            <span class="status-indicator status-good">Rank #1</span>
+                        </div>
+                        <div class="list-item">
+                            <span>"car dealership comparison"</span>
+                            <span class="status-indicator status-warning">Rank #5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Website Tab -->
+        <div id="website" class="tab-content">
+            <div class="grid grid-3">
+                <div class="card">
+                    <h3>Page Speed</h3>
+                    <div class="metric-value" style="color: var(--success);">92</div>
+                    <div class="metric-label">Score</div>
+                    <div class="status-indicator status-good" style="margin-top: 12px;">Excellent</div>
+                </div>
+                <div class="card">
+                    <h3>SEO Score</h3>
+                    <div class="metric-value" style="color: var(--primary);">88</div>
+                    <div class="metric-label">Score</div>
+                    <div class="status-indicator status-good" style="margin-top: 12px;">Good</div>
+                </div>
+                <div class="card">
+                    <h3>Schema Markup</h3>
+                    <div class="metric-value" style="color: var(--warning);">75</div>
+                    <div class="metric-label">Score</div>
+                    <div class="status-indicator status-warning" style="margin-top: 12px;">Needs Work</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Scan Tab -->
+        <div id="monthly-scan" class="tab-content">
+            <div class="card">
+                <h3>Monthly AI Visibility Scan</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    Comprehensive analysis across 6 AI platforms using 50 top dealer queries.
+                </p>
+                
+                <div class="grid grid-2">
+                    <div>
+                        <h4 style="margin-bottom: 12px;">Last Scan Results</h4>
+                        <div class="list-item">
+                            <span>Visibility Score</span>
+                            <span style="font-weight: 600; color: var(--primary);">87/100</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Total Mentions</span>
+                            <span style="font-weight: 600;">23</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Average Rank</span>
+                            <span style="font-weight: 600;">2.3</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Sentiment Score</span>
+                            <span style="font-weight: 600; color: var(--success);">+0.8</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 style="margin-bottom: 12px;">Platform Breakdown</h4>
+                        <div class="list-item">
+                            <span>ChatGPT</span>
+                            <span>85% visibility</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Claude</span>
+                            <span>78% visibility</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Perplexity</span>
+                            <span>72% visibility</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Gemini</span>
+                            <span>68% visibility</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="triggerMonthlyScan()">
+                        🔄 Trigger Monthly Scan
+                    </button>
+                    <button class="btn btn-secondary" onclick="viewLeaderboard()">
+                        🏆 View Leaderboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div id="reviews" class="tab-content">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Review Summary</h3>
+                    <div class="metric-value" style="color: var(--success);">4.8</div>
+                    <div class="metric-label">Average Rating</div>
+                    <div style="margin-top: 16px;">
+                        <div class="list-item">
+                            <span>Google Reviews</span>
+                            <span>4.9 (127 reviews)</span>
+                        </div>
+                        <div class="list-item">
+                            <span>Yelp</span>
+                            <span>4.7 (89 reviews)</span>
+                        </div>
+                        <div class="list-item">
+                            <span>DealerRater</span>
+                            <span>4.8 (156 reviews)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Recent Reviews</h3>
+                    <div id="recent-reviews">
+                        <div style="padding: 12px 0; border-bottom: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600;">John D.</span>
+                                <span style="color: var(--success);">★★★★★</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">
+                                "Excellent service and great deals. Highly recommended!"
+                            </p>
+                        </div>
+                        <div style="padding: 12px 0; border-bottom: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600;">Sarah M.</span>
+                                <span style="color: var(--success);">★★★★★</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">
+                                "Professional staff and smooth buying process."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration Object - Easy Customization
+        const CONFIG = {
+            dealership: {
+                name: 'Premium Auto Dealership',  // ← Change here
+                location: 'Cape Coral, FL',        // ← Change here
+                plan: 'PRO PLAN'
+            },
+            api: {
+                baseURL: '/api/v1',
+                dealershipId: 'dealer_12345',
+                useMockData: true,  // ← Set false for production
+                refreshInterval: 300000  // 5 minutes
+            },
+            features: {
+                autoRefresh: true,
+                showNotifications: true,
+                enableExport: true
+            }
+        };
+
+        // Mock Data for Development
+        const MOCK_DATA = {
+            scores: {
+                overall: 85,
+                aiVisibility: 78,
+                websiteHealth: 92,
+                reviewsScore: 88
+            },
+            monthlyScan: {
+                visibilityScore: 87,
+                totalMentions: 23,
+                avgRank: 2.3,
+                sentimentScore: 0.8
+            },
+            lastUpdated: new Date().toISOString()
+        };
+
+        // API Integration Layer
+        const API = {
+            async fetchDashboard() {
+                if (CONFIG.api.useMockData) {
+                    return new Promise(resolve => {
+                        setTimeout(() => resolve(MOCK_DATA), 1000);
+                    });
+                }
+                
+                try {
+                    const response = await fetch(`${CONFIG.api.baseURL}/dashboard/${CONFIG.api.dealershipId}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('API Error:', error);
+                    return MOCK_DATA;
+                }
+            },
+
+            async triggerScan() {
+                if (CONFIG.api.useMockData) {
+                    return { success: true, message: 'Mock scan completed' };
+                }
+                
+                try {
+                    const response = await fetch(`${CONFIG.api.baseURL}/scan/trigger`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ dealershipId: CONFIG.api.dealershipId })
+                    });
+                    return await response.json();
+                } catch (error) {
+                    console.error('Scan Error:', error);
+                    return { success: false, message: 'Scan failed' };
+                }
+            }
+        };
+
+        // UI Components
+        const UI = {
+            updateHeader() {
+                document.getElementById('dealership-name').textContent = CONFIG.dealership.name;
+                document.getElementById('dealership-location').textContent = CONFIG.dealership.location;
+                document.getElementById('plan-badge').textContent = CONFIG.dealership.plan;
+            },
+
+            updateMetrics(data) {
+                document.getElementById('overall-score').textContent = data.scores.overall;
+                document.getElementById('ai-visibility').textContent = data.scores.aiVisibility;
+                document.getElementById('website-health').textContent = data.scores.websiteHealth;
+                document.getElementById('reviews-score').textContent = data.scores.reviewsScore;
+            },
+
+            showLoading(elementId) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.innerHTML = '<div class="loading"></div>';
+                }
+            },
+
+            showNotification(message, type = 'info') {
+                if (!CONFIG.features.showNotifications) return;
+                
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1000;
+                    padding: 16px 24px; border-radius: 8px; color: white;
+                    background: ${type === 'success' ? 'var(--success)' : 'var(--primary)'};
+                    box-shadow: var(--shadow); animation: slideIn 0.3s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        };
+
+        // Event Handlers
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab button
+            event.target.classList.add('active');
+        }
+
+        async function runQuickScan() {
+            UI.showLoading('recent-activity');
+            UI.showNotification('Running quick scan...', 'info');
+            
+            try {
+                const result = await API.triggerScan();
+                UI.showNotification(result.message, result.success ? 'success' : 'error');
+                await loadDashboard();
+            } catch (error) {
+                UI.showNotification('Scan failed', 'error');
+            }
+        }
+
+        function viewMonthlyScan() {
+            switchTab('monthly-scan');
+        }
+
+        function exportReport() {
+            UI.showNotification('Exporting report...', 'info');
+            // In production, this would generate and download a PDF
+            setTimeout(() => {
+                UI.showNotification('Report exported successfully!', 'success');
+            }, 2000);
+        }
+
+        async function triggerMonthlyScan() {
+            UI.showNotification('Triggering monthly scan...', 'info');
+            try {
+                const result = await API.triggerScan();
+                UI.showNotification(result.message, result.success ? 'success' : 'error');
+            } catch (error) {
+                UI.showNotification('Monthly scan failed', 'error');
+            }
+        }
+
+        function viewLeaderboard() {
+            // In production, this would open the leaderboard page
+            UI.showNotification('Opening leaderboard...', 'info');
+        }
+
+        // Main Functions
+        async function loadDashboard() {
+            try {
+                const data = await API.fetchDashboard();
+                UI.updateMetrics(data);
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                UI.showNotification('Failed to load dashboard data', 'error');
+            }
+        }
+
+        function initializeApp() {
+            UI.updateHeader();
+            loadDashboard();
+            
+            // Auto-refresh if enabled
+            if (CONFIG.features.autoRefresh) {
+                setInterval(loadDashboard, CONFIG.api.refreshInterval);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
