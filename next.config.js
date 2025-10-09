@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // Remove standalone output for Vercel compatibility
   experimental: {
     serverComponentsExternalPackages: ['googleapis', 'oracledb', 'pg-query-stream', 'drizzle-orm']
   },
