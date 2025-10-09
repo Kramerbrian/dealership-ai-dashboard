@@ -18,14 +18,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://dealershipai.com'),
+  metadataBase: new URL('https://dash.dealershipai.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'DealershipAI - Dominate AI Search for Car Dealerships',
     description: 'The only AI visibility platform built specifically for car dealerships. Get cited by ChatGPT, Claude, and Perplexity when customers search for your services.',
-    url: 'https://dealershipai.com',
+    url: 'https://dash.dealershipai.com',
     siteName: 'DealershipAI',
     images: [
       {
