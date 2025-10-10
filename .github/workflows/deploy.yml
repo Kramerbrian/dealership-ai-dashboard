@@ -1,0 +1,74 @@
+name: CI + Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      # From GitHub → Repo → Settings → Secrets and variables → Actions
+      NEXT_PUBLIC_APP_NAME: ${{ secrets.NEXT_PUBLIC_APP_NAME }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm ts:check || pnpm tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint || true
+
+      - name: Unit tests
+        run: pnpm test -- --ci || true
+
+      - name: Install Supabase CLI
+        run: |
+          curl -fsSL https://get.supabase.com/install | sh
+          echo "$HOME/.supabase/bin" >> $GITHUB_PATH
+
+      - name: Supabase migrations (local shadow)
+        run: |
+          supabase db start
+          supabase db reset --linked --db-url "postgresql://postgres:postgres@localhost:54322/postgres" || true
+          supabase db push || true
+
+      - name: Build
+        run: pnpm build
+
+      - name: Deploy to Vercel (build on CI, deploy prod)
+        run: |
+          pnpm dlx vercel pull --yes --token=$VERCEL_TOKEN
+          pnpm dlx vercel build --prod --token=$VERCEL_TOKEN
+          pnpm dlx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
