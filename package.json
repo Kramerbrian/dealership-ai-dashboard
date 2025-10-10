@@ -11,7 +11,9 @@
     "collect": "tsx scripts/collect-data.ts",
     "train": "tsx scripts/train-model.ts",
     "validate-accuracy": "node scripts/validate-accuracy.js",
-    "test-saml": "node scripts/test-saml-complete.js"
+    "test-saml": "node scripts/test-saml-complete.js",
+    "hyperaiv:optimize": "node scripts/hyperaiv-optimize.js",
+    "hyperaiv:status": "curl -X GET \"${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/hyperaiv/optimize?dealerId=default\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",
