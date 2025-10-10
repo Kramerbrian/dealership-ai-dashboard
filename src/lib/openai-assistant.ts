@@ -41,7 +41,7 @@ export class OpenAIAssistant {
   /**
    * Parse GPT response and validate structure
    */
-  private parseGPTResponse(response: string): GPTResponse {
+  parseGPTResponse(response: string): GPTResponse {
     try {
       // Try to extract JSON from the response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -86,7 +86,7 @@ export class OpenAIAssistant {
   /**
    * Get mock response for testing/fallback
    */
-  private getMockResponse(): GPTResponse {
+  getMockResponse(): GPTResponse {
     return {
       aiv: 42,
       ati: 38,
@@ -154,7 +154,7 @@ export async function callGPTDirect(prompt: string, dealerId?: string): Promise<
     if (!process.env.OPENAI_API_KEY) {
       console.warn('OpenAI API key not configured, returning mock data');
       const assistant = new OpenAIAssistant({ assistantId: 'direct' });
-      return assistant['getMockResponse']();
+      return assistant.getMockResponse();
     }
 
     const response = await openai.chat.completions.create({
@@ -177,17 +177,17 @@ export async function callGPTDirect(prompt: string, dealerId?: string): Promise<
     if (!content) {
       console.warn('No response from GPT, returning mock data');
       const assistant = new OpenAIAssistant({ assistantId: 'direct' });
-      return assistant['getMockResponse']();
+      return assistant.getMockResponse();
     }
 
     // Parse and validate response
     const assistant = new OpenAIAssistant({ assistantId: 'direct' });
-    return assistant['parseGPTResponse'](content);
+    return assistant.parseGPTResponse(content);
   } catch (error) {
     console.error('Direct GPT call failed:', error);
     // Return mock data instead of throwing error
     console.warn('Returning mock data due to GPT API error');
     const assistant = new OpenAIAssistant({ assistantId: 'direct' });
-    return assistant['getMockResponse']();
+    return assistant.getMockResponse();
   }
 }

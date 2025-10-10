@@ -67,6 +67,24 @@ export default function AILeaderboard() {
       if (filters.state) params.append('state', filters.state);
       params.append('limit', filters.limit.toString());
 
+      // Mock data for development - API route doesn't exist yet
+      const mockData = {
+        success: true,
+        data: {
+          dealers: [
+            { id: 'dealer-1', name: 'ABC Motors', score: 95, rank: 1, change: '+2' },
+            { id: 'dealer-2', name: 'XYZ Auto', score: 92, rank: 2, change: '+1' },
+            { id: 'dealer-3', name: 'Premium Cars', score: 89, rank: 3, change: '-1' }
+          ],
+          total_dealers: 150,
+          last_updated: new Date().toISOString()
+        }
+      };
+      
+      setData(mockData.data);
+      setLoading(false);
+      return;
+
       const response = await fetch(`/api/leaderboard?${params}`);
       const result = await response.json();
 

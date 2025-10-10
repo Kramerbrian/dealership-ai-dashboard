@@ -52,10 +52,36 @@ export function SystemHealthDashboard() {
 
   const fetchSystemHealth = async () => {
     try {
-      const [healthRes, alertsRes] = await Promise.all([
-        fetch('/api/monitoring/system-health?query=executive-summary'),
-        fetch('/api/monitoring/system-health?query=critical-alerts')
-      ]);
+      // Mock data for development - API routes don't exist yet
+      const mockHealthData = {
+        success: true,
+        data: {
+          overall_health: 'healthy',
+          uptime: '99.9%',
+          response_time: '120ms',
+          error_rate: '0.1%',
+          active_users: 1250,
+          system_load: 'normal'
+        }
+      };
+      
+      const mockAlertsData = {
+        success: true,
+        data: {
+          critical: 0,
+          warning: 2,
+          info: 5,
+          alerts: [
+            { id: 1, type: 'warning', message: 'High memory usage detected', timestamp: new Date().toISOString() },
+            { id: 2, type: 'info', message: 'Scheduled maintenance completed', timestamp: new Date().toISOString() }
+          ]
+        }
+      };
+
+      setHealth(mockHealthData);
+      setAlerts(mockAlertsData);
+      setLastUpdate(new Date().toLocaleString());
+      return;
 
       const healthData = await healthRes.json();
       const alertsData = await alertsRes.json();

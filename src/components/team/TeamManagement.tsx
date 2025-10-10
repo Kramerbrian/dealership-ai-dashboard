@@ -1,36 +1,31 @@
-/**
- * Team Management Component
- * Task assignment and accountability tools
- */
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
 import { 
-  Plus, 
   Users, 
-  CheckCircle, 
+  Plus, 
+  Calendar, 
   Clock, 
-  AlertCircle, 
-  UserPlus,
+  CheckCircle, 
+  AlertCircle,
+  User,
   Bell,
-  Calendar,
-  Target,
-  TrendingUp,
-  MessageSquare,
-  Settings,
   Filter,
-  Search
+  Search,
+  MoreVertical,
+  Edit,
+  Trash2,
+  MessageSquare,
+  TrendingUp,
+  Target,
+  Award
 } from 'lucide-react';
 
 interface TeamMember {
@@ -43,6 +38,7 @@ interface TeamMember {
   lastActive: string;
   tasksCompleted: number;
   tasksAssigned: number;
+  performance: number;
 }
 
 interface Task {
@@ -51,167 +47,215 @@ interface Task {
   description: string;
   assignee: string;
   assigneeName: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'overdue';
   priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'todo' | 'in-progress' | 'review' | 'completed';
   dueDate: string;
   createdAt: string;
-  category: string;
+  updatedAt: string;
+  tags: string[];
   estimatedHours: number;
   actualHours?: number;
+  comments: TaskComment[];
 }
 
-const TEAM_MEMBERS: TeamMember[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'john@dealership.com',
-    role: 'admin',
-    status: 'active',
-    lastActive: '2024-01-15T10:30:00Z',
-    tasksCompleted: 12,
-    tasksAssigned: 3,
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah@dealership.com',
-    role: 'manager',
-    status: 'active',
-    lastActive: '2024-01-15T09:15:00Z',
-    tasksCompleted: 8,
-    tasksAssigned: 5,
-  },
-  {
-    id: '3',
-    name: 'Mike Davis',
-    email: 'mike@dealership.com',
-    role: 'user',
-    status: 'active',
-    lastActive: '2024-01-14T16:45:00Z',
-    tasksCompleted: 15,
-    tasksAssigned: 2,
-  },
-];
+interface TaskComment {
+  id: string;
+  author: string;
+  authorName: string;
+  content: string;
+  timestamp: string;
+}
 
-const TASKS: Task[] = [
-  {
-    id: '1',
-    title: 'Respond to negative Google review',
-    description: 'Customer left a 2-star review about service wait time. Generate and deploy appropriate response.',
-    assignee: '1',
-    assigneeName: 'John Smith',
-    status: 'in_progress',
-    priority: 'high',
-    dueDate: '2024-01-16T17:00:00Z',
-    createdAt: '2024-01-15T09:00:00Z',
-    category: 'Reputation',
-    estimatedHours: 1,
-  },
-  {
-    id: '2',
-    title: 'Deploy FAQ schema markup',
-    description: 'Add structured data to service page to improve search visibility.',
-    assignee: '2',
-    assigneeName: 'Sarah Johnson',
-    status: 'pending',
-    priority: 'medium',
-    dueDate: '2024-01-18T17:00:00Z',
-    createdAt: '2024-01-15T10:00:00Z',
-    category: 'SEO',
-    estimatedHours: 3,
-  },
-  {
-    id: '3',
-    title: 'Invite service manager to platform',
-    description: 'Send invitation to service manager to join the team and complete onboarding.',
-    assignee: '1',
-    assigneeName: 'John Smith',
-    status: 'completed',
-    priority: 'low',
-    dueDate: '2024-01-15T17:00:00Z',
-    createdAt: '2024-01-14T14:00:00Z',
-    category: 'Team',
-    estimatedHours: 0.5,
-    actualHours: 0.5,
-  },
-  {
-    id: '4',
-    title: 'Create video testimonials',
-    description: 'Record and edit customer success stories for social proof.',
-    assignee: '3',
-    assigneeName: 'Mike Davis',
-    status: 'overdue',
-    priority: 'urgent',
-    dueDate: '2024-01-14T17:00:00Z',
-    createdAt: '2024-01-10T11:00:00Z',
-    category: 'Content',
-    estimatedHours: 8,
-  },
-];
+interface TeamMetrics {
+  totalMembers: number;
+  activeMembers: number;
+  tasksCompleted: number;
+  tasksOverdue: number;
+  averageCompletionTime: string;
+  teamPerformance: number;
+}
 
 export default function TeamManagement() {
-  const [tasks, setTasks] = useState<Task[]>(TASKS);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(TEAM_MEMBERS);
-  const [selectedTab, setSelectedTab] = useState('tasks');
-  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
-  const [isInviteMemberOpen, setIsInviteMemberOpen] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [metrics, setMetrics] = useState<TeamMetrics | null>(null);
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const [showCreateMember, setShowCreateMember] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterAssignee, setFilterAssignee] = useState('all');
+
+  // New task form state
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
     assignee: '',
     priority: 'medium' as const,
     dueDate: '',
-    category: '',
-    estimatedHours: 1,
+    estimatedHours: 0,
+    tags: [] as string[]
   });
+
+  // New member form state
   const [newMember, setNewMember] = useState({
     name: '',
     email: '',
-    role: 'user' as const,
+    role: 'user' as const
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  useEffect(() => {
+    // Mock data - in production, this would come from your API
+    const mockMembers: TeamMember[] = [
+      {
+        id: '1',
+        name: 'Sarah Johnson',
+        email: 'sarah@dealership.com',
+        role: 'admin',
+        status: 'active',
+        lastActive: '2024-12-15T10:30:00Z',
+        tasksCompleted: 24,
+        tasksAssigned: 8,
+        performance: 92
+      },
+      {
+        id: '2',
+        name: 'Mike Chen',
+        email: 'mike@dealership.com',
+        role: 'manager',
+        status: 'active',
+        lastActive: '2024-12-15T09:15:00Z',
+        tasksCompleted: 18,
+        tasksAssigned: 12,
+        performance: 87
+      },
+      {
+        id: '3',
+        name: 'Emily Rodriguez',
+        email: 'emily@dealership.com',
+        role: 'user',
+        status: 'active',
+        lastActive: '2024-12-15T08:45:00Z',
+        tasksCompleted: 15,
+        tasksAssigned: 6,
+        performance: 78
+      },
+      {
+        id: '4',
+        name: 'David Wilson',
+        email: 'david@dealership.com',
+        role: 'user',
+        status: 'inactive',
+        lastActive: '2024-12-10T16:20:00Z',
+        tasksCompleted: 12,
+        tasksAssigned: 4,
+        performance: 65
+      }
+    ];
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+    const mockTasks: Task[] = [
+      {
+        id: '1',
+        title: 'Optimize Google My Business listing',
+        description: 'Update business hours, add photos, and respond to recent reviews',
+        assignee: '1',
+        assigneeName: 'Sarah Johnson',
+        priority: 'high',
+        status: 'in-progress',
+        dueDate: '2024-12-20',
+        createdAt: '2024-12-10T10:00:00Z',
+        updatedAt: '2024-12-15T14:30:00Z',
+        tags: ['SEO', 'Google My Business'],
+        estimatedHours: 4,
+        actualHours: 2.5,
+        comments: [
+          {
+            id: '1',
+            author: '1',
+            authorName: 'Sarah Johnson',
+            content: 'Started working on this. Photos are uploaded, working on review responses.',
+            timestamp: '2024-12-15T14:30:00Z'
+          }
+        ]
+      },
+      {
+        id: '2',
+        title: 'Create Q1 marketing campaign',
+        description: 'Develop comprehensive marketing strategy for Q1 2025 including digital and traditional channels',
+        assignee: '2',
+        assigneeName: 'Mike Chen',
+        priority: 'urgent',
+        status: 'todo',
+        dueDate: '2024-12-25',
+        createdAt: '2024-12-12T09:00:00Z',
+        updatedAt: '2024-12-12T09:00:00Z',
+        tags: ['Marketing', 'Q1 Planning'],
+        estimatedHours: 16,
+        comments: []
+      },
+      {
+        id: '3',
+        title: 'Update website content',
+        description: 'Refresh homepage content and add new vehicle inventory',
+        assignee: '3',
+        assigneeName: 'Emily Rodriguez',
+        priority: 'medium',
+        status: 'completed',
+        dueDate: '2024-12-18',
+        createdAt: '2024-12-08T11:00:00Z',
+        updatedAt: '2024-12-14T16:45:00Z',
+        tags: ['Website', 'Content'],
+        estimatedHours: 6,
+        actualHours: 5.5,
+        comments: [
+          {
+            id: '2',
+            author: '3',
+            authorName: 'Emily Rodriguez',
+            content: 'Completed! All content updated and new inventory added.',
+            timestamp: '2024-12-14T16:45:00Z'
+          }
+        ]
+      }
+    ];
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-purple-100 text-purple-800';
-      case 'manager': return 'bg-blue-100 text-blue-800';
-      case 'user': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+    const mockMetrics: TeamMetrics = {
+      totalMembers: 4,
+      activeMembers: 3,
+      tasksCompleted: 57,
+      tasksOverdue: 2,
+      averageCompletionTime: '2.3 days',
+      teamPerformance: 80
+    };
 
-  const handleCreateTask = () => {
-    if (!newTask.title || !newTask.assignee) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+    setTeamMembers(mockMembers);
+    setTasks(mockTasks);
+    setMetrics(mockMetrics);
+  }, []);
 
-    const assigneeName = teamMembers.find(m => m.id === newTask.assignee)?.name || 'Unknown';
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         task.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
+    const matchesAssignee = filterAssignee === 'all' || task.assignee === filterAssignee;
+    
+    return matchesSearch && matchesStatus && matchesAssignee;
+  });
+
+  const createTask = () => {
     const task: Task = {
       id: Date.now().toString(),
-      ...newTask,
-      assigneeName,
-      status: 'pending',
+      title: newTask.title,
+      description: newTask.description,
+      assignee: newTask.assignee,
+      assigneeName: teamMembers.find(m => m.id === newTask.assignee)?.name || '',
+      priority: newTask.priority,
+      status: 'todo',
+      dueDate: newTask.dueDate,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      tags: newTask.tags,
+      estimatedHours: newTask.estimatedHours,
+      comments: []
     };
 
     setTasks([...tasks, task]);
@@ -221,45 +265,71 @@ export default function TeamManagement() {
       assignee: '',
       priority: 'medium',
       dueDate: '',
-      category: '',
-      estimatedHours: 1,
+      estimatedHours: 0,
+      tags: []
     });
-    setIsCreateTaskOpen(false);
-    toast.success('Task created successfully!');
+    setShowCreateTask(false);
   };
 
-  const handleInviteMember = () => {
-    if (!newMember.name || !newMember.email) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
+  const createMember = () => {
     const member: TeamMember = {
       id: Date.now().toString(),
-      ...newMember,
+      name: newMember.name,
+      email: newMember.email,
+      role: newMember.role,
       status: 'active',
       lastActive: new Date().toISOString(),
       tasksCompleted: 0,
       tasksAssigned: 0,
+      performance: 0
     };
 
     setTeamMembers([...teamMembers, member]);
     setNewMember({ name: '', email: '', role: 'user' });
-    setIsInviteMemberOpen(false);
-    toast.success('Team member invited successfully!');
+    setShowCreateMember(false);
   };
 
-  const handleUpdateTaskStatus = (taskId: string, status: Task['status']) => {
+  const updateTaskStatus = (taskId: string, status: Task['status']) => {
     setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status } : task
+      task.id === taskId 
+        ? { ...task, status, updatedAt: new Date().toISOString() }
+        : task
     ));
-    toast.success('Task status updated!');
   };
 
-  const pendingTasks = tasks.filter(t => t.status === 'pending').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
-  const overdueTasks = tasks.filter(t => t.status === 'overdue').length;
-  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'in-progress': return 'bg-blue-100 text-blue-800';
+      case 'review': return 'bg-purple-100 text-purple-800';
+      case 'todo': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'in-progress': return <Clock className="h-4 w-4 text-blue-600" />;
+      case 'review': return <AlertCircle className="h-4 w-4 text-purple-600" />;
+      case 'todo': return <Target className="h-4 w-4 text-gray-600" />;
+      default: return <Target className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const isOverdue = (dueDate: string) => {
+    return new Date(dueDate) < new Date() && !tasks.find(t => t.dueDate === dueDate)?.status.includes('completed');
+  };
 
   return (
     <div className="space-y-6">
@@ -267,355 +337,429 @@ export default function TeamManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Team Management</h1>
-          <p className="text-gray-600">Manage tasks, assignments, and team accountability</p>
+          <p className="text-gray-600">Manage your team and track task progress</p>
         </div>
-        <div className="flex space-x-2">
-          <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Task
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Task</DialogTitle>
-                <DialogDescription>
-                  Assign a task to a team member with clear objectives and deadlines.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Task Title *</Label>
-                  <Input
-                    id="title"
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    placeholder="e.g., Respond to negative review"
-                  />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowCreateMember(true)}>
+            <User className="h-4 w-4" />
+            Add Member
+          </Button>
+          <Button onClick={() => setShowCreateTask(true)}>
+            <Plus className="h-4 w-4" />
+            Create Task
+          </Button>
+        </div>
+      </div>
+
+      {/* Metrics Overview */}
+      {metrics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                    placeholder="Describe the task in detail..."
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="assignee">Assign To *</Label>
-                    <Select value={newTask.assignee} onValueChange={(value) => setNewTask({ ...newTask, assignee: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select team member" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {teamMembers.map((member) => (
-                          <SelectItem key={member.id} value={member.id}>
-                            {member.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="dueDate">Due Date</Label>
-                    <Input
-                      id="dueDate"
-                      type="datetime-local"
-                      value={newTask.dueDate}
-                      onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Select value={newTask.category} onValueChange={(value) => setNewTask({ ...newTask, category: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="SEO">SEO</SelectItem>
-                        <SelectItem value="Reputation">Reputation</SelectItem>
-                        <SelectItem value="Content">Content</SelectItem>
-                        <SelectItem value="Team">Team</SelectItem>
-                        <SelectItem value="Analytics">Analytics</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="estimatedHours">Estimated Hours</Label>
-                  <Input
-                    id="estimatedHours"
-                    type="number"
-                    min="0.5"
-                    step="0.5"
-                    value={newTask.estimatedHours}
-                    onChange={(e) => setNewTask({ ...newTask, estimatedHours: parseFloat(e.target.value) })}
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsCreateTaskOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateTask}>
-                    Create Task
-                  </Button>
+                  <div className="text-2xl font-bold">{metrics.activeMembers}/{metrics.totalMembers}</div>
+                  <div className="text-sm text-gray-600">Active Members</div>
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{metrics.tasksCompleted}</div>
+                  <div className="text-sm text-gray-600">Tasks Completed</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{metrics.tasksOverdue}</div>
+                  <div className="text-sm text-gray-600">Overdue Tasks</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{metrics.teamPerformance}%</div>
+                  <div className="text-sm text-gray-600">Team Performance</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-          <Dialog open={isInviteMemberOpen} onOpenChange={setIsInviteMemberOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Member
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Invite Team Member</DialogTitle>
-                <DialogDescription>
-                  Send an invitation to join your team.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="memberName">Name *</Label>
-                  <Input
-                    id="memberName"
-                    value={newMember.name}
-                    onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                    placeholder="Full name"
-                  />
+      <Tabs defaultValue="tasks" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="members">Team Members</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="tasks" className="space-y-6">
+          {/* Task Filters */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search tasks..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="memberEmail">Email *</Label>
-                  <Input
-                    id="memberEmail"
-                    type="email"
-                    value={newMember.email}
-                    onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                    placeholder="email@dealership.com"
-                  />
+                
+                <div className="flex gap-2">
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="todo">To Do</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="review">Review</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={filterAssignee} onValueChange={setFilterAssignee}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Assignee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Members</SelectItem>
+                      {teamMembers.map(member => (
+                        <SelectItem key={member.id} value={member.id}>
+                          {member.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tasks List */}
+          <div className="space-y-4">
+            {filteredTasks.map((task) => (
+              <Card key={task.id} className="relative">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        {getStatusIcon(task.status)}
+                        <h3 className="font-semibold">{task.title}</h3>
+                        <Badge className={getPriorityColor(task.priority)}>
+                          {task.priority}
+                        </Badge>
+                        <Badge className={getStatusColor(task.status)}>
+                          {task.status}
+                        </Badge>
+                        {isOverdue(task.dueDate) && (
+                          <Badge variant="destructive">Overdue</Badge>
+                        )}
+                      </div>
+                      
+                      <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {task.assigneeName}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Due: {new Date(task.dueDate).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {task.estimatedHours}h estimated
+                        </div>
+                        {task.actualHours && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {task.actualHours}h actual
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <MessageSquare className="h-3 w-3" />
+                          {task.comments.length} comments
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {task.tags.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 ml-4">
+                      <Select 
+                        value={task.status} 
+                        onValueChange={(value: Task['status']) => updateTaskStatus(task.id, value)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="todo">To Do</SelectItem>
+                          <SelectItem value="in-progress">In Progress</SelectItem>
+                          <SelectItem value="review">Review</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Button size="sm" variant="outline">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="members" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {teamMembers.map((member) => (
+              <Card key={member.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{member.name}</h3>
+                        <p className="text-sm text-gray-600">{member.email}</p>
+                      </div>
+                    </div>
+                    <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
+                      {member.status}
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Role:</span>
+                      <span className="font-medium capitalize">{member.role}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tasks Completed:</span>
+                      <span className="font-medium">{member.tasksCompleted}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tasks Assigned:</span>
+                      <span className="font-medium">{member.tasksAssigned}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Performance:</span>
+                      <span className="font-medium">{member.performance}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Last Active:</span>
+                      <span className="font-medium">
+                        {new Date(member.lastActive).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4">
+                    <Button size="sm" variant="outline" className="flex-1">
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Create Task Modal */}
+      {showCreateTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">Create New Task</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="task-title">Title</Label>
+                <Input
+                  id="task-title"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  placeholder="Enter task title"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="task-description">Description</Label>
+                <Textarea
+                  id="task-description"
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  placeholder="Enter task description"
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="task-assignee">Assignee</Label>
+                <Select value={newTask.assignee} onValueChange={(value) => setNewTask({ ...newTask, assignee: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select assignee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teamMembers.map(member => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="memberRole">Role</Label>
-                  <Select value={newMember.role} onValueChange={(value: any) => setNewMember({ ...newMember, role: value })}>
+                  <Label htmlFor="task-priority">Priority</Label>
+                  <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsInviteMemberOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleInviteMember}>
-                    Send Invitation
-                  </Button>
+                
+                <div>
+                  <Label htmlFor="task-due-date">Due Date</Label>
+                  <Input
+                    id="task-due-date"
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  />
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
+              
+              <div>
+                <Label htmlFor="task-hours">Estimated Hours</Label>
+                <Input
+                  id="task-hours"
+                  type="number"
+                  value={newTask.estimatedHours}
+                  onChange={(e) => setNewTask({ ...newTask, estimatedHours: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2 mt-6">
+              <Button variant="outline" onClick={() => setShowCreateTask(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createTask}>
+                Create Task
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting assignment
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgressTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently being worked on
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{overdueTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Past due date
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Successfully finished
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="team">Team Members</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="tasks" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Management</CardTitle>
-              <CardDescription>
-                Track and manage team assignments and progress
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {tasks.map((task) => (
-                  <Card key={task.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-medium">{task.title}</h4>
-                          <Badge className={getStatusColor(task.status)}>
-                            {task.status.replace('_', ' ')}
-                          </Badge>
-                          <Badge className={getPriorityColor(task.priority)}>
-                            {task.priority}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                        <div className="flex items-center space-x-4 text-xs text-gray-500">
-                          <span>Assigned to: {task.assigneeName}</span>
-                          <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
-                          <span>Category: {task.category}</span>
-                          <span>Est. {task.estimatedHours}h</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2 ml-4">
-                        {task.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleUpdateTaskStatus(task.id, 'in_progress')}
-                          >
-                            Start
-                          </Button>
-                        )}
-                        {task.status === 'in_progress' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleUpdateTaskStatus(task.id, 'completed')}
-                          >
-                            Complete
-                          </Button>
-                        )}
-                        {task.status === 'completed' && (
-                          <Badge variant="default" className="bg-green-600">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Done
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+      {/* Create Member Modal */}
+      {showCreateMember && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">Add Team Member</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="member-name">Name</Label>
+                <Input
+                  id="member-name"
+                  value={newMember.name}
+                  onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                  placeholder="Enter member name"
+                />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="team" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Members</CardTitle>
-              <CardDescription>
-                Manage your team and track individual performance
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {teamMembers.map((member) => (
-                  <Card key={member.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                          {member.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{member.name}</h4>
-                          <p className="text-sm text-gray-600">{member.email}</p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge className={getRoleColor(member.role)}>
-                              {member.role}
-                            </Badge>
-                            <Badge variant="outline">
-                              {member.status}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm">
-                          <div>Tasks Completed: {member.tasksCompleted}</div>
-                          <div>Tasks Assigned: {member.tasksAssigned}</div>
-                          <div className="text-gray-500">
-                            Last Active: {new Date(member.lastActive).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+              
+              <div>
+                <Label htmlFor="member-email">Email</Label>
+                <Input
+                  id="member-email"
+                  type="email"
+                  value={newMember.email}
+                  onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                  placeholder="Enter email address"
+                />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              
+              <div>
+                <Label htmlFor="member-role">Role</Label>
+                <Select value={newMember.role} onValueChange={(value: any) => setNewMember({ ...newMember, role: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2 mt-6">
+              <Button variant="outline" onClick={() => setShowCreateMember(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createMember}>
+                Add Member
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

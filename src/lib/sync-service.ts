@@ -2,16 +2,34 @@ import { createClient } from '@supabase/supabase-js';
 
 // Create admin client for background operations
 function createAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (url && key) {
+    return createClient(url, key, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
       }
-    }
-  );
+    });
+  } else {
+    console.warn('Supabase environment variables not set, using mock client');
+    return {
+      from: () => ({
+        select: () => ({ data: [], error: null }),
+        insert: () => ({ data: [], error: null }),
+        update: () => ({ data: [], error: null }),
+        delete: () => ({ data: [], error: null }),
+        eq: () => ({ data: [], error: null }),
+        single: () => ({ data: null, error: null }),
+      }),
+      auth: {
+        getUser: () => ({ data: { user: null }, error: null }),
+        signIn: () => ({ data: { user: null }, error: null }),
+        signOut: () => ({ error: null }),
+      },
+    };
+  }
 }
 
 export async function syncDealerMetrics(dealerId: string) {
