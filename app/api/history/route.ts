@@ -76,19 +76,34 @@ export async function GET(request: NextRequest) {
     }
 
     // Get model weights for AIV calculation
-    const { data: currentWeights, error: weightsError } = await supabase
-      .from('model_weights')
-      .select('*')
-      .order('asof_date', { ascending: false })
-      .limit(1)
-      .single();
+    let currentWeights: any = null;
+    
+    if (supabase) {
+      const { data, error: weightsError } = await supabase
+        .from('model_weights')
+        .select('*')
+        .order('asof_date', { ascending: false })
+        .limit(1)
+        .single();
 
-    if (weightsError) {
-      console.error('Error fetching model weights:', weightsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch model weights' },
-        { status: 500 }
-      );
+      if (weightsError) {
+        console.error('Error fetching model weights:', weightsError);
+        return NextResponse.json(
+          { error: 'Failed to fetch model weights' },
+          { status: 500 }
+        );
+      }
+      
+      currentWeights = data;
+    } else {
+      // Mock model weights when Supabase is not configured
+      currentWeights = {
+        seo_w: 0.3,
+        aeo_w: 0.25,
+        geo_w: 0.25,
+        ugc_w: 0.1,
+        geolocal_w: 0.1
+      };
     }
 
     // Process historical data
@@ -110,13 +125,26 @@ export async function GET(request: NextRequest) {
     const summaryStats = calculateSummaryStatistics(smoothedData);
 
     // Get recent model performance for context
-    const { data: recentAudit } = await supabase
-      .from('model_audit')
-      .select('*')
-      .eq('dealer_id', dealerId)
-      .order('run_date', { ascending: false })
-      .limit(1)
-      .single();
+    let recentAudit: any = null;
+    
+    if (supabase) {
+      const { data } = await supabase
+        .from('model_audit')
+        .select('*')
+        .eq('dealer_id', dealerId)
+        .order('run_date', { ascending: false })
+        .limit(1)
+        .single();
+      
+      recentAudit = data;
+    } else {
+      // Mock recent audit when Supabase is not configured
+      recentAudit = {
+        r2: 0.87,
+        rmse: 3.2,
+        run_date: new Date().toISOString()
+      };
+    }
 
     return NextResponse.json({
       success: true,
@@ -505,4 +533,31 @@ function calculateStandardDeviation(values: number[]): number {
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   const variance = values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length;
   return Math.sqrt(variance);
+}
+
+/**
+ * Generate mock historical data for testing
+ */
+function generateMockHistoricalData(weeks: number): any[] {
+  const data: any[] = [];
+  const now = new Date();
+  
+  for (let i = 0; i < weeks; i++) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - (weeks - i - 1) * 7);
+    
+    data.push({
+      date: date.toISOString().split('T')[0],
+      seo: 70 + Math.random() * 20,
+      aeo: 75 + Math.random() * 20,
+      geo: 80 + Math.random() * 15,
+      ugc: 65 + Math.random() * 25,
+      geolocal: 85 + Math.random() * 10,
+      observed_rar: 200000 + Math.random() * 100000,
+      elasticity_usd_per_pt: 120 + Math.random() * 50,
+      confidence_score: 0.8 + Math.random() * 0.2
+    });
+  }
+  
+  return data;
 }

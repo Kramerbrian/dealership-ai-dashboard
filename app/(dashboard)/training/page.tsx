@@ -1,5 +1,7 @@
 import TrainingDashboard from '@/components/training/TrainingDashboard';
 
+export const dynamic = 'force-dynamic';
+
 export default function TrainingPage() {
   return (
     <div className="min-h-screen bg-slate-950 p-8">

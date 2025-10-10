@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Remove standalone output for Vercel compatibility
-  experimental: {
+  reactStrictMode: true,
+  experimental: { 
+    serverActions: { allowedOrigins: ['*'] },
     serverComponentsExternalPackages: ['googleapis', 'oracledb', 'pg-query-stream', 'drizzle-orm']
   },
   webpack: (config, { isServer }) => {

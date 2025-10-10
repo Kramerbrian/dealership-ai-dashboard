@@ -1,7 +1,19 @@
 {
   "version": 2,
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_APP_NAME": "@NEXT_PUBLIC_APP_NAME",
+    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "OPENAI_API_KEY": "@OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY": "@ANTHROPIC_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY": "@SUPABASE_SERVICE_ROLE_KEY",
+    "JWT_SECRET": "@JWT_SECRET",
+    "ENCRYPTION_KEY": "@ENCRYPTION_KEY"
+  },
   "crons": [
     {
       "path": "/api/train/reinforce",

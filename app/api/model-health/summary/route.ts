@@ -6,10 +6,18 @@ import { createClient } from '@supabase/supabase-js';
  * Provides model health monitoring and governance status
  */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client with fallback for missing env vars
+let supabase: any = null;
+try {
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+  }
+} catch (error) {
+  console.warn('Supabase client creation failed, using mock data:', error);
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,6 +25,54 @@ export async function GET(request: NextRequest) {
     const dealerId = searchParams.get('dealerId') || 'default';
 
     console.log(`🔍 Fetching model health summary for dealer: ${dealerId}`);
+
+    // If Supabase is not available, return mock data
+    if (!supabase) {
+      const mockResponse = {
+        success: true,
+        dealerId,
+        model_health: {
+          dealer_id: dealerId,
+          overall_health_score: 85,
+          r2_score: 0.87,
+          rmse: 12.5,
+          accuracy_gain_percent: 15.2,
+          roi_gain_percent: 23.8,
+          governance_status: 'healthy',
+          last_audit_date: new Date().toISOString(),
+          data_quality_score: 92,
+          model_stability: 'stable'
+        },
+        violations: [],
+        trends: {
+          r2_trend: 2.1,
+          rmse_trend: -5.3,
+          accuracy_trend: 8.7,
+          roi_trend: 12.4,
+          volatility_score: 0.15
+        },
+        audit_history: [
+          {
+            run_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            r2: 0.85,
+            rmse: 13.2,
+            accuracy_gain_percent: 12.5,
+            roi_gain_percent: 20.1
+          },
+          {
+            run_date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+            r2: 0.83,
+            rmse: 14.1,
+            accuracy_gain_percent: 10.8,
+            roi_gain_percent: 18.3
+          }
+        ],
+        timestamp: new Date().toISOString(),
+        mock_data: true
+      };
+
+      return NextResponse.json(mockResponse);
+    }
 
     // Get model health summary
     const { data: modelHealth, error: healthError } = await supabase
@@ -142,6 +198,24 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`📊 Updating model health metrics for dealer: ${dealerId}`);
+
+    // If Supabase is not available, return mock success response
+    if (!supabase) {
+      return NextResponse.json({
+        success: true,
+        message: 'Model health metrics updated successfully (mock mode)',
+        audit_record: {
+          id: 'mock-' + Date.now(),
+          dealer_id: dealerId,
+          status: status || 'success',
+          ...metrics,
+          created_at: new Date().toISOString()
+        },
+        violations: [],
+        timestamp: new Date().toISOString(),
+        mock_data: true
+      });
+    }
 
     // Insert new audit record
     const { data, error } = await supabase

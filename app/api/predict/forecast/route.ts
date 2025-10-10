@@ -7,10 +7,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client with fallback
+let supabase: any = null;
+try {
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+  }
+} catch (error) {
+  console.warn('Supabase client creation failed in forecast API:', error);
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,43 +41,62 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get historical data for training
-    const { data: historicalData, error: dataError } = await supabase
-      .from('aiv_raw_signals')
-      .select('*')
-      .eq('dealer_id', dealerId)
-      .gte('date', new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-      .order('date', { ascending: true });
+    let historicalData = null;
+    let currentWeights = null;
 
-    if (dataError) {
-      console.error('Error fetching historical data:', dataError);
-      return NextResponse.json(
-        { error: 'Failed to fetch historical data' },
-        { status: 500 }
-      );
-    }
+    // If Supabase is not available, use mock data
+    if (!supabase) {
+      historicalData = generateMockHistoricalData();
+      currentWeights = {
+        seo_w: 0.30,
+        aeo_w: 0.35,
+        geo_w: 0.35,
+        ugc_w: 0.15,
+        geolocal_w: 0.10
+      };
+    } else {
+      // Get historical data for training
+      const { data: historicalDataResult, error: dataError } = await supabase
+        .from('aiv_raw_signals')
+        .select('*')
+        .eq('dealer_id', dealerId)
+        .gte('date', new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('date', { ascending: true });
 
-    if (!historicalData || historicalData.length < 8) {
-      return NextResponse.json(
-        { error: 'Insufficient historical data for forecasting' },
-        { status: 400 }
-      );
-    }
+      if (dataError) {
+        console.error('Error fetching historical data:', dataError);
+        return NextResponse.json(
+          { error: 'Failed to fetch historical data' },
+          { status: 500 }
+        );
+      }
 
-    // Get current model weights
-    const { data: currentWeights, error: weightsError } = await supabase
-      .from('model_weights')
-      .select('*')
-      .order('asof_date', { ascending: false })
-      .limit(1)
-      .single();
+      historicalData = historicalDataResult;
 
-    if (weightsError) {
-      console.error('Error fetching model weights:', weightsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch model weights' },
-        { status: 500 }
-      );
+      if (!historicalData || historicalData.length < 8) {
+        return NextResponse.json(
+          { error: 'Insufficient historical data for forecasting' },
+          { status: 400 }
+        );
+      }
+
+      // Get current model weights
+      const { data: weightsResult, error: weightsError } = await supabase
+        .from('model_weights')
+        .select('*')
+        .order('asof_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (weightsError) {
+        console.error('Error fetching model weights:', weightsError);
+        return NextResponse.json(
+          { error: 'Failed to fetch model weights' },
+          { status: 500 }
+        );
+      }
+
+      currentWeights = weightsResult;
     }
 
     // Prepare time series data
@@ -99,37 +126,42 @@ export async function GET(request: NextRequest) {
       ensembleForecast
     );
 
-    // Log forecast results
-    const { data: auditResult, error: auditError } = await supabase
-      .from('model_audit')
-      .insert({
-        run_type: 'forecast',
-        dealer_id: dealerId,
-        rmse: forecastMetadata.accuracy.rmse,
-        mape: forecastMetadata.accuracy.mape,
-        r2: forecastMetadata.accuracy.r2,
-        delta_accuracy: forecastMetadata.accuracy.forecast_confidence,
-        accuracy_gain_mom: forecastMetadata.accuracy.trend_accuracy,
-        model_version: 'hyperAIV-forecast-v1.0',
-        notes: `${forecastWeeks}-week forecast with ${(confidenceLevel * 100)}% confidence`,
-        metadata: {
-          forecast_weeks: forecastWeeks,
-          confidence_level: confidenceLevel,
-          forecast_method: 'kalman_gradient_ensemble',
-          accuracy_metrics: forecastMetadata.accuracy,
-          model_components: {
-            kalman_weight: kalmanResults.weight,
-            gradient_boost_weight: gradientBoostResults.weight,
-            ensemble_method: 'weighted_average'
+    // Log forecast results (only if Supabase is available)
+    let auditResult = null;
+    if (supabase) {
+      const { data: auditData, error: auditError } = await supabase
+        .from('model_audit')
+        .insert({
+          run_type: 'forecast',
+          dealer_id: dealerId,
+          rmse: forecastMetadata.accuracy.rmse,
+          mape: forecastMetadata.accuracy.mape,
+          r2: forecastMetadata.accuracy.r2,
+          delta_accuracy: forecastMetadata.accuracy.forecast_confidence,
+          accuracy_gain_mom: forecastMetadata.accuracy.trend_accuracy,
+          model_version: 'hyperAIV-forecast-v1.0',
+          notes: `${forecastWeeks}-week forecast with ${(confidenceLevel * 100)}% confidence`,
+          metadata: {
+            forecast_weeks: forecastWeeks,
+            confidence_level: confidenceLevel,
+            forecast_method: 'kalman_gradient_ensemble',
+            accuracy_metrics: forecastMetadata.accuracy,
+            model_components: {
+              kalman_weight: kalmanResults.weight,
+              gradient_boost_weight: gradientBoostResults.weight,
+              ensemble_method: 'weighted_average'
+            }
           }
-        }
-      })
-      .select()
-      .single();
+        })
+        .select()
+        .single();
 
-    if (auditError) {
-      console.error('Error logging forecast:', auditError);
-      // Don't fail the request if logging fails
+      if (auditError) {
+        console.error('Error logging forecast:', auditError);
+        // Don't fail the request if logging fails
+      } else {
+        auditResult = auditData;
+      }
     }
 
     return NextResponse.json({
@@ -159,7 +191,8 @@ export async function GET(request: NextRequest) {
         model_version: 'hyperAIV-forecast-v1.0',
         forecast_id: auditResult?.run_id || 'unknown',
         confidence_level: confidenceLevel,
-        forecast_horizon_weeks: forecastWeeks
+        forecast_horizon_weeks: forecastWeeks,
+        mock_data: !supabase
       }
     });
 
@@ -505,4 +538,33 @@ function calculateGradientBoostAccuracy(features: any[], targets: number[], mode
   const ssTot = targets.reduce((sum, target) => sum + Math.pow(target - meanTarget, 2), 0);
   
   return Math.max(0, 1 - (mse * n) / ssTot);
+}
+
+/**
+ * Generate mock historical data for forecasting
+ */
+function generateMockHistoricalData() {
+  const data = [];
+  const now = new Date();
+  
+  for (let i = 12; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - (i * 7));
+    
+    const baseAIV = 75 + Math.sin(i * 0.3) * 15 + Math.random() * 8;
+    const baseATI = 70 + Math.sin(i * 0.2) * 12 + Math.random() * 6;
+    
+    data.push({
+      date: date.toISOString().split('T')[0],
+      seo: Math.max(0, Math.min(100, baseAIV * 0.8 + Math.random() * 10)),
+      aeo: Math.max(0, Math.min(100, baseATI + Math.random() * 8)),
+      geo: Math.max(0, Math.min(100, baseAIV * 0.9 + Math.random() * 6)),
+      ugc: Math.max(0, Math.min(100, baseAIV * 0.7 + Math.random() * 12)),
+      geolocal: Math.max(0, Math.min(100, baseAIV * 0.6 + Math.random() * 8)),
+      observed_rar: 0.15 + Math.random() * 0.1,
+      elasticity_usd_per_pt: 120 + Math.random() * 60
+    });
+  }
+  
+  return data;
 }

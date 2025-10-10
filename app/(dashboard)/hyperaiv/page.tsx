@@ -1,5 +1,7 @@
 import HyperAIVOptimizerDashboard from '@/components/hyperaiv/HyperAIVOptimizerDashboard';
 
+export const dynamic = 'force-dynamic';
+
 export default function HyperAIVPage() {
   return (
     <div className="min-h-screen bg-slate-950 p-8">

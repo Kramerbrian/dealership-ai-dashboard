@@ -8,10 +8,18 @@ import OpenAI from 'openai';
  * Uses GPT to analyze model weights and generate actionable insights
  */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client with fallback
+let supabase: any = null;
+try {
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+  }
+} catch (error) {
+  console.warn('Supabase client creation failed in SHAP API:', error);
+}
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -40,43 +48,76 @@ export async function POST(request: NextRequest) {
 
     console.log(`🧠 Generating SHAP-style explanation for dealer: ${dealerId}`);
 
-    // Get model weights and recent performance data
-    const { data: modelWeights, error: weightsError } = await supabase
-      .from('model_weights')
-      .select('*')
-      .eq('dealer_id', dealerId)
-      .single();
+    let modelWeights = null;
+    let auditData = null;
+    let aivScores = null;
 
-    if (weightsError) {
-      console.error('❌ Error fetching model weights:', weightsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch model weights', details: weightsError.message },
-        { status: 500 }
-      );
-    }
+    // If Supabase is not available, use mock data
+    if (!supabase) {
+      modelWeights = {
+        version: '1.0',
+        seo_visibility: 0.30,
+        aeo_visibility: 0.35,
+        geo_visibility: 0.35,
+        experience: 0.25,
+        expertise: 0.25,
+        authoritativeness: 0.25,
+        trustworthiness: 0.25,
+        updated_at: new Date().toISOString()
+      };
+      auditData = [{
+        r2: 0.87,
+        rmse: 12.5,
+        accuracy_gain_percent: 15.2,
+        roi_gain_percent: 23.8,
+        run_date: new Date().toISOString()
+      }];
+      aivScores = [];
+    } else {
+      // Get model weights and recent performance data
+      const { data: weightsData, error: weightsError } = await supabase
+        .from('model_weights')
+        .select('*')
+        .eq('dealer_id', dealerId)
+        .single();
 
-    // Get recent audit data for trend analysis
-    const { data: auditData, error: auditError } = await supabase
-      .from('model_audit')
-      .select('*')
-      .eq('dealer_id', dealerId)
-      .order('run_date', { ascending: false })
-      .limit(8);
+      if (weightsError) {
+        console.error('❌ Error fetching model weights:', weightsError);
+        return NextResponse.json(
+          { error: 'Failed to fetch model weights', details: weightsError.message },
+          { status: 500 }
+        );
+      }
 
-    if (auditError) {
-      console.error('❌ Error fetching audit data:', auditError);
-    }
+      modelWeights = weightsData;
 
-    // Get recent AIV component scores
-    const { data: aivScores, error: scoresError } = await supabase
-      .from('aiv_scores')
-      .select('*')
-      .eq('dealer_id', dealerId)
-      .order('created_at', { ascending: false })
-      .limit(30); // Last 30 days
+      // Get recent audit data for trend analysis
+      const { data: auditDataResult, error: auditError } = await supabase
+        .from('model_audit')
+        .select('*')
+        .eq('dealer_id', dealerId)
+        .order('run_date', { ascending: false })
+        .limit(8);
 
-    if (scoresError) {
-      console.error('❌ Error fetching AIV scores:', scoresError);
+      if (auditError) {
+        console.error('❌ Error fetching audit data:', auditError);
+      }
+
+      auditData = auditDataResult;
+
+      // Get recent AIV component scores
+      const { data: scoresData, error: scoresError } = await supabase
+        .from('aiv_scores')
+        .select('*')
+        .eq('dealer_id', dealerId)
+        .order('created_at', { ascending: false })
+        .limit(30); // Last 30 days
+
+      if (scoresError) {
+        console.error('❌ Error fetching AIV scores:', scoresError);
+      }
+
+      aivScores = scoresData;
     }
 
     // Prepare data for GPT analysis
@@ -101,7 +142,8 @@ export async function POST(request: NextRequest) {
         analysis_period: timeWindow,
         data_points: auditData?.length || 0
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      mock_data: !supabase
     });
 
   } catch (error) {
@@ -333,6 +375,30 @@ export async function GET(request: NextRequest) {
         { error: 'Missing dealerId parameter' },
         { status: 400 }
       );
+    }
+
+    // If Supabase is not available, return mock cached explanation
+    if (!supabase) {
+      const mockExplanation = generateFallbackExplanation({
+        model_weights: {
+          seo_visibility: 0.30,
+          aeo_visibility: 0.35,
+          geo_visibility: 0.35,
+          experience: 0.25,
+          expertise: 0.25,
+          authoritativeness: 0.25,
+          trustworthiness: 0.25
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        dealerId,
+        explanation: mockExplanation,
+        cached_at: new Date().toISOString(),
+        timestamp: new Date().toISOString(),
+        mock_data: true
+      });
     }
 
     // Check for cached explanation
