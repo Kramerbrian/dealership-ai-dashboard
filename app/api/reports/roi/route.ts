@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hyperAIVOptimizer } from "@/lib/hyperaiv-optimizer";
+import HyperAIVOptimizer from "@/lib/hyperaiv-optimizer";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Execute HyperAIV workflow to generate ROI report
-    const results = await hyperAIVOptimizer.executeWorkflow(dealerId);
+    const optimizer = new HyperAIVOptimizer();
+    const results = await optimizer.executeWorkflow();
 
     // Generate comprehensive ROI report
     const roiReport = {
