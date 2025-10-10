@@ -3,6 +3,10 @@ import type { UserRole } from '@/types/user';
 import { api } from '@/lib/trpc/server';
 import Link from 'next/link';
 
+// Force dynamic rendering for authenticated pages
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function SuperAdminTenantsPage() {
   const user = await getCurrentUser();
   

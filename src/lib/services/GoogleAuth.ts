@@ -17,9 +17,14 @@ export class GoogleAuth {
   private baseURL: string;
 
   constructor(config?: Partial<AuthConfig>) {
+    // Safely handle SSR where window is not available
+    const defaultRedirectUri = typeof window !== 'undefined'
+      ? `${window.location.origin}/api/oauth/google/callback`
+      : 'http://localhost:3000/api/oauth/google/callback';
+
     this.config = {
       clientId: config?.clientId || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
-      redirectUri: config?.redirectUri || `${window.location.origin}/api/oauth/google/callback`,
+      redirectUri: config?.redirectUri || defaultRedirectUri,
       scopes: config?.scopes || [
         'https://www.googleapis.com/auth/analytics.readonly',
         'https://www.googleapis.com/auth/business.manage',
