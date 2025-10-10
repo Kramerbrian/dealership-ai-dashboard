@@ -1,0 +1,45 @@
+{
+  "crons": [
+    {
+      "path": "/api/train/reinforce",
+      "schedule": "0 2 * * *",
+      "description": "Daily reinforcement learning - update model weights at 2 AM UTC"
+    },
+    {
+      "path": "/api/train/evaluate",
+      "schedule": "0 3 * * 1",
+      "description": "Weekly model evaluation - assess performance every Monday at 3 AM UTC"
+    },
+    {
+      "path": "/api/anomaly/reviews",
+      "schedule": "0 */6 * * *",
+      "description": "FraudGuard audit - detect anomalies every 6 hours"
+    },
+    {
+      "path": "/api/predict/forecast",
+      "schedule": "0 4 * * 1",
+      "description": "Weekly forecast generation - update predictions every Monday at 4 AM UTC"
+    }
+  ],
+  "environment_variables": {
+    "SUPABASE_URL": "https://your-project.supabase.co",
+    "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://your-project.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "your-anon-key"
+  },
+  "deployment_instructions": {
+    "step_1": "Push code to GitHub repository",
+    "step_2": "Connect repository to Vercel",
+    "step_3": "Add environment variables in Vercel dashboard",
+    "step_4": "Deploy Supabase schema using migration files",
+    "step_5": "Configure cron jobs in Vercel dashboard",
+    "step_6": "Test API endpoints",
+    "step_7": "Monitor model performance in dashboard"
+  },
+  "monitoring_setup": {
+    "supabase_logs": "Monitor model drift and performance metrics",
+    "vercel_analytics": "Track API endpoint performance and errors",
+    "github_actions": "Automated benchmark runs and JSON report commits",
+    "dashboard_admin": "Model health monitoring with RMSE, R², and accuracy gains"
+  }
+}

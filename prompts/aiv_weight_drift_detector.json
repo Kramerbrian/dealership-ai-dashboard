@@ -1,0 +1,84 @@
+{
+  "id": "aiv_weight_drift_detector",
+  "goal": "measure and correct weekly parameter drift in AIV pillar weights",
+  "prompt": "Compare current week's AIV pillar weights to prior 8-week rolling average. Compute Δweight_i, σ_i, and drift_ratio = |Δ|/σ. Output flagged pillars where drift_ratio > 2. Recommend corrective reweighting and expected ΔRMSE if applied.",
+  "input_schema": {
+    "current_weights": {
+      "seo_weight": "number",
+      "aeo_weight": "number", 
+      "geo_weight": "number",
+      "ugc_weight": "number",
+      "geolocal_weight": "number"
+    },
+    "historical_weights": [
+      {
+        "week": "ISO8601",
+        "weights": {
+          "seo_weight": "number",
+          "aeo_weight": "number",
+          "geo_weight": "number", 
+          "ugc_weight": "number",
+          "geolocal_weight": "number"
+        }
+      }
+    ],
+    "elasticity_data": [
+      {
+        "week": "ISO8601",
+        "elasticity_usd_per_pt": "number",
+        "r2_coefficient": "number"
+      }
+    ]
+  },
+  "output_schema": {
+    "drift_analysis": {
+      "flagged_pillars": [
+        {
+          "pillar_name": "string",
+          "current_weight": "number",
+          "historical_average": "number",
+          "drift_ratio": "number",
+          "drift_status": "normal|warning|critical"
+        }
+      ],
+      "corrective_reweighting": {
+        "recommended_weights": {
+          "seo_weight": "number",
+          "aeo_weight": "number",
+          "geo_weight": "number",
+          "ugc_weight": "number", 
+          "geolocal_weight": "number"
+        },
+        "expected_rmse_delta": "number",
+        "confidence_level": "number"
+      },
+      "stability_metrics": {
+        "overall_drift_score": "number",
+        "stability_trend": "improving|stable|degrading",
+        "recommendation": "string"
+      }
+    }
+  },
+  "benchmark_targets": {
+    "drift_ratio_threshold": 2.0,
+    "rmse_improvement_target": 0.5,
+    "stability_score_target": 0.8
+  },
+  "execution_context": {
+    "calculation_methods": [
+      "rolling_average",
+      "drift_ratio_calculation",
+      "statistical_significance_test",
+      "rmse_projection"
+    ],
+    "data_sources": ["Postgres aiv_weekly", "Postgres elasticity_weekly"],
+    "timeout_seconds": 45
+  },
+  "metadata": {
+    "category": "model_optimization",
+    "priority": 2,
+    "dependencies": ["dataset_integrity_validator"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

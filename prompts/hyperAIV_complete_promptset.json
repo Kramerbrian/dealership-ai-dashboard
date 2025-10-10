@@ -1,0 +1,141 @@
+{
+  "version": "1.0",
+  "namespace": "dealershipAI.hyperAIV.complete",
+  "description": "Complete autonomous analytics lab prompt set for DealershipAI/Hyper-AIV™ - all 10 prompt families for maximum accuracy, reduced latency, and predictive insights",
+  "created": "2024-01-15T00:00:00Z",
+  "author": "DealershipAI Team",
+  "model_version": "hyperAIV-v1.0-complete",
+  "prompt_families": [
+    {
+      "family_id": "data_validation",
+      "priority": 1,
+      "prompts": ["dataset_integrity_validator"],
+      "purpose": "Ensure baseline data quality and prevent corrupted metrics"
+    },
+    {
+      "family_id": "model_optimization", 
+      "priority": 2,
+      "prompts": ["aiv_weight_drift_detector"],
+      "purpose": "Maintain internal model stability and parameter tuning"
+    },
+    {
+      "family_id": "predictive_analytics",
+      "priority": 3,
+      "prompts": ["aiv_predictive_forecast", "aiv_causal_summary"],
+      "purpose": "Provide predictive and explanatory insights for dashboard"
+    },
+    {
+      "family_id": "financial_modeling",
+      "priority": 4,
+      "prompts": ["roi_scenario_simulator"],
+      "purpose": "Enable financial decision making and ROI optimization"
+    },
+    {
+      "family_id": "regional_optimization",
+      "priority": 5,
+      "prompts": ["regional_weight_optimizer"],
+      "purpose": "Adapt metrics to region-specific search ecosystems"
+    },
+    {
+      "family_id": "trust_security",
+      "priority": 6,
+      "prompts": ["fraudguard_audit"],
+      "purpose": "Maintain data trust layer and detect anomalies"
+    },
+    {
+      "family_id": "user_analytics",
+      "priority": 7,
+      "prompts": ["dashboard_usage_insights"],
+      "purpose": "Optimize dashboard engagement and identify high-value features"
+    },
+    {
+      "family_id": "meta_optimization",
+      "priority": 8,
+      "prompts": ["prompt_benchmark_runner"],
+      "purpose": "Meta-optimize GPT performance and prompt accuracy"
+    },
+    {
+      "family_id": "deployment",
+      "priority": 9,
+      "prompts": ["cursor_prompt_packager"],
+      "purpose": "Enable portable, versioned prompt library deployment"
+    }
+  ],
+  "execution_workflow": {
+    "monthly_cycle": [
+      "1. dataset_integrity_validator → validate all input data",
+      "2. aiv_weight_drift_detector → recalibrate model weights", 
+      "3. aiv_predictive_forecast → generate 4-week forecasts",
+      "4. aiv_causal_summary → identify key drivers and recommendations",
+      "5. roi_scenario_simulator → model financial interventions",
+      "6. regional_weight_optimizer → adapt to local markets",
+      "7. fraudguard_audit → maintain data integrity",
+      "8. dashboard_usage_insights → optimize user experience",
+      "9. prompt_benchmark_runner → evaluate prompt performance",
+      "10. cursor_prompt_packager → version and deploy updates"
+    ],
+    "real_time_cycle": [
+      "dataset_integrity_validator (on data upload)",
+      "fraudguard_audit (weekly)",
+      "dashboard_usage_insights (daily aggregation)"
+    ]
+  },
+  "benchmark_targets": {
+    "overall_accuracy": 0.9,
+    "latency_reduction": 0.3,
+    "predictive_accuracy": 0.85,
+    "roi_optimization": 0.8,
+    "data_trust_score": 0.95
+  },
+  "cursor_integration": {
+    "import_instructions": [
+      "1. Store all prompt files in /prompts/ directory",
+      "2. Open Cursor command palette (Cmd+Shift+P)",
+      "3. Select 'Prompt Library → Import JSON'",
+      "4. Import hyperAIV_complete_promptset.json",
+      "5. Each prompt becomes an executable cell with version control"
+    ],
+    "execution_environment": {
+      "required_directories": [
+        "/prompts/",
+        "/benchmarks/",
+        "/data/training/",
+        "/exports/"
+      ],
+      "data_sources": [
+        "Postgres aiv_weekly",
+        "Postgres elasticity_weekly", 
+        "Review databases",
+        "User behavior logs",
+        "App analytics logs"
+      ]
+    }
+  },
+  "deployment_checklist": [
+    "✅ All 10 prompt families created",
+    "✅ Cursor-ready JSON format",
+    "✅ Benchmark targets defined",
+    "✅ Execution workflow documented",
+    "✅ Dependencies mapped",
+    "✅ Version control integrated",
+    "✅ Export/import instructions provided"
+  ],
+  "expected_outcomes": {
+    "autonomous_analytics": "Fully automated data validation, model optimization, and insight generation",
+    "continuous_learning": "Self-improving prompt performance through meta-optimization",
+    "predictive_insights": "4-week AIV forecasts with confidence intervals and trend classification",
+    "financial_optimization": "ROI scenario modeling with payback period analysis",
+    "regional_adaptation": "Location-specific weight optimization for global markets",
+    "trust_security": "Automated fraud detection maintaining 95%+ data trust score",
+    "user_optimization": "Dashboard engagement analytics driving UX improvements",
+    "version_control": "Portable, versioned prompt library for easy deployment"
+  },
+  "success_metrics": {
+    "accuracy_improvement": "Target: +15% MoM accuracy gains",
+    "latency_reduction": "Target: 30% faster processing",
+    "predictive_precision": "Target: 85% forecast accuracy",
+    "roi_optimization": "Target: 20% better ROI decisions",
+    "data_trust": "Target: 95%+ trust score maintenance",
+    "user_engagement": "Target: 25% increased dashboard usage"
+  }
+}

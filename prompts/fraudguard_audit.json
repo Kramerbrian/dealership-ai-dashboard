@@ -1,0 +1,82 @@
+{
+  "id": "fraudguard_audit",
+  "goal": "maintain data trust layer by detecting fraudulent reviews and anomalous patterns",
+  "prompt": "Analyze weekly review data for velocity spikes (>4σ) and sentiment anomalies. Return flagged dealership IDs, anomaly_type, and fraud_probability. Compute FraudGuard penalty = 1 – fraud_probability.",
+  "input_schema": {
+    "review_data": [
+      {
+        "dealership_id": "string",
+        "review_id": "string",
+        "timestamp": "ISO8601",
+        "rating": "number",
+        "sentiment_score": "number",
+        "review_text": "string",
+        "source": "string",
+        "user_id": "string",
+        "ip_address": "string",
+        "device_fingerprint": "string"
+      }
+    ],
+    "historical_baselines": {
+      "average_review_velocity": "number",
+      "sentiment_distribution": "object",
+      "rating_distribution": "object",
+      "source_distribution": "object"
+    },
+    "fraud_indicators": {
+      "velocity_threshold_sigma": "number",
+      "sentiment_anomaly_threshold": "number",
+      "duplicate_content_threshold": "number"
+    }
+  },
+  "output_schema": {
+    "fraud_audit_results": {
+      "flagged_dealerships": [
+        {
+          "dealership_id": "string",
+          "anomaly_type": "velocity_spike|sentiment_anomaly|duplicate_content|suspicious_pattern",
+          "fraud_probability": "number",
+          "fraudguard_penalty": "number",
+          "evidence": ["string"],
+          "severity": "low|medium|high|critical",
+          "recommended_action": "string"
+        }
+      ],
+      "audit_summary": {
+        "total_reviews_analyzed": "number",
+        "flagged_reviews_count": "number",
+        "fraud_rate_percent": "number",
+        "average_fraud_probability": "number",
+        "data_trust_score": "number"
+      },
+      "anomaly_patterns": {
+        "velocity_anomalies": "number",
+        "sentiment_anomalies": "number",
+        "content_anomalies": "number",
+        "behavioral_anomalies": "number"
+      }
+    }
+  },
+  "benchmark_targets": {
+    "fraud_detection_accuracy": 0.95,
+    "false_positive_rate": 0.05,
+    "data_trust_threshold": 0.9
+  },
+  "execution_context": {
+    "detection_methods": [
+      "statistical_anomaly_detection",
+      "sentiment_analysis",
+      "duplicate_content_detection",
+      "behavioral_pattern_analysis"
+    ],
+    "data_sources": ["review databases", "user behavior logs"],
+    "timeout_seconds": 180
+  },
+  "metadata": {
+    "category": "fraud_detection",
+    "priority": 7,
+    "dependencies": ["regional_weight_optimizer"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "id": "regional_weight_optimizer",
+  "goal": "adapt dashboard metrics to region-specific search ecosystems and local market characteristics",
+  "prompt": "Re-estimate GEO and UGC weights using regional datasets (US, CA, UK, AU). For each region output weight vector, R², and primary local review sources. Highlight any variance >20% between regions.",
+  "input_schema": {
+    "regional_datasets": [
+      {
+        "region": "string",
+        "country": "US|CA|UK|AU",
+        "locale": "string",
+        "market_data": {
+          "competition_level": "low|medium|high",
+          "seasonal_factor": "number",
+          "brand_dominance": ["string"],
+          "search_volume": "number"
+        },
+        "review_sources": {
+          "google_reviews": "number",
+          "yelp": "number",
+          "dealer_rater": "number",
+          "cars_com": "number",
+          "autotrader": "number",
+          "local_sources": ["string"]
+        },
+        "geo_ugc_data": [
+          {
+            "week": "ISO8601",
+            "geo_score": "number",
+            "ugc_score": "number",
+            "aiv_correlation": "number"
+          }
+        ]
+      }
+    ],
+    "baseline_weights": {
+      "geo_weight": "number",
+      "ugc_weight": "number"
+    }
+  },
+  "output_schema": {
+    "regional_optimization": {
+      "region_results": [
+        {
+          "region": "string",
+          "country": "string",
+          "optimized_weights": {
+            "geo_weight": "number",
+            "ugc_weight": "number"
+          },
+          "r2_coefficient": "number",
+          "primary_review_sources": ["string"],
+          "local_adaptation_factor": "number",
+          "confidence_level": "number"
+        }
+      ],
+      "variance_analysis": {
+        "weight_variance_percent": "number",
+        "high_variance_regions": ["string"],
+        "recommended_global_weights": {
+          "geo_weight": "number",
+          "ugc_weight": "number"
+        },
+        "regional_customization_needed": "boolean"
+      },
+      "localization_insights": {
+        "region_specific_factors": "object",
+        "cultural_adaptations": ["string"],
+        "market_characteristics": "object"
+      }
+    }
+  },
+  "benchmark_targets": {
+    "r2_improvement": 0.1,
+    "variance_threshold": 20.0,
+    "localization_accuracy": 0.85
+  },
+  "execution_context": {
+    "optimization_methods": [
+      "regional_regression_analysis",
+      "weight_optimization",
+      "variance_calculation",
+      "localization_scoring"
+    ],
+    "data_requirements": "multi-region datasets",
+    "timeout_seconds": 150
+  },
+  "metadata": {
+    "category": "regional_optimization",
+    "priority": 6,
+    "dependencies": ["roi_scenario_simulator"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}
