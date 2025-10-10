@@ -2,9 +2,6 @@
   "version": 2,
   "framework": "nextjs",
   "regions": ["iad1"],
-  "env": {
-    "NODE_ENV": "production"
-  },
   "crons": [
     {
       "path": "/api/train/reinforce",
@@ -25,6 +22,10 @@
     {
       "path": "/api/reports/roi",
       "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/governance/check",
+      "schedule": "0 */4 * * *"
     }
   ]
 }
