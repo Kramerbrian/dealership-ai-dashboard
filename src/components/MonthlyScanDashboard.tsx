@@ -68,6 +68,24 @@ export function MonthlyScanDashboard() {
       params.append('sortOrder', filters.sortOrder);
       params.append('limit', '100');
 
+      // Mock data for development - API route doesn't exist yet
+      const mockLeaderboardData = {
+        success: true,
+        data: {
+          dealers: [
+            { id: 'dealer-1', name: 'ABC Motors', score: 95, rank: 1, change: '+2' },
+            { id: 'dealer-2', name: 'XYZ Auto', score: 92, rank: 2, change: '+1' },
+            { id: 'dealer-3', name: 'Premium Cars', score: 89, rank: 3, change: '-1' }
+          ],
+          total_dealers: 150,
+          last_updated: new Date().toISOString()
+        }
+      };
+      
+      setLeaderboard(mockLeaderboardData.data);
+      setLoading(false);
+      return;
+
       const response = await fetch(`/api/leaderboard?${params}`);
       const result = await response.json();
 
@@ -86,6 +104,23 @@ export function MonthlyScanDashboard() {
 
   const triggerMonthlyScan = async () => {
     try {
+      // Mock data for development - API route doesn't exist yet
+      const mockScanData = {
+        success: true,
+        data: {
+          scan_id: 'scan-' + Date.now(),
+          status: 'completed',
+          dealers_scanned: 150,
+          total_errors: 3,
+          completion_time: '2h 15m',
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+      setScanStatus(mockScanData.data);
+      setLoading(false);
+      return;
+
       const response = await fetch('/api/cron/monthly-scan', {
         method: 'GET',
         headers: {

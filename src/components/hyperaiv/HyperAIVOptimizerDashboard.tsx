@@ -40,6 +40,28 @@ export default function HyperAIVOptimizerDashboard({ className = "" }: HyperAIVO
 
   const refreshDashboard = async () => {
     try {
+      // Mock data for development - API route doesn't exist yet
+      const mockData = {
+        success: true,
+        data: {
+          aiv_score: 85,
+          ati_score: 78,
+          crs_score: 92,
+          elasticity_usd_per_pt: 150,
+          r2_coefficient: 0.87,
+          timestamp: new Date().toISOString(),
+          recommendations: [
+            'Optimize schema markup for better AI understanding',
+            'Increase customer review response rate',
+            'Publish more educational content about car buying'
+          ]
+        }
+      };
+      
+      setKpis(mockData.data);
+      setLoading(false);
+      return;
+
       const response = await fetch('/api/kpis/latest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

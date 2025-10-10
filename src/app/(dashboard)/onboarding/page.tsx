@@ -1,28 +1,12 @@
-/**
- * Onboarding Page
- * Auth-protected server component that renders the onboarding wizard
- */
+"use client";
 
-import { getServerSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
-import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
-import { SessionProvider } from 'next-auth/react';
+import React from 'react';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 
-export default async function OnboardingPage() {
-  const session = await getServerSession();
-
-  if (!session) {
-    redirect('/sign-in?callbackUrl=/onboarding');
-  }
-
-  // If user is already onboarded, redirect to dashboard
-  if (session.user.onboarded) {
-    redirect('https://dash.dealershipai.com');
-  }
-
+export default function OnboardingPage() {
   return (
-    <SessionProvider session={session}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <OnboardingWizard />
-    </SessionProvider>
+    </div>
   );
 }

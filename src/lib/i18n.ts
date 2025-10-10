@@ -1,711 +1,761 @@
 /**
  * Internationalization (i18n) System
- * Multi-language support for DealershipAI
+ * 
+ * Multi-language and locale support for DealershipAI:
+ * - Dynamic language switching
+ * - Locale-specific formatting
+ * - Translation management
+ * - RTL language support
+ * - Currency and date formatting
  */
 
-import { createContext, useContext, useState, ReactNode } from 'react';
-
-export type Locale = 'en-US' | 'en-GB' | 'es-ES' | 'fr-FR' | 'de-DE';
-
-export interface LocaleConfig {
-  code: Locale;
+export interface Locale {
+  code: string;
   name: string;
-  flag: string;
+  nativeName: string;
+  direction: 'ltr' | 'rtl';
+  currency: string;
   dateFormat: string;
   timeFormat: string;
-  currency: string;
-}
-
-export const LOCALES: Record<Locale, LocaleConfig> = {
-  'en-US': {
-    code: 'en-US',
-    name: 'English (US)',
-    flag: '🇺🇸',
-    dateFormat: 'MM/DD/YYYY',
-    timeFormat: '12h',
-    currency: 'USD',
-  },
-  'en-GB': {
-    code: 'en-GB',
-    name: 'English (UK)',
-    flag: '🇬🇧',
-    dateFormat: 'DD/MM/YYYY',
-    timeFormat: '24h',
-    currency: 'GBP',
-  },
-  'es-ES': {
-    code: 'es-ES',
-    name: 'Español',
-    flag: '🇪🇸',
-    dateFormat: 'DD/MM/YYYY',
-    timeFormat: '24h',
-    currency: 'EUR',
-  },
-  'fr-FR': {
-    code: 'fr-FR',
-    name: 'Français',
-    flag: '🇫🇷',
-    dateFormat: 'DD/MM/YYYY',
-    timeFormat: '24h',
-    currency: 'EUR',
-  },
-  'de-DE': {
-    code: 'de-DE',
-    name: 'Deutsch',
-    flag: '🇩🇪',
-    dateFormat: 'DD.MM.YYYY',
-    timeFormat: '24h',
-    currency: 'EUR',
-  },
-};
-
-export interface Translations {
-  // Common
-  common: {
-    loading: string;
-    error: string;
-    success: string;
-    cancel: string;
-    save: string;
-    delete: string;
-    edit: string;
-    create: string;
-    search: string;
-    filter: string;
-    sort: string;
-    next: string;
-    previous: string;
-    close: string;
-    confirm: string;
-    yes: string;
-    no: string;
-  };
-  
-  // Navigation
-  navigation: {
-    dashboard: string;
-    onboarding: string;
-    learning: string;
-    team: string;
-    settings: string;
-    profile: string;
-    signOut: string;
-  };
-  
-  // Onboarding
-  onboarding: {
-    welcome: string;
-    dealershipInfo: string;
-    connections: string;
-    team: string;
-    plan: string;
-    preferences: string;
-    success: string;
-    skip: string;
-    complete: string;
-    next: string;
-    previous: string;
-  };
-  
-  // Dashboard
-  dashboard: {
-    overview: string;
-    reputation: string;
-    insights: string;
-    whatIf: string;
-    quickActions: string;
-    metrics: string;
-    forecasts: string;
-    recommendations: string;
-  };
-  
-  // Reputation Engine
-  reputation: {
-    autoReply: string;
-    engageLudicrousMode: string;
-    deployResponse: string;
-    responseTone: string;
-    professional: string;
-    friendly: string;
-    witty: string;
-    autoReplyEnabled: string;
-    threshold: string;
-    stars: string;
-  };
-  
-  // Learning Center
-  learning: {
-    title: string;
-    progress: string;
-    completed: string;
-    remaining: string;
-    avgRating: string;
-    searchContent: string;
-    featured: string;
-    categories: string;
-    difficulty: string;
-    duration: string;
-    rating: string;
-  };
-  
-  // Team Management
-  team: {
-    title: string;
-    createTask: string;
-    inviteMember: string;
-    pendingTasks: string;
-    inProgress: string;
-    overdue: string;
-    completed: string;
-    taskManagement: string;
-    teamMembers: string;
-    assignTo: string;
-    priority: string;
-    dueDate: string;
-    category: string;
-    estimatedHours: string;
+  numberFormat: {
+    decimal: string;
+    thousands: string;
   };
 }
 
-const TRANSLATIONS: Record<Locale, Translations> = {
-  'en-US': {
-    common: {
-      loading: 'Loading...',
-      error: 'Error',
-      success: 'Success',
-      cancel: 'Cancel',
-      save: 'Save',
-      delete: 'Delete',
-      edit: 'Edit',
-      create: 'Create',
-      search: 'Search',
-      filter: 'Filter',
-      sort: 'Sort',
-      next: 'Next',
-      previous: 'Previous',
-      close: 'Close',
-      confirm: 'Confirm',
-      yes: 'Yes',
-      no: 'No',
-    },
-    navigation: {
-      dashboard: 'Dashboard',
-      onboarding: 'Onboarding',
-      learning: 'Learning',
-      team: 'Team',
-      settings: 'Settings',
-      profile: 'Profile',
-      signOut: 'Sign Out',
-    },
-    onboarding: {
-      welcome: 'Welcome to DealershipAI',
-      dealershipInfo: 'Tell Us About Your Dealership',
-      connections: 'Connect Your Data Sources',
-      team: 'Invite Your Team',
-      plan: 'Choose Your Power Level',
-      preferences: 'Customize Your Experience',
-      success: 'Welcome Aboard, Commander!',
-      skip: 'Skip',
-      complete: 'Complete',
-      next: 'Next',
-      previous: 'Previous',
-    },
-    dashboard: {
-      overview: 'Overview',
-      reputation: 'Reputation Engine',
-      insights: 'AI Insights',
-      whatIf: 'What-If Simulator',
-      quickActions: 'Quick Actions',
-      metrics: 'Metrics',
-      forecasts: 'Forecasts',
-      recommendations: 'Recommendations',
-    },
-    reputation: {
-      autoReply: 'Auto-Reply Engine',
-      engageLudicrousMode: 'Engage Ludicrous Mode',
-      deployResponse: 'Deploy Response',
-      responseTone: 'Response Tone',
-      professional: 'Professional',
-      friendly: 'Friendly',
-      witty: 'Witty',
-      autoReplyEnabled: 'Enable auto-reply',
-      threshold: 'Threshold',
-      stars: 'stars',
-    },
-    learning: {
-      title: 'Learning Center',
-      progress: 'Your Learning Progress',
-      completed: 'Completed',
-      remaining: 'Remaining',
-      avgRating: 'Avg Rating',
-      searchContent: 'Search learning content...',
-      featured: 'Featured This Week',
-      categories: 'Categories',
-      difficulty: 'Difficulty',
-      duration: 'Duration',
-      rating: 'Rating',
-    },
-    team: {
-      title: 'Team Management',
-      createTask: 'Create Task',
-      inviteMember: 'Invite Member',
-      pendingTasks: 'Pending Tasks',
-      inProgress: 'In Progress',
-      overdue: 'Overdue',
-      completed: 'Completed',
-      taskManagement: 'Task Management',
-      teamMembers: 'Team Members',
-      assignTo: 'Assign To',
-      priority: 'Priority',
-      dueDate: 'Due Date',
-      category: 'Category',
-      estimatedHours: 'Estimated Hours',
-    },
-  },
-  'en-GB': {
-    common: {
-      loading: 'Loading...',
-      error: 'Error',
-      success: 'Success',
-      cancel: 'Cancel',
-      save: 'Save',
-      delete: 'Delete',
-      edit: 'Edit',
-      create: 'Create',
-      search: 'Search',
-      filter: 'Filter',
-      sort: 'Sort',
-      next: 'Next',
-      previous: 'Previous',
-      close: 'Close',
-      confirm: 'Confirm',
-      yes: 'Yes',
-      no: 'No',
-    },
-    navigation: {
-      dashboard: 'Dashboard',
-      onboarding: 'Onboarding',
-      learning: 'Learning',
-      team: 'Team',
-      settings: 'Settings',
-      profile: 'Profile',
-      signOut: 'Sign Out',
-    },
-    onboarding: {
-      welcome: 'Welcome to DealershipAI',
-      dealershipInfo: 'Tell Us About Your Dealership',
-      connections: 'Connect Your Data Sources',
-      team: 'Invite Your Team',
-      plan: 'Choose Your Power Level',
-      preferences: 'Customise Your Experience',
-      success: 'Welcome Aboard, Commander!',
-      skip: 'Skip',
-      complete: 'Complete',
-      next: 'Next',
-      previous: 'Previous',
-    },
-    dashboard: {
-      overview: 'Overview',
-      reputation: 'Reputation Engine',
-      insights: 'AI Insights',
-      whatIf: 'What-If Simulator',
-      quickActions: 'Quick Actions',
-      metrics: 'Metrics',
-      forecasts: 'Forecasts',
-      recommendations: 'Recommendations',
-    },
-    reputation: {
-      autoReply: 'Auto-Reply Engine',
-      engageLudicrousMode: 'Engage Ludicrous Mode',
-      deployResponse: 'Deploy Response',
-      responseTone: 'Response Tone',
-      professional: 'Professional',
-      friendly: 'Friendly',
-      witty: 'Witty',
-      autoReplyEnabled: 'Enable auto-reply',
-      threshold: 'Threshold',
-      stars: 'stars',
-    },
-    learning: {
-      title: 'Learning Centre',
-      progress: 'Your Learning Progress',
-      completed: 'Completed',
-      remaining: 'Remaining',
-      avgRating: 'Avg Rating',
-      searchContent: 'Search learning content...',
-      featured: 'Featured This Week',
-      categories: 'Categories',
-      difficulty: 'Difficulty',
-      duration: 'Duration',
-      rating: 'Rating',
-    },
-    team: {
-      title: 'Team Management',
-      createTask: 'Create Task',
-      inviteMember: 'Invite Member',
-      pendingTasks: 'Pending Tasks',
-      inProgress: 'In Progress',
-      overdue: 'Overdue',
-      completed: 'Completed',
-      taskManagement: 'Task Management',
-      teamMembers: 'Team Members',
-      assignTo: 'Assign To',
-      priority: 'Priority',
-      dueDate: 'Due Date',
-      category: 'Category',
-      estimatedHours: 'Estimated Hours',
-    },
-  },
-  'es-ES': {
-    common: {
-      loading: 'Cargando...',
-      error: 'Error',
-      success: 'Éxito',
-      cancel: 'Cancelar',
-      save: 'Guardar',
-      delete: 'Eliminar',
-      edit: 'Editar',
-      create: 'Crear',
-      search: 'Buscar',
-      filter: 'Filtrar',
-      sort: 'Ordenar',
-      next: 'Siguiente',
-      previous: 'Anterior',
-      close: 'Cerrar',
-      confirm: 'Confirmar',
-      yes: 'Sí',
-      no: 'No',
-    },
-    navigation: {
-      dashboard: 'Panel',
-      onboarding: 'Configuración',
-      learning: 'Aprendizaje',
-      team: 'Equipo',
-      settings: 'Configuración',
-      profile: 'Perfil',
-      signOut: 'Cerrar Sesión',
-    },
-    onboarding: {
-      welcome: 'Bienvenido a DealershipAI',
-      dealershipInfo: 'Cuéntanos sobre tu concesionario',
-      connections: 'Conecta tus fuentes de datos',
-      team: 'Invita a tu equipo',
-      plan: 'Elige tu nivel de potencia',
-      preferences: 'Personaliza tu experiencia',
-      success: '¡Bienvenido a bordo, Comandante!',
-      skip: 'Omitir',
-      complete: 'Completar',
-      next: 'Siguiente',
-      previous: 'Anterior',
-    },
-    dashboard: {
-      overview: 'Resumen',
-      reputation: 'Motor de Reputación',
-      insights: 'Insights de IA',
-      whatIf: 'Simulador Qué Pasa Si',
-      quickActions: 'Acciones Rápidas',
-      metrics: 'Métricas',
-      forecasts: 'Pronósticos',
-      recommendations: 'Recomendaciones',
-    },
-    reputation: {
-      autoReply: 'Motor de Respuesta Automática',
-      engageLudicrousMode: 'Activar Modo Lúdico',
-      deployResponse: 'Desplegar Respuesta',
-      responseTone: 'Tono de Respuesta',
-      professional: 'Profesional',
-      friendly: 'Amigable',
-      witty: 'Ingenioso',
-      autoReplyEnabled: 'Habilitar respuesta automática',
-      threshold: 'Umbral',
-      stars: 'estrellas',
-    },
-    learning: {
-      title: 'Centro de Aprendizaje',
-      progress: 'Tu Progreso de Aprendizaje',
-      completed: 'Completado',
-      remaining: 'Restante',
-      avgRating: 'Calificación Promedio',
-      searchContent: 'Buscar contenido de aprendizaje...',
-      featured: 'Destacado Esta Semana',
-      categories: 'Categorías',
-      difficulty: 'Dificultad',
-      duration: 'Duración',
-      rating: 'Calificación',
-    },
-    team: {
-      title: 'Gestión de Equipo',
-      createTask: 'Crear Tarea',
-      inviteMember: 'Invitar Miembro',
-      pendingTasks: 'Tareas Pendientes',
-      inProgress: 'En Progreso',
-      overdue: 'Vencidas',
-      completed: 'Completadas',
-      taskManagement: 'Gestión de Tareas',
-      teamMembers: 'Miembros del Equipo',
-      assignTo: 'Asignar A',
-      priority: 'Prioridad',
-      dueDate: 'Fecha de Vencimiento',
-      category: 'Categoría',
-      estimatedHours: 'Horas Estimadas',
-    },
-  },
-  'fr-FR': {
-    common: {
-      loading: 'Chargement...',
-      error: 'Erreur',
-      success: 'Succès',
-      cancel: 'Annuler',
-      save: 'Enregistrer',
-      delete: 'Supprimer',
-      edit: 'Modifier',
-      create: 'Créer',
-      search: 'Rechercher',
-      filter: 'Filtrer',
-      sort: 'Trier',
-      next: 'Suivant',
-      previous: 'Précédent',
-      close: 'Fermer',
-      confirm: 'Confirmer',
-      yes: 'Oui',
-      no: 'Non',
-    },
-    navigation: {
-      dashboard: 'Tableau de bord',
-      onboarding: 'Intégration',
-      learning: 'Apprentissage',
-      team: 'Équipe',
-      settings: 'Paramètres',
-      profile: 'Profil',
-      signOut: 'Déconnexion',
-    },
-    onboarding: {
-      welcome: 'Bienvenue sur DealershipAI',
-      dealershipInfo: 'Parlez-nous de votre concession',
-      connections: 'Connectez vos sources de données',
-      team: 'Invitez votre équipe',
-      plan: 'Choisissez votre niveau de puissance',
-      preferences: 'Personnalisez votre expérience',
-      success: 'Bienvenue à bord, Commandant !',
-      skip: 'Ignorer',
-      complete: 'Terminer',
-      next: 'Suivant',
-      previous: 'Précédent',
-    },
-    dashboard: {
-      overview: 'Aperçu',
-      reputation: 'Moteur de Réputation',
-      insights: 'Insights IA',
-      whatIf: 'Simulateur Et Si',
-      quickActions: 'Actions Rapides',
-      metrics: 'Métriques',
-      forecasts: 'Prévisions',
-      recommendations: 'Recommandations',
-    },
-    reputation: {
-      autoReply: 'Moteur de Réponse Automatique',
-      engageLudicrousMode: 'Activer le Mode Ludique',
-      deployResponse: 'Déployer la Réponse',
-      responseTone: 'Ton de Réponse',
-      professional: 'Professionnel',
-      friendly: 'Amical',
-      witty: 'Spirituel',
-      autoReplyEnabled: 'Activer la réponse automatique',
-      threshold: 'Seuil',
-      stars: 'étoiles',
-    },
-    learning: {
-      title: 'Centre d\'Apprentissage',
-      progress: 'Votre Progrès d\'Apprentissage',
-      completed: 'Terminé',
-      remaining: 'Restant',
-      avgRating: 'Note Moyenne',
-      searchContent: 'Rechercher du contenu d\'apprentissage...',
-      featured: 'En Vedette Cette Semaine',
-      categories: 'Catégories',
-      difficulty: 'Difficulté',
-      duration: 'Durée',
-      rating: 'Note',
-    },
-    team: {
-      title: 'Gestion d\'Équipe',
-      createTask: 'Créer une Tâche',
-      inviteMember: 'Inviter un Membre',
-      pendingTasks: 'Tâches en Attente',
-      inProgress: 'En Cours',
-      overdue: 'En Retard',
-      completed: 'Terminées',
-      taskManagement: 'Gestion des Tâches',
-      teamMembers: 'Membres de l\'Équipe',
-      assignTo: 'Assigner À',
-      priority: 'Priorité',
-      dueDate: 'Date d\'Échéance',
-      category: 'Catégorie',
-      estimatedHours: 'Heures Estimées',
-    },
-  },
-  'de-DE': {
-    common: {
-      loading: 'Laden...',
-      error: 'Fehler',
-      success: 'Erfolg',
-      cancel: 'Abbrechen',
-      save: 'Speichern',
-      delete: 'Löschen',
-      edit: 'Bearbeiten',
-      create: 'Erstellen',
-      search: 'Suchen',
-      filter: 'Filtern',
-      sort: 'Sortieren',
-      next: 'Weiter',
-      previous: 'Zurück',
-      close: 'Schließen',
-      confirm: 'Bestätigen',
-      yes: 'Ja',
-      no: 'Nein',
-    },
-    navigation: {
-      dashboard: 'Dashboard',
-      onboarding: 'Einführung',
-      learning: 'Lernen',
-      team: 'Team',
-      settings: 'Einstellungen',
-      profile: 'Profil',
-      signOut: 'Abmelden',
-    },
-    onboarding: {
-      welcome: 'Willkommen bei DealershipAI',
-      dealershipInfo: 'Erzählen Sie uns von Ihrem Autohaus',
-      connections: 'Verbinden Sie Ihre Datenquellen',
-      team: 'Laden Sie Ihr Team ein',
-      plan: 'Wählen Sie Ihr Leistungsniveau',
-      preferences: 'Passen Sie Ihre Erfahrung an',
-      success: 'Willkommen an Bord, Kommandant!',
-      skip: 'Überspringen',
-      complete: 'Abschließen',
-      next: 'Weiter',
-      previous: 'Zurück',
-    },
-    dashboard: {
-      overview: 'Übersicht',
-      reputation: 'Reputations-Engine',
-      insights: 'KI-Insights',
-      whatIf: 'Was-Wäre-Wenn-Simulator',
-      quickActions: 'Schnellaktionen',
-      metrics: 'Metriken',
-      forecasts: 'Prognosen',
-      recommendations: 'Empfehlungen',
-    },
-    reputation: {
-      autoReply: 'Auto-Antwort-Engine',
-      engageLudicrousMode: 'Ludicrous-Modus aktivieren',
-      deployResponse: 'Antwort bereitstellen',
-      responseTone: 'Antwortton',
-      professional: 'Professionell',
-      friendly: 'Freundlich',
-      witty: 'Geistreich',
-      autoReplyEnabled: 'Auto-Antwort aktivieren',
-      threshold: 'Schwellenwert',
-      stars: 'Sterne',
-    },
-    learning: {
-      title: 'Lernzentrum',
-      progress: 'Ihr Lernfortschritt',
-      completed: 'Abgeschlossen',
-      remaining: 'Verbleibend',
-      avgRating: 'Durchschnittsbewertung',
-      searchContent: 'Lerninhalte suchen...',
-      featured: 'Diese Woche im Fokus',
-      categories: 'Kategorien',
-      difficulty: 'Schwierigkeit',
-      duration: 'Dauer',
-      rating: 'Bewertung',
-    },
-    team: {
-      title: 'Team-Management',
-      createTask: 'Aufgabe erstellen',
-      inviteMember: 'Mitglied einladen',
-      pendingTasks: 'Ausstehende Aufgaben',
-      inProgress: 'In Bearbeitung',
-      overdue: 'Überfällig',
-      completed: 'Abgeschlossen',
-      taskManagement: 'Aufgabenverwaltung',
-      teamMembers: 'Teammitglieder',
-      assignTo: 'Zuweisen an',
-      priority: 'Priorität',
-      dueDate: 'Fälligkeitsdatum',
-      category: 'Kategorie',
-      estimatedHours: 'Geschätzte Stunden',
-    },
-  },
-};
-
-interface I18nContextType {
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
-  formatDate: (date: Date) => string;
-  formatCurrency: (amount: number) => string;
-  formatNumber: (number: number) => string;
+export interface Translation {
+  key: string;
+  value: string;
+  locale: string;
+  namespace: string;
+  context?: string;
+  plural?: {
+    zero?: string;
+    one?: string;
+    two?: string;
+    few?: string;
+    many?: string;
+    other: string;
+  };
 }
 
-const I18nContext = createContext<I18nContextType | undefined>(undefined);
-
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>('en-US');
-
-  const t = (key: string): string => {
-    const keys = key.split('.');
-    let value: any = TRANSLATIONS[locale];
-    
-    for (const k of keys) {
-      value = value?.[k];
-    }
-    
-    return value || key;
-  };
-
-  const formatDate = (date: Date): string => {
-    const config = LOCALES[locale];
-    return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(date);
-  };
-
-  const formatCurrency = (amount: number): string => {
-    const config = LOCALES[locale];
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: config.currency,
-    }).format(amount);
-  };
-
-  const formatNumber = (number: number): string => {
-    return new Intl.NumberFormat(locale).format(number);
-  };
-
-  return (
-    <I18nContext.Provider
-      value={{
-        locale,
-        setLocale,
-        t,
-        formatDate,
-        formatCurrency,
-        formatNumber,
-      }}
-    >
-      {children}
-    </I18nContext.Provider>
-  );
+export interface TranslationNamespace {
+  [key: string]: string | TranslationNamespace;
 }
 
-export function useI18n() {
-  const context = useContext(I18nContext);
-  if (context === undefined) {
-    throw new Error('useI18n must be used within an I18nProvider');
+export class I18nManager {
+  private currentLocale: string = 'en';
+  private fallbackLocale: string = 'en';
+  private translations: Map<string, TranslationNamespace> = new Map();
+  private locales: Map<string, Locale> = new Map();
+
+  constructor() {
+    this.initializeLocales();
+    this.initializeTranslations();
   }
-  return context;
+
+  /**
+   * Initialize supported locales
+   */
+  private initializeLocales(): void {
+    const supportedLocales: Locale[] = [
+      {
+        code: 'en',
+        name: 'English',
+        nativeName: 'English',
+        direction: 'ltr',
+        currency: 'USD',
+        dateFormat: 'MM/DD/YYYY',
+        timeFormat: '12h',
+        numberFormat: {
+          decimal: '.',
+          thousands: ',',
+        },
+      },
+      {
+        code: 'es',
+        name: 'Spanish',
+        nativeName: 'Español',
+        direction: 'ltr',
+        currency: 'USD',
+        dateFormat: 'DD/MM/YYYY',
+        timeFormat: '24h',
+        numberFormat: {
+          decimal: ',',
+          thousands: '.',
+        },
+      },
+      {
+        code: 'fr',
+        name: 'French',
+        nativeName: 'Français',
+        direction: 'ltr',
+        currency: 'EUR',
+        dateFormat: 'DD/MM/YYYY',
+        timeFormat: '24h',
+        numberFormat: {
+          decimal: ',',
+          thousands: ' ',
+        },
+      },
+      {
+        code: 'de',
+        name: 'German',
+        nativeName: 'Deutsch',
+        direction: 'ltr',
+        currency: 'EUR',
+        dateFormat: 'DD.MM.YYYY',
+        timeFormat: '24h',
+        numberFormat: {
+          decimal: ',',
+          thousands: '.',
+        },
+      },
+      {
+        code: 'ar',
+        name: 'Arabic',
+        nativeName: 'العربية',
+        direction: 'rtl',
+        currency: 'SAR',
+        dateFormat: 'DD/MM/YYYY',
+        timeFormat: '12h',
+        numberFormat: {
+          decimal: '.',
+          thousands: ',',
+        },
+      },
+      {
+        code: 'zh',
+        name: 'Chinese',
+        nativeName: '中文',
+        direction: 'ltr',
+        currency: 'CNY',
+        dateFormat: 'YYYY/MM/DD',
+        timeFormat: '24h',
+        numberFormat: {
+          decimal: '.',
+          thousands: ',',
+        },
+      },
+      {
+        code: 'ja',
+        name: 'Japanese',
+        nativeName: '日本語',
+        direction: 'ltr',
+        currency: 'JPY',
+        dateFormat: 'YYYY/MM/DD',
+        timeFormat: '24h',
+        numberFormat: {
+          decimal: '.',
+          thousands: ',',
+        },
+      },
+    ];
+
+    supportedLocales.forEach(locale => {
+      this.locales.set(locale.code, locale);
+    });
+  }
+
+  /**
+   * Initialize translations
+   */
+  private initializeTranslations(): void {
+    // English translations (default)
+    this.translations.set('en', {
+      common: {
+        save: 'Save',
+        cancel: 'Cancel',
+        delete: 'Delete',
+        edit: 'Edit',
+        create: 'Create',
+        update: 'Update',
+        search: 'Search',
+        filter: 'Filter',
+        export: 'Export',
+        import: 'Import',
+        loading: 'Loading...',
+        error: 'Error',
+        success: 'Success',
+        warning: 'Warning',
+        info: 'Information',
+        yes: 'Yes',
+        no: 'No',
+        ok: 'OK',
+        close: 'Close',
+        back: 'Back',
+        next: 'Next',
+        previous: 'Previous',
+        submit: 'Submit',
+        reset: 'Reset',
+        clear: 'Clear',
+        select: 'Select',
+        all: 'All',
+        none: 'None',
+        required: 'Required',
+        optional: 'Optional',
+      },
+      navigation: {
+        dashboard: 'Dashboard',
+        analytics: 'Analytics',
+        reports: 'Reports',
+        settings: 'Settings',
+        profile: 'Profile',
+        help: 'Help',
+        support: 'Support',
+        logout: 'Logout',
+        login: 'Login',
+        register: 'Register',
+      },
+      dashboard: {
+        title: 'DealershipAI Dashboard',
+        subtitle: 'AI Visibility Analytics & Optimization',
+        revenueAtRisk: 'Revenue at Risk',
+        aiVisibility: 'AI Visibility',
+        monthlyLeads: 'Monthly Leads',
+        impressionsTrend: 'Impressions Trend',
+        trafficSources: 'Traffic Sources',
+        ugcHealth: 'UGC Health',
+        zeroClickVisibility: 'Zero-Click Visibility',
+        liveIntelligence: 'Live Intelligence Feed',
+        aiAssistant: 'AI Assistant',
+      },
+      metrics: {
+        overall: 'Overall Score',
+        seo: 'SEO Score',
+        aeo: 'AI Engine Optimization',
+        geo: 'Geographic Visibility',
+        reputation: 'Reputation Score',
+        social: 'Social Media Score',
+        news: 'News Coverage Score',
+        customer: 'Customer Satisfaction',
+        industry: 'Industry Recognition',
+      },
+      features: {
+        whatIfSimulator: 'What-If Simulator',
+        predictiveInsights: 'Predictive Insights',
+        reputationEngine: 'Reputation Engine',
+        learningCenter: 'Learning Center',
+        teamManagement: 'Team Management',
+        productTour: 'Product Tour',
+      },
+      time: {
+        today: 'Today',
+        yesterday: 'Yesterday',
+        thisWeek: 'This Week',
+        lastWeek: 'Last Week',
+        thisMonth: 'This Month',
+        lastMonth: 'Last Month',
+        thisYear: 'This Year',
+        lastYear: 'Last Year',
+        custom: 'Custom Range',
+      },
+      units: {
+        currency: '$',
+        percentage: '%',
+        count: 'count',
+        hours: 'hours',
+        days: 'days',
+        weeks: 'weeks',
+        months: 'months',
+        years: 'years',
+      },
+    });
+
+    // Spanish translations
+    this.translations.set('es', {
+      common: {
+        save: 'Guardar',
+        cancel: 'Cancelar',
+        delete: 'Eliminar',
+        edit: 'Editar',
+        create: 'Crear',
+        update: 'Actualizar',
+        search: 'Buscar',
+        filter: 'Filtrar',
+        export: 'Exportar',
+        import: 'Importar',
+        loading: 'Cargando...',
+        error: 'Error',
+        success: 'Éxito',
+        warning: 'Advertencia',
+        info: 'Información',
+        yes: 'Sí',
+        no: 'No',
+        ok: 'OK',
+        close: 'Cerrar',
+        back: 'Atrás',
+        next: 'Siguiente',
+        previous: 'Anterior',
+        submit: 'Enviar',
+        reset: 'Restablecer',
+        clear: 'Limpiar',
+        select: 'Seleccionar',
+        all: 'Todos',
+        none: 'Ninguno',
+        required: 'Requerido',
+        optional: 'Opcional',
+      },
+      navigation: {
+        dashboard: 'Panel de Control',
+        analytics: 'Analíticas',
+        reports: 'Reportes',
+        settings: 'Configuración',
+        profile: 'Perfil',
+        help: 'Ayuda',
+        support: 'Soporte',
+        logout: 'Cerrar Sesión',
+        login: 'Iniciar Sesión',
+        register: 'Registrarse',
+      },
+      dashboard: {
+        title: 'Panel de Control DealershipAI',
+        subtitle: 'Analíticas de Visibilidad IA y Optimización',
+        revenueAtRisk: 'Ingresos en Riesgo',
+        aiVisibility: 'Visibilidad IA',
+        monthlyLeads: 'Leads Mensuales',
+        impressionsTrend: 'Tendencia de Impresiones',
+        trafficSources: 'Fuentes de Tráfico',
+        ugcHealth: 'Salud UGC',
+        zeroClickVisibility: 'Visibilidad Cero Clics',
+        liveIntelligence: 'Feed de Inteligencia en Vivo',
+        aiAssistant: 'Asistente IA',
+      },
+    });
+
+    // French translations
+    this.translations.set('fr', {
+      common: {
+        save: 'Enregistrer',
+        cancel: 'Annuler',
+        delete: 'Supprimer',
+        edit: 'Modifier',
+        create: 'Créer',
+        update: 'Mettre à jour',
+        search: 'Rechercher',
+        filter: 'Filtrer',
+        export: 'Exporter',
+        import: 'Importer',
+        loading: 'Chargement...',
+        error: 'Erreur',
+        success: 'Succès',
+        warning: 'Avertissement',
+        info: 'Information',
+        yes: 'Oui',
+        no: 'Non',
+        ok: 'OK',
+        close: 'Fermer',
+        back: 'Retour',
+        next: 'Suivant',
+        previous: 'Précédent',
+        submit: 'Soumettre',
+        reset: 'Réinitialiser',
+        clear: 'Effacer',
+        select: 'Sélectionner',
+        all: 'Tous',
+        none: 'Aucun',
+        required: 'Requis',
+        optional: 'Optionnel',
+      },
+      navigation: {
+        dashboard: 'Tableau de Bord',
+        analytics: 'Analytiques',
+        reports: 'Rapports',
+        settings: 'Paramètres',
+        profile: 'Profil',
+        help: 'Aide',
+        support: 'Support',
+        logout: 'Déconnexion',
+        login: 'Connexion',
+        register: 'S\'inscrire',
+      },
+      dashboard: {
+        title: 'Tableau de Bord DealershipAI',
+        subtitle: 'Analytiques de Visibilité IA et Optimisation',
+        revenueAtRisk: 'Revenus à Risque',
+        aiVisibility: 'Visibilité IA',
+        monthlyLeads: 'Leads Mensuels',
+        impressionsTrend: 'Tendance des Impressions',
+        trafficSources: 'Sources de Trafic',
+        ugcHealth: 'Santé UGC',
+        zeroClickVisibility: 'Visibilité Zéro Clic',
+        liveIntelligence: 'Flux d\'Intelligence en Direct',
+        aiAssistant: 'Assistant IA',
+      },
+    });
+
+    // German translations
+    this.translations.set('de', {
+      common: {
+        save: 'Speichern',
+        cancel: 'Abbrechen',
+        delete: 'Löschen',
+        edit: 'Bearbeiten',
+        create: 'Erstellen',
+        update: 'Aktualisieren',
+        search: 'Suchen',
+        filter: 'Filtern',
+        export: 'Exportieren',
+        import: 'Importieren',
+        loading: 'Laden...',
+        error: 'Fehler',
+        success: 'Erfolg',
+        warning: 'Warnung',
+        info: 'Information',
+        yes: 'Ja',
+        no: 'Nein',
+        ok: 'OK',
+        close: 'Schließen',
+        back: 'Zurück',
+        next: 'Weiter',
+        previous: 'Vorherige',
+        submit: 'Absenden',
+        reset: 'Zurücksetzen',
+        clear: 'Löschen',
+        select: 'Auswählen',
+        all: 'Alle',
+        none: 'Keine',
+        required: 'Erforderlich',
+        optional: 'Optional',
+      },
+      navigation: {
+        dashboard: 'Dashboard',
+        analytics: 'Analytik',
+        reports: 'Berichte',
+        settings: 'Einstellungen',
+        profile: 'Profil',
+        help: 'Hilfe',
+        support: 'Support',
+        logout: 'Abmelden',
+        login: 'Anmelden',
+        register: 'Registrieren',
+      },
+      dashboard: {
+        title: 'DealershipAI Dashboard',
+        subtitle: 'KI-Sichtbarkeitsanalytik und Optimierung',
+        revenueAtRisk: 'Umsatz im Risiko',
+        aiVisibility: 'KI-Sichtbarkeit',
+        monthlyLeads: 'Monatliche Leads',
+        impressionsTrend: 'Impressions-Trend',
+        trafficSources: 'Traffic-Quellen',
+        ugcHealth: 'UGC-Gesundheit',
+        zeroClickVisibility: 'Zero-Click-Sichtbarkeit',
+        liveIntelligence: 'Live-Intelligence-Feed',
+        aiAssistant: 'KI-Assistent',
+      },
+    });
+
+    // Arabic translations
+    this.translations.set('ar', {
+      common: {
+        save: 'حفظ',
+        cancel: 'إلغاء',
+        delete: 'حذف',
+        edit: 'تعديل',
+        create: 'إنشاء',
+        update: 'تحديث',
+        search: 'بحث',
+        filter: 'تصفية',
+        export: 'تصدير',
+        import: 'استيراد',
+        loading: 'جاري التحميل...',
+        error: 'خطأ',
+        success: 'نجح',
+        warning: 'تحذير',
+        info: 'معلومات',
+        yes: 'نعم',
+        no: 'لا',
+        ok: 'موافق',
+        close: 'إغلاق',
+        back: 'رجوع',
+        next: 'التالي',
+        previous: 'السابق',
+        submit: 'إرسال',
+        reset: 'إعادة تعيين',
+        clear: 'مسح',
+        select: 'اختيار',
+        all: 'الكل',
+        none: 'لا شيء',
+        required: 'مطلوب',
+        optional: 'اختياري',
+      },
+      navigation: {
+        dashboard: 'لوحة التحكم',
+        analytics: 'التحليلات',
+        reports: 'التقارير',
+        settings: 'الإعدادات',
+        profile: 'الملف الشخصي',
+        help: 'المساعدة',
+        support: 'الدعم',
+        logout: 'تسجيل الخروج',
+        login: 'تسجيل الدخول',
+        register: 'التسجيل',
+      },
+      dashboard: {
+        title: 'لوحة تحكم DealershipAI',
+        subtitle: 'تحليلات رؤية الذكاء الاصطناعي والتحسين',
+        revenueAtRisk: 'الإيرادات المعرضة للخطر',
+        aiVisibility: 'رؤية الذكاء الاصطناعي',
+        monthlyLeads: 'العملاء المحتملين الشهريين',
+        impressionsTrend: 'اتجاه الانطباعات',
+        trafficSources: 'مصادر المرور',
+        ugcHealth: 'صحة المحتوى المقدم من المستخدمين',
+        zeroClickVisibility: 'رؤية النقر الصفري',
+        liveIntelligence: 'تغذية الذكاء المباشر',
+        aiAssistant: 'مساعد الذكاء الاصطناعي',
+      },
+    });
+  }
+
+  /**
+   * Set current locale
+   */
+  setLocale(locale: string): void {
+    if (this.locales.has(locale)) {
+      this.currentLocale = locale;
+      this.updateDocumentDirection();
+      this.updateDocumentLanguage();
+    }
+  }
+
+  /**
+   * Get current locale
+   */
+  getCurrentLocale(): string {
+    return this.currentLocale;
+  }
+
+  /**
+   * Get supported locales
+   */
+  getSupportedLocales(): Locale[] {
+    return Array.from(this.locales.values());
+  }
+
+  /**
+   * Get locale information
+   */
+  getLocale(locale: string): Locale | undefined {
+    return this.locales.get(locale);
+  }
+
+  /**
+   * Translate a key
+   */
+  t(key: string, params?: Record<string, any>, count?: number): string {
+    const translation = this.getTranslation(key, this.currentLocale);
+    
+    if (!translation) {
+      // Fallback to English if translation not found
+      const fallbackTranslation = this.getTranslation(key, this.fallbackLocale);
+      if (fallbackTranslation) {
+        return this.interpolate(fallbackTranslation, params);
+      }
+      
+      // Return key if no translation found
+      return key;
+    }
+
+    // Handle pluralization
+    if (count !== undefined && typeof translation === 'object' && 'plural' in translation) {
+      const pluralForm = this.getPluralForm(count, this.currentLocale);
+      const pluralTranslation = (translation as any).plural[pluralForm] || (translation as any).plural.other;
+      return this.interpolate(pluralTranslation, { ...params, count });
+    }
+
+    return this.interpolate(translation, params);
+  }
+
+  /**
+   * Get translation for a key
+   */
+  private getTranslation(key: string, locale: string): string | null {
+    const translations = this.translations.get(locale);
+    if (!translations) return null;
+
+    const keys = key.split('.');
+    let current: any = translations;
+
+    for (const k of keys) {
+      if (current && typeof current === 'object' && k in current) {
+        current = current[k];
+      } else {
+        return null;
+      }
+    }
+
+    return typeof current === 'string' ? current : null;
+  }
+
+  /**
+   * Interpolate parameters in translation
+   */
+  private interpolate(translation: string, params?: Record<string, any>): string {
+    if (!params) return translation;
+
+    return translation.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+      return params[key] !== undefined ? String(params[key]) : match;
+    });
+  }
+
+  /**
+   * Get plural form for a count
+   */
+  private getPluralForm(count: number, locale: string): string {
+    // Simplified plural rules - in a real implementation, you'd use a proper pluralization library
+    if (count === 0) return 'zero';
+    if (count === 1) return 'one';
+    if (count === 2) return 'two';
+    if (count >= 3 && count <= 10) return 'few';
+    if (count > 10) return 'many';
+    return 'other';
+  }
+
+  /**
+   * Format currency
+   */
+  formatCurrency(amount: number, currency?: string): string {
+    const locale = this.getLocale(this.currentLocale);
+    const currencyCode = currency || locale?.currency || 'USD';
+    
+    try {
+      return new Intl.NumberFormat(this.currentLocale, {
+        style: 'currency',
+        currency: currencyCode,
+      }).format(amount);
+    } catch (error) {
+      return `${currencyCode} ${amount.toFixed(2)}`;
+    }
+  }
+
+  /**
+   * Format number
+   */
+  formatNumber(number: number, options?: Intl.NumberFormatOptions): string {
+    try {
+      return new Intl.NumberFormat(this.currentLocale, options).format(number);
+    } catch (error) {
+      return number.toString();
+    }
+  }
+
+  /**
+   * Format date
+   */
+  formatDate(date: Date, options?: Intl.DateTimeFormatOptions): string {
+    try {
+      return new Intl.DateTimeFormat(this.currentLocale, options).format(date);
+    } catch (error) {
+      return date.toLocaleDateString();
+    }
+  }
+
+  /**
+   * Format time
+   */
+  formatTime(date: Date, options?: Intl.DateTimeFormatOptions): string {
+    try {
+      return new Intl.DateTimeFormat(this.currentLocale, {
+        ...options,
+        hour: 'numeric',
+        minute: 'numeric',
+      }).format(date);
+    } catch (error) {
+      return date.toLocaleTimeString();
+    }
+  }
+
+  /**
+   * Format relative time
+   */
+  formatRelativeTime(date: Date): string {
+    try {
+      const rtf = new Intl.RelativeTimeFormat(this.currentLocale, { numeric: 'auto' });
+      const now = new Date();
+      const diffInSeconds = Math.floor((date.getTime() - now.getTime()) / 1000);
+      
+      if (Math.abs(diffInSeconds) < 60) {
+        return rtf.format(diffInSeconds, 'second');
+      } else if (Math.abs(diffInSeconds) < 3600) {
+        return rtf.format(Math.floor(diffInSeconds / 60), 'minute');
+      } else if (Math.abs(diffInSeconds) < 86400) {
+        return rtf.format(Math.floor(diffInSeconds / 3600), 'hour');
+      } else {
+        return rtf.format(Math.floor(diffInSeconds / 86400), 'day');
+      }
+    } catch (error) {
+      return date.toLocaleDateString();
+    }
+  }
+
+  /**
+   * Update document direction
+   */
+  private updateDocumentDirection(): void {
+    const locale = this.getLocale(this.currentLocale);
+    if (locale) {
+      document.documentElement.dir = locale.direction;
+    }
+  }
+
+  /**
+   * Update document language
+   */
+  private updateDocumentLanguage(): void {
+    document.documentElement.lang = this.currentLocale;
+  }
+
+  /**
+   * Load translations from external source
+   */
+  async loadTranslations(locale: string, namespace: string, translations: TranslationNamespace): Promise<void> {
+    const existing = this.translations.get(locale) || {};
+    this.translations.set(locale, {
+      ...existing,
+      [namespace]: translations,
+    });
+  }
+
+  /**
+   * Get all translations for a locale
+   */
+  getTranslations(locale: string): TranslationNamespace | undefined {
+    return this.translations.get(locale);
+  }
+
+  /**
+   * Check if locale is RTL
+   */
+  isRTL(locale?: string): boolean {
+    const targetLocale = locale || this.currentLocale;
+    const localeInfo = this.getLocale(targetLocale);
+    return localeInfo?.direction === 'rtl';
+  }
+
+  /**
+   * Get locale-specific CSS class
+   */
+  getLocaleClass(): string {
+    return `locale-${this.currentLocale} ${this.isRTL() ? 'rtl' : 'ltr'}`;
+  }
 }
+
+// Export singleton instance
+export const i18nManager = new I18nManager();
+
+// Export convenience functions
+export const t = (key: string, params?: Record<string, any>, count?: number) => 
+  i18nManager.t(key, params, count);
+
+export const setLocale = (locale: string) => i18nManager.setLocale(locale);
+export const getCurrentLocale = () => i18nManager.getCurrentLocale();
+export const formatCurrency = (amount: number, currency?: string) => 
+  i18nManager.formatCurrency(amount, currency);
+export const formatNumber = (number: number, options?: Intl.NumberFormatOptions) => 
+  i18nManager.formatNumber(number, options);
+export const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions) => 
+  i18nManager.formatDate(date, options);
+export const formatTime = (date: Date, options?: Intl.DateTimeFormatOptions) => 
+  i18nManager.formatTime(date, options);
+export const formatRelativeTime = (date: Date) => 
+  i18nManager.formatRelativeTime(date);

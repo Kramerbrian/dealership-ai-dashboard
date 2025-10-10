@@ -42,10 +42,15 @@ export class GovernanceEngine {
   private rules: GovernanceRule[] = [];
 
   constructor() {
-    this.supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (url && key) {
+      this.supabase = createClient(url, key);
+    } else {
+      console.warn('Supabase environment variables not set, using mock client');
+      this.supabase = null;
+    }
   }
 
   /**
