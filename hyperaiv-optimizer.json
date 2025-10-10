@@ -1,0 +1,99 @@
+{
+  "id": "hyperAIV_optimizer",
+  "version": "1.0",
+  "namespace": "dealershipAI.workflow",
+  "goal": "Continuously optimize AIV™ and dashboard analytics to maximize organic AI visibility, leads, and ROI while reducing paid-media waste.",
+  "inputs": {
+    "datasets": [
+      "aiv_raw_signals (SEO, AEO, GEO, UGC, GeoLocal)",
+      "ai_overview_crawls",
+      "review_sentiment_stream",
+      "revenue_at_risk",
+      "ad_spend_ledger"
+    ],
+    "frequency": "weekly"
+  },
+  "workflow": [
+    {
+      "step": "Ingest",
+      "task": "Pull all current datasets from Supabase; validate completeness ≥ 95%.",
+      "output": "normalized_signals.json"
+    },
+    {
+      "step": "Calibrate",
+      "task": "Run 8-week rolling regression of RaR vs AIV pillars; compute RMSE, R², Elasticity($/pt).",
+      "output": "calibration_metrics.json"
+    },
+    {
+      "step": "Reinforce",
+      "task": "Adjust pillar weights using reinforcement rule: wᵢ₍t+1₎ = wᵢ₍t₎ + η ∂(ΔRaR)/∂Xᵢ; normalize Σw = 1.",
+      "output": "updated_model_weights.json"
+    },
+    {
+      "step": "Predict",
+      "task": "Apply Kalman-smoothed forecast to estimate next 4-week AIV trajectory and projected revenue gain.",
+      "output": "forecast.json"
+    },
+    {
+      "step": "Optimize-Marketing",
+      "task": "Cross-reference AIV improvement areas with ad-spend ledger; flag channels with spend > Elasticity ROI threshold; recommend reallocation plan.",
+      "output": "ad_spend_reallocation.json"
+    },
+    {
+      "step": "Report",
+      "task": "Write monthly benchmark: {ΔRMSE, ΔR², ΔElasticity, ΔAdEfficiency, ROI%}; auto-commit to /benchmarks/hyperAIV_MM_YYYY.json.",
+      "output": "benchmark_report.json"
+    }
+  ],
+  "evaluation_metrics": {
+    "accuracy_gain%": "((R²_current − R²_prev)/R²_prev) × 100",
+    "roi_gain%": "((ROI_current − ROI_prev)/ROI_prev) × 100",
+    "ad_efficiency_gain%": "((Spend_prev − Spend_current)/Spend_prev) × 100"
+  },
+  "expected_outcomes": {
+    "corr(AIV,GEO)": "≥ 0.85",
+    "mean_latency_days": "≤ 6",
+    "elasticity_confidence_R²": "≥ 0.8",
+    "ad_spend_reduction": "≥ 15%",
+    "lead_volume_increase": "≥ 20%"
+  },
+  "actions": [
+    {
+      "name": "updateSupabaseWeights",
+      "endpoint": "/api/train/reinforce",
+      "method": "POST",
+      "payload": "{dealerId, updated_model_weights}"
+    },
+    {
+      "name": "refreshDashboard",
+      "endpoint": "/api/kpis/latest",
+      "method": "GET"
+    },
+    {
+      "name": "generateROIReport",
+      "endpoint": "/api/reports/roi",
+      "method": "POST"
+    }
+  ],
+  "usage": {
+    "cursor_command": "Run→HyperAIV Optimizer",
+    "trigger": "scheduled (weekly) or manual in Cursor",
+    "output_targets": [
+      "Supabase model_weights table",
+      "Vercel dashboard refresh",
+      "/reports/benchmark/"
+    ]
+  },
+  "success_criteria": "ΔAccuracy ≥ 10% MoM and ΔAdEfficiency ≥ 15% MoM with stable R² ≥ 0.8.",
+  "cursor_integration": {
+    "import_path": "./hyperaiv-optimizer.json",
+    "execution_command": "npm run hyperaiv:optimize",
+    "output_directories": [
+      "./benchmarks/",
+      "./reports/",
+      "./public/analytics/"
+    ],
+    "auto_commit": true,
+    "vercel_isr_revalidation": true
+  }
+}

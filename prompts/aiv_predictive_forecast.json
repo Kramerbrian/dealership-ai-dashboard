@@ -1,0 +1,80 @@
+{
+  "id": "aiv_predictive_forecast",
+  "goal": "extend the dashboard with forward-looking AIV+ forecasts using Kalman-smoothed predictions",
+  "prompt": "Using 8-week historical AIV and RaR data, run a Kalman-smoothed forecast for next 4 weeks. Output predicted AIV_mean, CI95, and expected RaR reduction ($). Include trend classification: {growth, stable, decline}.",
+  "input_schema": {
+    "historical_data": [
+      {
+        "week": "ISO8601",
+        "aiv_score": "number",
+        "rar_revenue": "number",
+        "elasticity_usd_per_pt": "number"
+      }
+    ],
+    "forecast_parameters": {
+      "forecast_horizon_weeks": "number",
+      "confidence_level": "number",
+      "kalman_parameters": {
+        "process_noise": "number",
+        "measurement_noise": "number"
+      }
+    }
+  },
+  "output_schema": {
+    "forecast_results": {
+      "predicted_aiv": [
+        {
+          "week": "ISO8601",
+          "predicted_mean": "number",
+          "confidence_interval_95": {
+            "lower": "number",
+            "upper": "number"
+          },
+          "prediction_confidence": "number"
+        }
+      ],
+      "predicted_rar": [
+        {
+          "week": "ISO8601", 
+          "predicted_revenue": "number",
+          "revenue_confidence_interval": {
+            "lower": "number",
+            "upper": "number"
+          }
+        }
+      ],
+      "trend_classification": {
+        "trend_type": "growth|stable|decline",
+        "trend_strength": "number",
+        "trend_confidence": "number"
+      },
+      "forecast_metrics": {
+        "model_accuracy": "number",
+        "prediction_uncertainty": "number",
+        "recommended_action": "string"
+      }
+    }
+  },
+  "benchmark_targets": {
+    "forecast_rmse": 3.0,
+    "trend_accuracy": 0.8,
+    "confidence_calibration": 0.95
+  },
+  "execution_context": {
+    "algorithms": [
+      "kalman_filter_smoothing",
+      "linear_regression_forecasting",
+      "confidence_interval_calculation",
+      "trend_classification"
+    ],
+    "data_requirements": "8+ weeks historical data",
+    "timeout_seconds": 60
+  },
+  "metadata": {
+    "category": "predictive_analytics",
+    "priority": 3,
+    "dependencies": ["dataset_integrity_validator", "aiv_weight_drift_detector"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "version": "1.0",
+  "namespace": "dealershipAI.hyperAIV",
+  "description": "Monthly prompt set for AIV accuracy optimization and dashboard linkage.",
+  "prompts": [
+    {
+      "id": "data_foundation_truth_density",
+      "goal": "maximize factual precision",
+      "tasks": [
+        "Map every measurable AI Search surface (AEO, GEO, UGC, AI Overview, LLM citations) to verifiable data sources.",
+        "Build schema dictionary for all AIV inputs with variance and validation checks.",
+        "Cross-verify AI Overviews, SGE, and GBP data using multi-engine triangulation.",
+        "Simulate hallucination penalty using 1000 synthetic GPT responses."
+      ],
+      "benchmarks": {
+        "rmse_target": 3.0,
+        "corr_target": 0.8
+      },
+      "execution_context": {
+        "input_format": "AIVPillarData[]",
+        "output_format": "BenchmarkResult[]",
+        "validation_checks": [
+          "residual_analysis",
+          "correlation_verification",
+          "variance_validation"
+        ]
+      }
+    },
+    {
+      "id": "real_time_signal_integration",
+      "goal": "synchronize AIV with live AI-search surfaces",
+      "tasks": [
+        "Crawl AI Overview panels weekly and classify block types (map, list, card, reference).",
+        "Normalize co-mention counts of dealerships inside ChatGPT, Gemini, Perplexity citations; return per-engine z-scores.",
+        "Fit regression between GEO pillar weight and current LLM visibility rate.",
+        "Measure latency between schema update and AI Overview inclusion."
+      ],
+      "benchmarks": {
+        "corr_delta_target": 0.2,
+        "latency_target_days": 7,
+        "stability_sigma": 0.05
+      },
+      "execution_context": {
+        "input_format": "ObservedAIVisibility[]",
+        "output_format": "BenchmarkResult[]",
+        "validation_checks": [
+          "latency_measurement",
+          "correlation_delta",
+          "stability_analysis"
+        ]
+      }
+    },
+    {
+      "id": "economic_elasticity_roi",
+      "goal": "convert AIV change to $ forecast",
+      "tasks": [
+        "Re-estimate elasticity($/pt) with 8-week rolling window.",
+        "Segment dealers by plan tier; compute marginal ROI per +1 AIV pt.",
+        "Simulate campaign uplift; measure MAPE between forecast and actual sales."
+      ],
+      "benchmarks": {
+        "r2_target": 0.75,
+        "mape_target": 0.08
+      },
+      "execution_context": {
+        "input_format": "RevenueTruthData[]",
+        "output_format": "BenchmarkResult[]",
+        "validation_checks": [
+          "elasticity_regression",
+          "forecast_accuracy",
+          "roi_validation"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "created": "2024-01-15T00:00:00Z",
+    "author": "DealershipAI Team",
+    "model_version": "hyperAIV-v1.0",
+    "training_data_version": "2024.01",
+    "export_format": "cursor_prompt_library"
+  },
+  "usage_instructions": {
+    "cursor_import": [
+      "1. Store this file in /prompts/ directory",
+      "2. Open Cursor command palette (Cmd+Shift+P)",
+      "3. Select 'Prompt Library → Import JSON'",
+      "4. Each prompt block becomes an executable cell",
+      "5. Run, version, and track accuracy deltas automatically"
+    ],
+    "monthly_workflow": [
+      "1. Import prompt JSON into Cursor or Claude Code",
+      "2. Attach live dealership dataset to run metrics",
+      "3. Export results to /benchmarks/<category>_MM_YYYY.json",
+      "4. Commit best-performing variants with Git tags",
+      "5. Sync dashboard with latest benchmark JSON"
+    ]
+  },
+  "benchmark_schema": {
+    "result_format": {
+      "promptId": "string",
+      "metric": "string", 
+      "actual": "number",
+      "target": "number",
+      "status": "pass|fail|warning",
+      "timestamp": "ISO8601",
+      "details": "object"
+    },
+    "export_paths": {
+      "monthly_reports": "/benchmarks/monthly_MM_YYYY.json",
+      "prompt_variants": "/prompts/variants/",
+      "accuracy_deltas": "/benchmarks/deltas/"
+    }
+  }
+}

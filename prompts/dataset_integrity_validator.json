@@ -1,0 +1,56 @@
+{
+  "id": "dataset_integrity_validator",
+  "goal": "ensure all uploaded datasets (GEO crawls, AI Overview panels, sales ledgers, schema audits) are validated and standardized before hitting the model",
+  "prompt": "Inspect uploaded GEO, AEO, UGC, and sales datasets. Validate columns, data types, date ranges, and null counts. Output a JSON report with: {dataset_name, completeness%, anomaly_count, suggested_fixes}. Flag any dataset whose RMSE(AIV vs observed) > 3.0 or coverage < 90%.",
+  "input_schema": {
+    "datasets": [
+      {
+        "name": "string",
+        "type": "GEO|AEO|UGC|sales|schema",
+        "columns": ["string"],
+        "data": ["object"],
+        "date_range": {
+          "start": "ISO8601",
+          "end": "ISO8601"
+        }
+      }
+    ]
+  },
+  "output_schema": {
+    "validation_report": {
+      "dataset_name": "string",
+      "completeness_percent": "number",
+      "anomaly_count": "number",
+      "suggested_fixes": ["string"],
+      "rmse_score": "number",
+      "coverage_percent": "number",
+      "validation_status": "pass|fail|warning",
+      "flagged_issues": ["string"]
+    }
+  },
+  "benchmark_targets": {
+    "rmse_threshold": 3.0,
+    "coverage_threshold": 90.0,
+    "completeness_threshold": 95.0
+  },
+  "execution_context": {
+    "validation_checks": [
+      "column_validation",
+      "data_type_validation", 
+      "date_range_validation",
+      "null_count_analysis",
+      "anomaly_detection",
+      "rmse_calculation",
+      "coverage_analysis"
+    ],
+    "error_handling": "strict",
+    "timeout_seconds": 30
+  },
+  "metadata": {
+    "category": "data_validation",
+    "priority": 1,
+    "dependencies": [],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "cursor_prompt_packager",
+  "goal": "keep prompt library portable and versioned for easy deployment and replication",
+  "prompt": "Bundle all prompts in /prompts into a versioned JSON file. Include {id, goal, last_benchmark, accuracy_gain%}. Compress and name file hyperAIV_promptset_v{date}.json.",
+  "input_schema": {
+    "prompts_directory": {
+      "path": "string",
+      "prompt_files": ["string"],
+      "include_benchmarks": "boolean",
+      "include_metadata": "boolean"
+    },
+    "versioning_config": {
+      "version_scheme": "semantic|date|incremental",
+      "include_git_hash": "boolean",
+      "compression_level": "number"
+    },
+    "export_options": {
+      "format": "json|jsonl|compressed",
+      "include_dependencies": "boolean",
+      "include_execution_context": "boolean"
+    }
+  },
+  "output_schema": {
+    "packaged_prompts": {
+      "package_metadata": {
+        "package_name": "string",
+        "version": "string",
+        "creation_date": "ISO8601",
+        "git_hash": "string",
+        "total_prompts": "number",
+        "package_size_bytes": "number"
+      },
+      "prompt_summary": [
+        {
+          "id": "string",
+          "goal": "string",
+          "category": "string",
+          "priority": "number",
+          "last_benchmark_score": "number",
+          "accuracy_gain_percent": "number",
+          "dependencies": ["string"]
+        }
+      ],
+      "export_files": {
+        "main_package": "string",
+        "benchmark_results": "string",
+        "dependency_graph": "string",
+        "usage_instructions": "string"
+      }
+    }
+  },
+  "benchmark_targets": {
+    "package_integrity": 1.0,
+    "version_accuracy": 1.0,
+    "deployment_readiness": 1.0
+  },
+  "execution_context": {
+    "packaging_methods": [
+      "file_aggregation",
+      "metadata_extraction",
+      "dependency_resolution",
+      "version_control_integration"
+    ],
+    "output_formats": ["JSON", "compressed archive"],
+    "timeout_seconds": 60
+  },
+  "metadata": {
+    "category": "deployment",
+    "priority": 10,
+    "dependencies": ["prompt_benchmark_runner"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

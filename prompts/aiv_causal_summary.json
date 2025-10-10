@@ -1,0 +1,79 @@
+{
+  "id": "aiv_causal_summary",
+  "goal": "generate human-readable causal explanations for metric changes using SHAP attribution",
+  "prompt": "Given AIV history and pillar metrics, perform SHAP attribution to identify top 5 drivers of last week's ΔAIV. For each driver, describe: effect_size, direction, and actionable optimization (≤30 words). Output JSON {driver, ΔAIV%, causal_strength, recommendation}.",
+  "input_schema": {
+    "aiv_history": [
+      {
+        "week": "ISO8601",
+        "aiv_score": "number",
+        "pillar_scores": {
+          "seo_score": "number",
+          "aeo_score": "number",
+          "geo_score": "number",
+          "ugc_score": "number",
+          "geolocal_score": "number"
+        }
+      }
+    ],
+    "external_factors": [
+      {
+        "factor_name": "string",
+        "impact_score": "number",
+        "timestamp": "ISO8601"
+      }
+    ],
+    "analysis_period": {
+      "baseline_week": "ISO8601",
+      "comparison_week": "ISO8601"
+    }
+  },
+  "output_schema": {
+    "causal_analysis": {
+      "top_drivers": [
+        {
+          "driver_name": "string",
+          "delta_aiv_percent": "number",
+          "causal_strength": "number",
+          "direction": "positive|negative",
+          "recommendation": "string",
+          "confidence_level": "number"
+        }
+      ],
+      "summary_insights": {
+        "total_aiv_change": "number",
+        "primary_driver": "string",
+        "secondary_drivers": ["string"],
+        "actionable_opportunities": ["string"],
+        "risk_factors": ["string"]
+      },
+      "attribution_metrics": {
+        "shap_values": "object",
+        "feature_importance": "object",
+        "interaction_effects": "object"
+      }
+    }
+  },
+  "benchmark_targets": {
+    "attribution_accuracy": 0.85,
+    "recommendation_relevance": 0.9,
+    "explanation_clarity": 0.8
+  },
+  "execution_context": {
+    "analysis_methods": [
+      "shap_attribution",
+      "feature_importance_ranking",
+      "causal_inference",
+      "recommendation_generation"
+    ],
+    "output_format": "dashboard_widget_ready",
+    "timeout_seconds": 90
+  },
+  "metadata": {
+    "category": "causal_analysis",
+    "priority": 4,
+    "dependencies": ["aiv_predictive_forecast"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

@@ -1,0 +1,43 @@
+# OpenAI GPT Integration Environment Variables
+# Copy this to .env.local and fill in your actual values
+
+# OpenAI Configuration (REQUIRED)
+OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_ASSISTANT_ID=asst_your-assistant-id-here
+OPENAI_MODEL=gpt-4-turbo-preview
+
+# Supabase Configuration (REQUIRED)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Application Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+
+# Optional: Redis Configuration (for caching)
+REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=your-redis-password
+
+# Optional: External API Keys for data sources
+GOOGLE_ANALYTICS_KEY=your-ga-key
+SEMRUSH_API_KEY=your-semrush-key
+AHREFS_API_KEY=your-ahrefs-key
+ANTHROPIC_API_KEY=your-anthropic-key
+
+# Optional: Email Configuration
+RESEND_API_KEY=your-resend-key
+FROM_EMAIL=noreply@dealershipai.com
+
+# Optional: Stripe Configuration (for billing)
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Optional: Clerk Configuration (for authentication)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Optional: Monitoring
+SENTRY_DSN=your-sentry-dsn
+VERCEL_ANALYTICS_ID=your-analytics-id

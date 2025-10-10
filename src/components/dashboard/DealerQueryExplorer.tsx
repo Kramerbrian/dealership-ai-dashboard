@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * DealerQueryExplorer Component - Profound-inspired
  * Shows volume of queries about dealerships across AI engines

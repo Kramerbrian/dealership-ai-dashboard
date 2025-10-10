@@ -1,0 +1,76 @@
+{
+  "id": "prompt_benchmark_runner",
+  "goal": "meta-optimize the GPT itself by evaluating prompt performance and accuracy",
+  "prompt": "Execute last 10 prompts in /prompts directory on identical input. Evaluate factual_precision, numeric_consistency, and hallucination_rate. Output ranking by accuracy_score = 0.5*precision + 0.3*consistency – 0.2*hallucination_rate.",
+  "input_schema": {
+    "test_prompts": [
+      {
+        "prompt_id": "string",
+        "prompt_file_path": "string",
+        "version": "string",
+        "last_benchmark_date": "ISO8601"
+      }
+    ],
+    "test_dataset": {
+      "input_data": "object",
+      "expected_output_schema": "object",
+      "ground_truth_examples": ["object"]
+    },
+    "evaluation_criteria": {
+      "factual_precision_weight": "number",
+      "numeric_consistency_weight": "number",
+      "hallucination_penalty_weight": "number"
+    }
+  },
+  "output_schema": {
+    "benchmark_results": {
+      "prompt_rankings": [
+        {
+          "prompt_id": "string",
+          "accuracy_score": "number",
+          "factual_precision": "number",
+          "numeric_consistency": "number",
+          "hallucination_rate": "number",
+          "execution_time": "number",
+          "error_rate": "number",
+          "ranking_position": "number"
+        }
+      ],
+      "performance_analysis": {
+        "best_performing_prompt": "string",
+        "worst_performing_prompt": "string",
+        "average_accuracy": "number",
+        "accuracy_variance": "number",
+        "improvement_opportunities": ["string"]
+      },
+      "meta_insights": {
+        "prompt_pattern_analysis": "object",
+        "common_failure_modes": ["string"],
+        "optimization_recommendations": ["string"],
+        "version_control_suggestions": ["string"]
+      }
+    }
+  },
+  "benchmark_targets": {
+    "accuracy_score_threshold": 0.8,
+    "hallucination_rate_threshold": 0.1,
+    "consistency_threshold": 0.9
+  },
+  "execution_context": {
+    "evaluation_methods": [
+      "factual_accuracy_testing",
+      "numeric_consistency_validation",
+      "hallucination_detection",
+      "performance_benchmarking"
+    ],
+    "test_environment": "isolated_execution",
+    "timeout_seconds": 300
+  },
+  "metadata": {
+    "category": "meta_optimization",
+    "priority": 9,
+    "dependencies": ["dashboard_usage_insights"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

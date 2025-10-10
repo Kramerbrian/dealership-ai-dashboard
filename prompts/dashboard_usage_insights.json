@@ -1,0 +1,90 @@
+{
+  "id": "dashboard_usage_insights",
+  "goal": "monitor dashboard engagement for optimization and identify high-value visualizations",
+  "prompt": "Aggregate dashboard event logs for the last 30 days. Compute avg session time, chart interactions, and filter usage rates. Output top 5 most-viewed metrics and correlation with conversion events.",
+  "input_schema": {
+    "dashboard_events": [
+      {
+        "user_id": "string",
+        "session_id": "string",
+        "timestamp": "ISO8601",
+        "event_type": "page_view|chart_interaction|filter_change|export|share",
+        "page_path": "string",
+        "component_id": "string",
+        "interaction_data": "object",
+        "session_duration": "number"
+      }
+    ],
+    "conversion_events": [
+      {
+        "user_id": "string",
+        "event_type": "subscription|upgrade|feature_usage|export",
+        "timestamp": "ISO8601",
+        "value": "number"
+      }
+    ],
+    "analysis_period": {
+      "start_date": "ISO8601",
+      "end_date": "ISO8601"
+    }
+  },
+  "output_schema": {
+    "usage_analytics": {
+      "engagement_metrics": {
+        "average_session_time": "number",
+        "total_sessions": "number",
+        "unique_users": "number",
+        "page_views_per_session": "number",
+        "bounce_rate": "number"
+      },
+      "component_analytics": {
+        "most_viewed_metrics": [
+          {
+            "metric_name": "string",
+            "view_count": "number",
+            "interaction_rate": "number",
+            "average_view_duration": "number"
+          }
+        ],
+        "chart_interactions": {
+          "most_interactive_charts": ["string"],
+          "filter_usage_rates": "object",
+          "export_frequency": "object"
+        }
+      },
+      "conversion_correlation": {
+        "high_value_metrics": ["string"],
+        "conversion_funnel": "object",
+        "feature_adoption_rates": "object",
+        "user_journey_insights": ["string"]
+      },
+      "optimization_recommendations": {
+        "underutilized_features": ["string"],
+        "high_engagement_opportunities": ["string"],
+        "ux_improvement_suggestions": ["string"]
+      }
+    }
+  },
+  "benchmark_targets": {
+    "engagement_improvement": 0.15,
+    "conversion_correlation_accuracy": 0.8,
+    "feature_adoption_rate": 0.7
+  },
+  "execution_context": {
+    "analysis_methods": [
+      "event_aggregation",
+      "user_journey_analysis",
+      "conversion_correlation",
+      "engagement_scoring"
+    ],
+    "data_sources": ["app analytics logs", "user behavior tracking"],
+    "timeout_seconds": 120
+  },
+  "metadata": {
+    "category": "user_analytics",
+    "priority": 8,
+    "dependencies": ["fraudguard_audit"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}

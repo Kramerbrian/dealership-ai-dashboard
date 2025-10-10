@@ -1,0 +1,88 @@
+{
+  "id": "roi_scenario_simulator",
+  "goal": "simulate ROI outcomes from planned actions and interventions",
+  "prompt": "Simulate elasticity($/pt) under 3 interventions: +3 SCS, +5 SCR, +2 SIS. Estimate ΔRaR, ROI%, and payback period for each. Output comparative table sorted by $Impact ÷ Effort.",
+  "input_schema": {
+    "current_metrics": {
+      "aiv_score": "number",
+      "current_revenue": "number",
+      "elasticity_usd_per_pt": "number",
+      "pillar_scores": {
+        "seo_score": "number",
+        "aeo_score": "number",
+        "geo_score": "number",
+        "ugc_score": "number",
+        "geolocal_score": "number"
+      }
+    },
+    "intervention_scenarios": [
+      {
+        "scenario_name": "string",
+        "intervention_type": "SCS|SCR|SIS|combined",
+        "intervention_magnitude": "number",
+        "estimated_cost": "number",
+        "implementation_effort": "low|medium|high"
+      }
+    ],
+    "historical_elasticity": [
+      {
+        "period": "ISO8601",
+        "elasticity_usd_per_pt": "number",
+        "confidence_interval": {
+          "lower": "number",
+          "upper": "number"
+        }
+      }
+    ]
+  },
+  "output_schema": {
+    "roi_simulation": {
+      "scenario_results": [
+        {
+          "scenario_name": "string",
+          "intervention_type": "string",
+          "predicted_aiv_delta": "number",
+          "predicted_revenue_delta": "number",
+          "roi_percentage": "number",
+          "payback_period_months": "number",
+          "impact_effort_ratio": "number",
+          "confidence_level": "number",
+          "risk_assessment": "low|medium|high"
+        }
+      ],
+      "comparative_analysis": {
+        "best_roi_scenario": "string",
+        "fastest_payback": "string",
+        "highest_impact": "string",
+        "recommended_combination": "string"
+      },
+      "sensitivity_analysis": {
+        "elasticity_sensitivity": "number",
+        "cost_sensitivity": "number",
+        "timeline_sensitivity": "number"
+      }
+    }
+  },
+  "benchmark_targets": {
+    "roi_accuracy": 0.8,
+    "payback_accuracy": 0.75,
+    "scenario_ranking_accuracy": 0.85
+  },
+  "execution_context": {
+    "simulation_methods": [
+      "elasticity_projection",
+      "roi_calculation",
+      "payback_analysis",
+      "sensitivity_testing"
+    ],
+    "data_sources": ["historical elasticity", "marketing spend tables"],
+    "timeout_seconds": 120
+  },
+  "metadata": {
+    "category": "financial_modeling",
+    "priority": 5,
+    "dependencies": ["aiv_causal_summary"],
+    "version": "1.0",
+    "last_updated": "2024-01-15T00:00:00Z"
+  }
+}
