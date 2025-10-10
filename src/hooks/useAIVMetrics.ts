@@ -130,3 +130,112 @@ export function useAIVMetrics({
     refetch: fetchData
   };
 }
+
+// Enhanced hook with refresh functionality for AIVMetricsPanel
+interface UseAIVMetricsWithRefreshOptions {
+  dealerId: string;
+  autoRefresh?: boolean;
+  refreshInterval?: number;
+}
+
+interface UseAIVMetricsWithRefreshReturn {
+  metrics: any;
+  trends: any;
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+  recomputeElasticity: (force?: boolean) => Promise<void>;
+  isRecomputing: boolean;
+  isComputing: boolean;
+}
+
+export function useAIVMetricsWithRefresh({ 
+  dealerId, 
+  autoRefresh = false, 
+  refreshInterval = 30000 
+}: UseAIVMetricsWithRefreshOptions): UseAIVMetricsWithRefreshReturn {
+  const [metrics, setMetrics] = useState<any>(null);
+  const [trends, setTrends] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRecomputing, setIsRecomputing] = useState(false);
+  const [isComputing, setIsComputing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMetrics = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`/api/aiv-metrics?dealerId=${encodeURIComponent(dealerId)}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setMetrics(data);
+      
+      // Generate mock trends
+      setTrends({
+        aiv_trend: Math.random() * 10 - 5,
+        ati_trend: Math.random() * 8 - 4,
+        crs_trend: Math.random() * 6 - 3
+      });
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch AIV metrics');
+      console.error('Error fetching AIV metrics:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const recomputeElasticity = async (force = false) => {
+    setIsRecomputing(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/elasticity/recompute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ dealerId, force })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setMetrics(prev => ({ ...prev, ...data }));
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to recompute elasticity');
+      console.error('Error recomputing elasticity:', err);
+    } finally {
+      setIsRecomputing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [dealerId]);
+
+  useEffect(() => {
+    if (!autoRefresh) return;
+    
+    const interval = setInterval(fetchMetrics, refreshInterval);
+    return () => clearInterval(interval);
+  }, [autoRefresh, refreshInterval, dealerId]);
+  
+  return {
+    metrics,
+    trends,
+    isLoading,
+    error,
+    refetch: fetchMetrics,
+    recomputeElasticity,
+    isRecomputing,
+    isComputing: isLoading || isRecomputing
+  };
+}

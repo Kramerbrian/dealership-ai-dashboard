@@ -4,5 +4,27 @@
   "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/train/reinforce",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/train/evaluate",
+      "schedule": "0 0 * * 0"
+    },
+    {
+      "path": "/api/anomaly/reviews",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/predict/forecast",
+      "schedule": "0 0 * * 0"
+    },
+    {
+      "path": "/api/reports/roi",
+      "schedule": "0 0 1 * *"
+    }
+  ]
 }

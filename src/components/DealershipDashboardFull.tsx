@@ -28,6 +28,7 @@ import {
   Star as StarIcon
 } from 'lucide-react';
 import { DealershipAI_TruthBased, DealerData, VisibilityScores, EEATScores } from '@/core/truth-based-scorer';
+import ModelHealthTiles from '@/components/dashboard/ModelHealthTiles';
 
 interface Dealer {
   id: string;
@@ -417,6 +418,12 @@ function OverviewTab({ data }: { data: DashboardData | null }) {
 
   return (
     <div className="space-y-6">
+      {/* Model Health Tiles */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Model Health Dashboard</h2>
+        <ModelHealthTiles />
+      </div>
+
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
