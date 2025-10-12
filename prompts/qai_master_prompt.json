@@ -1,0 +1,289 @@
+{
+  "version": "1.0",
+  "namespace": "dealershipAI.qai.master",
+  "description": "Master prompt configuration for Query AI (QAI) system - central orchestration and management of all AI query processing capabilities for DealershipAI platform",
+  "created": "2024-01-15T00:00:00Z",
+  "author": "DealershipAI Team",
+  "model_version": "qai-master-v1.0",
+  "system_type": "query_ai_orchestrator",
+  "master_prompts": {
+    "query_processing": {
+      "id": "qai_query_processor",
+      "goal": "process and route all incoming queries to appropriate specialized AI modules",
+      "priority": 1,
+      "capabilities": [
+        "query classification and intent detection",
+        "multi-tenant query isolation and security",
+        "dynamic prompt selection and routing",
+        "response aggregation and formatting",
+        "performance monitoring and optimization"
+      ],
+      "input_schema": {
+        "query": {
+          "text": "string",
+          "tenant_id": "string",
+          "user_role": "string",
+          "context": "object",
+          "metadata": "object"
+        },
+        "routing_options": {
+          "enable_caching": "boolean",
+          "priority_level": "high|medium|low",
+          "response_format": "json|text|structured",
+          "include_explanations": "boolean"
+        }
+      },
+      "output_schema": {
+        "response": {
+          "content": "string|object",
+          "confidence_score": "number",
+          "source_prompts": ["string"],
+          "processing_time_ms": "number",
+          "cache_hit": "boolean"
+        },
+        "metadata": {
+          "query_classification": "string",
+          "routing_decision": "string",
+          "tenant_validation": "boolean",
+          "security_checks": "object"
+        }
+      }
+    },
+    "prompt_orchestration": {
+      "id": "qai_prompt_orchestrator",
+      "goal": "dynamically select and combine specialized prompts based on query context and requirements",
+      "priority": 2,
+      "capabilities": [
+        "intelligent prompt selection",
+        "prompt chaining and composition",
+        "context-aware prompt adaptation",
+        "performance-based prompt optimization",
+        "A/B testing and prompt versioning"
+      ],
+      "prompt_families": [
+        {
+          "family": "data_validation",
+          "prompts": ["dataset_integrity_validator"],
+          "use_cases": ["data quality checks", "input validation", "schema verification"]
+        },
+        {
+          "family": "model_optimization",
+          "prompts": ["aiv_weight_drift_detector"],
+          "use_cases": ["model performance monitoring", "parameter tuning", "drift detection"]
+        },
+        {
+          "family": "predictive_analytics",
+          "prompts": ["aiv_predictive_forecast", "aiv_causal_summary"],
+          "use_cases": ["forecasting", "trend analysis", "causal inference"]
+        },
+        {
+          "family": "financial_modeling",
+          "prompts": ["roi_scenario_simulator"],
+          "use_cases": ["ROI analysis", "financial planning", "scenario modeling"]
+        },
+        {
+          "family": "regional_optimization",
+          "prompts": ["regional_weight_optimizer"],
+          "use_cases": ["geographic analysis", "market-specific optimization", "regional insights"]
+        },
+        {
+          "family": "trust_security",
+          "prompts": ["fraudguard_audit"],
+          "use_cases": ["fraud detection", "security auditing", "anomaly detection"]
+        },
+        {
+          "family": "user_analytics",
+          "prompts": ["dashboard_usage_insights"],
+          "use_cases": ["user behavior analysis", "engagement metrics", "UX optimization"]
+        },
+        {
+          "family": "meta_optimization",
+          "prompts": ["prompt_benchmark_runner"],
+          "use_cases": ["prompt performance evaluation", "accuracy testing", "optimization"]
+        }
+      ]
+    },
+    "multi_tenant_security": {
+      "id": "qai_tenant_security",
+      "goal": "ensure secure, isolated query processing across all tenant boundaries",
+      "priority": 1,
+      "security_requirements": [
+        "tenant_id validation and enforcement",
+        "role-based access control (RBAC) verification",
+        "query sanitization and validation",
+        "response filtering and redaction",
+        "audit logging and monitoring"
+      ],
+      "rbac_enforcement": {
+        "super_admin": {
+          "access_level": "system_wide",
+          "capabilities": ["all_queries", "cross_tenant_analysis", "system_management"]
+        },
+        "enterprise_admin": {
+          "access_level": "enterprise_group",
+          "capabilities": ["group_queries", "multi_dealership_analysis", "group_management"],
+          "max_dealerships": 350
+        },
+        "dealership_admin": {
+          "access_level": "single_dealership",
+          "capabilities": ["dealership_queries", "local_analysis", "dealership_management"]
+        },
+        "user": {
+          "access_level": "view_only",
+          "capabilities": ["read_only_queries", "basic_insights", "dashboard_access"]
+        }
+      }
+    },
+    "performance_optimization": {
+      "id": "qai_performance_optimizer",
+      "goal": "optimize query processing performance through intelligent caching, parallel processing, and resource management",
+      "priority": 3,
+      "optimization_strategies": [
+        "intelligent caching with Redis (Upstash)",
+        "geographic pooling for similar queries",
+        "parallel prompt execution where possible",
+        "response compression and streaming",
+        "adaptive timeout management"
+      ],
+      "cache_configuration": {
+        "cache_strategies": {
+          "frequent_queries": {
+            "ttl_seconds": 3600,
+            "pool_size": 1000,
+            "eviction_policy": "lru"
+          },
+          "complex_analytics": {
+            "ttl_seconds": 1800,
+            "pool_size": 500,
+            "eviction_policy": "lfu"
+          },
+          "real_time_data": {
+            "ttl_seconds": 300,
+            "pool_size": 2000,
+            "eviction_policy": "ttl"
+          }
+        },
+        "geographic_pooling": {
+          "enabled": true,
+          "pool_key_format": "{city}:{state}:{query_type}",
+          "max_pool_size": 100
+        }
+      }
+    }
+  },
+  "execution_workflow": {
+    "query_processing_pipeline": [
+      "1. qai_tenant_security → validate tenant access and permissions",
+      "2. qai_query_processor → classify query and determine routing",
+      "3. qai_prompt_orchestrator → select and compose appropriate prompts",
+      "4. specialized_prompt_execution → execute selected prompt(s)",
+      "5. qai_performance_optimizer → cache results and optimize response",
+      "6. response_aggregation → combine and format final response"
+    ],
+    "real_time_monitoring": [
+      "query_latency_tracking",
+      "cache_hit_rate_monitoring", 
+      "error_rate_analysis",
+      "tenant_usage_analytics",
+      "prompt_performance_metrics"
+    ]
+  },
+  "integration_points": {
+    "frontend": {
+      "nextjs_app": "app/",
+      "api_routes": "app/api/qai/",
+      "components": "src/components/qai/"
+    },
+    "backend": {
+      "express_server": "backend/src/",
+      "trpc_routes": "backend/src/routes/qai/",
+      "middleware": "backend/src/middleware/"
+    },
+    "database": {
+      "postgres": "Supabase with RLS",
+      "redis_cache": "Upstash Redis",
+      "query_logs": "aiv_query_logs table"
+    },
+    "external_apis": {
+      "clerk_auth": "Multi-tenant authentication",
+      "vercel_cron": "Scheduled optimization jobs",
+      "monitoring": "Performance and error tracking"
+    }
+  },
+  "benchmark_targets": {
+    "query_latency": "< 500ms (95th percentile)",
+    "cache_hit_rate": "> 80%",
+    "accuracy_score": "> 0.9",
+    "uptime": "> 99.9%",
+    "concurrent_queries": "> 1000",
+    "tenant_isolation": "100% (zero data leakage)"
+  },
+  "monitoring_metrics": {
+    "performance": [
+      "query_response_time",
+      "cache_hit_rate",
+      "throughput_queries_per_second",
+      "error_rate_by_tenant",
+      "prompt_execution_time"
+    ],
+    "security": [
+      "unauthorized_access_attempts",
+      "tenant_boundary_violations",
+      "query_sanitization_failures",
+      "rbac_enforcement_success_rate"
+    ],
+    "business": [
+      "queries_per_tenant",
+      "feature_usage_analytics",
+      "user_engagement_metrics",
+      "roi_attribution"
+    ]
+  },
+  "deployment_configuration": {
+    "environment_variables": {
+      "QAI_REDIS_URL": "Upstash Redis connection string",
+      "QAI_DB_URL": "PostgreSQL connection string",
+      "QAI_CLERK_SECRET": "Clerk authentication secret",
+      "QAI_CACHE_TTL": "Default cache TTL in seconds",
+      "QAI_MAX_CONCURRENT": "Maximum concurrent queries"
+    },
+    "scaling_parameters": {
+      "horizontal_scaling": "Auto-scale based on query volume",
+      "vertical_scaling": "Dynamic resource allocation",
+      "geographic_distribution": "Multi-region deployment support"
+    }
+  },
+  "cursor_integration": {
+    "import_instructions": [
+      "1. Store this file in /prompts/ directory",
+      "2. Import all referenced prompt files from /prompts/",
+      "3. Configure QAI system using this master configuration",
+      "4. Set up monitoring and alerting based on benchmark targets",
+      "5. Deploy with proper environment variables and scaling configuration"
+    ],
+    "development_workflow": [
+      "1. Use this master prompt for QAI system architecture",
+      "2. Reference individual prompt files for specific capabilities",
+      "3. Test query processing pipeline with sample data",
+      "4. Monitor performance against benchmark targets",
+      "5. Iterate and optimize based on real-world usage patterns"
+    ]
+  },
+  "expected_outcomes": {
+    "unified_query_processing": "Single entry point for all AI queries with intelligent routing",
+    "multi_tenant_security": "Complete tenant isolation with zero data leakage",
+    "performance_optimization": "Sub-500ms response times with 80%+ cache hit rate",
+    "scalable_architecture": "Support for 1000+ concurrent queries across all tenants",
+    "intelligent_caching": "Geographic pooling and adaptive cache management",
+    "comprehensive_monitoring": "Real-time performance, security, and business metrics",
+    "seamless_integration": "Native integration with DealershipAI platform components"
+  },
+  "success_metrics": {
+    "query_performance": "Target: < 500ms average response time",
+    "cache_efficiency": "Target: > 80% cache hit rate",
+    "system_reliability": "Target: > 99.9% uptime",
+    "security_compliance": "Target: 100% tenant isolation",
+    "user_satisfaction": "Target: > 4.5/5 user rating",
+    "cost_optimization": "Target: 30% reduction in compute costs through caching"
+  }
+}
