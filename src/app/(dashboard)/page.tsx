@@ -12,6 +12,14 @@ import { WhatIfSimulator } from '@/components/simulator/WhatIfSimulator';
 import { TeamManagement } from '@/components/team/TeamManagement';
 import { ExtendedAICoverage } from '@/components/ai-coverage/ExtendedAICoverage';
 import { 
+  FloatingAgentButton, 
+  AgentButton, 
+  AgentChatModal,
+  EmergencyAgentTrigger,
+  CompetitorAgentTrigger,
+  AIVisibilityAgentTrigger
+} from '@/components/agent';
+import { 
   BarChart3, 
   Star, 
   Brain, 
@@ -43,6 +51,13 @@ export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTour, setShowTour] = useState(false);
+  const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
+  
+  // Agent context data
+  const dealerDomain = 'terryreidhyundai.com'; // In production, get from user context
+  const dealerName = 'Terry Reid Hyundai';
+  const lostRevenue = 1200; // Calculate from metrics (more realistic)
+  const topCompetitor = 'Reed Dodge';
 
   useEffect(() => {
     // Check if user has seen the tour
@@ -126,10 +141,11 @@ export default function DashboardPage() {
             </Button>
             <Button 
               variant="secondary"
+              onClick={() => setIsAgentModalOpen(true)}
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
             >
               <Zap className="h-4 w-4" />
-              Quick Actions
+              Ask AI Agent
             </Button>
           </div>
         </div>
@@ -239,6 +255,32 @@ export default function DashboardPage() {
                   <span className="text-sm">Team Tasks</span>
                 </Button>
               </div>
+              
+              {/* Agent Integration Section */}
+              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">🤖 AI Agent Assistance</h4>
+                    <p className="text-sm text-gray-600">
+                      Get personalized AI guidance for your dealership optimization
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <EmergencyAgentTrigger 
+                    dealerDomain={dealerDomain} 
+                    lostRevenue={lostRevenue} 
+                  />
+                  <CompetitorAgentTrigger 
+                    dealerDomain={dealerDomain} 
+                    competitor={topCompetitor} 
+                  />
+                  <AIVisibilityAgentTrigger 
+                    dealerDomain={dealerDomain} 
+                    score={metrics?.aivScore} 
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -345,6 +387,25 @@ export default function DashboardPage() {
       {showTour && (
         <ProductTour />
       )}
+
+      {/* Floating Agent Button */}
+      <FloatingAgentButton
+        dealerDomain={dealerDomain}
+        context={{
+          currentScore: metrics?.aivScore,
+          topCompetitor,
+          lostRevenue,
+          currentIssues: ['Missing Schema', 'Poor AI Visibility', 'Incomplete GBP']
+        }}
+      />
+
+      {/* Agent Chat Modal */}
+      <AgentChatModal
+        isOpen={isAgentModalOpen}
+        onClose={() => setIsAgentModalOpen(false)}
+        dealerDomain={dealerDomain}
+        initialPrompt={`I'm looking at my dashboard for ${dealerName}. Help me understand my current AI visibility score of ${metrics?.aivScore} and what I should focus on first.`}
+      />
     </div>
   );
 }

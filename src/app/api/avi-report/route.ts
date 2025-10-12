@@ -1,9 +1,124 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AviReport } from '@/types/avi-report';
+import { AviReport, AviReportZ } from '@/types/avi-report';
+import { supabaseAdmin } from '@/lib/supabase';
+import { unstable_cache } from 'next/cache';
+import { getAviReportCacheKey, getAviReportCacheTags, logCacheAccess } from '@/lib/utils/avi-cache';
 
 export const dynamic = 'force-dynamic';
 
-// Mock data generator for AVI Report
+// Feature flag for mock data fallback
+const USE_MOCK_FALLBACK = process.env.AVI_USE_MOCK_FALLBACK !== 'false';
+
+/**
+ * Transform database row to AviReport type
+ */
+function transformDatabaseRow(row: any): AviReport {
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    version: row.version,
+    asOf: row.as_of,
+    windowWeeks: row.window_weeks,
+    aivPct: parseFloat(row.aiv_pct),
+    atiPct: parseFloat(row.ati_pct),
+    crsPct: parseFloat(row.crs_pct),
+    elasticity: row.elasticity,
+    pillars: row.pillars,
+    modifiers: row.modifiers,
+    clarity: row.clarity,
+    secondarySignals: row.secondary_signals,
+    ci95: row.ci95,
+    regimeState: row.regime_state,
+    counterfactual: row.counterfactual,
+    drivers: row.drivers,
+    anomalies: row.anomalies,
+    backlogSummary: row.backlog_summary,
+  };
+}
+
+/**
+ * Fetch AVI report from database with enhanced metrics
+ */
+async function fetchAviReportFromDatabase(tenantId: string): Promise<AviReport | null> {
+  try {
+    // Fetch main AVI report
+    const { data, error } = await supabaseAdmin
+      .from('avi_reports')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .order('as_of', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows found
+        return null;
+      }
+      throw error;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    // Fetch AEMD metrics for the same date
+    const { data: aemdData } = await supabaseAdmin
+      .from('aemd_metrics')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('report_date', data.as_of)
+      .single();
+
+    // Fetch accuracy monitoring for the same date
+    const { data: accuracyData } = await supabaseAdmin
+      .from('accuracy_monitoring')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .gte('measurement_date', data.as_of)
+      .lte('measurement_date', new Date(new Date(data.as_of).getTime() + 86400000).toISOString())
+      .order('measurement_date', { ascending: false })
+      .limit(1)
+      .single();
+
+    const report = transformDatabaseRow(data);
+
+    // Add AEMD metrics to report
+    if (aemdData) {
+      (report as any).aemdMetrics = {
+        aemdFinal: parseFloat(aemdData.aemd_final),
+        fsScore: parseFloat(aemdData.fs_score),
+        aioScore: parseFloat(aemdData.aio_score),
+        paaScore: parseFloat(aemdData.paa_score),
+        omegaFs: parseFloat(aemdData.omega_fs),
+        omegaAio: parseFloat(aemdData.omega_aio),
+        omegaPaa: parseFloat(aemdData.omega_paa),
+      };
+    }
+
+    // Add accuracy metrics to report
+    if (accuracyData) {
+      (report as any).accuracyMetrics = {
+        issueDetectionAccuracy: parseFloat(accuracyData.issue_detection_accuracy),
+        rankingCorrelation: parseFloat(accuracyData.ranking_correlation),
+        consensusReliability: parseFloat(accuracyData.consensus_reliability),
+        variance: parseFloat(accuracyData.variance),
+        confidenceLevel: accuracyData.confidence_level,
+        isBelowThreshold: accuracyData.is_below_threshold,
+      };
+    }
+
+    return report;
+  } catch (error) {
+    console.error('[AVI Report API] Database fetch error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Mock data generator for AVI Report (fallback)
+ */
 function generateMockAviReport(tenantId: string): AviReport {
   const baseAIV = 78 + Math.random() * 15;
   const baseATI = 72 + Math.random() * 12;
@@ -131,18 +246,83 @@ function generateMockAviReport(tenantId: string): AviReport {
   };
 }
 
+/**
+ * Cached AVI report fetcher with fallback
+ */
+async function getCachedAviReport(tenantId: string): Promise<AviReport> {
+  const cacheKey = getAviReportCacheKey(tenantId);
+  const cacheTags = getAviReportCacheTags(tenantId);
+
+  // Create cached fetcher
+  const cachedFetch = unstable_cache(
+    async () => {
+      try {
+        // Try database first
+        const report = await fetchAviReportFromDatabase(tenantId);
+
+        if (report) {
+          logCacheAccess({ hit: false, key: cacheKey, timestamp: Date.now() });
+
+          // Validate with Zod
+          const validatedReport = AviReportZ.parse(report);
+          return { source: 'database', report: validatedReport };
+        }
+
+        // Fall back to mock data if enabled
+        if (USE_MOCK_FALLBACK) {
+          console.log(`[AVI Report API] No database record found for tenant ${tenantId}, using mock data`);
+          const mockReport = generateMockAviReport(tenantId);
+          return { source: 'mock', report: mockReport };
+        }
+
+        // No data available
+        throw new Error('No AVI report found and mock fallback is disabled');
+
+      } catch (error) {
+        console.error('[AVI Report API] Error in cached fetch:', error);
+
+        // Fall back to mock on error if enabled
+        if (USE_MOCK_FALLBACK) {
+          console.log('[AVI Report API] Falling back to mock data due to error');
+          const mockReport = generateMockAviReport(tenantId);
+          return { source: 'mock', report: mockReport };
+        }
+
+        throw error;
+      }
+    },
+    [cacheKey],
+    {
+      revalidate: parseInt(process.env.AVI_CACHE_TTL || '300', 10), // 5 minutes default
+      tags: cacheTags,
+    }
+  );
+
+  const result = await cachedFetch();
+  return result.report;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId') || crypto.randomUUID();
 
-    const aviReport = generateMockAviReport(tenantId);
+    // Get AVI report with caching
+    const aviReport = await getCachedAviReport(tenantId);
 
     return NextResponse.json(aviReport);
+
   } catch (error) {
-    console.error('Error generating AVI report:', error);
+    console.error('[AVI Report API] Request failed:', error);
+
+    // Return appropriate error
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch AVI report';
+
     return NextResponse.json(
-      { error: 'Failed to generate AVI report' },
+      {
+        error: errorMessage,
+        timestamp: new Date().toISOString(),
+      },
       { status: 500 }
     );
   }

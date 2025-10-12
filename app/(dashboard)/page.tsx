@@ -1,4 +1,4 @@
-import DealershipAIDashboard from '@/components/DealershipAIDashboard';
+import DealershipAIDashboard from '@/src/components/DealershipAIDashboard';
 
 export const dynamic = 'force-dynamic';
 

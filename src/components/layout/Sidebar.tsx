@@ -13,7 +13,11 @@ import {
   BookOpen, 
   Settings,
   HelpCircle,
-  Sparkles
+  Sparkles,
+  Bot,
+  Activity,
+  Shield,
+  Target
 } from 'lucide-react';
 
 const navigation = [
@@ -52,6 +56,24 @@ const navigation = [
     href: '/dashboard/learning',
     icon: BookOpen,
     description: 'Training and resources'
+  },
+  {
+    name: 'AI Agent',
+    href: '/dashboard/agent-monitoring',
+    icon: Bot,
+    description: 'Agent performance monitoring'
+  },
+  {
+    name: 'Security',
+    href: '/security',
+    icon: Shield,
+    description: 'Security events and monitoring'
+  },
+  {
+    name: 'Competitor Analysis',
+    href: '/competitor',
+    icon: Target,
+    description: 'Monitor competitor performance'
   }
 ];
 

@@ -1,0 +1,13 @@
+{
+  "dealer_id": "dealer_456",
+  "qai_score": 100,
+  "piqr": 0.85,
+  "hrp": 0.2,
+  "vai_penalized": 84.3529411764706,
+  "aiv_final": 100.0,
+  "ati_final": 100.0,
+  "crs": 100.0,
+  "aemd_score": 54.400000000000006,
+  "risk_level": "good",
+  "timestamp": "2025-10-10T15:31:47.608922"
+}

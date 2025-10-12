@@ -1,43 +1,41 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
+  "buildCommand": "npm run build",
   "outputDirectory": ".next",
+  "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "NEXT_PUBLIC_APP_NAME": "@NEXT_PUBLIC_APP_NAME",
-    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "OPENAI_API_KEY": "@OPENAI_API_KEY",
-    "ANTHROPIC_API_KEY": "@ANTHROPIC_API_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY": "@SUPABASE_SERVICE_ROLE_KEY",
-    "JWT_SECRET": "@JWT_SECRET",
-    "ENCRYPTION_KEY": "@ENCRYPTION_KEY"
+  "functions": {
+    "app/api/dtri/analyze/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/dtri/enhancer/route.ts": {
+      "maxDuration": 60
+    }
   },
   "crons": [
     {
-      "path": "/api/train/reinforce",
-      "schedule": "0 0 * * *"
+      "path": "/api/cron/dtri-nightly",
+      "schedule": "0 3 * * *"
     },
     {
-      "path": "/api/train/evaluate",
-      "schedule": "0 0 * * 0"
+      "path": "/api/cron/ncm-sync",
+      "schedule": "0 2 * * 1"
     },
     {
-      "path": "/api/anomaly/reviews",
+      "path": "/api/cron/ada-training",
+      "schedule": "0 4 * * 1"
+    },
+    {
+      "path": "/api/cron/aemd-analysis",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/sentinel-monitor",
       "schedule": "0 */6 * * *"
     },
     {
-      "path": "/api/predict/forecast",
-      "schedule": "0 0 * * 0"
-    },
-    {
-      "path": "/api/reports/roi",
-      "schedule": "0 0 1 * *"
-    },
-    {
-      "path": "/api/governance/check",
-      "schedule": "0 */4 * * *"
+      "path": "/api/cron/ati-analysis",
+      "schedule": "0 6 * * 1"
     }
   ]
 }

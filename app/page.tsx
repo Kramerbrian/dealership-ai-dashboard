@@ -1,5 +1,5 @@
-import DealershipAILanding from '@/components/landing/DealershipAILanding';
-import { jsonLdSchema } from '../src/lib/schema';
+import DealershipAILanding from '@/src/components/landing/DealershipAILanding';
+import { jsonLdSchema } from '@/src/lib/schema';
 
 export default function HomePage() {
   return (

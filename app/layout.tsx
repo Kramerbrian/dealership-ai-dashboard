@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { TRPCProvider } from '@/lib/trpc';
-import AuthProvider from '@/lib/session-provider';
+import { SessionProvider } from '@/lib/session-provider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -76,13 +75,25 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#3b82f6" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        {/* Theme initialization - prevents flash of wrong theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function(){
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const saved = localStorage.getItem('theme');
+  const mode = saved ?? (prefersDark ? 'dark' : 'light');
+  document.documentElement.classList.toggle('dark', mode==='dark');
+})();
+`,
+          }}
+        />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <AuthProvider>
-          <TRPCProvider>
-            {children}
-          </TRPCProvider>
-        </AuthProvider>
+        <SessionProvider>
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

@@ -1,0 +1,25 @@
+# ChatGPT Agent Integration Environment Variables
+# Copy this to .env.local and fill in your values
+
+# Upstash Redis Configuration (Required for caching and cost optimization)
+UPSTASH_REDIS_REST_URL=https://your-redis-database.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_redis_token_here
+
+# App URL (Required for API calls)
+NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+
+# Optional: OpenAI API Key (if you want to add real ChatGPT integration later)
+# OPENAI_API_KEY=your_openai_key_here
+
+# Optional: Custom GPT ID (if you create a custom GPT)
+# CUSTOM_GPT_ID=g-your-gpt-id-here
+
+# Agent Integration Settings
+AGENT_CACHE_TTL=86400  # 24 hours in seconds
+AGENT_POOLING_ENABLED=true
+AGENT_MONITORING_ENABLED=true
+
+# Cost Optimization Settings
+AGENT_MAX_QUERIES_PER_HOUR=100
+AGENT_MAX_QUERIES_PER_DAY=1000
+AGENT_GEOGRAPHIC_POOLING=true

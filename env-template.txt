@@ -1,80 +1,57 @@
-# DealershipAI Environment Configuration
-# Copy this file to .env.local and fill in your actual values
+# DealershipAI v2.0 - Environment Variables Template
+# Copy this file to .env and fill in your actual values
 
-# ==========================================
-# GOOGLE SERVICES
-# ==========================================
-GOOGLE_CLIENT_ID=your_google_client_id_here
-GOOGLE_CLIENT_SECRET=your_google_client_secret_here
-GOOGLE_ANALYTICS_PROPERTY_ID=123456789
-GOOGLE_BUSINESS_ACCOUNT_ID=accounts/123456
-GOOGLE_BUSINESS_LOCATION_ID=locations/789012
-PAGESPEED_API_KEY=your_pagespeed_api_key_here
+# Database (Required)
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
 
-# ==========================================
-# SEO & MARKETING TOOLS
-# ==========================================
-SEMRUSH_API_KEY=your_semrush_api_key_here
-AHREFS_API_KEY=your_ahrefs_api_key_here
-MOZ_ACCESS_ID=your_moz_access_id_here
-MOZ_SECRET_KEY=your_moz_secret_key_here
+# Supabase (if using Supabase instead of direct PostgreSQL)
+NEXT_PUBLIC_SUPABASE_URL="https://[PROJECT-REF].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGc..."
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGc..."
 
-# ==========================================
-# REVIEW PLATFORMS
-# ==========================================
-YELP_API_KEY=your_yelp_api_key_here
-YELP_BUSINESS_ID=your_yelp_business_id_here
+# Redis (Required for geographic pooling)
+UPSTASH_REDIS_REST_URL="https://[REDIS-URL].upstash.io"
+UPSTASH_REDIS_REST_TOKEN="[REDIS-TOKEN]"
 
-# ==========================================
-# AI SERVICES
-# ==========================================
-OPENAI_API_KEY=sk-your_openai_key_here
-ANTHROPIC_API_KEY=sk-ant-your_anthropic_key_here
+# JWT Secret (Required for authentication)
+JWT_SECRET="your-super-secret-jwt-key-here"
 
-# ==========================================
-# DATABASE & CACHING
-# ==========================================
-DATABASE_URL=postgresql://username:password@localhost:5432/dealershipai
-UPSTASH_REDIS_REST_URL=your_upstash_redis_url_here
-UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token_here
+# Session Limits by Tier
+FREE_SESSION_LIMIT="0"
+PRO_SESSION_LIMIT="50"
+ENTERPRISE_SESSION_LIMIT="200"
 
-# ==========================================
-# AUTHENTICATION
-# ==========================================
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_key_here
-CLERK_SECRET_KEY=sk_test_your_clerk_secret_here
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+# Stripe (Required for payments)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
 
-# ==========================================
-# APPLICATION CONFIGURATION
-# ==========================================
-NODE_ENV=development
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
-FRONTEND_URL=http://localhost:3000
-PORT=3000
+# Stripe Price IDs for each tier
+STRIPE_TIER_2_PRICE_ID="price_..." # Pro tier
+STRIPE_TIER_3_PRICE_ID="price_..." # Enterprise tier
+STRIPE_TIER_4_PRICE_ID="price_..." # Custom Enterprise
 
-# ==========================================
-# FEATURE FLAGS
-# ==========================================
-NEXT_PUBLIC_ENABLE_ANALYTICS=true
-NEXT_PUBLIC_ENABLE_PAGESPEED=true
-NEXT_PUBLIC_ENABLE_SEMRUSH=true
-NEXT_PUBLIC_ENABLE_YELP=true
-NEXT_PUBLIC_ENABLE_AI_CITATIONS=true
+# OpenAI (Required for AI analysis)
+OPENAI_API_KEY="sk-..."
 
-# ==========================================
-# RATE LIMITING & COSTS
-# ==========================================
-MAX_DAILY_AI_QUERIES=50
-MAX_DAILY_PAGESPEED_REQUESTS=100
-MAX_DAILY_SEMRUSH_REQUESTS=1000
+# Optional: External APIs
+GOOGLE_MAPS_API_KEY="AIza..."
+GOOGLE_MY_BUSINESS_API_KEY="AIza..."
 
-# ==========================================
-# MONITORING & LOGGING
-# ==========================================
-SENTRY_DSN=your_sentry_dsn_here
-LOG_LEVEL=info
-ENABLE_PERFORMANCE_MONITORING=true
+# App Configuration
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NODE_ENV="development"
+
+# Security
+NEXTAUTH_SECRET="your-nextauth-secret"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Monitoring (Optional)
+SENTRY_DSN="https://..."
+DATADOG_API_KEY="..."
+
+# Email (Optional)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"

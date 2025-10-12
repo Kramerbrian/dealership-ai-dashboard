@@ -1,177 +1,284 @@
-# DealershipAI - Three-Pillar Intelligence Platform
+# DealershipAI v2.0 - Production SaaS
 
-**90% Real Data AI Visibility Platform**
+> AI Visibility Platform for Car Dealerships - Next.js + Prisma + Redis
 
-DealershipAI provides automotive dealers with accurate, actionable intelligence about their visibility across traditional search, answer engines, and generative AI platforms.
+[![Next.js](https://img.shields.io/badge/Next.js-15.5.4-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.17.0-2D3748)](https://prisma.io/)
+[![Redis](https://img.shields.io/badge/Redis-Upstash-DC382D)](https://upstash.com/)
 
-## 🎯 Three-Pillar Architecture
+## 🚀 Overview
 
-### 1. SEO Visibility Score (92% accuracy)
-- **Organic Rankings**: Google Search Console position data
-- **Branded Search Volume**: Impression share analysis
-- **Backlink Authority**: Ahrefs domain authority
-- **Content Indexation**: GSC indexed pages ratio
-- **Local Pack Presence**: Google My Business appearances
+DealershipAI v2.0 is an enterprise SaaS platform that helps car dealerships stay visible in AI-powered search engines (ChatGPT, Perplexity, Claude, Gemini). When AI doesn't know you exist, you lose customers. We track, measure, and optimize AI visibility.
 
-### 2. AEO Visibility Score (87% accuracy)
-- **Citation Frequency**: Mentions across 160 AI queries
-- **Source Authority**: Position in AI responses (1st, 2nd, 3rd)
-- **Answer Completeness**: % of response about dealer
-- **Multi-Platform Presence**: ChatGPT, Claude, Perplexity, Gemini
-- **Sentiment Quality**: NLP analysis of citation context
+### Key Features
 
-### 3. GEO Visibility Score (89% accuracy)
-- **AI Overview Presence**: Google SGE appearances
-- **Featured Snippet Rate**: GSC featured snippet impressions
-- **Knowledge Panel Complete**: GMB + Schema validation
-- **Zero-Click Dominance**: % queries answered without click
-- **Entity Recognition**: Google Knowledge Graph verification
+- **3-Tier Pricing**: FREE, PRO ($499/month), ENTERPRISE ($999/month)
+- **5-Pillar Scoring System**: AI Visibility, Zero-Click Shield, UGC Health, Geo Trust, SGP Integrity
+- **E-E-A-T Analysis**: Expertise, Experience, Authoritativeness, Trustworthiness (Pro+)
+- **Mystery Shop Automation**: Automated customer experience testing (Enterprise)
+- **Geographic Pooling**: 50x cost reduction through shared AI queries
+- **Session Tracking**: Redis-based usage limits and monitoring
 
-## 🚀 Quick Start
+## 🏗️ Architecture
+
+### Tech Stack
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **Backend**: Express.js, tRPC, Prisma ORM
+- **Database**: PostgreSQL with Supabase
+- **Cache**: Redis (Upstash)
+- **Payments**: Stripe
+- **Deployment**: Vercel
+
+### Core Components
+- **Scoring Engine**: 5-pillar AI visibility calculation
+- **Tier Manager**: Session tracking and feature gating
+- **Auth Manager**: JWT-based authentication
+- **API Client**: Centralized backend communication
+- **Stripe Integration**: Seamless upgrade flow
+
+## 📦 Quick Start
+
+### 1. Clone and Install
+```bash
+git clone <repository-url>
+cd dealership-ai-dashboard
+npm install
+```
+
+### 2. Environment Setup
+```bash
+cp .env.example .env.local
+# Edit .env.local with your configuration
+```
+
+### 3. Database Setup
+```bash
+# Run the setup script
+./scripts/setup-database.sh
+
+# Or manually:
+npx prisma generate
+npx prisma db push
+npx prisma db seed
+```
+
+### 4. Start Development
+```bash
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) to see the dashboard.
+
+## 🔧 Configuration
+
+### Required Environment Variables
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/dealershipai"
+
+# Redis (Upstash)
+UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io"
+UPSTASH_REDIS_REST_TOKEN="your-redis-token"
+
+# Stripe
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_PRICE_PRO="price_..."
+STRIPE_PRICE_ENTERPRISE="price_..."
+
+# Session Limits
+FREE_SESSION_LIMIT="0"
+PRO_SESSION_LIMIT="50"
+ENTERPRISE_SESSION_LIMIT="200"
+
+# App Configuration
+NEXTAUTH_SECRET="your-nextauth-secret"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+### Database Providers
+
+#### Option 1: Supabase (Recommended)
+1. Create project at [supabase.com](https://supabase.com)
+2. Copy connection string from Settings > Database
+3. Update `DATABASE_URL` in `.env.local`
+
+#### Option 2: Local PostgreSQL
+1. Install PostgreSQL locally
+2. Create database: `createdb dealershipai`
+3. Update `DATABASE_URL` in `.env.local`
+
+#### Option 3: Railway/Neon
+1. Create PostgreSQL database on Railway or Neon
+2. Copy connection string
+3. Update `DATABASE_URL` in `.env.local`
+
+### Redis Setup (Upstash)
+1. Create account at [upstash.com](https://upstash.com)
+2. Create new Redis database
+3. Copy REST URL and Token
+4. Update environment variables
+
+### Stripe Setup
+1. Create account at [stripe.com](https://stripe.com)
+2. Create products and prices in dashboard
+3. Copy price IDs to environment variables
+4. Set up webhooks for subscription events
+
+## 📊 API Endpoints
+
+### Core Analysis
+- `GET /api/analyze` - Analyze dealership AI visibility
+- `POST /api/analyze` - Batch analysis (Pro+)
+
+### E-E-A-T Analysis (Pro+)
+- `POST /api/eeat` - Calculate E-E-A-T scores
+
+### Mystery Shop (Enterprise)
+- `GET /api/mystery-shop` - Get test results
+- `POST /api/mystery-shop` - Schedule new test
+- `PUT /api/mystery-shop` - Execute test
+
+### Stripe Integration
+- `POST /api/stripe/create-checkout-session` - Create checkout session
+- `POST /api/stripe/create-portal-session` - Create customer portal
+- `GET /api/stripe/subscription-status` - Get subscription status
+
+## 🎯 Usage Examples
+
+### Basic Analysis
+```typescript
+import { apiClient } from '@/src/lib/api-client';
+
+const result = await apiClient.analyzeDealership({
+  dealerId: 'dealer-123',
+  dealerName: 'ABC Motors',
+  city: 'Los Angeles',
+  state: 'CA',
+  website: 'https://abcmotors.com'
+});
+```
+
+### E-E-A-T Analysis
+```typescript
+const eeatResult = await apiClient.analyzeEEAT({
+  domain: 'abcmotors.com',
+  dealershipName: 'ABC Motors',
+  city: 'Los Angeles',
+  state: 'CA',
+  reviews: [...],
+  localData: {...}
+});
+```
+
+### Stripe Upgrade
+```typescript
+import { redirectToCheckout } from '@/src/lib/stripe';
+
+await redirectToCheckout('price_pro_monthly', 'user-123');
+```
+
+## 🧪 Testing
 
 ```bash
-# Install dependencies
-npm install
+# Run all tests
+npm test
 
-# Set environment variables
-cp .env.example .env
-# Edit .env with your API keys
+# Run with coverage
+npm run test:coverage
 
-# Start development server
-npm run dev
+# Run specific test suites
+npm run test:api
+npm run test:components
+```
 
-# Build for production
+## 🚀 Deployment
+
+### Vercel (Recommended)
+1. Connect GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main
+
+### Manual Deployment
+```bash
 npm run build
 npm start
 ```
 
-## 📊 Dashboard Preview
+## 📈 Performance
 
-The dashboard provides real-time visibility scores with:
+### Cost Optimization
+- **Geographic Pooling**: Share AI queries across city ($0.30 vs $15 per dealer)
+- **Redis Caching**: Reduce API calls by 80%
+- **Session Tracking**: Prevent overuse and optimize costs
 
-- **Three-pillar scoring** with confidence metrics
-- **E-E-A-T breakdown** for each pillar
-- **Opportunity recommendations** with ROI calculations
-- **Data source transparency** showing accuracy rates
-- **Real-time updates** with intelligent caching
+### Scaling
+- **Database**: Use read replicas for heavy queries
+- **Redis**: Cluster mode for high availability
+- **CDN**: Static asset optimization
+- **Monitoring**: Real-time performance tracking
 
-## 💰 Pricing Tiers
+## 🔐 Security
 
-- **Tier 1**: $149/mo - Bi-weekly scans, basic reporting
-- **Tier 2**: $399/mo - Weekly scans, competitor tracking
-- **Tier 3**: $999/mo - Daily monitoring, API access, white-label
+### Authentication
+- JWT-based token authentication
+- Secure token storage and validation
+- Session-based access control
 
-## 🔧 API Endpoints
+### Data Protection
+- Row-level security (RLS) in database
+- Input validation with Zod schemas
+- Rate limiting on API endpoints
+- HTTPS enforcement in production
 
-- `GET /api/scores/:dealerId` - Get three-pillar scores
-- `GET /api/dealers` - List all dealers
-- `GET /api/health` - System health check
+### Privacy
+- No PII storage in logs
+- Encrypted sensitive data
+- GDPR compliance ready
+- SOC 2 Type II preparation
 
-## 📈 Data Sources
+## 📊 Monitoring
 
-### SEO Data (92% accuracy)
-- Google Search Console API
-- Google My Business API
-- Ahrefs Domain Authority
-- SEMrush Rankings
+### Health Checks
+- `GET /api/health` - Overall system health
+- `GET /api/health/database` - Database connectivity
+- `GET /api/health/redis` - Redis connectivity
 
-### AEO Data (87% accuracy)
-- ChatGPT API (160 queries)
-- Claude Sonnet API
-- Perplexity API
-- Google Gemini API
+### Metrics
+- Session usage tracking
+- API response times
+- Error rates and patterns
+- User engagement analytics
 
-### GEO Data (89% accuracy)
-- Bright Data SGE Scraping
-- Google Knowledge Graph
-- Featured Snippet Tracking
-- Zero-Click Analysis
+## 🤝 Contributing
 
-## 🏗️ Architecture
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open Pull Request
 
-```
-src/
-├── core/
-│   ├── types.ts           # Core interfaces
-│   ├── base-scorer.ts     # Base scoring class
-│   └── three-pillar.ts    # Main scoring orchestrator
-├── integrations/
-│   └── unified-api.ts     # All API calls consolidated
-├── database/
-│   └── db.ts             # Unified DB + Cache layer
-├── api/
-│   └── server.ts         # Express server
-└── config.ts             # Configuration
-```
+## 📄 License
 
-## 🔒 Environment Variables
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```bash
-# AI Platform APIs
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_API_KEY=AIza...
-PERPLEXITY_API_KEY=pplx-...
-
-# Database
-DATABASE_URL=postgresql://...
-REDIS_URL=redis://...
-
-# SEO Tools
-AHREFS_API_KEY=...
-SEMRUSH_API_KEY=...
-BRIGHT_DATA_API_KEY=...
-```
-
-## 📊 Key Metrics
-
-- **Overall Score**: Weighted average of three pillars
-- **Data Accuracy**: 85-92% correlation with actual visibility
-- **Cost per Dealer**: $6/month (Tier 1)
-- **Margin**: 96% (Tier 1), 95.7% overall at scale
-- **Scan Frequency**: Bi-weekly (Tier 1), Weekly (Tier 2), Daily (Tier 3)
-
-## 🎯 ROI Calculator
-
-Based on industry benchmarks:
-- Average monthly searches: 8,400
-- Average conversion rate: 2.4%
-- Average deal profit: $2,800
-- AI search share: 15%
-
-**Example**: 15% visibility gap = ~89 missed leads/mo = $21.3K/mo revenue at risk
-
-## 🔄 Data Collection Workflow
-
-1. **Weekly Collection**: Every Monday at 2 AM
-2. **SEO Data**: GSC, GMB, Ahrefs, SEMrush APIs
-3. **AEO Queries**: 160 real AI platform queries
-4. **GEO Monitoring**: SGE scraping, knowledge graph
-5. **E-E-A-T Analysis**: 47 feature extraction
-6. **Validation**: Cross-source verification
-7. **Storage**: PostgreSQL + Redis caching
-
-## 🚀 Deployment
-
-```bash
-# Docker
-docker build -t dealershipai .
-docker run -p 3000:3000 dealershipai
-
-# PM2
-pm2 start dist/api/server.js --name dealershipai
-
-# Vercel
-vercel --prod
-```
-
-## 📞 Support
+## 🆘 Support
 
 - **Documentation**: [docs.dealershipai.com](https://docs.dealershipai.com)
 - **API Reference**: [api.dealershipai.com](https://api.dealershipai.com)
-- **Support**: support@dealershipai.com
-- **Status**: [status.dealershipai.com](https://status.dealershipai.com)
+- **Support Email**: [support@dealershipai.com](mailto:support@dealershipai.com)
+- **GitHub Issues**: [github.com/dealershipai/issues](https://github.com/dealershipai/issues)
+
+## 🎉 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/)
+- Database powered by [Prisma](https://prisma.io/)
+- Caching with [Upstash Redis](https://upstash.com/)
+- Payments via [Stripe](https://stripe.com/)
+- Icons by [Lucide](https://lucide.dev/)
 
 ---
 
-**DealershipAI** - The platform 240+ dealerships use to control their AI visibility across ChatGPT, Claude, and Perplexity.
+**DealershipAI v2.0** - Making car dealerships visible in the AI era 🚗✨

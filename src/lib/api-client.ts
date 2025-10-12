@@ -1,133 +1,210 @@
 /**
- * API Client for DealershipAI Dashboard
- * Handles all external API integrations through our secure backend
+ * DealershipAI v2.0 - API Client
+ * 
+ * Centralized API client for all backend communication
  */
 
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
-  details?: any;
-}
-
-export interface GoogleAnalyticsData {
-  rows: Array<{
-    dimensionValues: Array<{ value: string }>;
-    metricValues: Array<{ value: string }>;
-  }>;
-  rowCount: number;
-  totals: Array<{
-    metricValues: Array<{ value: string }>;
-  }>;
-}
-
-export interface PageSpeedData {
-  lighthouseResult: {
-    categories: {
-      performance: { score: number };
-      accessibility: { score: number };
-      'best-practices': { score: number };
-      seo: { score: number };
-    };
-    audits: Record<string, any>;
+  tier?: {
+    plan: string;
+    sessionsUsed: number;
+    sessionsLimit: number;
+    remaining: number;
   };
 }
 
-export interface SEMrushData {
-  data: Array<{
-    Rk: string; // Rank
-    Or: string; // Organic traffic
-    Ot: string; // Organic traffic cost
-    Oc: string; // Organic traffic cost
-    Ad: string; // Ad traffic
-  }>;
+export interface AnalyzeRequest {
+  dealerId: string;
+  dealerName: string;
+  city: string;
+  state: string;
+  website?: string;
+  phone?: string;
+  email?: string;
 }
 
-export interface YelpData {
-  businesses: Array<{
+export interface AnalyzeResponse {
+  dealership: {
     id: string;
     name: string;
-    rating: number;
-    review_count: number;
-    url: string;
-    location: {
-      address1: string;
-      city: string;
-      state: string;
-      zip_code: string;
-    };
-  }>;
+    city: string;
+    state: string;
+    website?: string;
+    phone?: string;
+    email?: string;
+    lastAnalyzed?: string;
+  };
+  scores: {
+    aiVisibility: number;
+    zeroClick: number;
+    ugcHealth: number;
+    geoTrust: number;
+    sgpIntegrity: number;
+    overall: number;
+  };
+  eeat?: {
+    expertise: number;
+    experience: number;
+    authoritativeness: number;
+    trustworthiness: number;
+    overall: number;
+  };
+  tier: string;
+  sessionsUsed: number;
+  sessionsLimit: number;
+  sessionsResetAt: string;
+  timestamp: string;
 }
 
-export interface AIAnalysisData {
-  analysis: string;
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
+export interface EEATRequest {
+  domain: string;
+  dealershipName: string;
+  city: string;
+  state: string;
+  reviews: Array<{
+    platform: string;
+    rating: number;
+    text: string;
+    date: string;
+    sentiment: number;
+    isVerified: boolean;
+    reviewerName?: string;
+  }>;
+  localData: {
+    googleMyBusiness: {
+      rating: number;
+      reviewCount: number;
+      photos: number;
+      posts: number;
+      lastUpdated: string;
+    };
+    localCitations: number;
+    napConsistency: number;
+    localKeywords: string[];
   };
-  model: string;
+  contentData?: {
+    blogPosts?: number;
+    articles?: number;
+    caseStudies?: number;
+    testimonials?: number;
+    faqs?: number;
+    lastContentUpdate?: string;
+  };
+  expertiseData?: {
+    certifications?: string[];
+    awards?: string[];
+    yearsInBusiness?: number;
+    teamSize?: number;
+    specialties?: string[];
+  };
+}
+
+export interface EEATResponse {
+  eeat: {
+    expertise: number;
+    experience: number;
+    authoritativeness: number;
+    trustworthiness: number;
+    overall: number;
+  };
+  detailedAnalysis: {
+    expertise: {
+      score: number;
+      factors: string[];
+      recommendations: string[];
+    };
+    experience: {
+      score: number;
+      factors: string[];
+      recommendations: string[];
+    };
+    authoritativeness: {
+      score: number;
+      factors: string[];
+      recommendations: string[];
+    };
+    trustworthiness: {
+      score: number;
+      factors: string[];
+      recommendations: string[];
+    };
+  };
+  priorityActions: string[];
+  benchmarkComparison: {
+    industryAverage: number;
+    topPerformers: number;
+    percentile: number;
+  };
+}
+
+export interface MysteryShopTest {
+  id: string;
+  testType: 'PHONE_CALL' | 'EMAIL_INQUIRY' | 'WEBSITE_CHAT' | 'VISIT';
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'FAILED';
+  scheduledFor: string;
+  completedAt?: string;
+  results?: {
+    responseTime: number;
+    quality: number;
+    personalization: number;
+    professionalism: number;
+    overallRating: number;
+    notes?: string;
+  };
+}
+
+export interface MysteryShopResponse {
+  mysteryShops: MysteryShopTest[];
 }
 
 export class ApiClient {
   private baseUrl: string;
-  private accessToken: string | null = null;
+  private authToken: string | null = null;
 
-  constructor(baseUrl: string = '/api') {
+  constructor(baseUrl: string = '') {
     this.baseUrl = baseUrl;
-    this.loadStoredToken();
   }
 
   /**
-   * Set Google OAuth access token
+   * Set authentication token
    */
-  setAccessToken(token: string) {
-    this.accessToken = token;
-    localStorage.setItem('google_access_token', token);
+  setAuthToken(token: string | null) {
+    this.authToken = token;
   }
 
   /**
-   * Load stored access token
+   * Get headers for API requests
    */
-  private loadStoredToken() {
-    const token = localStorage.getItem('google_access_token');
-    if (token) {
-      this.accessToken = token;
-    }
-  }
-
-  /**
-   * Clear stored tokens
-   */
-  clearTokens() {
-    this.accessToken = null;
-    localStorage.removeItem('google_access_token');
-    localStorage.removeItem('google_refresh_token');
-  }
-
-  /**
-   * Make authenticated request
-   */
-  private async request<T>(
-    endpoint: string, 
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
-    const url = `${this.baseUrl}${endpoint}`;
-    
+  private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      ...options.headers,
     };
 
-    // Add Google OAuth token if available
-    if (this.accessToken) {
-      (headers as any)['Authorization'] = `Bearer ${this.accessToken}`;
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
     }
 
+    return headers;
+  }
+
+  /**
+   * Make API request with error handling
+   */
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
     try {
+      const url = `${this.baseUrl}${endpoint}`;
       const response = await fetch(url, {
         ...options,
-        headers,
+        headers: {
+          ...this.getHeaders(),
+          ...options.headers,
+        },
       });
 
       const data = await response.json();
@@ -135,221 +212,156 @@ export class ApiClient {
       if (!response.ok) {
         return {
           success: false,
-          error: data.error || 'Request failed',
-          details: data.details,
+          error: data.error || `HTTP ${response.status}`,
+          tier: data.tier,
         };
       }
 
       return {
         success: true,
         data,
+        tier: data.tier,
       };
-    } catch (error: any) {
+    } catch (error) {
+      console.error('API request failed:', error);
       return {
         success: false,
-        error: error.message || 'Network error',
-        details: error,
+        error: error instanceof Error ? error.message : 'Network error',
       };
     }
   }
 
   /**
-   * Google Analytics API
+   * Analyze dealership
    */
-  async getAnalyticsData(
-    propertyId: string,
-    startDate: string = '7daysAgo',
-    endDate: string = 'today',
-    metrics?: string[],
-    dimensions?: string[]
-  ): Promise<ApiResponse<GoogleAnalyticsData>> {
-    return this.request<GoogleAnalyticsData>('/external-apis/analytics', {
+  async analyzeDealership(request: AnalyzeRequest): Promise<ApiResponse<AnalyzeResponse>> {
+    const params = new URLSearchParams({
+      dealerId: request.dealerId,
+      dealerName: request.dealerName,
+      city: request.city,
+      state: request.state,
+      ...(request.website && { website: request.website }),
+      ...(request.phone && { phone: request.phone }),
+      ...(request.email && { email: request.email }),
+    });
+
+    return this.request<AnalyzeResponse>(`/api/analyze?${params}`);
+  }
+
+  /**
+   * Get cached analysis results
+   */
+  async getCachedAnalysis(domain: string): Promise<ApiResponse<AnalyzeResponse>> {
+    return this.request<AnalyzeResponse>(`/api/analyze?domain=${encodeURIComponent(domain)}`);
+  }
+
+  /**
+   * Analyze E-E-A-T scores (Pro+ only)
+   */
+  async analyzeEEAT(request: EEATRequest): Promise<ApiResponse<EEATResponse>> {
+    return this.request<EEATResponse>('/api/eeat', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  /**
+   * Schedule mystery shop test (Enterprise only)
+   */
+  async scheduleMysteryShop(
+    dealershipId: string,
+    testType: string,
+    scheduledFor: string,
+    testParameters?: any
+  ): Promise<ApiResponse<{ mysteryShop: MysteryShopTest }>> {
+    return this.request<{ mysteryShop: MysteryShopTest }>('/api/mystery-shop', {
       method: 'POST',
       body: JSON.stringify({
-        propertyId,
-        startDate,
-        endDate,
-        metrics: metrics?.map(name => ({ name })),
-        dimensions: dimensions?.map(name => ({ name })),
+        dealershipId,
+        testType,
+        scheduledFor,
+        testParameters,
       }),
     });
   }
 
   /**
-   * Google PageSpeed Insights API
+   * Execute mystery shop test (Enterprise only)
    */
-  async getPageSpeedData(
-    url: string,
-    strategy: 'mobile' | 'desktop' = 'mobile'
-  ): Promise<ApiResponse<PageSpeedData>> {
-    const params = new URLSearchParams({
-      url,
-      strategy,
-    });
-
-    return this.request<PageSpeedData>(`/external-apis/pagespeed?${params}`);
-  }
-
-  /**
-   * Google Business Profile API
-   */
-  async getBusinessProfileData(
-    accountId: string,
-    locationId: string
-  ): Promise<ApiResponse<any>> {
-    const params = new URLSearchParams({
-      accountId,
-      locationId,
-    });
-
-    return this.request(`/external-apis/business-profile?${params}`);
-  }
-
-  /**
-   * SEMrush API
-   */
-  async getSEMrushData(
-    domain: string,
-    type: string = 'domain_ranks'
-  ): Promise<ApiResponse<SEMrushData>> {
-    const params = new URLSearchParams({
-      domain,
-      type,
-    });
-
-    return this.request<SEMrushData>(`/external-apis/semrush?${params}`);
-  }
-
-  /**
-   * Yelp API
-   */
-  async getYelpData(
-    businessId?: string,
-    term?: string,
-    location?: string
-  ): Promise<ApiResponse<YelpData>> {
-    const params = new URLSearchParams();
-    
-    if (businessId) {
-      params.set('businessId', businessId);
-    } else if (term && location) {
-      params.set('term', term);
-      params.set('location', location);
-    } else {
-      return {
-        success: false,
-        error: 'Either businessId or term+location are required',
-      };
-    }
-
-    return this.request<YelpData>(`/external-apis/yelp?${params}`);
-  }
-
-  /**
-   * AI Citation Analysis
-   */
-  async getAICitationAnalysis(
-    businessName: string,
-    location: string,
-    analysisType: 'citations' | 'reputation' = 'citations'
-  ): Promise<ApiResponse<AIAnalysisData>> {
-    return this.request<AIAnalysisData>('/external-apis/ai-citations', {
-      method: 'POST',
+  async executeMysteryShop(
+    mysteryShopId: string,
+    results: any
+  ): Promise<ApiResponse<{ mysteryShop: MysteryShopTest; analysis: any }>> {
+    return this.request<{ mysteryShop: MysteryShopTest; analysis: any }>('/api/mystery-shop', {
+      method: 'PUT',
       body: JSON.stringify({
-        businessName,
-        location,
-        analysisType,
+        mysteryShopId,
+        results,
       }),
     });
   }
 
   /**
-   * Google Search Console API (Free alternative to SEMrush)
+   * Get mystery shop tests for dealership (Enterprise only)
    */
-  async getSearchConsoleData(
-    siteUrl: string,
-    startDate: string = '2024-01-01',
-    endDate: string = new Date().toISOString().split('T')[0]
-  ): Promise<ApiResponse<any>> {
-    const params = new URLSearchParams({
-      siteUrl,
-      startDate,
-      endDate,
-    });
-
-    return this.request(`/external-apis/search-console?${params}`);
+  async getMysteryShopTests(dealershipId: string): Promise<ApiResponse<MysteryShopResponse>> {
+    return this.request<MysteryShopResponse>(`/api/mystery-shop?dealershipId=${dealershipId}`);
   }
 
   /**
-   * Batch Analysis - Get data from multiple sources at once
+   * Batch analyze multiple dealerships
    */
-  async getBatchAnalysis(
-    dealershipUrl: string,
-    businessName: string,
-    location: string
-  ): Promise<ApiResponse<any>> {
-    return this.request('/external-apis/batch-analysis', {
+  async batchAnalyze(dealers: AnalyzeRequest[]): Promise<ApiResponse<{
+    results: Array<{
+      dealerId: string;
+      dealerName: string;
+      scores: any;
+      success: boolean;
+      error?: string;
+    }>;
+    totalProcessed: number;
+    successful: number;
+    failed: number;
+  }>> {
+    return this.request('/api/analyze', {
       method: 'POST',
       body: JSON.stringify({
-        dealershipUrl,
-        businessName,
-        location,
+        type: 'batch',
+        dealers,
       }),
     });
   }
 
   /**
-   * OAuth Methods
+   * Health check
    */
-
-  /**
-   * Get Google OAuth authorization URL
-   */
-  async getGoogleAuthUrl(): Promise<ApiResponse<{ authUrl: string }>> {
-    return this.request<{ authUrl: string }>('/oauth/google/auth');
-  }
-
-  /**
-   * Refresh Google access token
-   */
-  async refreshGoogleToken(refreshToken: string): Promise<ApiResponse<any>> {
-    return this.request('/oauth/google/refresh', {
-      method: 'POST',
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    });
-  }
-
-  /**
-   * Validate Google access token
-   */
-  async validateGoogleToken(): Promise<ApiResponse<any>> {
-    return this.request('/oauth/google/validate');
-  }
-
-  /**
-   * Get Google Analytics properties
-   */
-  async getGoogleAnalyticsProperties(): Promise<ApiResponse<any>> {
-    return this.request('/oauth/google/analytics-properties');
-  }
-
-  /**
-   * Get Google Business Profile accounts
-   */
-  async getGoogleBusinessAccounts(): Promise<ApiResponse<any>> {
-    return this.request('/oauth/google/business-accounts');
-  }
-
-  /**
-   * Get Google Search Console sites
-   */
-  async getGoogleSearchConsoleSites(): Promise<ApiResponse<any>> {
-    return this.request('/oauth/google/search-console-sites');
+  async healthCheck(): Promise<ApiResponse<{
+    status: string;
+    timestamp: string;
+    version: string;
+  }>> {
+    return this.request('/api/health');
   }
 }
 
-// Create singleton instance
+// Export singleton instance
 export const apiClient = new ApiClient();
 
-// Export for use in components
-export default apiClient;
+// Export convenience functions
+export const analyzeDealership = (request: AnalyzeRequest) => 
+  apiClient.analyzeDealership(request);
+
+export const analyzeEEAT = (request: EEATRequest) => 
+  apiClient.analyzeEEAT(request);
+
+export const scheduleMysteryShop = (dealershipId: string, testType: string, scheduledFor: string, testParameters?: any) => 
+  apiClient.scheduleMysteryShop(dealershipId, testType, scheduledFor, testParameters);
+
+export const executeMysteryShop = (mysteryShopId: string, results: any) => 
+  apiClient.executeMysteryShop(mysteryShopId, results);
+
+export const getMysteryShopTests = (dealershipId: string) => 
+  apiClient.getMysteryShopTests(dealershipId);
+
+export const batchAnalyze = (dealers: AnalyzeRequest[]) => 
+  apiClient.batchAnalyze(dealers);

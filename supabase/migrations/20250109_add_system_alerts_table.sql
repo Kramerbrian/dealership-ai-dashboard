@@ -16,13 +16,14 @@ CREATE TABLE IF NOT EXISTS system_alerts (
   acknowledged BOOLEAN DEFAULT FALSE,
   acknowledged_at TIMESTAMPTZ,
   acknowledged_by UUID,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-
-  INDEX idx_system_alerts_created (created_at),
-  INDEX idx_system_alerts_severity (severity),
-  INDEX idx_system_alerts_category (category),
-  INDEX idx_system_alerts_acknowledged (acknowledged)
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Create indexes separately (PostgreSQL syntax)
+CREATE INDEX IF NOT EXISTS idx_system_alerts_created ON system_alerts (created_at);
+CREATE INDEX IF NOT EXISTS idx_system_alerts_severity ON system_alerts (severity);
+CREATE INDEX IF NOT EXISTS idx_system_alerts_category ON system_alerts (category);
+CREATE INDEX IF NOT EXISTS idx_system_alerts_acknowledged ON system_alerts (acknowledged);
 
 -- Row Level Security
 ALTER TABLE system_alerts ENABLE ROW LEVEL SECURITY;
