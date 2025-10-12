@@ -1,0 +1,312 @@
+{
+  "version": "1.0",
+  "namespace": "dealershipAI.qai.master",
+  "description": "Master prompt configuration for Query AI (QAI) system - optimized for automotive dealership visibility analysis across AI search platforms",
+  "created": "2025-01-12T00:00:00Z",
+  "author": "DealershipAI Team",
+  "model_version": "qai-master-v1.0",
+  
+  "system_context": {
+    "purpose": "Analyze dealership visibility and mentions across AI search platforms",
+    "scope": "Multi-platform AI query analysis for automotive dealers",
+    "platforms": ["chatgpt", "claude", "perplexity", "gemini", "bard", "bing_copilot"],
+    "industry": "Automotive Retail",
+    "optimization_targets": {
+      "mention_rate": 0.85,
+      "position_target": 3,
+      "sentiment_threshold": 0.7,
+      "completeness_target": 80
+    }
+  },
+
+  "query_templates": {
+    "discovery_queries": [
+      "What are the best {make} dealerships near {city}, {state}?",
+      "Where can I buy a new {make} {model} in {city}?",
+      "Who are the top-rated car dealerships in {city} for {service_type}?",
+      "Compare {make} dealers in the {city} metro area",
+      "Which {city} dealership has the best {make} inventory?",
+      "Find certified {make} service centers near {zipcode}",
+      "Best place to trade in my car in {city}",
+      "Electric vehicle dealers in {city} with charging stations",
+      "Dealerships offering {financing_type} near {city}",
+      "Where to get {make} genuine parts in {city}?"
+    ],
+    
+    "comparison_queries": [
+      "Compare {dealer_name} vs {competitor_name} in {city}",
+      "Which is better: {dealer_name} or {competitor_name} for {make}?",
+      "Reviews of {dealer_name} vs other {city} dealerships",
+      "Price comparison between {city} {make} dealers",
+      "Service department ratings for {city} dealerships"
+    ],
+    
+    "intent_queries": [
+      "Schedule service appointment at {dealer_name}",
+      "Current {make} inventory at {dealer_name}",
+      "{dealer_name} hours and location",
+      "Finance calculator for {dealer_name}",
+      "Trade-in value estimator at {dealer_name}"
+    ],
+    
+    "reputation_queries": [
+      "Is {dealer_name} trustworthy?",
+      "{dealer_name} customer reviews and ratings",
+      "Complaints about {dealer_name}",
+      "{dealer_name} BBB rating and accreditation",
+      "Awards and recognition for {dealer_name}"
+    ]
+  },
+
+  "analysis_prompts": {
+    "mention_detection": {
+      "prompt": "Analyze the following AI response for dealership mentions. Identify: 1) Dealer name mentioned, 2) Position in response (1st, 2nd, 3rd, etc.), 3) Context of mention (positive/negative/neutral), 4) Completeness of information provided. Response text: {response_text}",
+      "extraction_rules": {
+        "dealer_name": "exact_match|fuzzy_match|dba_match",
+        "position_counting": "ordinal|percentage|prominence",
+        "context_analysis": "sentiment|intent|recommendation_strength"
+      }
+    },
+    
+    "visibility_scoring": {
+      "prompt": "Score the visibility quality of {dealer_name} in this response on a scale of 0-100 based on: prominence (40%), information completeness (30%), positive sentiment (20%), call-to-action presence (10%). Response: {response_text}",
+      "scoring_weights": {
+        "prominence": 0.4,
+        "completeness": 0.3,
+        "sentiment": 0.2,
+        "call_to_action": 0.1
+      }
+    },
+    
+    "competitive_analysis": {
+      "prompt": "Identify all automotive dealerships mentioned in this response. For each dealer, extract: name, position, context, unique selling points mentioned, and any comparative statements. Response: {response_text}",
+      "extraction_fields": [
+        "dealer_name",
+        "mention_position",
+        "mention_context",
+        "unique_selling_points",
+        "comparative_advantage"
+      ]
+    },
+    
+    "information_completeness": {
+      "prompt": "Evaluate the completeness of information provided about {dealer_name}. Check for presence of: address, phone, website, hours, inventory info, service offerings, pricing, reviews, unique features. Score each element 0-10. Response: {response_text}",
+      "completeness_checklist": {
+        "contact_info": ["address", "phone", "website", "email"],
+        "business_info": ["hours", "departments", "brands", "certifications"],
+        "inventory_info": ["new_inventory", "used_inventory", "specials"],
+        "service_info": ["service_types", "appointment_booking", "parts"],
+        "reputation_info": ["ratings", "reviews", "awards", "years_in_business"]
+      }
+    }
+  },
+
+  "platform_specific_prompts": {
+    "chatgpt": {
+      "system_prompt": "You are analyzing automotive dealership information. Focus on accuracy, local relevance, and comprehensive dealer details. Prioritize verified information from official sources.",
+      "temperature": 0.3,
+      "max_tokens": 500,
+      "response_format": "structured"
+    },
+    
+    "claude": {
+      "system_prompt": "Provide detailed, accurate information about automotive dealerships with emphasis on factual data, customer experience, and service quality. Cite sources when available.",
+      "temperature": 0.2,
+      "max_tokens": 600,
+      "response_format": "analytical"
+    },
+    
+    "perplexity": {
+      "system_prompt": "Search and synthesize current information about automotive dealerships. Include recent reviews, inventory updates, and verified contact information with source citations.",
+      "temperature": 0.1,
+      "max_tokens": 400,
+      "response_format": "source_cited"
+    },
+    
+    "gemini": {
+      "system_prompt": "Provide comprehensive automotive dealership information with Google Business Profile data integration. Focus on local search relevance and map-based information.",
+      "temperature": 0.3,
+      "max_tokens": 500,
+      "response_format": "location_enriched"
+    }
+  },
+
+  "optimization_strategies": {
+    "query_optimization": {
+      "local_intent_boosting": {
+        "description": "Add local qualifiers to increase geographic relevance",
+        "techniques": ["near_me", "in_{city}", "closest_to_{landmark}", "{zipcode}_area"]
+      },
+      "commercial_intent_signals": {
+        "description": "Include buying signals in queries",
+        "techniques": ["best_price", "current_deals", "availability", "schedule_test_drive"]
+      },
+      "brand_association": {
+        "description": "Strengthen brand-dealer connection",
+        "techniques": ["authorized_{brand}_dealer", "certified_{brand}_service", "{brand}_specialist"]
+      }
+    },
+    
+    "response_optimization": {
+      "structured_data_emphasis": {
+        "description": "Encourage structured information in responses",
+        "format": "business_name|address|phone|website|hours|services"
+      },
+      "review_integration": {
+        "description": "Include reputation signals",
+        "sources": ["google_reviews", "yelp", "cars.com", "dealerrater"]
+      },
+      "inventory_freshness": {
+        "description": "Ensure current inventory information",
+        "update_frequency": "daily",
+        "data_sources": ["dealer_website", "inventory_feeds", "manufacturer_apis"]
+      }
+    }
+  },
+
+  "monitoring_configuration": {
+    "scan_frequency": {
+      "tier_1_dealers": "daily",
+      "tier_2_dealers": "weekly",
+      "tier_3_dealers": "bi-weekly"
+    },
+    "query_volume": {
+      "discovery": 40,
+      "comparison": 20,
+      "intent": 20,
+      "reputation": 20
+    },
+    "alert_thresholds": {
+      "mention_drop": 0.2,
+      "position_decline": 2,
+      "sentiment_decrease": 0.15,
+      "completeness_reduction": 0.25
+    }
+  },
+
+  "benchmark_metrics": {
+    "visibility_kpis": {
+      "mention_rate": {
+        "target": 0.85,
+        "minimum": 0.65,
+        "calculation": "mentions / total_queries"
+      },
+      "average_position": {
+        "target": 2.5,
+        "maximum": 4,
+        "calculation": "sum(positions) / mention_count"
+      },
+      "information_completeness": {
+        "target": 80,
+        "minimum": 60,
+        "calculation": "sum(info_scores) / max_possible_score * 100"
+      },
+      "sentiment_score": {
+        "target": 0.75,
+        "minimum": 0.5,
+        "calculation": "positive_mentions / total_mentions"
+      }
+    },
+    
+    "platform_penetration": {
+      "multi_platform_presence": {
+        "target": 4,
+        "minimum": 2,
+        "calculation": "count(platforms_with_mentions)"
+      },
+      "platform_consistency": {
+        "target": 0.8,
+        "minimum": 0.6,
+        "calculation": "std_dev(platform_scores) / mean(platform_scores)"
+      }
+    },
+    
+    "competitive_metrics": {
+      "share_of_voice": {
+        "target": 0.3,
+        "minimum": 0.15,
+        "calculation": "dealer_mentions / total_dealer_mentions"
+      },
+      "relative_position": {
+        "target": "top_3",
+        "minimum": "top_5",
+        "calculation": "rank_among_competitors"
+      }
+    }
+  },
+
+  "cost_optimization": {
+    "api_usage": {
+      "daily_budget": 100,
+      "cost_per_platform": {
+        "chatgpt": 0.0015,
+        "claude": 0.002,
+        "perplexity": 0.001,
+        "gemini": 0.0008
+      },
+      "optimization_rules": [
+        "Cache responses for 24 hours",
+        "Batch similar queries",
+        "Use lower-cost platforms for validation",
+        "Prioritize high-value dealers for premium platforms"
+      ]
+    },
+    "caching_strategy": {
+      "response_ttl": 86400,
+      "query_deduplication": true,
+      "regional_pooling": true,
+      "incremental_updates": true
+    }
+  },
+
+  "integration_endpoints": {
+    "dashboard_sync": {
+      "endpoint": "/api/qai/visibility-scores",
+      "update_frequency": "hourly",
+      "data_format": "visibility_score_array"
+    },
+    "alert_webhooks": {
+      "endpoint": "/api/alerts/visibility-changes",
+      "trigger_conditions": ["threshold_breach", "competitor_surge", "platform_outage"],
+      "notification_channels": ["email", "slack", "dashboard"]
+    },
+    "reporting_api": {
+      "endpoint": "/api/reports/qai-analytics",
+      "report_types": ["daily_summary", "weekly_trends", "competitive_analysis"],
+      "export_formats": ["json", "csv", "pdf"]
+    }
+  },
+
+  "export_configuration": {
+    "cursor_integration": {
+      "import_path": "/prompts/qai_master_prompt.json",
+      "execution_mode": "automated",
+      "version_control": true,
+      "rollback_capability": true
+    },
+    "deployment": {
+      "environments": ["development", "staging", "production"],
+      "validation_required": true,
+      "approval_workflow": "two_stage",
+      "monitoring_enabled": true
+    }
+  },
+
+  "usage_instructions": [
+    "1. Import this master prompt into the QAI system configuration",
+    "2. Configure platform API keys in environment variables",
+    "3. Set dealer-specific parameters (name, location, competitors)",
+    "4. Initialize monitoring with appropriate scan frequency",
+    "5. Configure alert thresholds based on dealer tier",
+    "6. Enable dashboard integration for real-time visibility tracking",
+    "7. Review and optimize queries monthly based on performance metrics"
+  ],
+
+  "version_history": {
+    "1.0": {
+      "date": "2025-01-12",
+      "changes": "Initial master prompt configuration",
+      "author": "DealershipAI Team"
+    }
+  }
+}
