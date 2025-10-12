@@ -1,0 +1,619 @@
+{
+  "version": "2.0",
+  "namespace": "dealershipAI.qai.master",
+  "description": "QAI Master Orchestration - Autonomous Quality AI system for DealershipAI's Hyper-AIV™ platform. Coordinates all 10 prompt families for maximum accuracy, continuous learning, and predictive intelligence.",
+  "created": "2025-10-12T00:00:00Z",
+  "author": "DealershipAI Engineering Team",
+  "system_version": "QAI-v2.0-autonomous",
+  
+  "system_architecture": {
+    "core_purpose": "Autonomous analytics lab for AIV quality optimization, predictive forecasting, and continuous model improvement",
+    "orchestration_model": "dependency-aware pipeline with parallel execution where possible",
+    "execution_modes": {
+      "monthly_full_cycle": "Complete 10-prompt execution for comprehensive optimization",
+      "weekly_maintenance": "Critical path execution (validation, drift, fraud, usage)",
+      "real_time_monitoring": "Event-driven execution on data upload or threshold breach",
+      "on_demand": "Ad-hoc execution of specific prompt families via dashboard"
+    },
+    "multi_tenant_support": {
+      "tenant_isolation": "All prompts enforce tenant_id filtering",
+      "rbac_integration": "SuperAdmin can execute all, Admins limited to specific families",
+      "resource_pooling": "Geographic pooling for cache optimization"
+    }
+  },
+
+  "prompt_registry": {
+    "total_prompts": 10,
+    "execution_graph": {
+      "nodes": [
+        {
+          "id": "dataset_integrity_validator",
+          "priority": 1,
+          "category": "data_validation",
+          "file": "prompts/dataset_integrity_validator.json",
+          "dependencies": [],
+          "parallel_compatible": false,
+          "execution_frequency": "on_upload|weekly",
+          "estimated_runtime_seconds": 30,
+          "cache_strategy": "no_cache"
+        },
+        {
+          "id": "aiv_weight_drift_detector",
+          "priority": 2,
+          "category": "model_optimization",
+          "file": "prompts/aiv_weight_drift_detector.json",
+          "dependencies": ["dataset_integrity_validator"],
+          "parallel_compatible": false,
+          "execution_frequency": "weekly",
+          "estimated_runtime_seconds": 45,
+          "cache_strategy": "pool:tenant_id"
+        },
+        {
+          "id": "aiv_predictive_forecast",
+          "priority": 3,
+          "category": "predictive_analytics",
+          "file": "prompts/aiv_predictive_forecast.json",
+          "dependencies": ["dataset_integrity_validator", "aiv_weight_drift_detector"],
+          "parallel_compatible": true,
+          "execution_frequency": "weekly",
+          "estimated_runtime_seconds": 60,
+          "cache_strategy": "pool:city:state"
+        },
+        {
+          "id": "aiv_causal_summary",
+          "priority": 4,
+          "category": "causal_analysis",
+          "file": "prompts/aiv_causal_summary.json",
+          "dependencies": ["aiv_predictive_forecast"],
+          "parallel_compatible": true,
+          "execution_frequency": "weekly",
+          "estimated_runtime_seconds": 90,
+          "cache_strategy": "pool:tenant_id"
+        },
+        {
+          "id": "roi_scenario_simulator",
+          "priority": 5,
+          "category": "financial_modeling",
+          "file": "prompts/roi_scenario_simulator.json",
+          "dependencies": ["aiv_causal_summary"],
+          "parallel_compatible": true,
+          "execution_frequency": "monthly",
+          "estimated_runtime_seconds": 120,
+          "cache_strategy": "pool:tenant_id"
+        },
+        {
+          "id": "regional_weight_optimizer",
+          "priority": 6,
+          "category": "regional_optimization",
+          "file": "prompts/regional_weight_optimizer.json",
+          "dependencies": ["roi_scenario_simulator"],
+          "parallel_compatible": true,
+          "execution_frequency": "monthly",
+          "estimated_runtime_seconds": 150,
+          "cache_strategy": "pool:country:region"
+        },
+        {
+          "id": "fraudguard_audit",
+          "priority": 7,
+          "category": "fraud_detection",
+          "file": "prompts/fraudguard_audit.json",
+          "dependencies": ["regional_weight_optimizer"],
+          "parallel_compatible": true,
+          "execution_frequency": "weekly",
+          "estimated_runtime_seconds": 180,
+          "cache_strategy": "no_cache"
+        },
+        {
+          "id": "dashboard_usage_insights",
+          "priority": 8,
+          "category": "user_analytics",
+          "file": "prompts/dashboard_usage_insights.json",
+          "dependencies": ["fraudguard_audit"],
+          "parallel_compatible": true,
+          "execution_frequency": "daily_aggregation",
+          "estimated_runtime_seconds": 120,
+          "cache_strategy": "pool:tenant_id"
+        },
+        {
+          "id": "prompt_benchmark_runner",
+          "priority": 9,
+          "category": "meta_optimization",
+          "file": "prompts/prompt_benchmark_runner.json",
+          "dependencies": ["dashboard_usage_insights"],
+          "parallel_compatible": false,
+          "execution_frequency": "monthly",
+          "estimated_runtime_seconds": 300,
+          "cache_strategy": "no_cache"
+        },
+        {
+          "id": "cursor_prompt_packager",
+          "priority": 10,
+          "category": "deployment",
+          "file": "prompts/cursor_prompt_packager.json",
+          "dependencies": ["prompt_benchmark_runner"],
+          "parallel_compatible": false,
+          "execution_frequency": "monthly",
+          "estimated_runtime_seconds": 60,
+          "cache_strategy": "no_cache"
+        }
+      ],
+      "parallel_execution_groups": {
+        "group_1": ["dataset_integrity_validator"],
+        "group_2": ["aiv_weight_drift_detector"],
+        "group_3": ["aiv_predictive_forecast"],
+        "group_4": ["aiv_causal_summary", "roi_scenario_simulator"],
+        "group_5": ["regional_weight_optimizer", "fraudguard_audit"],
+        "group_6": ["dashboard_usage_insights"],
+        "group_7": ["prompt_benchmark_runner"],
+        "group_8": ["cursor_prompt_packager"]
+      }
+    }
+  },
+
+  "execution_workflows": {
+    "monthly_full_optimization": {
+      "description": "Complete QAI cycle for comprehensive system optimization",
+      "trigger": "cron:0 0 1 * *",
+      "execution_order": [
+        "dataset_integrity_validator",
+        "aiv_weight_drift_detector",
+        "aiv_predictive_forecast",
+        "aiv_causal_summary",
+        "roi_scenario_simulator",
+        "regional_weight_optimizer",
+        "fraudguard_audit",
+        "dashboard_usage_insights",
+        "prompt_benchmark_runner",
+        "cursor_prompt_packager"
+      ],
+      "estimated_total_runtime_minutes": 18,
+      "success_criteria": {
+        "all_prompts_executed": true,
+        "benchmark_targets_met": 0.8,
+        "no_critical_failures": true
+      },
+      "output_artifacts": [
+        "/benchmarks/monthly_${YYYY}_${MM}.json",
+        "/exports/qai_optimization_report_${YYYY}_${MM}.json",
+        "/prompts/packaged/hyperAIV_promptset_v${date}.json"
+      ]
+    },
+
+    "weekly_maintenance": {
+      "description": "Critical path execution for model stability and data trust",
+      "trigger": "cron:0 2 * * 1",
+      "execution_order": [
+        "dataset_integrity_validator",
+        "aiv_weight_drift_detector",
+        "aiv_predictive_forecast",
+        "fraudguard_audit"
+      ],
+      "estimated_total_runtime_minutes": 5,
+      "success_criteria": {
+        "data_trust_score": 0.95,
+        "drift_ratio_acceptable": true,
+        "forecast_generated": true
+      },
+      "alerts": {
+        "data_trust_below_threshold": "critical",
+        "drift_ratio_critical": "warning",
+        "validation_failures": "critical"
+      }
+    },
+
+    "real_time_monitoring": {
+      "description": "Event-driven execution on specific triggers",
+      "triggers": {
+        "on_data_upload": {
+          "prompts": ["dataset_integrity_validator"],
+          "execution_mode": "synchronous",
+          "timeout_seconds": 60
+        },
+        "on_fraud_alert": {
+          "prompts": ["fraudguard_audit"],
+          "execution_mode": "asynchronous",
+          "timeout_seconds": 300
+        },
+        "on_threshold_breach": {
+          "prompts": ["aiv_weight_drift_detector", "aiv_causal_summary"],
+          "execution_mode": "asynchronous",
+          "timeout_seconds": 180
+        }
+      }
+    },
+
+    "on_demand_execution": {
+      "description": "User-initiated execution via dashboard",
+      "available_prompts": [
+        "aiv_predictive_forecast",
+        "aiv_causal_summary",
+        "roi_scenario_simulator",
+        "dashboard_usage_insights"
+      ],
+      "rbac_requirements": {
+        "SuperAdmin": "all_prompts",
+        "Enterprise Admin": ["aiv_predictive_forecast", "aiv_causal_summary", "roi_scenario_simulator"],
+        "Dealership Admin": ["aiv_predictive_forecast", "aiv_causal_summary"],
+        "User": []
+      }
+    }
+  },
+
+  "system_benchmarks": {
+    "overall_targets": {
+      "system_accuracy": {
+        "target": 0.9,
+        "measurement": "weighted_average_of_all_prompt_accuracy",
+        "update_frequency": "monthly"
+      },
+      "latency_reduction": {
+        "target": 0.3,
+        "measurement": "execution_time_improvement_vs_baseline",
+        "update_frequency": "monthly"
+      },
+      "predictive_accuracy": {
+        "target": 0.85,
+        "measurement": "forecast_rmse_and_trend_classification",
+        "update_frequency": "weekly"
+      },
+      "roi_optimization": {
+        "target": 0.8,
+        "measurement": "scenario_ranking_accuracy_vs_actual",
+        "update_frequency": "monthly"
+      },
+      "data_trust_score": {
+        "target": 0.95,
+        "measurement": "1_minus_fraud_probability",
+        "update_frequency": "weekly"
+      },
+      "user_engagement": {
+        "target": 0.25,
+        "measurement": "dashboard_usage_increase_mom",
+        "update_frequency": "monthly"
+      }
+    },
+
+    "individual_prompt_targets": {
+      "dataset_integrity_validator": {
+        "rmse_threshold": 3.0,
+        "coverage_threshold": 90.0,
+        "completeness_threshold": 95.0
+      },
+      "aiv_weight_drift_detector": {
+        "drift_ratio_threshold": 2.0,
+        "rmse_improvement_target": 0.5,
+        "stability_score_target": 0.8
+      },
+      "aiv_predictive_forecast": {
+        "forecast_rmse": 3.0,
+        "trend_accuracy": 0.8,
+        "confidence_calibration": 0.95
+      },
+      "aiv_causal_summary": {
+        "attribution_accuracy": 0.85,
+        "recommendation_relevance": 0.9,
+        "explanation_clarity": 0.8
+      },
+      "roi_scenario_simulator": {
+        "roi_accuracy": 0.8,
+        "payback_accuracy": 0.75,
+        "scenario_ranking_accuracy": 0.85
+      },
+      "regional_weight_optimizer": {
+        "r2_improvement": 0.1,
+        "variance_threshold": 20.0,
+        "localization_accuracy": 0.85
+      },
+      "fraudguard_audit": {
+        "fraud_detection_accuracy": 0.95,
+        "false_positive_rate": 0.05,
+        "data_trust_threshold": 0.9
+      },
+      "dashboard_usage_insights": {
+        "engagement_improvement": 0.15,
+        "conversion_correlation_accuracy": 0.8,
+        "feature_adoption_rate": 0.7
+      },
+      "prompt_benchmark_runner": {
+        "accuracy_score_threshold": 0.8,
+        "hallucination_rate_threshold": 0.1,
+        "consistency_threshold": 0.9
+      },
+      "cursor_prompt_packager": {
+        "package_integrity": 1.0,
+        "version_accuracy": 1.0,
+        "deployment_readiness": 1.0
+      }
+    }
+  },
+
+  "monitoring_and_alerting": {
+    "health_checks": {
+      "system_health": {
+        "check_frequency": "hourly",
+        "metrics": [
+          "prompt_execution_success_rate",
+          "average_execution_latency",
+          "cache_hit_rate",
+          "error_rate"
+        ],
+        "alert_thresholds": {
+          "critical": {
+            "execution_success_rate_below": 0.8,
+            "error_rate_above": 0.15
+          },
+          "warning": {
+            "execution_success_rate_below": 0.9,
+            "error_rate_above": 0.1
+          }
+        }
+      },
+      "data_quality": {
+        "check_frequency": "on_execution",
+        "metrics": [
+          "data_completeness",
+          "data_trust_score",
+          "validation_failure_rate"
+        ],
+        "alert_thresholds": {
+          "critical": {
+            "data_trust_score_below": 0.85,
+            "validation_failure_rate_above": 0.2
+          }
+        }
+      },
+      "model_performance": {
+        "check_frequency": "weekly",
+        "metrics": [
+          "forecast_accuracy",
+          "attribution_accuracy",
+          "roi_prediction_accuracy"
+        ],
+        "alert_thresholds": {
+          "warning": {
+            "forecast_accuracy_below": 0.75,
+            "attribution_accuracy_below": 0.8
+          }
+        }
+      }
+    },
+
+    "logging_strategy": {
+      "execution_logs": {
+        "level": "info",
+        "include": [
+          "prompt_id",
+          "tenant_id",
+          "execution_start",
+          "execution_end",
+          "duration_ms",
+          "status",
+          "input_hash",
+          "output_hash",
+          "cache_hit"
+        ],
+        "retention_days": 90
+      },
+      "error_logs": {
+        "level": "error",
+        "include": [
+          "prompt_id",
+          "error_type",
+          "error_message",
+          "stack_trace",
+          "input_data_sample",
+          "tenant_id",
+          "timestamp"
+        ],
+        "retention_days": 180,
+        "alert_on_error": true
+      },
+      "benchmark_logs": {
+        "level": "info",
+        "include": [
+          "prompt_id",
+          "metric_name",
+          "actual_value",
+          "target_value",
+          "status",
+          "timestamp"
+        ],
+        "retention_days": 365,
+        "export_path": "/benchmarks/logs/"
+      }
+    }
+  },
+
+  "integration_points": {
+    "cursor_ide": {
+      "import_instructions": [
+        "1. Ensure all prompt files exist in /prompts/ directory",
+        "2. Import qai_master_prompt.json into Cursor Prompt Library",
+        "3. Use command palette (Cmd+Shift+P) → 'QAI: Execute Workflow'",
+        "4. Select workflow type: monthly|weekly|real-time|on-demand",
+        "5. Monitor execution in Cursor output panel"
+      ],
+      "command_bindings": {
+        "qai.execute.monthly": "Execute Monthly Full Optimization",
+        "qai.execute.weekly": "Execute Weekly Maintenance",
+        "qai.benchmark.view": "View Benchmark Results",
+        "qai.status.check": "Check System Health"
+      }
+    },
+
+    "dashboard_integration": {
+      "api_endpoints": {
+        "execute_workflow": "POST /api/qai/execute",
+        "get_status": "GET /api/qai/status",
+        "get_benchmarks": "GET /api/qai/benchmarks",
+        "get_recommendations": "GET /api/qai/recommendations"
+      },
+      "ui_components": {
+        "qai_status_widget": "Display current execution status and health",
+        "benchmark_dashboard": "Visualize all benchmark metrics with trends",
+        "recommendation_panel": "Show top 5 actionable recommendations from causal summary",
+        "forecast_chart": "Display 4-week AIV predictions with confidence intervals"
+      }
+    },
+
+    "data_sources": {
+      "postgres": {
+        "required_tables": [
+          "aiv_weekly",
+          "elasticity_weekly",
+          "review_data",
+          "user_behavior_logs",
+          "app_analytics_logs"
+        ],
+        "connection_pool": "dedicated_qai_pool",
+        "query_timeout_seconds": 30
+      },
+      "redis": {
+        "cache_namespaces": [
+          "qai:execution_cache",
+          "qai:benchmark_cache",
+          "qai:tenant_pool"
+        ],
+        "ttl_seconds": 604800
+      }
+    },
+
+    "export_targets": {
+      "filesystem": {
+        "benchmarks": "/benchmarks/",
+        "reports": "/exports/qai_reports/",
+        "packaged_prompts": "/prompts/packaged/"
+      },
+      "cloud_storage": {
+        "s3_bucket": "dealershipai-qai-exports",
+        "backup_frequency": "daily",
+        "retention_days": 90
+      }
+    }
+  },
+
+  "autonomous_learning": {
+    "self_optimization": {
+      "enabled": true,
+      "optimization_strategy": "prompt_benchmark_runner identifies best-performing variants",
+      "auto_deploy_threshold": {
+        "accuracy_improvement_min": 0.05,
+        "consistency_improvement_min": 0.03,
+        "hallucination_reduction_min": 0.02
+      },
+      "version_control": {
+        "auto_commit": true,
+        "commit_message_template": "QAI: Auto-optimize ${prompt_id} - accuracy +${improvement}%",
+        "git_branch": "qai-auto-optimization",
+        "require_approval": true
+      }
+    },
+
+    "continuous_improvement": {
+      "feedback_loop": {
+        "collect_user_feedback": "dashboard interactions and satisfaction scores",
+        "measure_forecast_accuracy": "compare predictions to actual outcomes",
+        "track_recommendation_adoption": "monitor which recommendations are followed",
+        "adjust_weights": "update pillar weights based on regional performance"
+      },
+      "adaptation_frequency": "monthly",
+      "learning_rate": 0.1
+    }
+  },
+
+  "deployment_checklist": [
+    "✅ All 10 prompt files created in /prompts/ directory",
+    "✅ QAI Master Prompt defined with execution workflows",
+    "✅ Dependency graph validated and optimized",
+    "✅ Benchmark targets aligned with business KPIs",
+    "✅ Cursor IDE integration configured",
+    "✅ Dashboard API endpoints defined",
+    "✅ Multi-tenant isolation enforced",
+    "✅ RBAC permissions configured",
+    "✅ Monitoring and alerting setup",
+    "✅ Logging strategy implemented",
+    "✅ Cache strategy optimized for cost",
+    "✅ Export paths and backup configured",
+    "✅ Autonomous learning enabled",
+    "✅ Version control integrated"
+  ],
+
+  "expected_outcomes": {
+    "accuracy_improvement": "15% MoM accuracy gains through continuous optimization",
+    "latency_reduction": "30% faster processing via parallel execution and caching",
+    "predictive_insights": "4-week AIV forecasts with 85%+ accuracy and confidence intervals",
+    "financial_optimization": "20% better ROI decisions through scenario modeling",
+    "regional_adaptation": "Localized weight optimization for 4+ global markets",
+    "trust_security": "95%+ data trust score through automated fraud detection",
+    "user_optimization": "25% increased dashboard engagement via usage insights",
+    "autonomous_operation": "Self-improving system requiring minimal manual intervention"
+  },
+
+  "success_metrics_summary": {
+    "technical_excellence": {
+      "system_accuracy": ">90%",
+      "execution_reliability": ">95%",
+      "latency_reduction": "30%",
+      "cache_hit_rate": ">70%"
+    },
+    "business_impact": {
+      "roi_optimization": "20% improvement",
+      "user_engagement": "25% increase",
+      "data_trust": "95%+ score",
+      "predictive_accuracy": "85%+"
+    },
+    "operational_efficiency": {
+      "manual_intervention": "<10% of executions",
+      "auto_optimization_rate": ">80% of improvements",
+      "deployment_frequency": "monthly with auto-updates",
+      "incident_rate": "<5% execution failures"
+    }
+  },
+
+  "usage_examples": {
+    "cursor_cli": {
+      "monthly_optimization": "cursor qai execute --workflow=monthly_full_optimization --tenant=all",
+      "weekly_maintenance": "cursor qai execute --workflow=weekly_maintenance --tenant=${TENANT_ID}",
+      "on_demand_forecast": "cursor qai execute --prompt=aiv_predictive_forecast --tenant=${TENANT_ID}",
+      "view_status": "cursor qai status --format=table",
+      "view_benchmarks": "cursor qai benchmarks --period=last_30_days --export=json"
+    },
+    "api_calls": {
+      "execute_monthly": "curl -X POST https://api.dealershipai.com/qai/execute -d '{\"workflow\":\"monthly_full_optimization\",\"tenant_id\":\"${TENANT_ID}\"}'",
+      "get_status": "curl https://api.dealershipai.com/qai/status?tenant_id=${TENANT_ID}",
+      "get_recommendations": "curl https://api.dealershipai.com/qai/recommendations?tenant_id=${TENANT_ID}&limit=5"
+    }
+  },
+
+  "maintenance_guide": {
+    "monthly_tasks": [
+      "Review benchmark results and identify underperforming prompts",
+      "Analyze prompt_benchmark_runner output for optimization opportunities",
+      "Update prompt variants based on accuracy improvements",
+      "Review and merge auto-optimization branches",
+      "Export monthly reports for stakeholder review"
+    ],
+    "quarterly_tasks": [
+      "Evaluate overall system performance against KPIs",
+      "Update benchmark targets based on business goals",
+      "Review and optimize cache strategies",
+      "Conduct security audit of data handling",
+      "Update regional weights for new markets"
+    ],
+    "emergency_procedures": {
+      "data_trust_critical": "Immediately execute fraudguard_audit, pause affected tenants if score <0.7",
+      "execution_failures": "Check logs, validate data sources, roll back to last known good version",
+      "performance_degradation": "Review cache hit rates, check database query performance, scale resources"
+    }
+  },
+
+  "metadata": {
+    "version": "2.0",
+    "created": "2025-10-12T00:00:00Z",
+    "last_updated": "2025-10-12T00:00:00Z",
+    "author": "DealershipAI Engineering Team",
+    "license": "Proprietary - DealershipAI SaaS Platform",
+    "documentation_url": "https://docs.dealershipai.com/qai-master",
+    "support_contact": "qai-support@dealershipai.com"
+  }
+}
