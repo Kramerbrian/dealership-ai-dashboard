@@ -4,7 +4,7 @@
  * Part of DealershipAI Command Center autonomous systems
  */
 
-import { NextResponse } from 'next/response';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { calculateATI, validateATIPillars, type ATIPillars } from '@/lib/ati-calculator';
 
