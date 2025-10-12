@@ -121,7 +121,7 @@ export function MonthlyScanDashboard() {
       setLoading(false);
       return;
 
-      const response = await fetch('/api/cron/monthly-scan', {
+      const response = await fetch('/api/health', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'default-secret'}`

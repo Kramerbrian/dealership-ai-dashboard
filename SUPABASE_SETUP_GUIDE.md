@@ -1,368 +1,131 @@
-# Supabase Setup Guide - DealershipAI Platform
+# Supabase Setup Guide - DealershipAI
 
-## Overview
+## 🚀 **Quick Setup**
 
-This guide will help you complete the Supabase integration for the DealershipAI multi-tenant platform. Your database schema has been successfully deployed with Row-Level Security (RLS) policies enforcing tenant isolation.
+### Step 1: Get Your Supabase URL and Keys
 
-## Database Status
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+2. Select your project (or create a new one)
+3. Go to **Settings** → **API**
+4. Copy the following values:
+   - **Project URL** (looks like: `https://your-project-id.supabase.co`)
+   - **Service Role Key** (starts with `eyJ...`)
 
-✅ **8 tables created successfully:**
-- `tenants` - Organization/tenant management
-- `users` - User accounts with role-based permissions
-- `dealerships` - Individual dealership locations
-- `ai_visibility_audits` - AI visibility scan results
-- `optimization_recommendations` - Actionable improvement suggestions
-- `ai_citations` - AI-generated content citations
-- `competitor_analysis` - Competitive intelligence data
-- `activity_feed` - System activity logging
+### Step 2: Update Your Environment Variables
 
-✅ **Sample data inserted:**
-- 2 test tenants (Enterprise and Single Dealership)
-- 3 dealerships across different tenants
-- All RLS policies enabled and active
-
-## Step 1: Update Environment Variables with Real Supabase Keys
-
-### Current Status
-Your `.env` file currently has placeholder values for Supabase credentials:
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://vxrdvkhkombwlhjvtsmw.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_key_here
-```
-
-### Action Required
-
-1. **The Supabase API settings page has been opened in your browser**
-   - If not, navigate to: https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw/settings/api
-
-2. **Copy your API keys:**
-   - Find the **"anon public"** key (under Project API keys)
-   - Find the **"service_role"** key (under Project API keys - keep this secret!)
-
-3. **Update your `.env` file:**
+Update your `.env` file with the real values:
 
 ```bash
-# Replace the placeholder values with your real keys
-NEXT_PUBLIC_SUPABASE_URL=https://vxrdvkhkombwlhjvtsmw.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...  # Paste your anon key
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...  # Paste your service_role key
+# Replace the placeholder values with your actual Supabase details
+NEXT_PUBLIC_SUPABASE_URL="https://your-actual-project-id.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-actual-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-actual-service-role-key"
+
+# Also add this for the database fix script
+SUPABASE_URL="https://your-actual-project-id.supabase.co"
 ```
 
-4. **Also update `.env.local` if you're using it for local development**
+### Step 3: Run the Database Fix
 
-⚠️ **IMPORTANT SECURITY NOTE:**
-- The `SUPABASE_SERVICE_ROLE_KEY` bypasses ALL Row-Level Security policies
-- NEVER expose this key in client-side code or commit it to public repositories
-- Only use it in server-side API routes and backend services
+Once you have the correct environment variables:
 
-## Step 2: Clerk Authentication Integration
-
-### Current Status
-✅ Clerk is already configured in your project:
-- Middleware set up at `/Users/briankramer/dealership-ai-dashboard/middleware.ts`
-- Environment variables defined in `.env`
-- Authentication helpers in place
-
-### Verification Steps
-
-1. **Check your Clerk credentials in `.env`:**
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-CLERK_WEBHOOK_SECRET=whsec_...
+# Export the variables and run the fix
+export SUPABASE_URL="https://your-actual-project-id.supabase.co"
+export SUPABASE_SERVICE_ROLE_KEY="your-actual-service-role-key"
+./scripts/fix-database-schema.sh
 ```
 
-2. **If you need to update Clerk keys:**
-   - Go to https://dashboard.clerk.com
-   - Select your application
-   - Navigate to API Keys
-   - Copy the keys and update your `.env` file
+## 🔧 **Alternative: Manual Database Setup**
 
-3. **Test Clerk authentication:**
-```bash
-npm run dev
-```
-Then visit http://localhost:3001/sign-in to test the login flow.
+If you prefer to set up the database manually through the Supabase dashboard:
 
-## Step 3: API Endpoints
+### 1. Go to SQL Editor in Supabase Dashboard
 
-### Created Endpoints
+### 2. Run this SQL:
 
-The following API endpoints have been created to interact with your Supabase database:
-
-#### Dealerships API
-- `GET /api/dealerships` - List all dealerships for user's tenant
-- `POST /api/dealerships` - Create new dealership
-- `GET /api/dealerships/[id]` - Get specific dealership
-- `PATCH /api/dealerships/[id]` - Update dealership
-- `DELETE /api/dealerships/[id]` - Delete dealership
-
-#### Audits API
-- `GET /api/audits` - List AI visibility audits
-- `POST /api/audits` - Create new audit
-- `GET /api/audits/[id]` - Get specific audit
-- `PATCH /api/audits/[id]` - Update audit
-- `DELETE /api/audits/[id]` - Delete audit
-
-#### Recommendations API
-- `GET /api/recommendations` - List optimization recommendations
-- `POST /api/recommendations` - Create new recommendation
-- `GET /api/recommendations/[id]` - Get specific recommendation
-- `PATCH /api/recommendations/[id]` - Update recommendation
-- `DELETE /api/recommendations/[id]` - Delete recommendation
-
-### API Features
-- ✅ Clerk authentication required
-- ✅ Role-based access control
-- ✅ Tenant isolation enforced
-- ✅ Pagination support
-- ✅ Filtering by query parameters
-- ✅ Full CRUD operations
-
-### Example API Calls
-
-**Get dealerships for authenticated user:**
-```bash
-curl -X GET http://localhost:3001/api/dealerships \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
-```
-
-**Create a new audit:**
-```bash
-curl -X POST http://localhost:3001/api/audits \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "dealership_id": "uuid-here",
-    "ai_visibility_score": 85.5,
-    "seo_score": 78.2,
-    "status": "completed"
-  }'
-```
-
-**Get recommendations for a dealership:**
-```bash
-curl -X GET "http://localhost:3001/api/recommendations?dealership_id=uuid-here" \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
-```
-
-## Step 4: Test RLS Policies
-
-### Test Script Created
-
-A comprehensive RLS testing script has been created at:
-`/Users/briankramer/dealership-ai-dashboard/test-rls-policies.ts`
-
-### How to Run Tests
-
-1. **Install dependencies (if needed):**
-```bash
-npm install --save-dev ts-node @types/node
-```
-
-2. **Run the test script:**
-```bash
-npx ts-node test-rls-policies.ts
-```
-
-### What the Tests Verify
-
-The test suite validates:
-
-1. **Dealership Access Control**
-   - Users can only access their tenant's dealerships
-   - Cross-tenant access is blocked
-
-2. **Audit Access Control**
-   - Users can only see audits for their tenant
-   - Cannot create audits for other tenants
-
-3. **Recommendation Access Control**
-   - Recommendations are tenant-isolated
-   - Proper permission checks for CRUD operations
-
-4. **Cross-Tenant Isolation**
-   - Complete data separation between tenants
-   - No data leakage across tenant boundaries
-
-5. **Super Admin Access**
-   - Super admins can access all tenants
-   - Proper privilege escalation
-
-### Expected Output
-
-```
-╔═══════════════════════════════════════════╗
-║  RLS POLICY TESTING SUITE                 ║
-║  Multi-Tenant Security Verification       ║
-╚═══════════════════════════════════════════╝
-
-📦 Setting up test data...
-
-✅ Found Tenant 1: AutoGroup Enterprise (uuid)
-✅ Found Tenant 2: City Motors (uuid)
-✅ Found 3 dealerships
-
-TEST SUITE 1: Dealership Access Control
-✅ PASSED: User from Tenant 1 can access their dealerships
-✅ PASSED: User from Tenant 1 CANNOT access Tenant 2 dealerships
-...
-
-Total Tests: 15
-✅ Passed: 15
-❌ Failed: 0
-Success Rate: 100.0%
-```
-
-## Step 5: Role-Based Testing
-
-### User Roles in the System
-
-1. **super_admin**
-   - Access to all tenants
-   - Full system management
-   - Can manage all users and settings
-
-2. **enterprise_admin**
-   - Manages one enterprise tenant
-   - Can access all dealerships under their tenant
-   - Can manage users within their tenant
-
-3. **dealership_admin**
-   - Manages a single dealership
-   - Can view and edit their dealership's data
-   - Limited user management
-
-4. **user**
-   - Read-only access
-   - Can view analytics for their dealership
-   - Cannot make changes
-
-### Testing Different Roles
-
-To test with different roles, you'll need to:
-
-1. **Create test users in Clerk:**
-   - Go to https://dashboard.clerk.com
-   - Create users with different email addresses
-   - Note their Clerk user IDs
-
-2. **Add users to Supabase:**
 ```sql
--- Example: Add an enterprise admin
-INSERT INTO users (clerk_id, tenant_id, email, role)
-VALUES (
-  'user_clerk_id_here',
-  'tenant_id_here',
-  'admin@example.com',
-  'enterprise_admin'
+-- Create public schema if it doesn't exist
+CREATE SCHEMA IF NOT EXISTS public;
+
+-- Create security_events table
+CREATE TABLE IF NOT EXISTS public.security_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    event_data JSONB,
+    ip_address INET,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
 );
+
+-- Enable RLS
+ALTER TABLE public.security_events ENABLE ROW LEVEL SECURITY;
+
+-- Create basic policies
+CREATE POLICY "Auth select security_events"
+  ON public.security_events
+  FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Auth insert security_events"
+  ON public.security_events
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_security_events_tenant_id ON public.security_events(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_security_events_created_at ON public.security_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_security_events_event_type ON public.security_events(event_type);
+
+-- Grant permissions
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.security_events TO authenticated;
 ```
 
-3. **Test API access with different users:**
-   - Sign in as each user type
-   - Test the API endpoints
-   - Verify proper access control
+### 3. Verify Setup
 
-## Step 6: Integration Checklist
+Run this query to verify everything is working:
 
-Use this checklist to verify your setup:
+```sql
+-- Check if table exists
+SELECT to_regclass('public.security_events');
 
-### Environment Configuration
-- [ ] Supabase ANON key updated in `.env`
-- [ ] Supabase SERVICE_ROLE key updated in `.env`
-- [ ] Supabase URL is correct
-- [ ] Clerk keys are configured
-- [ ] All environment variables loaded properly
+-- Check RLS policies
+SELECT * FROM pg_policies WHERE tablename='security_events';
+```
 
-### Database Verification
-- [ ] All 8 tables exist in Supabase
-- [ ] Sample data is present
-- [ ] RLS policies are enabled
-- [ ] Foreign key relationships work
+## 🎯 **What This Fixes**
 
-### API Testing
-- [ ] Can authenticate with Clerk
-- [ ] GET /api/dealerships returns data
-- [ ] Can create a new dealership
-- [ ] Can create a new audit
-- [ ] Can retrieve recommendations
-- [ ] Proper error handling for unauthorized access
+✅ **Schema Issues**: Creates the `public` schema if it doesn't exist  
+✅ **Table Creation**: Creates the `security_events` table  
+✅ **RLS Setup**: Enables Row Level Security  
+✅ **Permissions**: Sets up proper access policies  
+✅ **Performance**: Creates necessary indexes  
 
-### Security Testing
-- [ ] RLS test script runs successfully
-- [ ] Cross-tenant access is blocked
-- [ ] Role-based permissions work correctly
-- [ ] Service role key is kept secret
-- [ ] API routes require authentication
+## 🚨 **Troubleshooting**
 
-### Application Integration
-- [ ] Frontend can fetch dealership data
-- [ ] Users can view their audits
-- [ ] Dashboard displays correct tenant data
-- [ ] No data leakage between tenants
+### Problem: "schema does not exist"
+**Solution**: The migration creates the public schema automatically.
 
-## Step 7: Next Steps
+### Problem: "permission denied"
+**Solution**: The migration sets up proper RLS policies for authenticated users.
 
-After completing the setup:
+### Problem: "connection failed"
+**Solution**: Make sure your Supabase URL and keys are correct.
 
-1. **Connect your frontend components** to the new API endpoints
-2. **Implement real audit creation** using your AI services
-3. **Set up webhook handlers** for Clerk user creation
-4. **Configure automated scans** for dealerships
-5. **Set up monitoring** for API performance
-6. **Implement error tracking** (e.g., Sentry)
+### Problem: "table already exists"
+**Solution**: The migration uses `CREATE TABLE IF NOT EXISTS` so it's safe to run multiple times.
 
-## Troubleshooting
+## 🎉 **Success Indicators**
 
-### Common Issues
+After running the fix, you should see:
+- ✅ Public schema exists
+- ✅ security_events table created
+- ✅ RLS enabled
+- ✅ Policies created
+- ✅ Indexes created
+- ✅ Permissions granted
 
-**Issue: "Invalid API key" error**
-- Solution: Verify you copied the entire key including all characters
-- Make sure there are no extra spaces or line breaks
-
-**Issue: "Unauthorized" errors in API calls**
-- Solution: Check that Clerk authentication is working
-- Verify the Authorization header is being sent correctly
-
-**Issue: RLS tests failing**
-- Solution: Verify that your Supabase credentials are correct
-- Check that the sample data was inserted properly
-- Ensure RLS policies are enabled
-
-**Issue: Empty responses from API**
-- Solution: Check that test data exists in your tables
-- Verify tenant_id relationships are correct
-- Look at Supabase logs for query errors
-
-### Getting Help
-
-1. **Check Supabase logs:**
-   - Go to https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw/logs
-
-2. **View API error responses:**
-   - Check browser console for errors
-   - Look at Network tab for failed requests
-
-3. **Database queries:**
-   - Use Supabase SQL Editor to test queries
-   - Verify data relationships are correct
-
-## Additional Resources
-
-- **Supabase Documentation:** https://supabase.com/docs
-- **Clerk Documentation:** https://clerk.com/docs
-- **Next.js API Routes:** https://nextjs.org/docs/api-routes/introduction
-- **Row Level Security Guide:** https://supabase.com/docs/guides/auth/row-level-security
-
-## Summary
-
-Your DealershipAI platform is now configured with:
-- ✅ Multi-tenant database with RLS policies
-- ✅ Secure API endpoints with authentication
-- ✅ Role-based access control
-- ✅ Comprehensive testing suite
-- ✅ Complete tenant isolation
-
-**Action Required:** Update your `.env` file with the real Supabase keys and run the test suite to verify everything works correctly.
+Your database will be ready for the DealershipAI system! 🚀

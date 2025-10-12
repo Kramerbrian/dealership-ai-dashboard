@@ -114,3 +114,4 @@ disabled/
 *secret*
 *private*
 .env*.local
+.vercel

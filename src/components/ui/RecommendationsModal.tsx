@@ -1,9 +1,11 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import AgentButton, { EmergencyAgentTrigger, AIVisibilityAgentTrigger } from '../agent/AgentButton';
+import AgentChatModal from '../agent/AgentChatModal';
 
 interface Recommendation {
   id: string;
@@ -22,6 +24,7 @@ interface RecommendationsModalProps {
   onClose: () => void;
   recommendations: Recommendation[];
   dealerName: string;
+  dealerDomain?: string;
 }
 
 const getPriorityColor = (priority: number) => {
@@ -61,8 +64,15 @@ const getImpactLabel = (impact: number) => {
   return 'High Impact';
 };
 
-export default function RecommendationsModal({ isOpen, onClose, recommendations, dealerName }: RecommendationsModalProps) {
+export default function RecommendationsModal({ isOpen, onClose, recommendations, dealerName, dealerDomain }: RecommendationsModalProps) {
+  const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const sortedRecommendations = [...recommendations].sort((a, b) => a.priority - b.priority);
+  
+  // Calculate total potential impact for agent context
+  const totalImpact = recommendations.reduce((sum, rec) => {
+    const impactValue = rec.impact_score * 100; // Convert to dollar estimate
+    return sum + impactValue;
+  }, 0);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -196,6 +206,33 @@ export default function RecommendationsModal({ isOpen, onClose, recommendations,
                 {/* Footer */}
                 {recommendations.length > 0 && (
                   <div className="mt-6 pt-4 border-t border-gray-800/50">
+                    {/* Agent Integration */}
+                    {dealerDomain && (
+                      <div className="mb-4 p-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl border border-blue-500/20">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-sm font-semibold text-white mb-1">🤖 Get AI-Powered Analysis</h4>
+                            <p className="text-xs text-gray-400">
+                              Ask our AI specialist about these recommendations and get personalized guidance
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setIsAgentModalOpen(true)}
+                              className="px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+                            >
+                              <span>💬</span>
+                              Chat with AI
+                            </button>
+                            <EmergencyAgentTrigger 
+                              dealerDomain={dealerDomain} 
+                              lostRevenue={Math.round(totalImpact)} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-400">
                         💡 Focus on high-impact, low-effort recommendations first for maximum ROI
@@ -225,6 +262,16 @@ export default function RecommendationsModal({ isOpen, onClose, recommendations,
           </div>
         </div>
       </Dialog>
+      
+      {/* Agent Chat Modal */}
+      {dealerDomain && (
+        <AgentChatModal
+          isOpen={isAgentModalOpen}
+          onClose={() => setIsAgentModalOpen(false)}
+          dealerDomain={dealerDomain}
+          initialPrompt={`I have ${recommendations.length} recommendations for ${dealerName}. Help me prioritize them and create an action plan.`}
+        />
+      )}
     </Transition>
   );
 }

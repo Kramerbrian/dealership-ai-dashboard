@@ -1,6 +1,6 @@
 /**
  * Enhanced Dashboard
- * Bloomberg terminal-style dashboard with AI-powered insights
+ * Command Center for Dealerships - Air Traffic Control Tower with AI-powered insights
  */
 
 'use client';

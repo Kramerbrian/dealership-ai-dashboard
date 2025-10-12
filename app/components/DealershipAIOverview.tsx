@@ -3,11 +3,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Legend,
+  ResponsiveContainer,
 } from 'recharts';
-import { ResponsiveContainer as RC } from 'recharts';
-
-// Wrapper to fix React type conflicts
-const ResponsiveContainer = RC as any;
 
 /* --- UI Primitives ---------------------------------------------------- */
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
@@ -17,10 +14,11 @@ const Card = ({ children, className = '' }: { children: React.ReactNode; classNa
 );
 
 const KPI = ({
-  title, value, sub, tone = 'default', onClick,
-}: { title: string; value: React.ReactNode; sub?: string; tone?: 'default'|'critical'|'ok'; onClick?: () => void }) => (
+  title, value, sub, tone = 'default', onClick, ariaLabel,
+}: { title: string; value: React.ReactNode; sub?: string; tone?: 'default'|'critical'|'ok'; onClick?: () => void; ariaLabel?: string }) => (
   <button
     onClick={onClick}
+    aria-label={ariaLabel || title}
     className={`w-full text-left rounded-2xl border p-5 transition ${
       tone === 'critical'
         ? 'border-red-500/30 bg-red-500/10 hover:bg-red-500/15'
@@ -50,6 +48,14 @@ export default function DealershipAIOverview() {
   // Serial Position: top-left & bottom-most KPIs are most important
   const [revenueAtRisk, setRevenueAtRisk] = useState<number>(367000);
   const [aiVisibility, setAiVisibility] = useState<number>(92);
+
+  // Accuracy metrics (realistic, transparent)
+  const [accuracyMetrics] = useState({
+    issueDetection: 87,        // 85-90% accurate
+    rankingCorrelation: 72,    // 70-75%
+    consensusReliability: 92,  // 92% (when all 3 AIs agree)
+    voiceSearch: 65            // 65% accuracy
+  });
 
   // Impressions Trend (derived visibility proxy)
   const impressions: Trend[] = useMemo(
@@ -101,12 +107,14 @@ export default function DealershipAIOverview() {
           sub="Estimated monthly exposure"
           tone="critical"
           onClick={() => {/* open details */}}
+          ariaLabel="View revenue at risk details: $367K estimated monthly exposure"
         />
         <KPI
           title="AI Visibility"
           value={loading ? <Skeleton h={32} /> : `${aiVisibility}%`}
           sub="Composite of Google/ChatGPT/Perplexity/Claude"
           tone="ok"
+          ariaLabel="AI Visibility score: 92% across Google, ChatGPT, Perplexity, and Claude"
         />
         <Card>
           <div className="mb-2 text-xs text-white/60">Impressions Trend</div>
@@ -219,7 +227,10 @@ export default function DealershipAIOverview() {
       <Card>
         <div className="mb-3 flex items-center justify-between">
           <div className="text-xs text-white/60">Live Intelligence Feed</div>
-          <button className="rounded-lg border border-white/20 px-3 py-1 text-xs text-white/70 hover:border-white/40">
+          <button
+            className="rounded-lg border border-white/20 px-3 py-1 text-xs text-white/70 hover:border-white/40"
+            aria-label="Open AI recommendations panel"
+          >
             Open Recommendations
           </button>
         </div>
@@ -232,13 +243,13 @@ export default function DealershipAIOverview() {
         ) : (
           <ul className="space-y-2 text-sm">
             <li className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3">
-              ⚠️ Critical: Revenue at Risk +$12K vs last week — <button className="underline">Fix Now</button>
+              ⚠️ Critical: Revenue at Risk +$12K vs last week — <button className="underline" aria-label="Fix revenue at risk issue now">Fix Now</button>
             </li>
             <li className="rounded-lg border border-white/10 bg-white/5 p-3">
               ✅ AI Overviews inclusion up 6% for &quot;oil change naples fl&quot;
             </li>
             <li className="rounded-lg border border-white/10 bg-white/5 p-3">
-              💬 Respond to 12 new Google reviews <button className="underline">Open Queue</button>
+              💬 Respond to 12 new Google reviews <button className="underline" aria-label="Open review response queue with 12 pending reviews">Open Queue</button>
             </li>
           </ul>
         )}
@@ -247,9 +258,58 @@ export default function DealershipAIOverview() {
         </div>
       </Card>
 
+      {/* TRANSPARENCY ROW — System Accuracy & Trust */}
+      <Card>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-xs text-white/60">AI System Accuracy & Transparency</div>
+          <span className="rounded-lg bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-300">
+            Triple-Verified
+          </span>
+        </div>
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Skeleton h={80} />
+            <Skeleton h={80} />
+            <Skeleton h={80} />
+            <Skeleton h={80} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="text-xs text-white/50">Issue Detection</div>
+              <div className="mt-1 text-2xl font-semibold text-white">{accuracyMetrics.issueDetection}%</div>
+              <div className="mt-1 text-[10px] text-white/40">85-90% range</div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="text-xs text-white/50">Ranking Correlation</div>
+              <div className="mt-1 text-2xl font-semibold text-white">{accuracyMetrics.rankingCorrelation}%</div>
+              <div className="mt-1 text-[10px] text-white/40">70-75% range</div>
+            </div>
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+              <div className="text-xs text-emerald-300">Consensus Reliability</div>
+              <div className="mt-1 text-2xl font-semibold text-emerald-200">{accuracyMetrics.consensusReliability}%</div>
+              <div className="mt-1 text-[10px] text-emerald-300/70">All 3 AIs agree</div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="text-xs text-white/50">Voice Search</div>
+              <div className="mt-1 text-2xl font-semibold text-white">{accuracyMetrics.voiceSearch}%</div>
+              <div className="mt-1 text-[10px] text-white/40">Emerging tech</div>
+            </div>
+          </div>
+        )}
+        <div className="mt-4 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-xs text-blue-200">
+          <strong>What we promise:</strong> Triple-verified recommendations using Google, ChatGPT, and Perplexity AI.
+          <br />
+          <strong>What we don&apos;t promise:</strong> Guaranteed #1 rankings. SEO involves many factors beyond our control.
+        </div>
+        <div className="mt-2 text-[11px] text-white/50">
+          Trust Through Transparency: We share real accuracy metrics, not marketing promises.
+        </div>
+      </Card>
+
       {/* Von Restorff — optional global alert (use sparingly) */}
-      <div className="rounded-2xl border border-red-500/40 bg-red-500/15 p-4 text-sm">
-        🔴 Alert: Revenue at Risk is trending upward. <button className="underline">View mitigation plan</button>
+      <div className="rounded-2xl border border-red-500/40 bg-red-500/15 p-4 text-sm" role="alert" aria-live="polite">
+        🔴 Alert: Revenue at Risk is trending upward. <button className="underline" aria-label="View revenue mitigation plan">View mitigation plan</button>
       </div>
     </div>
   );

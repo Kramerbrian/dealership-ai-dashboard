@@ -1,0 +1,174 @@
+// DealershipAI v2.0 - Prisma Schema
+// 3-tier SaaS with geographic pooling for cost optimization
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User and Authentication
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  plan      Plan     @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  dealerships Dealership[]
+  sessions    Session[]
+  payments    Payment[]
+
+  @@map("users")
+}
+
+// Dealership Data
+model Dealership {
+  id          String   @id @default(cuid())
+  name        String
+  domain      String   @unique
+  city        String
+  state       String
+  country     String   @default("US")
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scores      Score[]
+  geoPool     GeoPool?
+  mysteryShops MysteryShop[]
+  eeatScores  EEATScore[]
+
+  @@map("dealerships")
+}
+
+// Scoring System - 5 Core Metrics
+model Score {
+  id           String   @id @default(cuid())
+  dealershipId String
+  aiVisibility Float    // 35% weight
+  zeroClick    Float    // 20% weight
+  ugcHealth    Float    // 20% weight
+  geoTrust     Float    // 15% weight
+  sgpIntegrity Float    // 10% weight
+  overall      Float    // Calculated weighted average
+  createdAt    DateTime @default(now())
+
+  // Relations
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@map("scores")
+}
+
+// E-E-A-T Scores (Pro+ only)
+model EEATScore {
+  id           String   @id @default(cuid())
+  dealershipId String
+  expertise    Float    // 25% weight
+  experience   Float    // 25% weight
+  authoritativeness Float // 25% weight
+  trustworthiness Float   // 25% weight
+  overall      Float    // Calculated average
+  createdAt    DateTime @default(now())
+
+  // Relations
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@map("eeat_scores")
+}
+
+// Geographic Pooling for Cost Optimization
+model GeoPool {
+  id        String   @id @default(cuid())
+  city      String
+  state     String
+  country   String   @default("US")
+  data      Json     // Cached analysis data
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  dealershipId String   @unique
+  dealership   Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([city, state, country])
+  @@map("geo_pools")
+}
+
+// Session Tracking for Tier Limits
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  dealershipId String?
+  endpoint     String   // Which API endpoint was called
+  cost         Float    // Cost of this session
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Mystery Shop Results (Enterprise only)
+model MysteryShop {
+  id           String   @id @default(cuid())
+  dealershipId String
+  testType     TestType
+  score        Float
+  responseTime Int?     // In seconds
+  personalization Float // 0-100
+  transparency Float   // 0-100
+  followUp     Float    // 0-100
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@map("mystery_shops")
+}
+
+// Payment Tracking
+model Payment {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int      // In cents
+  currency    String   @default("usd")
+  status      PaymentStatus @default(PENDING)
+  stripeId    String?  @unique
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// Enums
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum TestType {
+  EMAIL_RESPONSE
+  CHAT_WIDGET
+  PHONE_SIMULATION
+  WEBSITE_FORM
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}

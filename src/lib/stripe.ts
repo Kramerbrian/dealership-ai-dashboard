@@ -1,253 +1,259 @@
-import Stripe from 'stripe';
+/**
+ * DealershipAI v2.0 - Stripe Integration
+ * 
+ * Handles Stripe checkout and subscription management
+ */
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-09-30.clover',
-});
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 
-export { stripe };
+// Initialize Stripe
+let stripePromise: Promise<Stripe | null>;
 
-// Pricing tiers
-export const PRICING_TIERS = {
-  starter: {
-    name: 'Starter',
-    price: 99,
-    interval: 'month',
-    features: [
-      '1 Dealership',
-      'Basic SEO Analysis',
-      'Monthly Reports',
-      'Email Support'
-    ],
-    limits: {
-      dealerships: 1,
-      api_calls_per_month: 1000,
-      users: 2
-    }
-  },
-  professional: {
-    name: 'Professional',
-    price: 299,
-    interval: 'month',
-    features: [
-      'Up to 5 Dealerships',
-      'Full Three-Pillar Analysis',
-      'Weekly Reports',
-      'AI Visibility Tracking',
-      'Priority Support'
-    ],
-    limits: {
-      dealerships: 5,
-      api_calls_per_month: 5000,
-      users: 10
-    }
-  },
-  enterprise: {
-    name: 'Enterprise',
-    price: 999,
-    interval: 'month',
-    features: [
-      'Unlimited Dealerships',
-      'Advanced Analytics',
-      'Real-time Monitoring',
-      'Custom Integrations',
-      'Dedicated Support',
-      'White-label Options'
-    ],
-    limits: {
-      dealerships: -1, // Unlimited
-      api_calls_per_month: 50000,
-      users: -1 // Unlimited
-    }
+export const getStripe = () => {
+  if (!stripePromise) {
+    stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
   }
+  return stripePromise;
 };
 
-export async function createCheckoutSession(
-  tenantId: string,
-  priceId: string,
-  successUrl: string,
-  cancelUrl: string
-) {
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
+export interface PricingPlan {
+  id: string;
+  name: string;
+  price: string;
+  priceId: string;
+  features: string[];
+  sessions: number;
+  popular?: boolean;
+}
+
+export const PRICING_PLANS: PricingPlan[] = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: '$0',
+    priceId: '',
+    features: [
+      'Basic AI visibility score',
+      'View 3 competitors',
+      'Monthly reports'
+    ],
+    sessions: 0,
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '$499',
+    priceId: process.env.STRIPE_PRICE_PRO || 'price_pro_monthly',
+    features: [
+      'Everything in Free',
+      '50 sessions/month',
+      'E-E-A-T scoring',
+      'Unlimited competitors',
+      'API access'
+    ],
+    sessions: 50,
+    popular: true,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: '$999',
+    priceId: process.env.STRIPE_PRICE_ENTERPRISE || 'price_enterprise_monthly',
+    features: [
+      'Everything in Pro',
+      '200 sessions/month',
+      'Mystery Shop automation',
+      'Multi-location',
+      '24/7 support'
+    ],
+    sessions: 200,
+  },
+];
+
+export interface CheckoutSession {
+  id: string;
+  url: string;
+}
+
+export class StripeService {
+  /**
+   * Create checkout session for plan upgrade
+   */
+  static async createCheckoutSession(
+    priceId: string,
+    userId: string,
+    successUrl?: string,
+    cancelUrl?: string
+  ): Promise<CheckoutSession | null> {
+    try {
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ],
-      mode: 'subscription',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        tenant_id: tenantId,
-      },
-      subscription_data: {
-        metadata: {
-          tenant_id: tenantId,
-        },
-      },
-    });
+        body: JSON.stringify({
+          priceId,
+          userId,
+          successUrl: successUrl || `${window.location.origin}/dashboard?upgrade=success`,
+          cancelUrl: cancelUrl || `${window.location.origin}/dashboard?upgrade=cancelled`,
+        }),
+      });
 
-    return session;
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
-    throw error;
-  }
-}
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
 
-export async function createCustomerPortalSession(
-  customerId: string,
-  returnUrl: string
-) {
-  try {
-    const session = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: returnUrl,
-    });
-
-    return session;
-  } catch (error) {
-    console.error('Error creating portal session:', error);
-    throw error;
-  }
-}
-
-export async function getSubscription(subscriptionId: string) {
-  try {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    return subscription;
-  } catch (error) {
-    console.error('Error getting subscription:', error);
-    throw error;
-  }
-}
-
-export async function cancelSubscription(subscriptionId: string) {
-  try {
-    const subscription = await stripe.subscriptions.cancel(subscriptionId);
-    return subscription;
-  } catch (error) {
-    console.error('Error canceling subscription:', error);
-    throw error;
-  }
-}
-
-export async function updateSubscription(
-  subscriptionId: string,
-  newPriceId: string
-) {
-  try {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    
-    const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
-      items: [
-        {
-          id: subscription.items.data[0].id,
-          price: newPriceId,
-        },
-      ],
-      proration_behavior: 'create_prorations',
-    });
-
-    return updatedSubscription;
-  } catch (error) {
-    console.error('Error updating subscription:', error);
-    throw error;
-  }
-}
-
-export async function handleWebhook(payload: string, signature: string) {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-  
-  try {
-    const event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-    
-    switch (event.type) {
-      case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
-        break;
-      case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
-        break;
-      case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
-        break;
-      case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object as Stripe.Invoice);
-        break;
-      case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object as Stripe.Invoice);
-        break;
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
+      const { session } = await response.json();
+      return session;
+    } catch (error) {
+      console.error('Stripe checkout session creation failed:', error);
+      return null;
     }
-    
-    return { received: true };
-  } catch (error) {
-    console.error('Webhook error:', error);
-    throw error;
+  }
+
+  /**
+   * Redirect to Stripe checkout
+   */
+  static async redirectToCheckout(
+    priceId: string,
+    userId: string,
+    successUrl?: string,
+    cancelUrl?: string
+  ): Promise<boolean> {
+    try {
+      const session = await this.createCheckoutSession(priceId, userId, successUrl, cancelUrl);
+      
+      if (!session) {
+        return false;
+      }
+
+      const stripe = await getStripe();
+      if (!stripe) {
+        throw new Error('Stripe failed to initialize');
+      }
+
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (error) {
+        console.error('Stripe checkout error:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Stripe checkout redirect failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create customer portal session
+   */
+  static async createCustomerPortalSession(
+    userId: string,
+    returnUrl?: string
+  ): Promise<string | null> {
+    try {
+      const response = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          returnUrl: returnUrl || `${window.location.origin}/dashboard`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create portal session');
+      }
+
+      const { url } = await response.json();
+      return url;
+    } catch (error) {
+      console.error('Stripe portal session creation failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Redirect to customer portal
+   */
+  static async redirectToPortal(userId: string, returnUrl?: string): Promise<boolean> {
+    try {
+      const portalUrl = await this.createCustomerPortalSession(userId, returnUrl);
+      
+      if (!portalUrl) {
+        return false;
+      }
+
+      window.location.href = portalUrl;
+      return true;
+    } catch (error) {
+      console.error('Stripe portal redirect failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get subscription status
+   */
+  static async getSubscriptionStatus(userId: string): Promise<{
+    status: 'active' | 'inactive' | 'cancelled' | 'past_due';
+    plan: string;
+    currentPeriodEnd: string;
+    cancelAtPeriodEnd: boolean;
+  } | null> {
+    try {
+      const response = await fetch(`/api/stripe/subscription-status?userId=${userId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to get subscription status');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to get subscription status:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Cancel subscription
+   */
+  static async cancelSubscription(userId: string): Promise<boolean> {
+    try {
+      const response = await fetch('/api/stripe/cancel-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to cancel subscription:', error);
+      return false;
+    }
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const tenantId = session.metadata?.tenant_id;
-  if (!tenantId) return;
+// Export convenience functions
+export const createCheckoutSession = (priceId: string, userId: string, successUrl?: string, cancelUrl?: string) =>
+  StripeService.createCheckoutSession(priceId, userId, successUrl, cancelUrl);
 
-  // Update tenant with subscription info
-  const { supabaseAdmin } = await import('./supabase');
-  
-  await supabaseAdmin
-    .from('tenants')
-    .update({
-      settings: {
-        stripe_customer_id: session.customer,
-        stripe_subscription_id: session.subscription,
-        subscription_status: 'active'
-      }
-    })
-    .eq('id', tenantId);
-}
+export const redirectToCheckout = (priceId: string, userId: string, successUrl?: string, cancelUrl?: string) =>
+  StripeService.redirectToCheckout(priceId, userId, successUrl, cancelUrl);
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  const tenantId = subscription.metadata?.tenant_id;
-  if (!tenantId) return;
+export const redirectToPortal = (userId: string, returnUrl?: string) =>
+  StripeService.redirectToPortal(userId, returnUrl);
 
-  const { supabaseAdmin } = await import('./supabase');
-  
-  await supabaseAdmin
-    .from('tenants')
-    .update({
-      settings: {
-        stripe_subscription_id: subscription.id,
-        subscription_status: subscription.status
-      }
-    })
-    .eq('id', tenantId);
-}
+export const getSubscriptionStatus = (userId: string) =>
+  StripeService.getSubscriptionStatus(userId);
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  const tenantId = subscription.metadata?.tenant_id;
-  if (!tenantId) return;
-
-  const { supabaseAdmin } = await import('./supabase');
-  
-  await supabaseAdmin
-    .from('tenants')
-    .update({
-      settings: {
-        subscription_status: 'canceled'
-      }
-    })
-    .eq('id', tenantId);
-}
-
-async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  // Handle successful payment
-  console.log('Payment succeeded:', invoice.id);
-}
-
-async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  // Handle failed payment
-  console.log('Payment failed:', invoice.id);
-}
+export const cancelSubscription = (userId: string) =>
+  StripeService.cancelSubscription(userId);

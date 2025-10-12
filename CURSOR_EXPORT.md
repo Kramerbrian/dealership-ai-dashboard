@@ -37,7 +37,7 @@ dealershipai-dashboard/
 {
   "name": "dealershipai-dashboard",
   "version": "2.0.0",
-  "description": "Bloomberg Terminal for Automotive AI Visibility",
+  "description": "Command Center for Dealership Intelligence - The Air Traffic Control Tower for Automotive AI Visibility",
   "main": "src/components/DealershipAIDashboard.tsx",
   "scripts": {
     "dev": "next dev",
