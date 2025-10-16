@@ -50,7 +50,7 @@ const DealershipAIDashboardLA: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<ModalContent>({ title: "", body: null });
-  const [profile, setProfile] = useState({ name: "Premium Auto Dealership", location: "Cape Coral, FL" });
+  const [profile, setProfile] = useState({ name: "Lou Grubbs Motors", location: "Chicago, IL" });
 
   // Keep setProfile for future profile editing functionality
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -478,34 +478,921 @@ const DealershipAIDashboardLA: React.FC = () => {
             </div>
           </div>
 
-          {/* AI Health Tab (placeholder) */}
+          {/* AI Health Tab */}
           <div className={`tab-content ${activeTab === 'ai-health' ? 'active' : ''}`} id="ai-health">
-            <h2 className="section-header">AI Health</h2>
-            <p>This section is under construction.</p>
+            <h2 className="section-header">AI Health Monitor</h2>
+            
+            {/* AI Service Status */}
+            <div className="grid grid-2 mb-20">
+              <div className="card success">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#4CAF50', fontSize: 16, fontWeight: 600 }}>🤖 ChatGPT</h3>
+                  <span className="badge success">ACTIVE</span>
+                </div>
+                <div className="metric-value" style={{ color: '#4CAF50' }}>98.2%</div>
+                <div className="text-sm" style={{ color: '#666' }}>Uptime • 45ms avg response</div>
+              </div>
+              
+              <div className="card success">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#4CAF50', fontSize: 16, fontWeight: 600 }}>🧠 Claude</h3>
+                  <span className="badge success">ACTIVE</span>
+                </div>
+                <div className="metric-value" style={{ color: '#4CAF50' }}>99.1%</div>
+                <div className="text-sm" style={{ color: '#666' }}>Uptime • 52ms avg response</div>
+              </div>
+              
+              <div className="card warning">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#ff9800', fontSize: 16, fontWeight: 600 }}>🔍 Perplexity</h3>
+                  <span className="badge high">RATE LIMITED</span>
+                </div>
+                <div className="metric-value" style={{ color: '#ff9800' }}>87.3%</div>
+                <div className="text-sm" style={{ color: '#666' }}>Uptime • 1.2s avg response</div>
+              </div>
+              
+              <div className="card success">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#4CAF50', fontSize: 16, fontWeight: 600 }}>💎 Gemini</h3>
+                  <span className="badge success">ACTIVE</span>
+                </div>
+                <div className="metric-value" style={{ color: '#4CAF50' }}>96.8%</div>
+                <div className="text-sm" style={{ color: '#666' }}>Uptime • 38ms avg response</div>
+              </div>
+            </div>
+
+            {/* Usage Metrics */}
+            <div className="grid grid-3 mb-20">
+              <div className="card">
+                <div className="metric-label">API Calls Today</div>
+                <div className="metric-value">2,847</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '68%' }} />
+                </div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>+12% from yesterday</div>
+              </div>
+              
+              <div className="card">
+                <div className="metric-label">Cost Today</div>
+                <div className="metric-value">$23.45</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '45%', background: 'linear-gradient(90deg, #ff9800, #ef6c00)' }} />
+                </div>
+                <div className="text-sm" style={{ color: '#ff9800' }}>+8% from yesterday</div>
+              </div>
+              
+              <div className="card">
+                <div className="metric-label">Error Rate</div>
+                <div className="metric-value">0.3%</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '3%', background: 'linear-gradient(90deg, #4CAF50, #8BC34A)' }} />
+                </div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>Excellent</div>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="card">
+              <h3 className="mb-15">Recent AI Activity</h3>
+              <div className="space-y-10">
+                <div className="flex-between" style={{ padding: '10px 0', borderBottom: '1px solid #eee' }}>
+                  <div>
+                    <strong>SEO Analysis Request</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>ChatGPT • 2 minutes ago</div>
+                  </div>
+                  <span className="badge success">SUCCESS</span>
+                </div>
+                <div className="flex-between" style={{ padding: '10px 0', borderBottom: '1px solid #eee' }}>
+                  <div>
+                    <strong>Content Optimization</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Claude • 5 minutes ago</div>
+                  </div>
+                  <span className="badge success">SUCCESS</span>
+                </div>
+                <div className="flex-between" style={{ padding: '10px 0', borderBottom: '1px solid #eee' }}>
+                  <div>
+                    <strong>Competitor Analysis</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Perplexity • 8 minutes ago</div>
+                  </div>
+                  <span className="badge high">RATE LIMITED</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Website Tab (placeholder) */}
+          {/* Website Tab */}
           <div className={`tab-content ${activeTab === 'website' ? 'active' : ''}`} id="website">
-            <h2 className="section-header">Website</h2>
-            <p>This section is under construction.</p>
+            <h2 className="section-header">Website Performance Monitor</h2>
+            
+            {/* Core Web Vitals */}
+            <div className="grid grid-3 mb-20">
+              <div className="card primary">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#2196F3', fontSize: 16, fontWeight: 600 }}>⚡ LCP</h3>
+                  <span className="badge success">GOOD</span>
+                </div>
+                <div className="metric-value" style={{ color: '#2196F3' }}>1.8s</div>
+                <div className="text-sm" style={{ color: '#666' }}>Largest Contentful Paint</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '85%', background: 'linear-gradient(90deg, #4CAF50, #8BC34A)' }} />
+                </div>
+              </div>
+              
+              <div className="card success">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#4CAF50', fontSize: 16, fontWeight: 600 }}>👆 FID</h3>
+                  <span className="badge success">EXCELLENT</span>
+                </div>
+                <div className="metric-value" style={{ color: '#4CAF50' }}>45ms</div>
+                <div className="text-sm" style={{ color: '#666' }}>First Input Delay</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '95%' }} />
+                </div>
+              </div>
+              
+              <div className="card warning">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#ff9800', fontSize: 16, fontWeight: 600 }}>📐 CLS</h3>
+                  <span className="badge high">NEEDS WORK</span>
+                </div>
+                <div className="metric-value" style={{ color: '#ff9800' }}>0.12</div>
+                <div className="text-sm" style={{ color: '#666' }}>Cumulative Layout Shift</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '60%', background: 'linear-gradient(90deg, #ff9800, #ef6c00)' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Scores */}
+            <div className="grid grid-4 mb-20">
+              <div className="card">
+                <div className="metric-label">Page Speed (Mobile)</div>
+                <div className="metric-value">87</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '87%' }} />
+                </div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>Good</div>
+              </div>
+              
+              <div className="card">
+                <div className="metric-label">Page Speed (Desktop)</div>
+                <div className="metric-value">94</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '94%' }} />
+                </div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>Excellent</div>
+              </div>
+              
+              <div className="card">
+                <div className="metric-label">Accessibility</div>
+                <div className="metric-value">92</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '92%' }} />
+                </div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>Excellent</div>
+              </div>
+              
+              <div className="card">
+                <div className="metric-label">SEO Score</div>
+                <div className="metric-value">89</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '89%' }} />
+                </div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>Good</div>
+              </div>
+            </div>
+
+            {/* SEO Issues */}
+            <div className="card mb-20">
+              <h3 className="mb-15">SEO Issues & Recommendations</h3>
+              <div className="space-y-10">
+                <div className="flex-between" style={{ padding: '15px', background: '#fff3e0', border: '1px solid #ff9800', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#ef6c00' }}>High Priority</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>12 images missing alt text</div>
+                  </div>
+                  <button 
+                    className="btn warning"
+                    onClick={() => window.alert('Auto-fixing missing alt text...\n\nScanning images\nGenerating descriptions\nUpdating markup\n\n+8 SEO points')}
+                  >
+                    Auto-Fix
+                  </button>
+                </div>
+                
+                <div className="flex-between" style={{ padding: '15px', background: '#e3f2fd', border: '1px solid #2196F3', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#1976D2' }}>Medium Priority</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Missing meta descriptions on 3 pages</div>
+                  </div>
+                  <button 
+                    className="btn primary"
+                    onClick={() => window.alert('Generating meta descriptions...\n\nAnalyzing content\nCreating descriptions\nUpdating pages\n\n+5 SEO points')}
+                  >
+                    Generate
+                  </button>
+                </div>
+                
+                <div className="flex-between" style={{ padding: '15px', background: '#e8f5e9', border: '1px solid #4CAF50', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#388E3C' }}>Low Priority</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Inconsistent heading hierarchy</div>
+                  </div>
+                  <button 
+                    className="btn success"
+                    onClick={() => window.alert('Optimizing heading structure...\n\nAnalyzing hierarchy\nReorganizing headings\nValidating structure\n\n+3 SEO points')}
+                  >
+                    Optimize
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Issues */}
+            <div className="card">
+              <h3 className="mb-15">Technical Performance</h3>
+              <div className="grid grid-2" style={{ gap: '15px' }}>
+                <div style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <strong>Mobile Responsiveness</strong>
+                    <span className="badge success">PASS</span>
+                  </div>
+                  <div className="text-sm" style={{ color: '#666' }}>All pages are mobile-friendly</div>
+                </div>
+                
+                <div style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <strong>HTTPS Security</strong>
+                    <span className="badge success">SECURE</span>
+                  </div>
+                  <div className="text-sm" style={{ color: '#666' }}>SSL certificate valid</div>
+                </div>
+                
+                <div style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <strong>Page Load Speed</strong>
+                    <span className="badge medium">OPTIMIZING</span>
+                  </div>
+                  <div className="text-sm" style={{ color: '#666' }}>2.3s average load time</div>
+                </div>
+                
+                <div style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <strong>Image Optimization</strong>
+                    <span className="badge high">NEEDS WORK</span>
+                  </div>
+                  <div className="text-sm" style={{ color: '#666' }}>8 images need compression</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Schema Tab (placeholder) */}
+          {/* Schema Tab */}
           <div className={`tab-content ${activeTab === 'schema' ? 'active' : ''}`} id="schema">
-            <h2 className="section-header">Schema</h2>
-            <p>This section is under construction.</p>
+            <h2 className="section-header">Schema Markup Manager</h2>
+            
+            {/* Schema Validation Status */}
+            <div className="grid grid-2 mb-20">
+              <div className="card success">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#4CAF50', fontSize: 16, fontWeight: 600 }}>✅ Schema Status</h3>
+                  <span className="badge success">VALID</span>
+                </div>
+                <div className="metric-value" style={{ color: '#4CAF50' }}>87%</div>
+                <div className="text-sm" style={{ color: '#666' }}>Valid schema markup detected</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '87%' }} />
+                </div>
+              </div>
+              
+              <div className="card warning">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#ff9800', fontSize: 16, fontWeight: 600 }}>⚠️ Issues Found</h3>
+                  <span className="badge high">3 ERRORS</span>
+                </div>
+                <div className="metric-value" style={{ color: '#ff9800' }}>3</div>
+                <div className="text-sm" style={{ color: '#666' }}>Schema validation errors</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '15%', background: 'linear-gradient(90deg, #ff9800, #ef6c00)' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Schema Opportunities */}
+            <div className="card mb-20">
+              <h3 className="mb-15">Schema Opportunities</h3>
+              <div className="space-y-10">
+                <div className="flex-between" style={{ padding: '15px', background: '#fff3e0', border: '1px solid #ff9800', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#ef6c00' }}>High Priority: FAQ Schema</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Add FAQ structured data to service pages</div>
+                    <div className="text-sm" style={{ color: '#4CAF50', fontWeight: 600 }}>+23% voice search visibility</div>
+                  </div>
+                  <button 
+                    className="btn warning"
+                    onClick={() => window.alert('Implementing FAQ Schema...\n\nScanning service pages\nGenerating FAQ markup\nValidating schema\nPublishing changes\n\n+23% voice search visibility')}
+                  >
+                    Deploy
+                  </button>
+                </div>
+                
+                <div className="flex-between" style={{ padding: '15px', background: '#e3f2fd', border: '1px solid #2196F3', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#1976D2' }}>Medium Priority: Product Schema</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Implement Product schema for inventory</div>
+                    <div className="text-sm" style={{ color: '#4CAF50', fontWeight: 600 }}>+15% rich snippet appearance</div>
+                  </div>
+                  <button 
+                    className="btn primary"
+                    onClick={() => window.alert('Adding Product Schema...\n\nAnalyzing inventory\nCreating product markup\nValidating schema\nUpdating listings\n\n+15% rich snippet appearance')}
+                  >
+                    Implement
+                  </button>
+                </div>
+                
+                <div className="flex-between" style={{ padding: '15px', background: '#e8f5e9', border: '1px solid #4CAF50', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#388E3C' }}>High Priority: LocalBusiness Schema</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Enhance LocalBusiness schema with hours & reviews</div>
+                    <div className="text-sm" style={{ color: '#4CAF50', fontWeight: 600 }}>+30% local search visibility</div>
+                  </div>
+                  <button 
+                    className="btn success"
+                    onClick={() => window.alert('Enhancing LocalBusiness Schema...\n\nAdding business hours\nIncluding review data\nUpdating location info\nValidating markup\n\n+30% local search visibility')}
+                  >
+                    Enhance
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Rich Snippet Previews */}
+            <div className="card mb-20">
+              <h3 className="mb-15">Rich Snippet Previews</h3>
+              <div className="space-y-15">
+                <div style={{ padding: '15px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <strong>Organization Schema</strong>
+                    <span className="badge success">ACTIVE</span>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#333' }}>
+                    <strong>Premium Auto Dealership</strong><br/>
+                    ⭐ 4.8 (342 reviews) • Your trusted automotive partner in Cape Coral, FL
+                  </div>
+                </div>
+                
+                <div style={{ padding: '15px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <strong>Service Schema</strong>
+                    <span className="badge success">ACTIVE</span>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#333' }}>
+                    <strong>Auto Repair Services</strong><br/>
+                    Professional automotive repair and maintenance services • $89.99 • In Stock
+                  </div>
+                </div>
+                
+                <div style={{ padding: '15px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <strong>Event Schema</strong>
+                    <span className="badge medium">PENDING</span>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#333' }}>
+                    <strong>Summer Sale Event</strong><br/>
+                    Save up to $5,000 on select vehicles • Limited time offer
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Schema Validation Errors */}
+            <div className="card">
+              <h3 className="mb-15">Schema Validation Issues</h3>
+              <div className="space-y-10">
+                <div className="flex-between" style={{ padding: '15px', background: '#ffebee', border: '1px solid #f44336', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#c62828' }}>Error: Missing Required Property</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Organization schema missing "name" property</div>
+                    <div className="text-sm" style={{ color: '#666' }}>Path: /html/head/script[1]</div>
+                  </div>
+                  <button 
+                    className="btn danger"
+                    onClick={() => window.alert('Fixing Organization Schema...\n\nAdding required "name" property\nValidating schema\nUpdating markup\n\nSchema validation passed')}
+                  >
+                    Fix
+                  </button>
+                </div>
+                
+                <div className="flex-between" style={{ padding: '15px', background: '#fff3e0', border: '1px solid #ff9800', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#ef6c00' }}>Warning: Invalid Date Format</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>Event schema has invalid date format</div>
+                    <div className="text-sm" style={{ color: '#666' }}>Path: /html/body/div[2]/script[1]</div>
+                  </div>
+                  <button 
+                    className="btn warning"
+                    onClick={() => window.alert('Fixing Date Format...\n\nConverting to ISO 8601 format\nValidating schema\nUpdating event markup\n\nDate format corrected')}
+                  >
+                    Fix
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Reviews Tab (placeholder) */}
+          {/* Reviews Tab */}
           <div className={`tab-content ${activeTab === 'reviews' ? 'active' : ''}`} id="reviews">
-            <h2 className="section-header">Reviews</h2>
-            <p>This section is under construction.</p>
+            <h2 className="section-header">Review Management Center</h2>
+            
+            {/* Review Platform Summary */}
+            <div className="grid grid-3 mb-20">
+              <div className="card success">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#4CAF50', fontSize: 16, fontWeight: 600 }}>⭐ Google Reviews</h3>
+                  <span className="badge success">ACTIVE</span>
+                </div>
+                <div className="metric-value" style={{ color: '#4CAF50' }}>4.7</div>
+                <div className="text-sm" style={{ color: '#666' }}>342 reviews • +12 this week</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '94%' }} />
+                </div>
+              </div>
+              
+              <div className="card primary">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#2196F3', fontSize: 16, fontWeight: 600 }}>📝 Yelp Reviews</h3>
+                  <span className="badge success">ACTIVE</span>
+                </div>
+                <div className="metric-value" style={{ color: '#2196F3' }}>4.5</div>
+                <div className="text-sm" style={{ color: '#666' }}>128 reviews • +3 this week</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '90%', background: 'linear-gradient(90deg, #2196F3, #1976D2)' }} />
+                </div>
+              </div>
+              
+              <div className="card warning">
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#ff9800', fontSize: 16, fontWeight: 600 }}>📘 Facebook Reviews</h3>
+                  <span className="badge success">ACTIVE</span>
+                </div>
+                <div className="metric-value" style={{ color: '#ff9800' }}>4.8</div>
+                <div className="text-sm" style={{ color: '#666' }}>89 reviews • +5 this week</div>
+                <div className="metric-progress">
+                  <div className="metric-progress-bar" style={{ width: '96%', background: 'linear-gradient(90deg, #ff9800, #ef6c00)' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Sentiment Analysis */}
+            <div className="card mb-20">
+              <h3 className="mb-15">Sentiment Analysis</h3>
+              <div className="grid grid-4 mb-15">
+                <div className="text-center">
+                  <div className="metric-value" style={{ color: '#4CAF50', fontSize: 32 }}>82%</div>
+                  <div className="text-sm" style={{ color: '#666' }}>Positive</div>
+                </div>
+                <div className="text-center">
+                  <div className="metric-value" style={{ color: '#ff9800', fontSize: 32 }}>15%</div>
+                  <div className="text-sm" style={{ color: '#666' }}>Neutral</div>
+                </div>
+                <div className="text-center">
+                  <div className="metric-value" style={{ color: '#f44336', fontSize: 32 }}>3%</div>
+                  <div className="text-sm" style={{ color: '#666' }}>Negative</div>
+                </div>
+                <div className="text-center">
+                  <div className="metric-value" style={{ color: '#2196F3', fontSize: 32 }}>4.7</div>
+                  <div className="text-sm" style={{ color: '#666' }}>Overall Rating</div>
+                </div>
+              </div>
+              <div className="text-sm" style={{ color: '#4CAF50', textAlign: 'center' }}>
+                📈 Sentiment trending positive (+5% this month)
+              </div>
+            </div>
+
+            {/* Recent Reviews */}
+            <div className="card mb-20">
+              <h3 className="mb-15">Recent Reviews</h3>
+              <div className="space-y-15">
+                <div style={{ padding: '15px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <div>
+                      <strong>Sarah Johnson</strong>
+                      <div className="text-sm" style={{ color: '#666' }}>Google • 2 hours ago</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ color: '#ffc107' }}>⭐⭐⭐⭐⭐</span>
+                      <span className="badge success">5.0</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#333', lineHeight: 1.4 }}>
+                    "Excellent service! The team was professional and got my car fixed quickly. Highly recommend this dealership for all your automotive needs."
+                  </div>
+                  <div className="flex gap-10 mt-10">
+                    <button 
+                      className="btn success"
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                      onClick={() => window.alert('Thanking customer...\n\nSending personalized response\nNotifying team\nUpdating CRM\n\nResponse sent successfully')}
+                    >
+                      Thank Customer
+                    </button>
+                    <button 
+                      className="btn primary"
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                      onClick={() => window.alert('Sharing review...\n\nPosting to social media\nAdding to website\nNotifying team\n\nReview shared successfully')}
+                    >
+                      Share
+                    </button>
+                  </div>
+                </div>
+                
+                <div style={{ padding: '15px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <div>
+                      <strong>Mike Chen</strong>
+                      <div className="text-sm" style={{ color: '#666' }}>Google • 5 hours ago</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ color: '#ffc107' }}>⭐⭐⭐⭐</span>
+                      <span className="badge medium">4.0</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#333', lineHeight: 1.4 }}>
+                    "Good experience overall. Staff was friendly and knowledgeable. The only issue was the wait time, but the quality of service made up for it."
+                  </div>
+                  <div className="flex gap-10 mt-10">
+                    <button 
+                      className="btn primary"
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                      onClick={() => window.alert('Responding to feedback...\n\nAddressing wait time concern\nThanking for feedback\nInviting back\n\nResponse sent')}
+                    >
+                      Respond
+                    </button>
+                    <button 
+                      className="btn warning"
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                      onClick={() => window.alert('Flagging for follow-up...\n\nNotifying management\nScheduling process review\nPlanning improvements\n\nFollow-up scheduled')}
+                    >
+                      Follow Up
+                    </button>
+                  </div>
+                </div>
+                
+                <div style={{ padding: '15px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px' }}>
+                  <div className="flex-between mb-10">
+                    <div>
+                      <strong>Jennifer Davis</strong>
+                      <div className="text-sm" style={{ color: '#666' }}>Yelp • 1 day ago</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ color: '#ffc107' }}>⭐⭐⭐⭐⭐</span>
+                      <span className="badge success">5.0</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#333', lineHeight: 1.4 }}>
+                    "Amazing customer service! The team went above and beyond to help me find the perfect car. The financing process was smooth and transparent."
+                  </div>
+                  <div className="flex gap-10 mt-10">
+                    <button 
+                      className="btn success"
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                      onClick={() => window.alert('Thanking customer...\n\nSending appreciation message\nSharing with team\nUpdating CRM\n\nThank you sent')}
+                    >
+                      Thank Customer
+                    </button>
+                    <button 
+                      className="btn primary"
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                      onClick={() => window.alert('Sharing testimonial...\n\nAdding to website\nPosting to social media\nNotifying sales team\n\nTestimonial shared')}
+                    >
+                      Share
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Competitor Comparison */}
+            <div className="card">
+              <h3 className="mb-15">Competitor Review Analysis</h3>
+              <div className="space-y-10">
+                <div className="flex-between" style={{ padding: '15px', background: '#e8f5e9', border: '1px solid #4CAF50', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#388E3C' }}>You're Winning!</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>4.7 rating vs AutoMax's 4.3</div>
+                    <div className="text-sm" style={{ color: '#4CAF50', fontWeight: 600 }}>+0.4 advantage</div>
+                  </div>
+                  <span className="badge success">LEADING</span>
+                </div>
+                
+                <div className="flex-between" style={{ padding: '15px', background: '#fff3e0', border: '1px solid #ff9800', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#ef6c00' }}>Close Competition</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>4.7 rating vs Premier Motors' 4.6</div>
+                    <div className="text-sm" style={{ color: '#ff9800', fontWeight: 600 }}>+0.1 advantage</div>
+                  </div>
+                  <span className="badge high">COMPETITIVE</span>
+                </div>
+                
+                <div className="flex-between" style={{ padding: '15px', background: '#e3f2fd', border: '1px solid #2196F3', borderRadius: '8px' }}>
+                  <div>
+                    <strong style={{ color: '#1976D2' }}>Market Leader</strong>
+                    <div className="text-sm" style={{ color: '#666' }}>4.7 rating vs City Auto's 4.1</div>
+                    <div className="text-sm" style={{ color: '#2196F3', fontWeight: 600 }}>+0.6 advantage</div>
+                  </div>
+                  <span className="badge success">DOMINANT</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* War Room Tab (placeholder) */}
+          {/* War Room Tab - Competitive Intelligence */}
           <div className={`tab-content ${activeTab === 'war-room' ? 'active' : ''}`} id="war-room">
-            <h2 className="section-header">War Room</h2>
-            <p>This section is under construction.</p>
+            <h2 className="section-header">⚔️ War Room - Competitive Intelligence</h2>
+            
+            {/* Threat Level Alert */}
+            <div className="card danger mb-20" style={{ background: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)' }}>
+              <div className="flex-between mb-10">
+                <h3 style={{ color: '#d32f2f', fontSize: 18, fontWeight: 600 }}>🚨 HIGH THREAT ALERT</h3>
+                <span className="badge critical">ACTIVE</span>
+              </div>
+              <p style={{ color: '#c62828', marginBottom: 15 }}>
+                Competitor "AutoMax Premium" has increased AI visibility by 23% this week, threatening your market position.
+              </p>
+              <div className="flex gap-10">
+                <button className="btn danger" onClick={() => window.alert('Launching counter-campaign...\n\n• Deploying enhanced schema\n• Activating review response system\n• Targeting competitor keywords\n\nEstimated recovery: 48-72 hours')}>
+                  Launch Counter-Campaign
+                </button>
+                <button className="btn" onClick={() => openModal({ 
+                  title: 'Threat Analysis Details', 
+                  body: (
+                    <div>
+                      <h4>Competitor Analysis: AutoMax Premium</h4>
+                      <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+                        <li>AI mentions increased from 45 to 68 (+23%)</li>
+                        <li>New schema deployment detected</li>
+                        <li>Review response rate: 89% (vs your 67%)</li>
+                        <li>Voice search optimization active</li>
+                      </ul>
+                      <h4>Recommended Actions:</h4>
+                      <ol style={{ margin: '10px 0', paddingLeft: '20px' }}>
+                        <li>Deploy FAQ schema immediately</li>
+                        <li>Increase review response frequency</li>
+                        <li>Target "Honda CR-V vs RAV4" keywords</li>
+                        <li>Activate local SEO optimization</li>
+                      </ol>
+                    </div>
+                  )
+                })}>
+                  View Analysis
+                </button>
+              </div>
+            </div>
+
+            {/* Competitive Landscape */}
+            <div className="grid grid-2 mb-20">
+              {/* Competitor Scoreboard */}
+              <div className="card">
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 15, color: '#333' }}>🏆 Competitor Scoreboard</h3>
+                <div className="space-y-3">
+                  {[
+                    { name: 'AutoMax Premium', score: 87.3, change: '+23%', status: 'threat', color: '#f44336' },
+                    { name: 'Premium Auto Dealership (You)', score: 84.1, change: '+8%', status: 'stable', color: '#2196F3' },
+                    { name: 'Elite Motors', score: 79.2, change: '+5%', status: 'stable', color: '#ff9800' },
+                    { name: 'Luxury Auto Group', score: 72.8, change: '-2%', status: 'declining', color: '#4CAF50' },
+                    { name: 'Metro Car Center', score: 68.4, change: '+12%', status: 'rising', color: '#9C27B0' }
+                  ].map((competitor, idx) => (
+                    <div key={competitor.name} className="flex-between p-15" style={{ 
+                      background: idx === 1 ? 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)' : '#f9f9f9',
+                      border: idx === 1 ? '2px solid #2196F3' : '1px solid #ddd',
+                      borderRadius: '8px'
+                    }}>
+                      <div className="flex gap-10" style={{ alignItems: 'center' }}>
+                        <span style={{ 
+                          width: '20px', 
+                          height: '20px', 
+                          borderRadius: '50%', 
+                          background: competitor.color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '12px',
+                          fontWeight: 'bold'
+                        }}>
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 14 }}>{competitor.name}</div>
+                          <div style={{ fontSize: 12, color: '#666' }}>AI Visibility Score</div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 18, fontWeight: 600, color: competitor.color }}>{competitor.score}</div>
+                        <div style={{ 
+                          fontSize: 12, 
+                          color: competitor.change.startsWith('+') ? '#4CAF50' : '#f44336',
+                          fontWeight: 600
+                        }}>
+                          {competitor.change}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Market Intelligence */}
+              <div className="card">
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 15, color: '#333' }}>📊 Market Intelligence</h3>
+                <div className="space-y-3">
+                  <div className="p-15" style={{ background: '#f0f8ff', border: '1px solid #2196F3', borderRadius: '8px' }}>
+                    <div className="flex-between mb-5">
+                      <strong style={{ color: '#1976D2' }}>Market Share Analysis</strong>
+                      <span style={{ fontSize: 12, color: '#666' }}>Last 30 days</span>
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: '#1976D2', marginBottom: 5 }}>23.4%</div>
+                    <div style={{ fontSize: 12, color: '#4CAF50' }}>+2.1% vs last month</div>
+                  </div>
+                  
+                  <div className="p-15" style={{ background: '#fff3e0', border: '1px solid #ff9800', borderRadius: '8px' }}>
+                    <div className="flex-between mb-5">
+                      <strong style={{ color: '#ef6c00' }}>Keyword Gap Analysis</strong>
+                      <span style={{ fontSize: 12, color: '#666' }}>Opportunities</span>
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: '#ef6c00', marginBottom: 5 }}>47</div>
+                    <div style={{ fontSize: 12, color: '#666' }}>High-value keywords competitors rank for</div>
+                  </div>
+
+                  <div className="p-15" style={{ background: '#e8f5e9', border: '1px solid #4CAF50', borderRadius: '8px' }}>
+                    <div className="flex-between mb-5">
+                      <strong style={{ color: '#2e7d32' }}>Content Gap Score</strong>
+                      <span style={{ fontSize: 12, color: '#666' }}>Coverage</span>
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: '#2e7d32', marginBottom: 5 }}>78%</div>
+                    <div style={{ fontSize: 12, color: '#666' }}>Content coverage vs top competitors</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tactical Actions */}
+            <div className="card mb-20">
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 15, color: '#333' }}>⚡ Tactical Actions</h3>
+              <div className="grid grid-3 gap-15">
+                {[
+                  {
+                    title: 'Deploy FAQ Schema',
+                    description: 'Target 15 high-value questions competitors rank for',
+                    impact: '+18% voice search',
+                    time: '2 hours',
+                    priority: 'high',
+                    action: () => window.alert('Deploying FAQ Schema...\n\n• Analyzing competitor questions\n• Generating optimized answers\n• Deploying schema markup\n\nExpected impact: +18% voice search traffic')
+                  },
+                  {
+                    title: 'Review Response Campaign',
+                    description: 'Respond to 50+ recent reviews within 24 hours',
+                    impact: '+12% trust signals',
+                    time: '4 hours',
+                    priority: 'high',
+                    action: () => window.alert('Launching Review Response Campaign...\n\n• Identifying recent reviews\n• Generating personalized responses\n• Scheduling responses\n\nExpected impact: +12% trust signals')
+                  },
+                  {
+                    title: 'Competitor Keyword Targeting',
+                    description: 'Create content for 20 competitor keywords',
+                    impact: '+25% organic traffic',
+                    time: '1 day',
+                    priority: 'medium',
+                    action: () => window.alert('Creating Competitor Keyword Content...\n\n• Analyzing competitor rankings\n• Creating optimized content\n• Building internal links\n\nExpected impact: +25% organic traffic')
+                  },
+                  {
+                    title: 'Local SEO Optimization',
+                    description: 'Optimize Google Business Profile and local citations',
+                    impact: '+15% local visibility',
+                    time: '3 hours',
+                    priority: 'medium',
+                    action: () => window.alert('Optimizing Local SEO...\n\n• Updating Google Business Profile\n• Optimizing local citations\n• Building local backlinks\n\nExpected impact: +15% local visibility')
+                  },
+                  {
+                    title: 'Schema Enhancement',
+                    description: 'Deploy advanced schema for vehicles and services',
+                    impact: '+22% rich snippets',
+                    time: '2 hours',
+                    priority: 'high',
+                    action: () => window.alert('Deploying Advanced Schema...\n\n• Vehicle schema markup\n• Service schema markup\n• Organization schema\n\nExpected impact: +22% rich snippets')
+                  },
+                  {
+                    title: 'Competitor Backlink Analysis',
+                    description: 'Identify and replicate competitor backlink strategies',
+                    impact: '+8% domain authority',
+                    time: '6 hours',
+                    priority: 'low',
+                    action: () => window.alert('Analyzing Competitor Backlinks...\n\n• Identifying high-value backlinks\n• Creating outreach campaigns\n• Building relationships\n\nExpected impact: +8% domain authority')
+                  }
+                ].map((tactic, idx) => (
+                  <div key={idx} className="p-15" style={{ 
+                    background: tactic.priority === 'high' ? 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)' : 
+                               tactic.priority === 'medium' ? 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)' : 
+                               'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                    border: tactic.priority === 'high' ? '2px solid #f44336' : 
+                           tactic.priority === 'medium' ? '2px solid #ff9800' : '2px solid #4CAF50',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s'
+                  }}
+                  onClick={tactic.action}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                    <div className="flex-between mb-10">
+                      <h4 style={{ 
+                        fontSize: 14, 
+                        fontWeight: 600, 
+                        color: tactic.priority === 'high' ? '#d32f2f' : 
+                               tactic.priority === 'medium' ? '#ef6c00' : '#2e7d32'
+                      }}>
+                        {tactic.title}
+                      </h4>
+                      <span style={{ 
+                        fontSize: 10, 
+                        padding: '2px 6px', 
+                        borderRadius: '4px',
+                        background: tactic.priority === 'high' ? '#f44336' : 
+                                   tactic.priority === 'medium' ? '#ff9800' : '#4CAF50',
+                        color: 'white',
+                        fontWeight: 600
+                      }}>
+                        {tactic.priority.toUpperCase()}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 12, color: '#666', marginBottom: 10 }}>{tactic.description}</p>
+                    <div className="flex-between" style={{ fontSize: 11 }}>
+                      <span style={{ color: '#4CAF50', fontWeight: 600 }}>{tactic.impact}</span>
+                      <span style={{ color: '#666' }}>{tactic.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Real-time Monitoring */}
+            <div className="card">
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 15, color: '#333' }}>📡 Real-time Monitoring</h3>
+              <div className="grid grid-2 gap-15">
+                <div>
+                  <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: '#333' }}>Competitor Alerts</h4>
+                  <div className="space-y-2">
+                    {[
+                      { time: '2 min ago', alert: 'AutoMax Premium published new FAQ page', severity: 'high' },
+                      { time: '15 min ago', alert: 'Elite Motors updated schema markup', severity: 'medium' },
+                      { time: '1 hour ago', alert: 'Luxury Auto Group launched review campaign', severity: 'high' },
+                      { time: '2 hours ago', alert: 'Metro Car Center optimized for voice search', severity: 'medium' }
+                    ].map((alert, idx) => (
+                      <div key={idx} className="p-10" style={{ 
+                        background: alert.severity === 'high' ? '#ffebee' : '#fff3e0',
+                        border: `1px solid ${alert.severity === 'high' ? '#f44336' : '#ff9800'}`,
+                        borderRadius: '6px',
+                        fontSize: 12
+                      }}>
+                        <div className="flex-between">
+                          <span style={{ color: '#666' }}>{alert.time}</span>
+                          <span style={{ 
+                            color: alert.severity === 'high' ? '#d32f2f' : '#ef6c00',
+                            fontWeight: 600
+                          }}>
+                            {alert.severity.toUpperCase()}
+                          </span>
+                        </div>
+                        <div style={{ marginTop: 5, color: '#333' }}>{alert.alert}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: '#333' }}>Market Trends</h4>
+                  <div className="space-y-2">
+                    {[
+                      { trend: 'Voice search queries up 34%', change: '+34%', color: '#4CAF50' },
+                      { trend: 'FAQ schema adoption +67%', change: '+67%', color: '#2196F3' },
+                      { trend: 'Review response rate declining', change: '-12%', color: '#f44336' },
+                      { trend: 'Local SEO competition up', change: '+23%', color: '#ff9800' }
+                    ].map((trend, idx) => (
+                      <div key={idx} className="flex-between p-10" style={{ 
+                        background: '#f9f9f9',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        fontSize: 12
+                      }}>
+                        <span style={{ color: '#333' }}>{trend.trend}</span>
+                        <span style={{ 
+                          color: trend.color,
+                          fontWeight: 600
+                        }}>
+                          {trend.change}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Settings Tab */}
