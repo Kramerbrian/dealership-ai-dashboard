@@ -1,41 +1,100 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
   "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
   "functions": {
-    "app/api/dtri/analyze/route.ts": {
+    "app/api/**/*.ts": {
       "maxDuration": 30
-    },
-    "app/api/dtri/enhancer/route.ts": {
-      "maxDuration": 60
     }
   },
-  "crons": [
+  "headers": [
     {
-      "path": "/api/cron/dtri-nightly",
-      "schedule": "0 3 * * *"
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "on"
+        }
+      ]
     },
     {
-      "path": "/api/cron/ncm-sync",
-      "schedule": "0 2 * * 1"
-    },
-    {
-      "path": "/api/cron/ada-training",
-      "schedule": "0 4 * * 1"
-    },
-    {
-      "path": "/api/cron/aemd-analysis",
-      "schedule": "0 5 * * *"
-    },
-    {
-      "path": "/api/cron/sentinel-monitor",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/ati-analysis",
-      "schedule": "0 6 * * 1"
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, s-maxage=60, stale-while-revalidate=300"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://marketing.dealershipai.com, https://dash.dealershipai.com, https://main.dealershipai.com"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
     }
-  ]
+  ],
+  "rewrites": [
+    {
+      "source": "/main",
+      "destination": "/landing"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/intelligence"
+    },
+    {
+      "source": "/app",
+      "destination": "/intelligence"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/api/quick-audit",
+      "destination": "/api/quick-audit"
+    },
+    {
+      "source": "/api/console/query",
+      "destination": "/api/console/query"
+    },
+    {
+      "source": "/api/econ/tsm",
+      "destination": "/api/econ/tsm"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/old-dashboard",
+      "destination": "/dashboard",
+      "permanent": true
+    }
+  ],
+         "env": {
+           "NODE_ENV": "production",
+           "NEXT_PUBLIC_APP_URL": "https://marketing.dealershipai.com",
+           "NEXT_PUBLIC_DASHBOARD_URL": "https://dash.dealershipai.com",
+           "NEXT_PUBLIC_MAIN_URL": "https://main.dealershipai.com",
+           "NEXTAUTH_URL": "https://dash.dealershipai.com"
+         }
 }
