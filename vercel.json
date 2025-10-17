@@ -158,9 +158,9 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "NEXT_PUBLIC_APP_URL": "https://dealershipai-dashboard-73b37yycr-brian-kramers-projects.vercel.app",
-    "NEXT_PUBLIC_DASHBOARD_URL": "https://dealershipai-dashboard-73b37yycr-brian-kramers-projects.vercel.app",
-    "NEXT_PUBLIC_MARKETING_URL": "https://dealershipai-dashboard-73b37yycr-brian-kramers-projects.vercel.app",
-    "NEXTAUTH_URL": "https://dealershipai-dashboard-73b37yycr-brian-kramers-projects.vercel.app"
+    "NEXT_PUBLIC_APP_URL": "https://dealershipai.com",
+    "NEXT_PUBLIC_DASHBOARD_URL": "https://dealershipai.com",
+    "NEXT_PUBLIC_MARKETING_URL": "https://dealershipai.com",
+    "NEXTAUTH_URL": "https://dealershipai.com"
   }
 }

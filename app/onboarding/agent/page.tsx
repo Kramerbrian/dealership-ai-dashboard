@@ -86,48 +86,6 @@ function SelfCheckoutAgent() {
       }
     },
     {
-      id: 'social_media',
-      message: "Great progress! Now let's talk about social media. Do you have a Facebook business page? If so, what's your Facebook Page ID?",
-      suggestions: ["I don't use Facebook", "I need help finding this", "Skip for now"],
-      type: 'integration',
-      integration: {
-        id: 'facebook',
-        name: 'Facebook Business',
-        description: 'Track Facebook ads and page performance',
-        icon: <Facebook className="w-5 h-5" />,
-        benefit: 'Monitor AI-generated content reach',
-        required: false
-      }
-    },
-    {
-      id: 'instagram',
-      message: "Nice! How about Instagram? If you have an Instagram Business account, I can connect it to track visual content AI visibility. What's your Instagram Business ID?",
-      suggestions: ["I don't use Instagram", "I need help finding this", "Skip for now"],
-      type: 'integration',
-      integration: {
-        id: 'instagram',
-        name: 'Instagram Business',
-        description: 'Track Instagram engagement and reach',
-        icon: <Instagram className="w-5 h-5" />,
-        benefit: 'Visual content AI visibility',
-        required: false
-      }
-    },
-    {
-      id: 'youtube',
-      message: "Awesome! Do you have a YouTube channel for your dealership? If yes, I can connect it to monitor video performance and AI visibility. What's your YouTube Channel ID?",
-      suggestions: ["I don't use YouTube", "I need help finding this", "Skip for now"],
-      type: 'integration',
-      integration: {
-        id: 'youtube',
-        name: 'YouTube',
-        description: 'Monitor video performance and engagement',
-        icon: <Youtube className="w-5 h-5" />,
-        benefit: 'Video content AI optimization',
-        required: false
-      }
-    },
-    {
       id: 'crm',
       message: "Excellent! Now let's talk about your CRM. Do you use HubSpot, Salesforce, or another CRM system? This helps us track lead quality and customer interactions.",
       suggestions: ["I don't use a CRM", "I use a different system", "Skip for now"],

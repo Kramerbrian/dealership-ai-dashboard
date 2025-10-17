@@ -83,24 +83,6 @@ function OnboardingLanding() {
       icon: <BarChart3 className="w-6 h-6" />,
       benefit: '87% more accurate traffic insights',
       required: false
-    },
-    {
-      name: 'Facebook Business',
-      icon: <Facebook className="w-6 h-6" />,
-      benefit: 'Monitor AI-generated content reach',
-      required: false
-    },
-    {
-      name: 'Instagram Business',
-      icon: <Instagram className="w-6 h-6" />,
-      benefit: 'Visual content AI visibility',
-      required: false
-    },
-    {
-      name: 'YouTube Channel',
-      icon: <Youtube className="w-6 h-6" />,
-      benefit: 'Video content AI optimization',
-      required: false
     }
   ];
 

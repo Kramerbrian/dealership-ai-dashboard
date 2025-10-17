@@ -126,7 +126,7 @@ export default function TermsOfService() {
             </p>
             <div className="bg-white/5 rounded-lg p-4 mb-6">
               <p className="text-white/80">
-                <strong>Email:</strong> legal@dealershipai.com<br />
+                <strong>Email:</strong> kainomura@dealershipai.com<br />
                 <strong>Address:</strong> DealershipAI, Inc.<br />
                 <strong>Phone:</strong> (555) 123-4567
               </p>

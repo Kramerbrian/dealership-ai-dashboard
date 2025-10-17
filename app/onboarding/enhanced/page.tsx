@@ -129,22 +129,6 @@ function EnhancedOnboardingContent() {
       optional: true
     },
     {
-      id: 'social-media',
-      title: 'Social Media Platforms (Optional)',
-      description: 'Link Facebook, Instagram, and YouTube for complete visibility.',
-      icon: <Facebook className="w-6 h-6" />,
-      completed: false,
-      optional: true
-    },
-    {
-      id: 'analytics',
-      title: 'Advanced Analytics (Optional)',
-      description: 'Connect CRM and review platforms for deeper insights.',
-      icon: <Search className="w-6 h-6" />,
-      completed: false,
-      optional: true
-    },
-    {
       id: 'goals',
       title: 'Set Your Goals',
       description: 'Define what success looks like for your dealership.',
@@ -438,25 +422,6 @@ function EnhancedOnboardingContent() {
             />
           )}
 
-          {steps[currentStep].id === 'social-media' && (
-            <SocialMediaStep 
-              integrationData={integrationData}
-              updateIntegrationData={updateIntegrationData}
-              connectionStatus={connectionStatus}
-              testConnection={testConnection}
-              onComplete={() => handleStepComplete(currentStep)} 
-            />
-          )}
-
-          {steps[currentStep].id === 'analytics' && (
-            <AnalyticsStep 
-              integrationData={integrationData}
-              updateIntegrationData={updateIntegrationData}
-              connectionStatus={connectionStatus}
-              testConnection={testConnection}
-              onComplete={() => handleStepComplete(currentStep)} 
-            />
-          )}
 
           {steps[currentStep].id === 'goals' && (
             <GoalsStep 
