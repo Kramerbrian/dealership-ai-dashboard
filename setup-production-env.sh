@@ -1,80 +1,59 @@
 #!/bin/bash
 
-# DealershipAI v2.0 - Production Environment Setup
-# This script helps you set up all required environment variables
+# DealershipAI Production Environment Variables Setup
+# This script sets up all required environment variables in Vercel
 
-echo "🚀 DealershipAI v2.0 - Production Environment Setup"
-echo "=================================================="
+echo "🚀 Setting up DealershipAI Production Environment Variables..."
 
-# Check if .env.local exists
-if [ ! -f ".env.local" ]; then
-    echo "📝 Creating .env.local from template..."
-    cp env.production.template .env.local
-    echo "✅ Created .env.local"
-else
-    echo "📝 .env.local already exists"
-fi
+# Production URL
+PRODUCTION_URL="https://dealershipai-dashboard-4obbenwbh-brian-kramers-projects.vercel.app"
 
-echo ""
-echo "🔧 Required Environment Variables:"
-echo "=================================="
+echo "📝 Adding environment variables to Vercel..."
 
-# Database Configuration
-echo "1. DATABASE CONFIGURATION:"
-echo "   - DATABASE_URL (PostgreSQL connection string)"
-echo "   - SUPABASE_URL (Your Supabase project URL)"
-echo "   - SUPABASE_ANON_KEY (Supabase anonymous key)"
-echo "   - SUPABASE_SERVICE_ROLE_KEY (Supabase service role key)"
+# Core NextAuth Configuration
+echo "Setting NEXTAUTH_URL..."
+vercel env add NEXTAUTH_URL production <<< "$PRODUCTION_URL"
 
-echo ""
-echo "2. REDIS CONFIGURATION:"
-echo "   - REDIS_URL (Upstash Redis connection string)"
-echo "   - REDIS_TOKEN (Upstash Redis token)"
+echo "Setting NEXTAUTH_SECRET..."
+vercel env add NEXTAUTH_SECRET production <<< "05f03a2f7fda845af4786826bfd3c8ef7d9ff44c31ed9b50cd7031590bc658a8"
 
-echo ""
-echo "3. JWT AUTHENTICATION:"
-echo "   - JWT_SECRET (32+ character secret key)"
+# Google OAuth
+echo "Setting GOOGLE_CLIENT_ID..."
+vercel env add GOOGLE_CLIENT_ID production <<< "1039185326912-150t42hacgra02kljg4sj59gq8shb42b.apps.googleusercontent.com"
 
-echo ""
-echo "4. STRIPE PAYMENT PROCESSING:"
-echo "   - STRIPE_SECRET_KEY (Live secret key)"
-echo "   - STRIPE_PUBLISHABLE_KEY (Live publishable key)"
-echo "   - STRIPE_WEBHOOK_SECRET (Webhook endpoint secret)"
-echo "   - STRIPE_PRICE_ID_PRO_MONTHLY (Pro plan price ID)"
-echo "   - STRIPE_PRICE_ID_ENTERPRISE_MONTHLY (Enterprise plan price ID)"
+echo "Setting GOOGLE_CLIENT_SECRET..."
+vercel env add GOOGLE_CLIENT_SECRET production <<< "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"
 
-echo ""
-echo "5. AI API KEYS:"
-echo "   - OPENAI_API_KEY (OpenAI API key)"
-echo "   - ANTHROPIC_API_KEY (Anthropic API key)"
-echo "   - PERPLEXITY_API_KEY (Perplexity API key)"
-echo "   - GEMINI_API_KEY (Google Gemini API key)"
+# API Configuration
+echo "Setting NEXT_PUBLIC_API_URL..."
+vercel env add NEXT_PUBLIC_API_URL production <<< "$PRODUCTION_URL"
 
-echo ""
-echo "6. APPLICATION CONFIGURATION:"
-echo "   - NEXT_PUBLIC_APP_URL (Your Vercel app URL)"
-echo "   - NEXTAUTH_SECRET (NextAuth secret)"
+echo "Setting NEXT_PUBLIC_APP_URL..."
+vercel env add NEXT_PUBLIC_APP_URL production <<< "https://dealershipai.com"
 
+echo "Setting NEXT_PUBLIC_DASHBOARD_URL..."
+vercel env add NEXT_PUBLIC_DASHBOARD_URL production <<< "$PRODUCTION_URL"
+
+# Encryption
+echo "Setting ENCRYPTION_KEY..."
+vercel env add ENCRYPTION_KEY production <<< "b254bd5dd27e502cf33b2b8f3b6256b2f9b4a4a1f9ebd83d62de2ed9b9024a10"
+
+# Database (if using Supabase)
+echo "Setting DATABASE_URL..."
+vercel env add DATABASE_URL production <<< "postgres://postgres:Autonation2077$@db.vxrdvkhkombwlhjvtsmw.supabase.co:6543/postgres"
+
+echo "✅ Environment variables setup complete!"
+echo "🔄 Redeploying with new environment variables..."
+
+# Redeploy to apply the new environment variables
+vercel --prod
+
+echo "🎉 DealershipAI is now live at: $PRODUCTION_URL"
 echo ""
 echo "📋 Next Steps:"
-echo "=============="
-echo "1. Edit .env.local and fill in your actual values"
-echo "2. Run: vercel env add [VARIABLE_NAME] [VALUE] for each variable"
-echo "3. Or use: vercel env pull .env.local to sync from Vercel"
-echo "4. Test locally: npm run dev"
-echo "5. Deploy: vercel deploy --prod"
-
+echo "1. Test the OAuth flow"
+echo "2. Verify all modals are working"
+echo "3. Check caching is operational"
+echo "4. Monitor with Sentry (if configured)"
 echo ""
-echo "🔗 Quick Links:"
-echo "==============="
-echo "• Supabase: https://supabase.com/dashboard"
-echo "• Upstash Redis: https://console.upstash.com/"
-echo "• Stripe Dashboard: https://dashboard.stripe.com/"
-echo "• OpenAI: https://platform.openai.com/api-keys"
-echo "• Anthropic: https://console.anthropic.com/"
-echo "• Perplexity: https://www.perplexity.ai/settings/api"
-echo "• Google AI: https://aistudio.google.com/app/apikey"
-
-echo ""
-echo "✅ Environment setup guide complete!"
-echo "Edit .env.local with your actual values and run 'vercel env push' to sync to Vercel."
+echo "🔗 Production URL: $PRODUCTION_URL"
