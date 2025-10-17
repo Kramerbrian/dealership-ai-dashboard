@@ -1,10 +1,25 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Brain, Search, Sparkles, Shield, Gauge, LineChart, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Brain, Search, Sparkles, Shield, Gauge, LineChart, CheckCircle2, MapPin, Target, TrendingUp, Zap } from 'lucide-react';
 import { EnhancedTextRotator } from '@/app/components/TextRotator';
+import { useGeoPersonalization, getPersonalizedGreeting, formatLocation, getMarketInsights } from '@/app/hooks/useGeoPersonalization';
+import EnhancedAIOpportunityCalculator from '@/app/components/calculator/EnhancedAIOpportunityCalculator';
 
 export default function DealershipAILanding() {
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [userDomain, setUserDomain] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
+  const { 
+    location, 
+    marketAnalysis, 
+    loading: geoLoading, 
+    error: geoError, 
+    getCurrentLocation, 
+    analyzeMarket 
+  } = useGeoPersonalization({ autoDetect: true });
+
   const platforms = [
     'ChatGPT',
     'Gemini', 
@@ -12,6 +27,35 @@ export default function DealershipAILanding() {
     'AI Overviews',
     'Copilot'
   ];
+
+  const handleDomainSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const domain = formData.get('dealerUrl') as string;
+    
+    if (!domain) return;
+    
+    setUserDomain(domain);
+    setIsAnalyzing(true);
+    
+    // Simulate analysis time
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setShowCalculator(true);
+    }, 2000);
+  };
+
+  const handleCalculateOpportunity = async () => {
+    if (location) {
+      setShowCalculator(true);
+    } else {
+      // Try to get location first
+      await getCurrentLocation();
+      if (location) {
+        setShowCalculator(true);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--brand-bg,#0a0b0f)] text-white">
@@ -88,6 +132,19 @@ export default function DealershipAILanding() {
                 We audit and lift your AI visibility, then convert it into real leads and lower ad waste. Zero-click ready. Dealer-proof simple.
               </p>
 
+              {/* Personalized Greeting */}
+              {marketAnalysis && (
+                <div className="mt-6 p-4 glass rounded-xl border border-blue-500/20">
+                  <div className="flex items-center gap-2 text-blue-400 font-semibold mb-2">
+                    <MapPin className="w-4 h-4" />
+                    Personalized for {formatLocation(marketAnalysis)}
+                  </div>
+                  <p className="text-sm text-white/80">
+                    {getPersonalizedGreeting(marketAnalysis)}
+                  </p>
+                </div>
+              )}
+
               <div className="mt-6 grid sm:grid-cols-3 gap-3 max-w-xl">
                 {[
                   { k: 'Revenue at Risk', v: '$47K/mo' },
@@ -103,13 +160,7 @@ export default function DealershipAILanding() {
 
                      <form
                        className="mt-8 glass rounded-2xl p-2.5 flex flex-col sm:flex-row gap-2"
-                       onSubmit={(e) => {
-                         e.preventDefault();
-                         const url = (e.currentTarget as any).elements.dealerUrl.value?.trim();
-                         if (!url) return;
-                         // Redirect to OAuth sign-in with domain parameter for analysis
-                         window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(`/intelligence?domain=${encodeURIComponent(url)}`)}`;
-                       }}
+                       onSubmit={handleDomainSubmit}
                      >
                 <input
                   name="dealerUrl"
@@ -120,24 +171,51 @@ export default function DealershipAILanding() {
                 />
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold"
+                  disabled={isAnalyzing}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-50"
                   style={{ backgroundImage: 'var(--brand-gradient)' }}
                 >
-                  Analyze My Dealership <Search className="w-4 h-4" />
+                  {isAnalyzing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      Analyze My Dealership <Search className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </form>
 
               {/* Enhanced Calculator Integration */}
               <div className="mt-6">
-                <a
-                  href="/auth/signin?callbackUrl=%2Fintelligence%3Fmode%3Dcalculator"
-                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold glass hover:bg-white/10 transition-all duration-200"
+                <button
+                  onClick={handleCalculateOpportunity}
+                  disabled={geoLoading}
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold glass hover:bg-white/10 transition-all duration-200 disabled:opacity-50"
                 >
-                  🧮 Calculate My Opportunity <ArrowRight className="w-4 h-4" />
-                </a>
+                  {geoLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Detecting Location...
+                    </>
+                  ) : (
+                    <>
+                      🧮 Calculate My Opportunity <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
               </div>
 
-              <div className="mt-3 text-xs text-white/50">Free scan. No credit card. 20s setup.</div>
+              <div className="mt-3 text-xs text-white/50">
+                Free scan. No credit card. 20s setup.
+                {marketAnalysis && (
+                  <span className="block mt-1 text-blue-400">
+                    📍 Personalized for {formatLocation(marketAnalysis)}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="relative">
@@ -329,6 +407,38 @@ export default function DealershipAILanding() {
           </div>
         </div>
       </footer>
+
+      {/* ====== Calculator Modal ====== */}
+      {showCalculator && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowCalculator(false)} />
+            <div className="relative w-full max-w-7xl bg-[var(--brand-bg)] rounded-2xl shadow-2xl">
+              <div className="flex items-center justify-between p-6 border-b border-white/10">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    AI-Enhanced Opportunity Calculator
+                  </h2>
+                  {marketAnalysis && (
+                    <p className="text-sm text-white/60 mt-1">
+                      Personalized for {formatLocation(marketAnalysis)}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowCalculator(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="max-h-[80vh] overflow-y-auto">
+                <EnhancedAIOpportunityCalculator />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
