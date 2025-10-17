@@ -33,6 +33,7 @@ import SmartHelpSystem from '@/app/components/onboarding/SmartHelpSystem';
 import { LoadingState, ButtonLoadingState, CardLoadingState } from '@/app/components/onboarding/LoadingStates';
 import { ErrorHandler, ErrorBoundary } from '@/app/components/onboarding/ErrorHandler';
 import { ConnectionSuccess, ConnectionError, ConnectionLoading } from '@/app/components/onboarding/EnhancedVisualFeedback';
+import { parseAndNormalizeUrl, isValidUrlOrDomain, isValidGoogleBusinessProfileId, getPlaceholderText, getValidationError } from '@/lib/url-utils';
 
 interface OnboardingStep {
   id: string;
@@ -562,22 +563,49 @@ function RequiredSetupStep({ integrationData, updateIntegrationData, connectionS
     websiteUrl: integrationData.websiteUrl || '',
     googleBusinessProfileId: integrationData.googleBusinessProfileId || ''
   });
+  const [validationErrors, setValidationErrors] = useState({
+    websiteUrl: '',
+    googleBusinessProfileId: ''
+  });
 
   const handleSubmit = () => {
+    // Validate inputs
+    const websiteError = getValidationError(formData.websiteUrl, 'website');
+    const gbpError = getValidationError(formData.googleBusinessProfileId, 'gbp');
+    
+    setValidationErrors({
+      websiteUrl: websiteError,
+      googleBusinessProfileId: gbpError
+    });
+
+    // Check if form is valid
+    if (selectedOption === 'website' && websiteError) return;
+    if (selectedOption === 'gbp' && gbpError) return;
+    if (selectedOption === 'both' && (websiteError || gbpError)) return;
+
+    // Process and normalize data
     if (selectedOption === 'website' || selectedOption === 'both') {
-      updateIntegrationData('websiteUrl', formData.websiteUrl);
-      updateIntegrationData('domain', formData.websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''));
+      const urlResult = parseAndNormalizeUrl(formData.websiteUrl);
+      updateIntegrationData('websiteUrl', urlResult.normalized);
+      updateIntegrationData('domain', urlResult.domain);
     }
     if (selectedOption === 'gbp' || selectedOption === 'both') {
-      updateIntegrationData('googleBusinessProfileId', formData.googleBusinessProfileId);
+      updateIntegrationData('googleBusinessProfileId', formData.googleBusinessProfileId.trim());
     }
     onComplete();
   };
 
   const isFormValid = () => {
-    if (selectedOption === 'website') return formData.websiteUrl.trim();
-    if (selectedOption === 'gbp') return formData.googleBusinessProfileId.trim();
-    if (selectedOption === 'both') return formData.websiteUrl.trim() && formData.googleBusinessProfileId.trim();
+    if (selectedOption === 'website') {
+      return formData.websiteUrl.trim() && isValidUrlOrDomain(formData.websiteUrl);
+    }
+    if (selectedOption === 'gbp') {
+      return formData.googleBusinessProfileId.trim() && isValidGoogleBusinessProfileId(formData.googleBusinessProfileId);
+    }
+    if (selectedOption === 'both') {
+      return formData.websiteUrl.trim() && isValidUrlOrDomain(formData.websiteUrl) &&
+             formData.googleBusinessProfileId.trim() && isValidGoogleBusinessProfileId(formData.googleBusinessProfileId);
+    }
     return false;
   };
 
@@ -649,12 +677,31 @@ function RequiredSetupStep({ integrationData, updateIntegrationData, connectionS
         <div>
           <label className="block text-sm font-medium mb-2">Website URL *</label>
           <input
-            type="url"
+            type="text"
             value={formData.websiteUrl}
-            onChange={(e) => setFormData(prev => ({ ...prev, websiteUrl: e.target.value }))}
-            placeholder="https://www.yourdealership.com"
-            className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+            onChange={(e) => {
+              setFormData(prev => ({ ...prev, websiteUrl: e.target.value }));
+              // Clear validation error when user starts typing
+              if (validationErrors.websiteUrl) {
+                setValidationErrors(prev => ({ ...prev, websiteUrl: '' }));
+              }
+            }}
+            placeholder={getPlaceholderText('website')}
+            className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+              validationErrors.websiteUrl 
+                ? 'border-red-500 focus:ring-red-500' 
+                : 'border-white/20 focus:ring-[var(--brand-primary)]'
+            }`}
           />
+          {validationErrors.websiteUrl && (
+            <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+              <AlertCircle className="w-3 h-3" />
+              {validationErrors.websiteUrl}
+            </p>
+          )}
+          <p className="text-xs text-white/60 mt-1">
+            You can enter: www.yourdealership.com, https://www.yourdealership.com, or yourdealership.com
+          </p>
         </div>
       )}
 
@@ -664,10 +711,29 @@ function RequiredSetupStep({ integrationData, updateIntegrationData, connectionS
           <input
             type="text"
             value={formData.googleBusinessProfileId}
-            onChange={(e) => setFormData(prev => ({ ...prev, googleBusinessProfileId: e.target.value }))}
-            placeholder="ChIJ..."
-            className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+            onChange={(e) => {
+              setFormData(prev => ({ ...prev, googleBusinessProfileId: e.target.value }));
+              // Clear validation error when user starts typing
+              if (validationErrors.googleBusinessProfileId) {
+                setValidationErrors(prev => ({ ...prev, googleBusinessProfileId: '' }));
+              }
+            }}
+            placeholder={getPlaceholderText('gbp')}
+            className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+              validationErrors.googleBusinessProfileId 
+                ? 'border-red-500 focus:ring-red-500' 
+                : 'border-white/20 focus:ring-[var(--brand-primary)]'
+            }`}
           />
+          {validationErrors.googleBusinessProfileId && (
+            <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+              <AlertCircle className="w-3 h-3" />
+              {validationErrors.googleBusinessProfileId}
+            </p>
+          )}
+          <p className="text-xs text-white/60 mt-1">
+            Find this in your Google Business Profile settings under "Advanced settings"
+          </p>
         </div>
       )}
 

@@ -12,6 +12,7 @@ import {
   Shield,
   Zap
 } from 'lucide-react';
+import { parseAndNormalizeUrl, isValidUrlOrDomain, isValidGoogleBusinessProfileId, getPlaceholderText, getValidationError } from '@/lib/url-utils';
 
 interface IntegrationCardProps {
   id: string;
