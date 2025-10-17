@@ -1,0 +1,866 @@
+openapi: 3.0.3
+info:
+  title: DealershipAI SEO API
+  description: API for SEO optimization, A/B testing, and analytics
+  version: 2.0.0
+  contact:
+    name: DealershipAI Support
+    email: support@dealershipai.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.dealershipai.com/v2
+    description: Production server
+  - url: https://staging-api.dealershipai.com/v2
+    description: Staging server
+  - url: http://localhost:3000/api
+    description: Development server
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /seo/generate:
+    post:
+      summary: Generate SEO content
+      description: Generate SEO-optimized content using AI
+      operationId: generateSeoContent
+      tags:
+        - SEO
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeoGenerateRequest'
+      responses:
+        '200':
+          description: SEO content generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeoGenerateResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/validate:
+    post:
+      summary: Validate SEO content
+      description: Validate SEO content for accuracy and compliance
+      operationId: validateSeoContent
+      tags:
+        - SEO
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeoValidateRequest'
+      responses:
+        '200':
+          description: Content validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeoValidateResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/ab/allocate:
+    post:
+      summary: Allocate traffic for A/B test
+      description: Allocate traffic between variants using Thompson sampling
+      operationId: allocateTraffic
+      tags:
+        - A/B Testing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+      responses:
+        '200':
+          description: Traffic allocation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/ab/guardrails:
+    post:
+      summary: Check A/B test guardrails
+      description: Validate A/B test against guardrail metrics
+      operationId: checkGuardrails
+      tags:
+        - A/B Testing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuardrailRequest'
+      responses:
+        '200':
+          description: Guardrail check completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuardrailResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/ab/mde:
+    post:
+      summary: Calculate minimum detectable effect
+      description: Calculate MDE and required sample size for A/B test
+      operationId: calculateMDE
+      tags:
+        - A/B Testing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MDERequest'
+      responses:
+        '200':
+          description: MDE calculation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MDEResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/ab/allocation-safety:
+    post:
+      summary: Check allocation safety
+      description: Validate traffic allocation and data quality
+      operationId: checkAllocationSafety
+      tags:
+        - A/B Testing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationSafetyRequest'
+      responses:
+        '200':
+          description: Allocation safety check completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationSafetyResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/hooks/metrics:
+    post:
+      summary: Webhook for metrics data
+      description: Receive metrics data from external sources
+      operationId: receiveMetrics
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetricsWebhookRequest'
+      responses:
+        '200':
+          description: Metrics received successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/priors/upsert:
+    post:
+      summary: Upsert variant priors
+      description: Update or insert variant prior distributions
+      operationId: upsertPriors
+      tags:
+        - Priors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriorsUpsertRequest'
+      responses:
+        '200':
+          description: Priors updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriorsUpsertResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /seo/report:
+    get:
+      summary: Generate SEO report
+      description: Generate comprehensive SEO performance report
+      operationId: generateReport
+      tags:
+        - Reports
+      parameters:
+        - name: variantId
+          in: query
+          description: Variant ID to generate report for
+          required: false
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: Report format
+          required: false
+          schema:
+            type: string
+            enum: [json, csv, pdf]
+            default: json
+        - name: startDate
+          in: query
+          description: Start date for report
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date for report
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+            text/csv:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    SeoGenerateRequest:
+      type: object
+      required:
+        - tenantId
+        - productId
+        - variantId
+        - prompt
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+          description: Tenant identifier
+        productId:
+          type: string
+          description: Product identifier
+        variantId:
+          type: string
+          description: Variant identifier
+        prompt:
+          type: string
+          description: Content generation prompt
+        context:
+          type: object
+          description: Additional context for generation
+        options:
+          type: object
+          properties:
+            maxLength:
+              type: integer
+              description: Maximum content length
+            temperature:
+              type: number
+              minimum: 0
+              maximum: 2
+              description: Generation temperature
+            includeSchema:
+              type: boolean
+              description: Include structured data schema
+
+    SeoGenerateResponse:
+      type: object
+      required:
+        - ok
+        - content
+        - variantId
+      properties:
+        ok:
+          type: boolean
+        content:
+          type: string
+          description: Generated content
+        variantId:
+          type: string
+        metadata:
+          type: object
+          properties:
+            tokensUsed:
+              type: integer
+            generationTime:
+              type: number
+            model:
+              type: string
+        schema:
+          type: object
+          description: Structured data schema
+
+    SeoValidateRequest:
+      type: object
+      required:
+        - tenantId
+        - content
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          description: Content to validate
+        variantId:
+          type: string
+          description: Variant identifier
+        validationType:
+          type: string
+          enum: [accuracy, compliance, seo]
+          default: accuracy
+
+    SeoValidateResponse:
+      type: object
+      required:
+        - ok
+        - isValid
+        - score
+      properties:
+        ok:
+          type: boolean
+        isValid:
+          type: boolean
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    ValidationIssue:
+      type: object
+      required:
+        - type
+        - severity
+        - message
+      properties:
+        type:
+          type: string
+          enum: [accuracy, compliance, seo, grammar]
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        message:
+          type: string
+        line:
+          type: integer
+        column:
+          type: integer
+
+    AllocationRequest:
+      type: object
+      required:
+        - tenantId
+        - variants
+        - totalTraffic
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        totalTraffic:
+          type: integer
+          minimum: 1
+        algorithm:
+          type: string
+          enum: [thompson, epsilon_greedy, ucb]
+          default: thompson
+
+    Variant:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        prior:
+          type: object
+          properties:
+            a:
+              type: number
+            b:
+              type: number
+        metadata:
+          type: object
+
+    AllocationResponse:
+      type: object
+      required:
+        - ok
+        - allocation
+      properties:
+        ok:
+          type: boolean
+        allocation:
+          type: object
+          additionalProperties:
+            type: number
+        confidence:
+          type: number
+        metadata:
+          type: object
+
+    GuardrailRequest:
+      type: object
+      required:
+        - tenantId
+        - metrics
+        - baseline
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        metrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MetricValue'
+        baseline:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MetricValue'
+        thresholds:
+          type: object
+          additionalProperties:
+            type: number
+
+    MetricValue:
+      type: object
+      required:
+        - value
+        - sampleSize
+      properties:
+        value:
+          type: number
+        sampleSize:
+          type: integer
+        confidence:
+          type: number
+
+    GuardrailResponse:
+      type: object
+      required:
+        - ok
+        - passed
+        - violations
+      properties:
+        ok:
+          type: boolean
+        passed:
+          type: boolean
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/GuardrailViolation'
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    GuardrailViolation:
+      type: object
+      required:
+        - metric
+        - severity
+        - message
+      properties:
+        metric:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        message:
+          type: string
+        currentValue:
+          type: number
+        threshold:
+          type: number
+
+    MDERequest:
+      type: object
+      required:
+        - tenantId
+        - baseline
+        - power
+        - alpha
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        baseline:
+          type: number
+          minimum: 0
+          maximum: 1
+        power:
+          type: number
+          minimum: 0.5
+          maximum: 0.99
+          default: 0.8
+        alpha:
+          type: number
+          minimum: 0.01
+          maximum: 0.1
+          default: 0.05
+        effectSize:
+          type: number
+          description: Expected effect size (optional)
+
+    MDEResponse:
+      type: object
+      required:
+        - ok
+        - mde
+        - sampleSize
+      properties:
+        ok:
+          type: boolean
+        mde:
+          type: number
+          description: Minimum detectable effect
+        sampleSize:
+          type: integer
+          description: Required sample size per variant
+        duration:
+          type: number
+          description: Estimated test duration in days
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    AllocationSafetyRequest:
+      type: object
+      required:
+        - allocation
+        - qualityMetrics
+        - currentMetrics
+        - baselineMetrics
+      properties:
+        allocation:
+          type: object
+          additionalProperties:
+            type: number
+        qualityMetrics:
+          type: object
+          properties:
+            completeness:
+              type: number
+            staleness:
+              type: number
+            missingDays:
+              type: integer
+        currentMetrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MetricValue'
+        baselineMetrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MetricValue'
+        config:
+          type: object
+          properties:
+            minTrafficPerArmPerDay:
+              type: integer
+            maxTrafficPerArmPerDay:
+              type: integer
+            minDataQualityScore:
+              type: number
+
+    AllocationSafetyResponse:
+      type: object
+      required:
+        - ok
+        - isSafe
+        - violations
+      properties:
+        ok:
+          type: boolean
+        isSafe:
+          type: boolean
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/SafetyViolation'
+        recommendations:
+          type: array
+          items:
+            type: string
+        config:
+          type: object
+
+    SafetyViolation:
+      type: object
+      required:
+        - type
+        - severity
+        - message
+      properties:
+        type:
+          type: string
+          enum: [traffic, quality, allocation]
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        message:
+          type: string
+        details:
+          type: object
+
+    MetricsWebhookRequest:
+      type: object
+      required:
+        - tenantId
+        - metrics
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricData'
+        signature:
+          type: string
+          description: HMAC signature for verification
+
+    MetricData:
+      type: object
+      required:
+        - variantId
+        - timestamp
+        - impressions
+        - clicks
+        - conversions
+      properties:
+        variantId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        impressions:
+          type: integer
+        clicks:
+          type: integer
+        conversions:
+          type: integer
+        revenue:
+          type: number
+        causalId:
+          type: string
+
+    WebhookResponse:
+      type: object
+      required:
+        - ok
+        - received
+      properties:
+        ok:
+          type: boolean
+        received:
+          type: integer
+          description: Number of metrics received
+        processed:
+          type: integer
+          description: Number of metrics processed
+        errors:
+          type: array
+          items:
+            type: string
+
+    PriorsUpsertRequest:
+      type: object
+      required:
+        - tenantId
+        - priors
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        priors:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriorData'
+
+    PriorData:
+      type: object
+      required:
+        - variantId
+        - a
+        - b
+      properties:
+        variantId:
+          type: string
+        a:
+          type: number
+        b:
+          type: number
+        updatedAt:
+          type: string
+          format: date-time
+
+    PriorsUpsertResponse:
+      type: object
+      required:
+        - ok
+        - updated
+      properties:
+        ok:
+          type: boolean
+        updated:
+          type: integer
+          description: Number of priors updated
+        created:
+          type: integer
+          description: Number of priors created
+
+    ReportResponse:
+      type: object
+      required:
+        - ok
+        - report
+      properties:
+        ok:
+          type: boolean
+        report:
+          type: object
+          properties:
+            summary:
+              type: object
+            metrics:
+              type: object
+            trends:
+              type: object
+            recommendations:
+              type: array
+              items:
+                type: string
+        generatedAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time

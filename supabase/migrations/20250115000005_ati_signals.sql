@@ -55,10 +55,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Trigger function to auto-update updated_at timestamp
-DO $$ BEGIN
-  CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS $$
-  BEGIN NEW.updated_at = now(); RETURN NEW; END; $$ LANGUAGE plpgsql;
-END $$;
+CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS $$
+BEGIN 
+  NEW.updated_at = now(); 
+  RETURN NEW; 
+END; 
+$$ LANGUAGE plpgsql;
 
 -- Trigger: Auto-update timestamp on row changes
 DO $$ BEGIN

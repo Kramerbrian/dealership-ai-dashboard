@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft-2020-12/schema",
+  "$id": "https://dealershipai.com/schemas/crs_report.schema.json",
+  "title": "CompositeReputationScore",
+  "type": "object",
+  "required": ["id","tenantId","asOf","aivPct","atiPct","crsPct","weights","variance","ci95","regimeState","version"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "tenantId": { "type": "string", "format": "uuid" },
+    "version": { "type": "string" },
+    "asOf": { "type": "string", "format": "date" },
+    "aivPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "atiPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "crsPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "weights": {
+      "type": "object",
+      "required": ["w1","w2","method"],
+      "properties": {
+        "w1": { "type": "number", "minimum": 0 },
+        "w2": { "type": "number", "minimum": 0 },
+        "method": { "type": "string", "enum": ["variance_inverse","bayesian","fixed"] }
+      }
+    },
+    "variance": {
+      "type": "object",
+      "required": ["aiv","ati"],
+      "properties": { "aiv": { "type": "number", "minimum": 0 }, "ati": { "type": "number", "minimum": 0 } }
+    },
+    "ci95": {
+      "type": "object",
+      "required": ["crs"],
+      "properties": { "crs": { "type": "object", "required": ["low","high"], "properties": {
+        "low": { "type": "number" }, "high": { "type": "number" } } } }
+    },
+    "regimeState": { "type": "string", "enum": ["Normal","ShiftDetected","Quarantine"] },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

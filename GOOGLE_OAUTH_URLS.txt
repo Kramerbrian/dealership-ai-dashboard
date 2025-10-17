@@ -1,0 +1,27 @@
+Google OAuth Configuration URLs for DealershipAI
+================================================
+
+Copy these EXACT URLs to your Google Cloud Console OAuth configuration:
+
+Authorized JavaScript Origins:
+https://www.dealershipai.com
+https://dealershipai.com
+
+Authorized Redirect URIs:
+https://www.dealershipai.com/api/auth/callback/google
+https://dealershipai.com/api/auth/callback/google
+
+Required Scopes:
+- openid
+- email
+- profile
+
+OAuth Consent Screen:
+- App Name: DealershipAI
+- User Type: External
+- Scopes: email, profile, openid
+
+Test URLs:
+- OAuth Test Page: https://www.dealershipai.com/test-oauth
+- Signin Page: https://www.dealershipai.com/auth/signin
+- OAuth Status: https://www.dealershipai.com/api/test-oauth

@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "pillars": { "SEO": 0.25, "AEO": 0.30, "GEO": 0.25, "UGC": 0.10, "GeoLocal": 0.05 },
+  "modifiers": {
+    "TemporalWeight": { "default": 1.0, "min": 0.5, "max": 1.2 },
+    "EntityConfidence": { "default": 0.9, "min": 0.0, "max": 1.0 },
+    "CrawlBudgetMult": { "default": 1.0, "min": 0.7, "max": 1.3 },
+    "InventoryTruthMult": { "default": 1.0, "min": 0.7, "max": 1.3 }
+  },
+  "trust": {
+    "SRV": 1.0, "FPS": 1.0, "HP": 0.0, "FraudGuard": 1.0, "LocalAccuracyMult": 1.0
+  },
+  "clarity": { "SCS": 0.6, "SIS": 0.6, "ADI": 0.5, "SCR": 0.7 },
+  "secondary": {
+    "engagementDepth": 70,
+    "technicalHealth": 80,
+    "localEntityAccuracy": 95,
+    "brandSemanticFootprint": 65
+  }
+}

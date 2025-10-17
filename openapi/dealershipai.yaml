@@ -1,0 +1,379 @@
+openapi: 3.0.3
+info: 
+  title: DealershipAI API
+  version: "1.1.0"
+  description: |
+    DealershipAI API for AI visibility tracking, hallucination risk prevention, and autonomous strategy recommendations.
+    
+    ## Key Features
+    - **AVI (AI Visibility Index)**: Track dealership visibility across AI platforms
+    - **HRP (Hallucination Risk Prevention)**: Prevent AI hallucination in dealership content
+    - **ASR (Autonomous Strategy Recommendations)**: AI-powered optimization suggestions
+    
+    ## Authentication
+    All endpoints require Bearer token authentication with tenant-scoped access.
+    
+servers: 
+  - url: https://api.dealershipai.com
+    description: Production server
+  - url: https://staging-api.dealershipai.com
+    description: Staging server
+
+paths:
+  /api/tenants/{tenantId}/avi/latest:
+    get:
+      summary: Get latest AVI report
+      description: Retrieve the most recent AI Visibility Index report for a tenant
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Tenant identifier
+      responses:
+        "200":
+          description: Latest AVI report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  aiv:
+                    type: number
+                    description: AI Visibility Index score (0-100)
+                  breakdown:
+                    type: object
+                    properties:
+                      google_sge:
+                        type: number
+                      perplexity:
+                        type: number
+                      gemini:
+                        type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+        "404":
+          description: No AVI data found
+        "401":
+          description: Unauthorized
+
+  /api/tenants/{tenantId}/avi/history:
+    get:
+      summary: Get AVI history
+      description: Retrieve historical AVI data for trend analysis
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 8
+          description: Number of historical records to return
+        - in: query
+          name: before
+          schema:
+            type: string
+            format: date
+          description: Return records before this date
+      responses:
+        "200":
+          description: AVI history data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        aiv:
+                          type: number
+                        breakdown:
+                          type: object
+                  pagination:
+                    type: object
+                    properties:
+                      hasMore:
+                        type: boolean
+                      nextCursor:
+                        type: string
+
+  /api/tenants/{tenantId}/asr/execute:
+    post:
+      summary: Generate Autonomous Strategy Recommendation
+      description: Execute ASR analysis for specified VDPs with idempotency support
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vdpIds, idempotencyKey]
+              properties:
+                vdpIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of VDP IDs to analyze
+                  minItems: 1
+                  maxItems: 50
+                idempotencyKey:
+                  type: string
+                  minLength: 16
+                  description: Unique key for idempotent requests
+                options:
+                  type: object
+                  properties:
+                    includeCompetitors:
+                      type: boolean
+                      default: false
+                    analysisDepth:
+                      type: string
+                      enum: [quick, standard, deep]
+                      default: standard
+      responses:
+        "200":
+          description: ASR analysis results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        vdpId:
+                          type: string
+                        priority:
+                          type: string
+                          enum: [low, medium, high, critical]
+                        category:
+                          type: string
+                        description:
+                          type: string
+                        impact:
+                          type: number
+                        effort:
+                          type: string
+                          enum: [low, medium, high]
+                  summary:
+                    type: object
+                    properties:
+                      totalRecommendations:
+                        type: integer
+                      criticalCount:
+                        type: integer
+                      estimatedImpact:
+                        type: number
+        "412":
+          description: No context available for analysis
+        "409":
+          description: Duplicate request (idempotency conflict)
+
+  /api/tenants/{tenantId}/hrp/scan:
+    post:
+      summary: Run HRP scan
+      description: Execute hallucination risk prevention scan for all configured topics
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: HRP scan initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  message:
+                    type: string
+                  tenantId:
+                    type: string
+        "400":
+          description: Invalid tenant ID
+        "500":
+          description: Scan initiation failed
+
+  /api/tenants/{tenantId}/hrp/status:
+    get:
+      summary: Get HRP findings and quarantine status
+      description: Retrieve current HRP findings and active quarantine status
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: HRP status data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  findings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        as_of:
+                          type: string
+                          format: date-time
+                        topic:
+                          type: string
+                        severity:
+                          type: string
+                          enum: [low, medium, high]
+                        score:
+                          type: number
+                          minimum: 0
+                          maximum: 100
+                        verifiable:
+                          type: boolean
+                  quarantine:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        topic:
+                          type: string
+                        severity:
+                          type: string
+                        reason:
+                          type: string
+                        active:
+                          type: boolean
+                        created_at:
+                          type: string
+                          format: date-time
+                  tenantId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/tenants/{tenantId}/hrp/resolve:
+    post:
+      summary: Resolve quarantine for a topic
+      description: Mark a quarantined topic as resolved and remove quarantine
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [topic]
+              properties:
+                topic:
+                  type: string
+                  description: Topic to resolve (e.g., "Price", "APR", "Warranty")
+      responses:
+        "200":
+          description: Quarantine resolved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  message:
+                    type: string
+                  tenantId:
+                    type: string
+                  topic:
+                    type: string
+                  resolvedAt:
+                    type: string
+                    format: date-time
+        "404":
+          description: No active quarantine found for topic
+        "400":
+          description: Invalid request format
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Bearer token authentication. Include the token in the Authorization header:
+        `Authorization: Bearer <your-token>`
+        
+        Tokens are tenant-scoped and provide access to specific tenant data only.
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+
+    TenantId:
+      type: string
+      format: uuid
+      description: Unique tenant identifier
+
+    Timestamp:
+      type: string
+      format: date-time
+      description: ISO 8601 timestamp
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: AVI
+    description: AI Visibility Index tracking and analysis
+  - name: ASR
+    description: Autonomous Strategy Recommendations
+  - name: HRP
+    description: Hallucination Risk Prevention and quarantine management

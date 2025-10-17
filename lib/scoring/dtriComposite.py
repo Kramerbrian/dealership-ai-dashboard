@@ -1,181 +1,122 @@
+#!/usr/bin/env python3
 """
-DTRI Composite Scoring Engine
-Advanced Data Analytics for Digital Trust Revenue Index calculation
+Digital Trust Revenue Index (DTRI) Composite Function
+Computes DTRI scores using E-E-A-T, Reputation, Technical, and Local Visibility inputs
 """
 
-import numpy as np
-from typing import List, Dict, Any
-import logging
+import json
+import sys
+from typing import Dict, Any
 
-logger = logging.getLogger(__name__)
-
-def dtri_composite(dealer_data: List[Dict], benchmarks: List[Dict]) -> float:
+def dtri_composite(eeat: float, rep: float, tech: float, locvis: float, betas: Dict[str, float]) -> float:
     """
-    Calculate DTRI (Digital Trust Revenue Index) composite score
+    Compute Digital Trust Revenue Index (DTRI)
     
     Args:
-        dealer_data: List of dealer performance metrics
-        benchmarks: List of industry benchmark metrics
+        eeat: E-E-A-T score (0-1)
+        rep: Reputation score (0-1) 
+        tech: Technical score (0-1)
+        locvis: Local Visibility score (0-1)
+        betas: Dictionary of weights per vertical
+        
+    Returns:
+        DTRI normalized to 0-100
+    """
+    # Validate inputs
+    scores = [eeat, rep, tech, locvis]
+    if not all(0 <= score <= 1 for score in scores):
+        raise ValueError("All scores must be between 0 and 1")
+    
+    # Validate beta weights sum to 1.0
+    total_weight = sum(betas.values())
+    if abs(total_weight - 1.0) > 0.01:
+        raise ValueError(f"Beta weights must sum to 1.0, got {total_weight}")
+    
+    # Calculate DTRI using weighted formula
+    base = (
+        betas["EEAT"] * eeat +
+        betas["Rep"] * rep +
+        betas["Tech"] * tech +
+        betas["LocVis"] * locvis
+    )
+    
+    # Normalize to 0-100 scale
+    dtri = round(base * 100, 2)
+    
+    return dtri
+
+def calculate_supporting_indices(eeat: float, rep: float, tech: float, locvis: float) -> Dict[str, float]:
+    """
+    Calculate supporting indices that feed into DTRI
     
     Returns:
-        DTRI score (0-100)
+        Dictionary of supporting index scores
     """
+    # DELI - Digital Experience Loss Index (Technical degradation cost)
+    deli = (1 - tech) * 100  # Higher tech score = lower loss
+    
+    # LVRI - Local Visibility Revenue Index (Geo rank × revenue multiplier)
+    lvri = locvis * 100
+    
+    # ATS - Algorithmic Trust Score (AI model confidence)
+    ats = (eeat + rep) / 2 * 100  # Average of E-E-A-T and Reputation
+    
+    # PIQR - Performance Impact Quality Risk (Revenue lost per % drop)
+    piqr = (1 - (eeat + rep + tech) / 3) * 100  # Inverse of average quality
+    
+    # QAI - Quantum Authority Index (Global clarity & authority)
+    qai = (eeat * 0.4 + rep * 0.3 + tech * 0.2 + locvis * 0.1) * 100
+    
+    return {
+        "DELI": round(deli, 2),
+        "LVRI": round(lvri, 2), 
+        "ATS": round(ats, 2),
+        "PIQR": round(piqr, 2),
+        "QAI": round(qai, 2)
+    }
+
+def main():
+    """Main function for command-line usage"""
     try:
-        if not dealer_data:
-            return 75.0  # Default score for no data
+        # Read input from stdin
+        input_data = json.loads(sys.stdin.read())
         
-        # Extract key metrics from dealer data
-        metrics = extract_metrics(dealer_data)
+        eeat = input_data.get("eeat", 0.0)
+        rep = input_data.get("rep", 0.0)
+        tech = input_data.get("tech", 0.0)
+        locvis = input_data.get("locvis", 0.0)
+        weights = input_data.get("weights", {})
         
-        # Apply benchmark normalization
-        normalized_metrics = apply_benchmark_normalization(metrics, benchmarks)
+        # Calculate DTRI
+        dtri = dtri_composite(eeat, rep, tech, locvis, weights)
         
-        # Calculate weighted composite score
-        dtri_score = calculate_weighted_score(normalized_metrics)
+        # Calculate supporting indices
+        supporting = calculate_supporting_indices(eeat, rep, tech, locvis)
         
-        # Apply quality adjustments
-        final_score = apply_quality_adjustments(dtri_score, dealer_data)
+        # Prepare output
+        result = {
+            "dtri": dtri,
+            "supporting_indices": supporting,
+            "components": {
+                "eeat": eeat * 100,
+                "rep": rep * 100,
+                "tech": tech * 100,
+                "locvis": locvis * 100
+            },
+            "weights": weights,
+            "status": "success"
+        }
         
-        logger.info(f"DTRI calculation completed: {final_score}")
-        return round(final_score, 2)
+        print(json.dumps(result))
         
     except Exception as e:
-        logger.error(f"DTRI calculation error: {str(e)}")
-        return 75.0  # Fallback score
+        error_result = {
+            "dtri": 0.0,
+            "error": str(e),
+            "status": "error"
+        }
+        print(json.dumps(error_result))
+        sys.exit(1)
 
-def extract_metrics(dealer_data: List[Dict]) -> Dict[str, float]:
-    """
-    Extract and normalize key performance metrics
-    """
-    metrics = {
-        'digital_trust_score': 0.0,
-        'revenue_impact': 0.0,
-        'conversion_rate': 0.0,
-        'customer_satisfaction': 0.0,
-        'online_presence_score': 0.0,
-        'ai_visibility_score': 0.0
-    }
-    
-    for data_point in dealer_data:
-        if isinstance(data_point, dict):
-            # Extract metrics from data point
-            for key in metrics.keys():
-                if key in data_point.get('metrics', {}):
-                    metrics[key] += data_point['metrics'][key]
-                elif key in data_point:
-                    metrics[key] += data_point[key]
-    
-    # Average the metrics
-    data_count = max(len(dealer_data), 1)
-    for key in metrics:
-        metrics[key] = metrics[key] / data_count
-    
-    return metrics
-
-def apply_benchmark_normalization(metrics: Dict[str, float], benchmarks: List[Dict]) -> Dict[str, float]:
-    """
-    Normalize metrics against industry benchmarks
-    """
-    normalized = {}
-    
-    for metric_name, value in metrics.items():
-        # Find corresponding benchmark
-        benchmark_value = find_benchmark_value(metric_name, benchmarks)
-        
-        if benchmark_value and benchmark_value > 0:
-            # Normalize against benchmark (0-100 scale)
-            normalized[metric_name] = min(100, (value / benchmark_value) * 100)
-        else:
-            # Use raw value if no benchmark available
-            normalized[metric_name] = min(100, value)
-    
-    return normalized
-
-def find_benchmark_value(metric_name: str, benchmarks: List[Dict]) -> float:
-    """
-    Find benchmark value for a specific metric
-    """
-    for benchmark in benchmarks:
-        if isinstance(benchmark, dict):
-            if benchmark.get('metric_id') == metric_name:
-                return benchmark.get('target_value', 0)
-            elif benchmark.get('category') == metric_name:
-                return benchmark.get('target_value', 0)
-    
-    return 0
-
-def calculate_weighted_score(normalized_metrics: Dict[str, float]) -> float:
-    """
-    Calculate weighted composite DTRI score
-    """
-    # Define weights for each metric
-    weights = {
-        'digital_trust_score': 0.25,
-        'revenue_impact': 0.20,
-        'conversion_rate': 0.15,
-        'customer_satisfaction': 0.15,
-        'online_presence_score': 0.15,
-        'ai_visibility_score': 0.10
-    }
-    
-    weighted_sum = 0.0
-    total_weight = 0.0
-    
-    for metric_name, value in normalized_metrics.items():
-        weight = weights.get(metric_name, 0.1)
-        weighted_sum += value * weight
-        total_weight += weight
-    
-    return weighted_sum / max(total_weight, 0.1)
-
-def apply_quality_adjustments(base_score: float, dealer_data: List[Dict]) -> float:
-    """
-    Apply quality adjustments based on data completeness and consistency
-    """
-    # Data completeness bonus
-    data_completeness = min(1.0, len(dealer_data) / 4)  # Expect 4 verticals
-    completeness_bonus = data_completeness * 5  # Up to 5 point bonus
-    
-    # Consistency adjustment
-    consistency_score = calculate_consistency_score(dealer_data)
-    consistency_adjustment = (consistency_score - 0.5) * 10  # -5 to +5 adjustment
-    
-    # Apply adjustments
-    adjusted_score = base_score + completeness_bonus + consistency_adjustment
-    
-    # Ensure score stays within bounds
-    return max(0, min(100, adjusted_score))
-
-def calculate_consistency_score(dealer_data: List[Dict]) -> float:
-    """
-    Calculate data consistency score
-    """
-    if len(dealer_data) < 2:
-        return 0.5  # Neutral score for insufficient data
-    
-    # Extract scores for consistency analysis
-    scores = []
-    for data_point in dealer_data:
-        if isinstance(data_point, dict) and 'metrics' in data_point:
-            metrics = data_point['metrics']
-            if isinstance(metrics, dict):
-                # Calculate average score for this data point
-                point_scores = [v for v in metrics.values() if isinstance(v, (int, float))]
-                if point_scores:
-                    scores.append(np.mean(point_scores))
-    
-    if len(scores) < 2:
-        return 0.5
-    
-    # Calculate coefficient of variation (lower is more consistent)
-    mean_score = np.mean(scores)
-    std_score = np.std(scores)
-    
-    if mean_score == 0:
-        return 0.5
-    
-    cv = std_score / mean_score
-    # Convert to 0-1 scale (lower CV = higher consistency)
-    consistency = max(0, 1 - cv)
-    
-    return consistency
+if __name__ == "__main__":
+    main()

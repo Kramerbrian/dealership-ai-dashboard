@@ -1,0 +1,416 @@
+-- DTRI-MAXIMUS 4.0 Ultimate Enhancements
+-- Machine Learning + Autonomous Agents + Contextual Filtering + Causal Forecasting
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ==============================================
+-- 1. MACHINE LEARNING FOR TRUE PREDICTIVE β-COEFFICIENTS
+-- ==============================================
+
+-- Dynamic β Calibration with Historical Data
+CREATE TABLE IF NOT EXISTS dtri_ml_beta_calibration (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    metric_name VARCHAR(100) NOT NULL,
+    segment_type VARCHAR(20) NOT NULL CHECK (segment_type IN ('sales', 'service', 'leads', 'lifetime_value')),
+    industry_beta DECIMAL(6,4) NOT NULL, -- Fixed industry β
+    dealer_specific_beta DECIMAL(6,4) NOT NULL, -- ML-calculated dealer-specific β
+    calibration_method VARCHAR(50) NOT NULL, -- 'multiple_regression', 'time_series', 'neural_network'
+    historical_data_points INTEGER NOT NULL,
+    r_squared DECIMAL(4,3) NOT NULL CHECK (r_squared >= 0 AND r_squared <= 1),
+    confidence_interval_lower DECIMAL(6,4) NOT NULL,
+    confidence_interval_upper DECIMAL(6,4) NOT NULL,
+    last_calibrated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, metric_name, segment_type)
+);
+
+-- Causal Forecasting with Time Series Analysis
+CREATE TABLE IF NOT EXISTS dtri_causal_forecasting (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    forecast_type VARCHAR(50) NOT NULL, -- 'dtri_score', 'decay_tax_cost', 'profit_lift'
+    forecast_horizon_months INTEGER NOT NULL, -- 6 months, 12 months, etc.
+    current_value DECIMAL(10,4) NOT NULL,
+    forecasted_value DECIMAL(10,4) NOT NULL,
+    confidence_level DECIMAL(3,2) NOT NULL CHECK (confidence_level >= 0 AND confidence_level <= 1),
+    forecast_model VARCHAR(50) NOT NULL, -- 'ARIMA', 'Prophet', 'LSTM', 'XGBoost'
+    seasonal_patterns JSONB, -- Detected seasonal patterns
+    trend_direction VARCHAR(20) NOT NULL CHECK (trend_direction IN ('increasing', 'decreasing', 'stable', 'volatile')),
+    forecast_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, forecast_type, forecast_horizon_months, forecast_date)
+);
+
+-- Cross-Correlation Discovery
+CREATE TABLE IF NOT EXISTS dtri_correlation_discovery (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    primary_metric VARCHAR(100) NOT NULL,
+    correlated_metric VARCHAR(100) NOT NULL,
+    correlation_strength DECIMAL(4,3) NOT NULL CHECK (correlation_strength >= -1 AND correlation_strength <= 1),
+    correlation_type VARCHAR(20) NOT NULL CHECK (correlation_type IN ('positive', 'negative', 'neutral')),
+    statistical_significance DECIMAL(4,3) NOT NULL CHECK (statistical_significance >= 0 AND statistical_significance <= 1),
+    business_insight TEXT NOT NULL, -- "Certified teams price better"
+    actionable_recommendation TEXT NOT NULL,
+    discovery_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, primary_metric, correlated_metric)
+);
+
+-- ==============================================
+-- 2. AUTONOMOUS AGENTIC LOGIC (ACTION AUTOMATION)
+-- ==============================================
+
+-- Threshold Violation Alerts with Autonomous Triggers
+CREATE TABLE IF NOT EXISTS dtri_autonomous_triggers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    trigger_name VARCHAR(100) NOT NULL,
+    metric_name VARCHAR(100) NOT NULL,
+    threshold_condition VARCHAR(20) NOT NULL CHECK (threshold_condition IN ('below', 'above', 'equals', 'changes_by')),
+    threshold_value DECIMAL(10,4) NOT NULL,
+    trigger_action VARCHAR(100) NOT NULL, -- 'generate_sow', 'send_alert', 'create_ticket', 'launch_campaign'
+    action_parameters JSONB NOT NULL, -- Specific parameters for the action
+    is_active BOOLEAN DEFAULT true,
+    last_triggered TIMESTAMP WITH TIME ZONE,
+    trigger_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, trigger_name)
+);
+
+-- Prescriptive Action Automation (SOW Generation)
+CREATE TABLE IF NOT EXISTS dtri_prescriptive_actions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    action_type VARCHAR(100) NOT NULL, -- 'sow_generation', 'ticket_creation', 'campaign_launch'
+    trigger_metric VARCHAR(100) NOT NULL,
+    trigger_value DECIMAL(10,4) NOT NULL,
+    action_blueprint JSONB NOT NULL, -- Standardized fix template
+    generated_content TEXT NOT NULL, -- The actual SOW, ticket, or campaign content
+    target_departments JSONB NOT NULL, -- ['IT', 'CMO', 'Service_Director']
+    priority_level VARCHAR(20) DEFAULT 'medium' CHECK (priority_level IN ('low', 'medium', 'high', 'critical')),
+    status VARCHAR(20) DEFAULT 'generated' CHECK (status IN ('generated', 'sent', 'acknowledged', 'completed', 'failed')),
+    generated_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_date TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Competitive Attack Modeling
+CREATE TABLE IF NOT EXISTS dtri_competitive_attack_detection (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    competitor_name VARCHAR(255) NOT NULL,
+    attack_metric VARCHAR(100) NOT NULL, -- 'Review_Velocity', 'VDP_Speed', 'NAP_Consistency'
+    competitor_value DECIMAL(10,4) NOT NULL,
+    industry_average DECIMAL(10,4) NOT NULL,
+    standard_deviations_above_average DECIMAL(4,2) NOT NULL,
+    attack_severity VARCHAR(20) NOT NULL CHECK (attack_severity IN ('low', 'medium', 'high', 'critical')),
+    recommended_response VARCHAR(100) NOT NULL, -- 'review_campaign', 'speed_optimization', 'nap_audit'
+    response_urgency VARCHAR(20) NOT NULL CHECK (response_urgency IN ('immediate', '24_hours', '7_days', '30_days')),
+    detection_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    response_launched BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==============================================
+-- 3. ADVANCED CONTEXTUAL FILTERING
+-- ==============================================
+
+-- Vehicle Segment TSM Calibration
+CREATE TABLE IF NOT EXISTS dtri_segment_tsm_calibration (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    segment_type VARCHAR(50) NOT NULL, -- 'luxury', 'domestic', 'import', 'economy'
+    brand_type VARCHAR(50) NOT NULL, -- 'BMW', 'Toyota', 'Ford', etc.
+    metric_name VARCHAR(100) NOT NULL,
+    base_tsm DECIMAL(3,2) NOT NULL,
+    segment_multiplier DECIMAL(3,2) NOT NULL, -- Adjusts TSM based on segment
+    contextual_factors JSONB NOT NULL, -- Economic conditions, seasonality, etc.
+    effective_tsm DECIMAL(3,2) GENERATED ALWAYS AS (base_tsm * segment_multiplier) STORED,
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, segment_type, brand_type, metric_name)
+);
+
+-- Seasonality Adjustment with Historical Patterns
+CREATE TABLE IF NOT EXISTS dtri_seasonality_adjustment (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    metric_name VARCHAR(100) NOT NULL,
+    month INTEGER NOT NULL CHECK (month >= 1 AND month <= 12),
+    seasonal_index DECIMAL(4,3) NOT NULL, -- 1.3x multiplier for March-May
+    historical_confidence DECIMAL(3,2) NOT NULL CHECK (historical_confidence >= 0 AND historical_confidence <= 1),
+    peak_season BOOLEAN DEFAULT false,
+    seasonal_factors JSONB, -- Tax returns, summer, holidays, etc.
+    last_calculated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, metric_name, month)
+);
+
+-- Topic-Level AROI with Sentiment Analysis
+CREATE TABLE IF NOT EXISTS dtri_topic_level_aroi (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    service_topic_id VARCHAR(100) NOT NULL, -- 'brakes', 'oil_change', 'transmission'
+    service_topic_name VARCHAR(255) NOT NULL,
+    sentiment_score DECIMAL(3,2) NOT NULL CHECK (sentiment_score >= -1 AND sentiment_score <= 1),
+    review_volume INTEGER NOT NULL,
+    decay_tax_penalty DECIMAL(10,2) NOT NULL,
+    aroi_score DECIMAL(10,2) NOT NULL,
+    improvement_potential DECIMAL(10,2) NOT NULL,
+    recommended_actions JSONB NOT NULL, -- Specific actions for this topic
+    priority_rank INTEGER NOT NULL,
+    last_analyzed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, service_topic_id)
+);
+
+-- ==============================================
+-- 4. CAUSAL FORECASTING WITH TIME SERIES ANALYSIS
+-- ==============================================
+
+-- Time Series Forecasting Models
+CREATE TABLE IF NOT EXISTS dtri_time_series_models (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    model_name VARCHAR(100) NOT NULL, -- 'dtri_arima', 'decay_tax_prophet', 'profit_lstm'
+    model_type VARCHAR(50) NOT NULL, -- 'ARIMA', 'Prophet', 'LSTM', 'XGBoost'
+    target_metric VARCHAR(100) NOT NULL,
+    forecast_horizon_days INTEGER NOT NULL,
+    model_accuracy DECIMAL(4,3) NOT NULL CHECK (model_accuracy >= 0 AND model_accuracy <= 1),
+    model_parameters JSONB NOT NULL, -- Model-specific parameters
+    training_data_period_days INTEGER NOT NULL,
+    last_trained TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    next_retrain_date TIMESTAMP WITH TIME ZONE,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, model_name)
+);
+
+-- Forecast Results and Predictions
+CREATE TABLE IF NOT EXISTS dtri_forecast_results (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    model_id UUID REFERENCES dtri_time_series_models(id),
+    forecast_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    predicted_value DECIMAL(10,4) NOT NULL,
+    confidence_interval_lower DECIMAL(10,4) NOT NULL,
+    confidence_interval_upper DECIMAL(10,4) NOT NULL,
+    prediction_accuracy DECIMAL(4,3), -- Calculated when actual value is known
+    seasonal_component DECIMAL(10,4),
+    trend_component DECIMAL(10,4),
+    residual_component DECIMAL(10,4),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==============================================
+-- PERFORMANCE-OPTIMIZED INDEXES
+-- ==============================================
+
+-- Machine Learning Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_ml_beta_calibration_tenant ON dtri_ml_beta_calibration(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_ml_beta_calibration_dealership ON dtri_ml_beta_calibration(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_ml_beta_calibration_metric ON dtri_ml_beta_calibration(metric_name);
+CREATE INDEX IF NOT EXISTS idx_dtri_ml_beta_calibration_method ON dtri_ml_beta_calibration(calibration_method);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_causal_forecasting_tenant ON dtri_causal_forecasting(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_causal_forecasting_dealership ON dtri_causal_forecasting(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_causal_forecasting_type ON dtri_causal_forecasting(forecast_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_causal_forecasting_horizon ON dtri_causal_forecasting(forecast_horizon_months);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_correlation_discovery_tenant ON dtri_correlation_discovery(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_correlation_discovery_dealership ON dtri_correlation_discovery(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_correlation_discovery_primary ON dtri_correlation_discovery(primary_metric);
+CREATE INDEX IF NOT EXISTS idx_dtri_correlation_discovery_strength ON dtri_correlation_discovery(correlation_strength);
+
+-- Autonomous Agent Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_triggers_tenant ON dtri_autonomous_triggers(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_triggers_dealership ON dtri_autonomous_triggers(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_triggers_active ON dtri_autonomous_triggers(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_triggers_metric ON dtri_autonomous_triggers(metric_name);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_prescriptive_actions_tenant ON dtri_prescriptive_actions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_prescriptive_actions_dealership ON dtri_prescriptive_actions(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_prescriptive_actions_type ON dtri_prescriptive_actions(action_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_prescriptive_actions_status ON dtri_prescriptive_actions(status);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_attack_tenant ON dtri_competitive_attack_detection(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_attack_dealership ON dtri_competitive_attack_detection(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_attack_severity ON dtri_competitive_attack_detection(attack_severity);
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_attack_launched ON dtri_competitive_attack_detection(response_launched) WHERE response_launched = false;
+
+-- Contextual Filtering Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_segment_tsm_tenant ON dtri_segment_tsm_calibration(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_segment_tsm_dealership ON dtri_segment_tsm_calibration(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_segment_tsm_segment ON dtri_segment_tsm_calibration(segment_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_segment_tsm_brand ON dtri_segment_tsm_calibration(brand_type);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_seasonality_tenant ON dtri_seasonality_adjustment(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_seasonality_dealership ON dtri_seasonality_adjustment(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_seasonality_metric ON dtri_seasonality_adjustment(metric_name);
+CREATE INDEX IF NOT EXISTS idx_dtri_seasonality_month ON dtri_seasonality_adjustment(month);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_topic_aroi_tenant ON dtri_topic_level_aroi(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_topic_aroi_dealership ON dtri_topic_level_aroi(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_topic_aroi_topic ON dtri_topic_level_aroi(service_topic_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_topic_aroi_priority ON dtri_topic_level_aroi(priority_rank);
+
+-- Time Series Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_time_series_models_tenant ON dtri_time_series_models(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_time_series_models_dealership ON dtri_time_series_models(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_time_series_models_type ON dtri_time_series_models(model_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_time_series_models_active ON dtri_time_series_models(is_active) WHERE is_active = true;
+
+CREATE INDEX IF NOT EXISTS idx_dtri_forecast_results_tenant ON dtri_forecast_results(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_forecast_results_dealership ON dtri_forecast_results(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_forecast_results_model ON dtri_forecast_results(model_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_forecast_results_date ON dtri_forecast_results(forecast_date);
+
+-- ==============================================
+-- ROW LEVEL SECURITY (RLS)
+-- ==============================================
+
+-- Enable RLS on all tables
+ALTER TABLE dtri_ml_beta_calibration ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_causal_forecasting ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_correlation_discovery ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_autonomous_triggers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_prescriptive_actions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_competitive_attack_detection ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_segment_tsm_calibration ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_seasonality_adjustment ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_topic_level_aroi ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_time_series_models ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_forecast_results ENABLE ROW LEVEL SECURITY;
+
+-- RLS policies for all ultimate enhancement tables
+CREATE POLICY IF NOT EXISTS "Users can view their own ml beta calibration" ON dtri_ml_beta_calibration
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own ml beta calibration" ON dtri_ml_beta_calibration
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own causal forecasting" ON dtri_causal_forecasting
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own causal forecasting" ON dtri_causal_forecasting
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own correlation discovery" ON dtri_correlation_discovery
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own correlation discovery" ON dtri_correlation_discovery
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own autonomous triggers" ON dtri_autonomous_triggers
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own autonomous triggers" ON dtri_autonomous_triggers
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own prescriptive actions" ON dtri_prescriptive_actions
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own prescriptive actions" ON dtri_prescriptive_actions
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own competitive attack detection" ON dtri_competitive_attack_detection
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own competitive attack detection" ON dtri_competitive_attack_detection
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own segment tsm calibration" ON dtri_segment_tsm_calibration
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own segment tsm calibration" ON dtri_segment_tsm_calibration
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own seasonality adjustment" ON dtri_seasonality_adjustment
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own seasonality adjustment" ON dtri_seasonality_adjustment
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own topic level aroi" ON dtri_topic_level_aroi
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own topic level aroi" ON dtri_topic_level_aroi
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own time series models" ON dtri_time_series_models
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own time series models" ON dtri_time_series_models
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own forecast results" ON dtri_forecast_results
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own forecast results" ON dtri_forecast_results
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- ==============================================
+-- TRIGGERS AND FUNCTIONS
+-- ==============================================
+
+-- Add triggers for updated_at timestamps
+CREATE TRIGGER IF NOT EXISTS update_dtri_autonomous_triggers_updated_at 
+    BEFORE UPDATE ON dtri_autonomous_triggers 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_time_series_models_updated_at 
+    BEFORE UPDATE ON dtri_time_series_models 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==============================================
+-- COMMENTS AND DOCUMENTATION
+-- ==============================================
+
+-- Table comments
+COMMENT ON TABLE dtri_ml_beta_calibration IS 'Machine learning-based dynamic β-coefficient calibration with dealer-specific historical data';
+COMMENT ON TABLE dtri_causal_forecasting IS 'Causal forecasting with time series analysis for future DTRI predictions';
+COMMENT ON TABLE dtri_correlation_discovery IS 'Cross-correlation discovery for unseen metric relationships';
+COMMENT ON TABLE dtri_autonomous_triggers IS 'Autonomous agent triggers for threshold violation alerts';
+COMMENT ON TABLE dtri_prescriptive_actions IS 'Prescriptive action automation with SOW generation';
+COMMENT ON TABLE dtri_competitive_attack_detection IS 'Competitive attack modeling with response automation';
+COMMENT ON TABLE dtri_segment_tsm_calibration IS 'Vehicle segment-specific TSM calibration for contextual filtering';
+COMMENT ON TABLE dtri_seasonality_adjustment IS 'Seasonality adjustment with historical patterns and peak seasons';
+COMMENT ON TABLE dtri_topic_level_aroi IS 'Topic-level AROI with sentiment analysis for service categories';
+COMMENT ON TABLE dtri_time_series_models IS 'Time series forecasting models (ARIMA, Prophet, LSTM, XGBoost)';
+COMMENT ON TABLE dtri_forecast_results IS 'Forecast results and predictions with confidence intervals';
+
+-- Column comments for key fields
+COMMENT ON COLUMN dtri_ml_beta_calibration.dealer_specific_beta IS 'ML-calculated dealer-specific β replacing fixed industry β';
+COMMENT ON COLUMN dtri_causal_forecasting.forecasted_value IS 'Predicted value for future time period (e.g., Q2 2026 Decay Tax Cost)';
+COMMENT ON COLUMN dtri_correlation_discovery.business_insight IS 'Discovered business insight (e.g., "Certified teams price better")';
+COMMENT ON COLUMN dtri_autonomous_triggers.action_parameters IS 'JSONB parameters for autonomous actions (SOW templates, alert recipients, etc.)';
+COMMENT ON COLUMN dtri_prescriptive_actions.generated_content IS 'The actual SOW, ticket, or campaign content generated by the agent';
+COMMENT ON COLUMN dtri_competitive_attack_detection.standard_deviations_above_average IS 'How many standard deviations above industry average the competitor is';
+COMMENT ON COLUMN dtri_segment_tsm_calibration.effective_tsm IS 'Generated column: base_tsm * segment_multiplier for contextual adjustment';
+COMMENT ON COLUMN dtri_seasonality_adjustment.seasonal_index IS 'Seasonal multiplier (e.g., 1.3x for March-May peak season)';
+COMMENT ON COLUMN dtri_topic_level_aroi.sentiment_score IS 'Sentiment score for specific service topic (-1 to 1)';
+COMMENT ON COLUMN dtri_time_series_models.model_accuracy IS 'Model accuracy score based on backtesting';
+COMMENT ON COLUMN dtri_forecast_results.prediction_accuracy IS 'Calculated accuracy when actual value becomes known';

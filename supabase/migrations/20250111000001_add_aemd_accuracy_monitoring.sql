@@ -2,6 +2,14 @@
 -- Created: 2025-01-11
 -- Purpose: Track AEMD financial metrics and AI accuracy monitoring
 
+-- Create the set_updated_at function if it doesn't exist
+CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS $$
+BEGIN 
+  NEW.updated_at = now(); 
+  RETURN NEW; 
+END; 
+$$ LANGUAGE plpgsql;
+
 -- ============================================================================
 -- AEMD Metrics Table
 -- ============================================================================

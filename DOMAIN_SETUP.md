@@ -1,313 +1,172 @@
-# 🌐 Custom Domain Configuration Guide
+# DealershipAI Domain Configuration Guide
 
-This guide will help you set up a custom domain for your DealershipAI dashboard.
+## 🌐 Current Domain Status
 
-## 📋 Prerequisites
+### ✅ Already Configured
+- **dealershipai.com** → `dealershipai-landing` project (Landing Page)
+- **dash.dealershipai.com** → `dealershipai-dashboard` project (Intelligence Dashboard)
 
-- Vercel account (or your preferred hosting platform)
-- Domain registrar account (GoDaddy, Namecheap, Cloudflare, etc.)
-- Access to DNS management
+### 🚀 Current Deployment
+- **Production URL**: https://dealershipai-dashboard-77fe0bcs5-brian-kramers-projects.vercel.app
+- **Status**: ✅ Ready and Live
 
-## 🚀 Step 1: Vercel Domain Configuration
+## 📋 Domain Configuration Steps
 
-### 1.1 Add Domain to Vercel Project
+### 1. Main Domain (dealershipai.com)
+The main domain is already configured and pointing to the landing page project.
 
-1. Go to your Vercel dashboard
-2. Select your `dealership-ai-dashboard` project
-3. Navigate to **Settings** → **Domains**
-4. Add your custom domain (e.g., `dealershipai.com`)
+### 2. Dashboard Subdomain (dash.dealershipai.com)
+The dashboard subdomain is already configured and pointing to our current project.
 
-### 1.2 Configure Domain Settings
+### 3. Verify Domain Configuration
+To verify the domains are working correctly:
 
 ```bash
-# Primary domain
-dealershipai.com
+# Check main domain
+curl -I https://dealershipai.com
 
-# Subdomains (optional)
-app.dealershipai.com
-dashboard.dealershipai.com
-api.dealershipai.com
+# Check dashboard subdomain  
+curl -I https://dash.dealershipai.com
 ```
 
-## 🔧 Step 2: DNS Configuration
+## 🔧 Routing Configuration
 
-### 2.1 Apex Domain Setup
+### Current Routing Structure
+```
+dealershipai.com/          → Landing Page (dealershipai-landing project)
+dash.dealershipai.com/     → Intelligence Dashboard (dealershipai-dashboard project)
+dash.dealershipai.com/intelligence → Intelligence Dashboard (same project)
+```
 
-Add these DNS records to your domain registrar:
+### Recommended Routing Updates
+To ensure proper routing, we should update the Vercel configuration:
 
-```dns
-# Apex domain
+1. **Main Domain Routing**: Ensure `dealershipai.com` serves the landing page
+2. **Dashboard Routing**: Ensure `dash.dealershipai.com` serves the intelligence dashboard
+3. **Fallback Routing**: Handle any missing routes gracefully
+
+## 🛠️ Next Steps for Domain Optimization
+
+### 1. SSL Certificate
+- ✅ Automatically handled by Vercel
+- Certificates are auto-renewed
+
+### 2. DNS Configuration
+Ensure your DNS is pointing to Vercel:
+```
 Type: A
 Name: @
 Value: 76.76.19.61
 
-# CNAME for www
-Type: CNAME
+Type: CNAME  
 Name: www
 Value: cname.vercel-dns.com
-```
 
-### 2.2 Subdomain Setup (Optional)
-
-```dns
-# API subdomain
 Type: CNAME
-Name: api
-Value: cname.vercel-dns.com
-
-# Dashboard subdomain
-Type: CNAME
-Name: dashboard
+Name: dash
 Value: cname.vercel-dns.com
 ```
 
-## ⚙️ Step 3: Environment Variables Update
+### 3. Analytics Integration
+Add analytics to track performance:
+- Google Analytics 4
+- Vercel Analytics
+- Custom event tracking
 
-Update your environment variables with the new domain:
-
-```bash
-# Production URLs
-NEXT_PUBLIC_URL=https://dealershipai.com
-VERCEL_URL=https://dealershipai.com
-
-# Stripe Configuration (update webhook URLs)
-STRIPE_WEBHOOK_URL=https://dealershipai.com/api/webhooks/stripe
-
-# Supabase Configuration
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_KEY=your-service-key
-```
-
-## 🔒 Step 4: SSL Certificate
-
-Vercel automatically provides SSL certificates, but verify:
-
-1. Go to **Settings** → **Domains**
-2. Ensure SSL certificate is active
-3. Check for any SSL warnings
-
-## 🧪 Step 5: Testing Domain Setup
-
-### 5.1 Basic Connectivity Test
-
-```bash
-# Test domain resolution
-nslookup dealershipai.com
-
-# Test HTTPS
-curl -I https://dealershipai.com
-
-# Test subdomains
-curl -I https://api.dealershipai.com
-```
-
-### 5.2 Application Testing
-
-1. **Homepage**: `https://dealershipai.com`
-2. **Dashboard**: `https://dealershipai.com/dashboard`
-3. **Pricing**: `https://dealershipai.com/pricing.html`
-4. **API**: `https://dealershipai.com/api/checkout`
-
-## 🔄 Step 6: Update Stripe Webhooks
-
-1. Go to Stripe Dashboard → Webhooks
-2. Update webhook URL to: `https://dealershipai.com/api/webhooks/stripe`
-3. Test webhook delivery
-4. Verify webhook events are being received
-
-## 📊 Step 7: Analytics & Monitoring
-
-### 7.1 Google Analytics Setup
-
-```html
-<!-- Add to all HTML pages -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'GA_MEASUREMENT_ID');
-</script>
-```
-
-### 7.2 Uptime Monitoring
-
+### 4. Performance Monitoring
 Set up monitoring for:
-- `https://dealershipai.com` (main site)
-- `https://dealershipai.com/api/checkout` (critical API)
-- `https://dealershipai.com/api/webhooks/stripe` (webhook endpoint)
+- Core Web Vitals
+- API response times
+- Error rates
+- Uptime monitoring
 
-## 🚨 Step 8: Security Headers
+## 🎯 Testing the Deployment
 
-Your `vercel.json` already includes security headers, but verify:
+### Test URLs
+1. **Landing Page**: https://dealershipai.com
+2. **Dashboard**: https://dash.dealershipai.com
+3. **Intelligence Dashboard**: https://dash.dealershipai.com/intelligence
 
-```json
-{
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains; preload"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; ..."
-        }
-      ]
-    }
-  ]
-}
-```
+### Key Features to Test
+- [ ] Theme toggle functionality
+- [ ] Navigation between pages
+- [ ] Dashboard preview section
+- [ ] Responsive design
+- [ ] Loading performance
+- [ ] API endpoints
 
-## 🔧 Step 9: Performance Optimization
+## 📊 Performance Optimization
 
-### 9.1 CDN Configuration
+### Current Optimizations
+- ✅ Next.js 14 with App Router
+- ✅ Image optimization enabled
+- ✅ Static generation where possible
+- ✅ Edge runtime for API routes
+- ✅ TypeScript for type safety
 
-Vercel automatically provides CDN, but optimize:
+### Additional Optimizations
+- [ ] Implement caching strategies
+- [ ] Add service worker for offline support
+- [ ] Optimize bundle size
+- [ ] Implement lazy loading
+- [ ] Add performance monitoring
 
-```json
-{
-  "headers": [
-    {
-      "source": "/static/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ]
-}
-```
+## 🔒 Security Configuration
 
-### 9.2 Image Optimization
+### Current Security Headers
+- ✅ X-Frame-Options: DENY
+- ✅ X-Content-Type-Options: nosniff
+- ✅ Referrer-Policy: strict-origin-when-cross-origin
 
-```json
-{
-  "images": {
-    "domains": ["dealershipai.com"],
-    "formats": ["image/webp", "image/avif"]
-  }
-}
-```
+### Additional Security
+- [ ] Content Security Policy (CSP)
+- [ ] Rate limiting on API routes
+- [ ] Input validation and sanitization
+- [ ] Authentication and authorization
 
-## 📱 Step 10: Mobile & PWA Setup
+## 📈 Monitoring and Analytics
 
-### 10.1 PWA Manifest
+### Recommended Tools
+1. **Vercel Analytics** - Built-in performance monitoring
+2. **Google Analytics 4** - User behavior tracking
+3. **Sentry** - Error tracking and monitoring
+4. **Uptime Robot** - Uptime monitoring
 
-Create `public/manifest.json`:
+### Key Metrics to Track
+- Page load times
+- User engagement
+- Conversion rates
+- Error rates
+- API performance
 
-```json
-{
-  "name": "DealershipAI Dashboard",
-  "short_name": "DealershipAI",
-  "description": "AI-powered dealership analytics and monitoring",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007AFF",
-  "icons": [
-    {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
-```
+## 🚀 Launch Checklist
 
-## 🎯 Step 11: SEO Optimization
+- [x] Deploy to production
+- [x] Configure custom domains
+- [x] SSL certificates active
+- [ ] Analytics integration
+- [ ] Performance monitoring
+- [ ] Error tracking
+- [ ] Uptime monitoring
+- [ ] Backup strategy
+- [ ] Documentation complete
 
-### 11.1 Meta Tags
+## 📞 Support and Maintenance
 
-Add to all pages:
+### Regular Maintenance Tasks
+- Monitor performance metrics
+- Update dependencies
+- Review security headers
+- Check error logs
+- Optimize based on analytics
 
-```html
-<meta name="description" content="AI-powered dealership analytics and monitoring dashboard">
-<meta name="keywords" content="dealership, AI, analytics, monitoring, automotive">
-<meta property="og:title" content="DealershipAI Dashboard">
-<meta property="og:description" content="Transform your dealership with AI-powered insights">
-<meta property="og:url" content="https://dealershipai.com">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-```
+### Emergency Contacts
+- Vercel Support: https://vercel.com/support
+- Domain Registrar: [Your registrar support]
+- DNS Provider: [Your DNS provider support]
 
-### 11.2 Sitemap
+---
 
-Create `public/sitemap.xml`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://dealershipai.com</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://dealershipai.com/pricing.html</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-</urlset>
-```
-
-## ✅ Step 12: Final Verification
-
-### 12.1 Checklist
-
-- [ ] Domain resolves correctly
-- [ ] HTTPS certificate active
-- [ ] All pages load without errors
-- [ ] Stripe webhooks working
-- [ ] Analytics tracking
-- [ ] Mobile responsive
-- [ ] Performance scores > 90
-- [ ] Security headers active
-
-### 12.2 Performance Testing
-
-```bash
-# Test with Lighthouse
-npx lighthouse https://dealershipai.com --view
-
-# Test with PageSpeed Insights
-# Visit: https://pagespeed.web.dev/
-```
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-1. **DNS Propagation**: Wait 24-48 hours for full propagation
-2. **SSL Certificate**: May take up to 24 hours to activate
-3. **Webhook Issues**: Check Stripe webhook logs
-4. **CORS Errors**: Verify API endpoints are accessible
-
-### Support Resources
-
-- Vercel Documentation: https://vercel.com/docs
-- Stripe Webhooks: https://stripe.com/docs/webhooks
-- DNS Checker: https://dnschecker.org/
-
-## 🎉 You're Live!
-
-Your custom domain is now configured! Users can access your DealershipAI dashboard at:
-
-- **Main Site**: https://dealershipai.com
-- **Dashboard**: https://dealershipai.com/dashboard
-- **Pricing**: https://dealershipai.com/pricing.html
-- **API**: https://dealershipai.com/api/checkout
-
-Happy launching! 🚀
+**Last Updated**: October 15, 2025
+**Deployment Status**: ✅ Live and Ready
+**Next Review**: October 22, 2025

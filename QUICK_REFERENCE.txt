@@ -1,0 +1,214 @@
+# 🔍 DealershipAI Dashboard - Quick Reference
+
+## 🚀 Essential Commands
+
+```bash
+# Development
+npm run dev              # Start dev server (localhost:3000)
+npm run build           # Build for production
+npm run start           # Run production server
+
+# Database
+npm run db:generate     # Generate Prisma client
+npm run db:push         # Push schema to database
+npm run db:migrate      # Run migrations
+npm run db:studio       # Open Prisma Studio
+
+# Deployment
+vercel deploy --prod    # Deploy to Vercel
+```
+
+## 📁 Key File Locations
+
+```
+app/
+├── page.tsx                    # Landing page
+├── (dashboard)/page.tsx        # Main dashboard
+└── api/                        # API endpoints
+    ├── quick-audit/route.ts    # Main scoring API
+    ├── changes/route.ts        # Change analysis
+    ├── fix-loop/route.ts       # Automated fixes
+    └── bot-parity-drilldown/   # Bot analysis
+
+components/
+├── QuickAudit.tsx              # Landing page scanner
+├── DealershipAIDashboard.tsx   # Main dashboard
+├── WhatChangedAnalyzer.tsx     # Change tracking
+├── FixLoopExecutor.tsx         # Fix automation
+└── BotParityCard.tsx           # Bot monitoring
+
+lib/
+├── prisma.ts                   # Database client
+├── redis.ts                    # Cache client
+├── scoring.ts                  # AI scoring engine
+└── botParity.ts                # Bot analysis logic
+```
+
+## 🔧 Environment Variables
+
+```bash
+# Required for basic functionality
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# Required for authentication
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+
+# Required for billing
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+
+# Required for caching
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# Optional for AI features
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+```
+
+## 🎯 Key Features
+
+### Dashboard Components
+- **QuickAudit**: Landing page URL scanner
+- **DealershipAIDashboard**: Main analytics dashboard
+- **WhatChangedAnalyzer**: Week-over-week change tracking
+- **FixLoopExecutor**: Automated remediation system
+- **BotParityCard**: Cross-platform bot monitoring
+
+### API Endpoints
+- `GET /api/quick-audit?domain=example.com` - Score a domain
+- `GET /api/changes` - Get recent metric changes
+- `POST /api/fix-loop` - Execute automated fixes
+- `GET /api/bot-parity-drilldown` - Bot analysis data
+- `GET /api/lineage` - Data provenance tracking
+- `GET /api/usage` - API usage statistics
+
+### Database Tables
+- `dealerships` - Multi-tenant dealership data
+- `scores` - AI visibility metrics
+- `audits` - Audit trail and lineage
+- `users` - User management with RBAC
+
+## 🎨 UI Components
+
+### Score Cards
+```tsx
+<ScoreCard
+  title="AI Visibility"
+  score={85}
+  status="good"
+  trend={{ value: 5, direction: 'up' }}
+/>
+```
+
+### Metric Tiles
+```tsx
+<Tile label="AIV™" value="85.2" />
+<Tile label="ATI™" value="78.9" />
+<Tile label="CRS™" value="82.1" />
+```
+
+### Bot Parity
+```tsx
+<BotParityCard domain="example.com" />
+<BotParityDiffViewer />
+```
+
+## 🔄 Common Workflows
+
+### 1. Score a New Domain
+```bash
+curl "http://localhost:3000/api/quick-audit?domain=example.com"
+```
+
+### 2. Check Recent Changes
+```bash
+curl "http://localhost:3000/api/changes"
+```
+
+### 3. Execute Fix Loop
+```bash
+curl -X POST "http://localhost:3000/api/fix-loop" \
+  -H "Content-Type: application/json" \
+  -d '{"playbook": "Recover AI Citations", "dryRun": true}'
+```
+
+### 4. View Bot Analysis
+```bash
+curl "http://localhost:3000/api/bot-parity-drilldown"
+```
+
+## 🚨 Troubleshooting
+
+### Build Errors
+```bash
+# Clear cache and reinstall
+rm -rf .next node_modules
+npm install
+npm run build
+```
+
+### Database Issues
+```bash
+# Reset database
+npm run db:push --force-reset
+npm run db:generate
+```
+
+### Environment Issues
+```bash
+# Check environment variables
+vercel env ls
+vercel env pull .env.local
+```
+
+## 📊 Key Metrics
+
+### AI Visibility Scores
+- **AIV™** (Algorithmic Visibility Index): 0-100
+- **ATI™** (Algorithmic Trust Index): 0-100
+- **CRS™** (Composite Reputation Score): 0-100
+- **ITI™** (Inventory Truth Index): 0-100
+- **CIS™** (Clarity Intelligence Score): 0-100
+
+### Bot Parity
+- **Googlebot**: Schema coverage percentage
+- **GPTBot**: AI search optimization
+- **PerplexityBot**: Answer engine presence
+- **GeminiBot**: Google AI integration
+
+### Change Analysis
+- **Delta Tracking**: Week-over-week changes
+- **Root Cause Analysis**: Automated issue detection
+- **Impact Assessment**: Revenue impact calculation
+- **Playbook Recommendations**: Automated fixes
+
+## 🔐 Security Features
+
+- **Multi-Tenancy**: Row-level security with Supabase RLS
+- **RBAC**: 4-tier role-based access control
+- **API Security**: Scoped keys with rate limiting
+- **Audit Logging**: Complete action tracking
+- **Data Isolation**: Tenant-scoped data access
+
+## 📈 Performance
+
+- **Caching**: Redis for API response caching
+- **Optimization**: SWR for data fetching
+- **Real-time**: Live updates with Supabase
+- **Monitoring**: Built-in performance tracking
+
+## 🎯 Next Steps
+
+1. **Deploy to Vercel**: Use CURSOR_COMPOSER.txt
+2. **Configure Environment**: Set all required variables
+3. **Set Up Database**: Run Prisma migrations
+4. **Test Features**: Verify all endpoints work
+5. **Customize**: Add your branding and content
+
+---
+
+**Need Help?** Check MANIFEST.md for complete documentation or CURSOR_CONTEXT.md for detailed examples.

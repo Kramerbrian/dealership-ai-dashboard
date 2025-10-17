@@ -1,0 +1,233 @@
+-- ==============================================
+-- SEO System Optimizations
+-- Composite indexes and causal logging
+-- ==============================================
+
+-- Add composite index on (tenantId, variantId) for SeoVariantPrior
+CREATE INDEX IF NOT EXISTS idx_seo_variant_prior_tenant_variant 
+ON seo_variant_prior(tenant_id, variant_id);
+
+-- Add causal_id column to webhook metrics table for clean joins
+ALTER TABLE seo_metrics_webhook 
+ADD COLUMN IF NOT EXISTS causal_id UUID DEFAULT uuid_generate_v4();
+
+-- Add index on causal_id for fast lookups
+CREATE INDEX IF NOT EXISTS idx_seo_metrics_webhook_causal_id 
+ON seo_metrics_webhook(causal_id);
+
+-- Add causal_id to allocation tracking table
+ALTER TABLE seo_allocation_tracking 
+ADD COLUMN IF NOT EXISTS causal_id UUID DEFAULT uuid_generate_v4();
+
+-- Add index on causal_id for allocation tracking
+CREATE INDEX IF NOT EXISTS idx_seo_allocation_tracking_causal_id 
+ON seo_allocation_tracking(causal_id);
+
+-- Create view for causal analysis (allocations + outcomes)
+CREATE OR REPLACE VIEW v_seo_causal_analysis AS
+SELECT 
+    at.causal_id,
+    at.tenant_id,
+    at.variant_id,
+    at.traffic_allocation,
+    at.allocation_timestamp,
+    at.user_agent,
+    at.session_id,
+    COALESCE(mw.clicks, 0) as clicks,
+    COALESCE(mw.conversions, 0) as conversions,
+    COALESCE(mw.impressions, 0) as impressions,
+    COALESCE(mw.ctr, 0) as ctr,
+    COALESCE(mw.conversion_rate, 0) as conversion_rate,
+    COALESCE(mw.revenue, 0) as revenue,
+    mw.metrics_timestamp,
+    EXTRACT(EPOCH FROM (mw.metrics_timestamp - at.allocation_timestamp)) as time_to_outcome_seconds
+FROM seo_allocation_tracking at
+LEFT JOIN seo_metrics_webhook mw ON at.causal_id = mw.causal_id
+WHERE at.allocation_timestamp >= NOW() - INTERVAL '30 days';
+
+-- Add index on the view for performance
+CREATE INDEX IF NOT EXISTS idx_v_seo_causal_analysis_tenant_causal 
+ON seo_allocation_tracking(tenant_id, causal_id);
+
+-- Create function to generate causal_id for new allocations
+CREATE OR REPLACE FUNCTION generate_causal_id()
+RETURNS UUID AS $$
+BEGIN
+    RETURN uuid_generate_v4();
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create function to get causal performance summary
+CREATE OR REPLACE FUNCTION get_causal_performance(
+    p_tenant_id UUID,
+    p_days INTEGER DEFAULT 7
+)
+RETURNS TABLE (
+    variant_id TEXT,
+    total_allocations BIGINT,
+    total_clicks BIGINT,
+    total_conversions BIGINT,
+    avg_traffic_allocation NUMERIC,
+    avg_ctr NUMERIC,
+    avg_conversion_rate NUMERIC,
+    total_revenue NUMERIC,
+    performance_score NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        vca.variant_id,
+        COUNT(*) as total_allocations,
+        SUM(vca.clicks) as total_clicks,
+        SUM(vca.conversions) as total_conversions,
+        AVG(vca.traffic_allocation) as avg_traffic_allocation,
+        AVG(vca.ctr) as avg_ctr,
+        AVG(vca.conversion_rate) as avg_conversion_rate,
+        SUM(vca.revenue) as total_revenue,
+        -- Performance score: weighted combination of CTR and conversion rate
+        (AVG(vca.ctr) * 0.3 + AVG(vca.conversion_rate) * 0.7) as performance_score
+    FROM v_seo_causal_analysis vca
+    WHERE vca.tenant_id = p_tenant_id
+        AND vca.allocation_timestamp >= NOW() - (p_days || ' days')::INTERVAL
+    GROUP BY vca.variant_id
+    ORDER BY performance_score DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create function to clean up old causal data
+CREATE OR REPLACE FUNCTION cleanup_old_causal_data(
+    p_days_to_keep INTEGER DEFAULT 90
+)
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    -- Delete old allocation tracking data
+    DELETE FROM seo_allocation_tracking 
+    WHERE allocation_timestamp < NOW() - (p_days_to_keep || ' days')::INTERVAL;
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    
+    -- Delete old webhook metrics data
+    DELETE FROM seo_metrics_webhook 
+    WHERE metrics_timestamp < NOW() - (p_days_to_keep || ' days')::INTERVAL;
+    
+    GET DIAGNOSTICS deleted_count = deleted_count + ROW_COUNT;
+    
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to automatically generate causal_id for new allocations
+CREATE OR REPLACE FUNCTION trigger_generate_causal_id()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.causal_id IS NULL THEN
+        NEW.causal_id = generate_causal_id();
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply trigger to allocation tracking table
+DROP TRIGGER IF EXISTS trg_generate_causal_id_allocation ON seo_allocation_tracking;
+CREATE TRIGGER trg_generate_causal_id_allocation
+    BEFORE INSERT ON seo_allocation_tracking
+    FOR EACH ROW
+    EXECUTE FUNCTION trigger_generate_causal_id();
+
+-- Apply trigger to webhook metrics table
+DROP TRIGGER IF EXISTS trg_generate_causal_id_webhook ON seo_metrics_webhook;
+CREATE TRIGGER trg_generate_causal_id_webhook
+    BEFORE INSERT ON seo_metrics_webhook
+    FOR EACH ROW
+    EXECUTE FUNCTION trigger_generate_causal_id();
+
+-- Create materialized view for real-time SEO performance
+CREATE MATERIALIZED VIEW IF NOT EXISTS v_seo_performance_realtime AS
+SELECT 
+    tenant_id,
+    variant_id,
+    COUNT(*) as total_allocations,
+    SUM(clicks) as total_clicks,
+    SUM(conversions) as total_conversions,
+    AVG(traffic_allocation) as avg_traffic_allocation,
+    AVG(ctr) as avg_ctr,
+    AVG(conversion_rate) as avg_conversion_rate,
+    SUM(revenue) as total_revenue,
+    MAX(allocation_timestamp) as last_allocation,
+    MAX(metrics_timestamp) as last_metrics,
+    NOW() as view_refreshed_at
+FROM v_seo_causal_analysis
+WHERE allocation_timestamp >= NOW() - INTERVAL '24 hours'
+GROUP BY tenant_id, variant_id
+WITH NO DATA;
+
+-- Create index on the materialized view
+CREATE INDEX IF NOT EXISTS idx_v_seo_performance_realtime_tenant_variant 
+ON v_seo_performance_realtime(tenant_id, variant_id);
+
+-- Create function to refresh the materialized view
+CREATE OR REPLACE FUNCTION refresh_seo_performance_realtime()
+RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY v_seo_performance_realtime;
+    
+    -- Log the refresh
+    INSERT INTO system_logs (event_type, message, created_at)
+    VALUES ('seo_performance_refresh', 'SEO performance realtime view refreshed successfully', NOW());
+END;
+$$ LANGUAGE plpgsql;
+
+-- Add RLS policies for the new tables and views
+ALTER TABLE seo_allocation_tracking ENABLE ROW LEVEL SECURITY;
+ALTER TABLE seo_metrics_webhook ENABLE ROW LEVEL SECURITY;
+
+-- RLS policies for allocation tracking
+CREATE POLICY IF NOT EXISTS "Users can view their own allocation tracking" ON seo_allocation_tracking
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can insert their own allocation tracking" ON seo_allocation_tracking
+    FOR INSERT WITH CHECK (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- RLS policies for webhook metrics
+CREATE POLICY IF NOT EXISTS "Users can view their own webhook metrics" ON seo_metrics_webhook
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can insert their own webhook metrics" ON seo_metrics_webhook
+    FOR INSERT WITH CHECK (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- Comments and documentation
+COMMENT ON INDEX idx_seo_variant_prior_tenant_variant IS 'Composite index for fast lookups of variant priors by tenant and variant';
+COMMENT ON COLUMN seo_metrics_webhook.causal_id IS 'Unique identifier linking allocations to outcomes for causal analysis';
+COMMENT ON COLUMN seo_allocation_tracking.causal_id IS 'Unique identifier for tracking allocation outcomes';
+COMMENT ON VIEW v_seo_causal_analysis IS 'View joining allocations with outcomes for causal analysis';
+COMMENT ON FUNCTION get_causal_performance IS 'Returns performance summary for variants over specified time period';
+COMMENT ON FUNCTION cleanup_old_causal_data IS 'Cleans up old causal data to maintain performance';
+COMMENT ON MATERIALIZED VIEW v_seo_performance_realtime IS 'Real-time SEO performance metrics for last 24 hours';
+
+-- Sample data for testing (remove in production)
+INSERT INTO seo_allocation_tracking (
+    tenant_id, variant_id, traffic_allocation, user_agent, session_id
+) VALUES 
+(
+    '00000000-0000-0000-0000-000000000000'::uuid,
+    'variant_test_1',
+    0.4,
+    'Mozilla/5.0 (Test Browser)',
+    'session_123'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO seo_metrics_webhook (
+    tenant_id, variant_id, clicks, conversions, impressions, ctr, conversion_rate, revenue
+) VALUES 
+(
+    '00000000-0000-0000-0000-000000000000'::uuid,
+    'variant_test_1',
+    150,
+    12,
+    1000,
+    0.15,
+    0.08,
+    2500.00
+) ON CONFLICT DO NOTHING;

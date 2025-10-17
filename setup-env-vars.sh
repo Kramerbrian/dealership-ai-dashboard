@@ -1,42 +1,46 @@
 #!/bin/bash
 
-# Supabase Environment Variables Setup Script
-# Run this after rotating your Supabase keys
+# DealershipAI Environment Variables Setup Script
+# This script adds all required environment variables to Vercel
 
-echo "🔐 Supabase Environment Variables Setup"
-echo "========================================"
-echo ""
-echo "⚠️  IMPORTANT: You must have already rotated your Supabase service_role key!"
-echo "    Go to: https://supabase.com/dashboard/project/gzlgfghpkbqlhgfozjkb/settings/api"
-echo ""
-echo "This script will help you add the required environment variables to Vercel."
-echo ""
+echo "🚀 Setting up DealershipAI Environment Variables in Vercel..."
 
-# Confirm before proceeding
-read -p "Have you rotated the service_role key? (yes/no): " confirm
-if [ "$confirm" != "yes" ]; then
-    echo "❌ Please rotate the key first, then run this script again."
-    exit 1
-fi
+# Core Ory Configuration
+echo "Adding Ory configuration variables..."
+vercel env add ORY_SDK_URL production <<< "https://optimistic-haslett-3r8udelhc2.projects.oryapis.com"
+vercel env add NEXT_PUBLIC_ORY_SDK_URL production <<< "https://optimistic-haslett-3r8udelhc2.projects.oryapis.com"
+vercel env add ORY_PROJECT_ID production <<< "360ebb8f-2337-48cd-9d25-fba49a262f9c"
+vercel env add ORY_WORKSPACE_ID production <<< "83af532a-eee6-4ad8-96c4-f4802a90940a"
 
-echo ""
-echo "📝 Adding SUPABASE_URL..."
-echo "Value: https://gzlgfghpkbqlhgfozjkb.supabase.co"
-echo "https://gzlgfghpkbqlhgfozjkb.supabase.co" | vercel env add SUPABASE_URL production
+# JWT Configuration
+echo "Adding JWT configuration..."
+vercel env add JWT_SECRET production <<< "dealershipai-jwt-secret-key-2024-production"
 
-echo ""
-echo "📝 Adding SUPABASE_ANON_KEY..."
-echo "Please paste your anon key (from Supabase dashboard):"
-vercel env add SUPABASE_ANON_KEY production
+# Ory API Keys (placeholder - you need to get these from Ory Console)
+echo "Adding Ory API keys (you need to update these with real values)..."
+vercel env add ORY_API_KEY production <<< "your_ory_api_key_here"
+vercel env add ORY_WEBHOOK_SECRET production <<< "your_webhook_secret_here"
 
-echo ""
-echo "📝 Adding SUPABASE_SERVICE_KEY..."
-echo "⚠️  CRITICAL: Paste your NEW service_role key (not the old one!):"
-vercel env add SUPABASE_SERVICE_KEY production
+# Database Configuration (placeholder - update with your actual values)
+echo "Adding database configuration (update with your actual values)..."
+vercel env add DATABASE_URL production <<< "your_supabase_connection_string"
+vercel env add SUPABASE_URL production <<< "your_supabase_url"
+vercel env add SUPABASE_ANON_KEY production <<< "your_supabase_anon_key"
+vercel env add SUPABASE_SERVICE_ROLE_KEY production <<< "your_supabase_service_role_key"
 
+# Redis Cache Configuration (placeholder - update with your actual values)
+echo "Adding Redis configuration (update with your actual values)..."
+vercel env add UPSTASH_REDIS_REST_URL production <<< "your_redis_url"
+vercel env add UPSTASH_REDIS_REST_TOKEN production <<< "your_redis_token"
+
+echo "✅ Environment variables setup complete!"
 echo ""
-echo "✅ Environment variables added successfully!"
+echo "📋 Next Steps:"
+echo "1. Go to Ory Console: https://console.ory.sh"
+echo "2. Select Project: optimistic-haslett-3r8udelhc2"
+echo "3. Get API Key from Settings → API Keys"
+echo "4. Get Webhook Secret from Settings → Webhooks"
+echo "5. Update ORY_API_KEY and ORY_WEBHOOK_SECRET in Vercel dashboard"
+echo "6. Update database and Redis variables with your actual values"
 echo ""
-echo "🚀 Next step: Redeploy your application"
-echo "   Run: vercel --prod"
-echo ""
+echo "🔗 Vercel Dashboard: https://vercel.com/brian-kramers-projects/dealershipai-dashboard/settings/environment-variables"

@@ -1,0 +1,9 @@
+{
+  "version": "2025-10-14",
+  "regions": {
+    "US": { "engineMix": { "google": 0.94 }, "currency": "USD", "schema": { "priceCurrency": "USD" }, "reviewPlatforms": ["Google","DealerRater","Yelp"] },
+    "CA": { "engineMix": { "google": 0.95 }, "currency": "CAD", "schema": { "priceCurrency": "CAD" }, "reviewPlatforms": ["Google","AutoTrader.ca","Kijiji"] },
+    "UK": { "engineMix": { "google": 0.95 }, "currency": "GBP", "schema": { "priceCurrency": "GBP" }, "reviewPlatforms": ["Google","AutoTrader UK"] },
+    "AU": { "engineMix": { "google": 0.93 }, "currency": "AUD", "schema": { "priceCurrency": "AUD" }, "reviewPlatforms": ["Google","CarsGuide","TrueLocal"] }
+  }
+}

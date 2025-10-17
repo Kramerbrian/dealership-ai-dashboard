@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS aoer_summary (
     visibility_risk DECIMAL(3,2) NOT NULL CHECK (visibility_risk >= 0 AND visibility_risk <= 1),
     last_updated TIMESTAMPTZ NOT NULL,
     metrics JSONB NOT NULL DEFAULT '{}',
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Metrics Events table - tracks all AOER computation events
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS metrics_events (
     tenant_id UUID NOT NULL,
     event_type VARCHAR(50) NOT NULL,
     event_data JSONB NOT NULL DEFAULT '{}',
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- AOER Queue table - tracks queued recomputation jobs
@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS aoer_queue (
     started_at TIMESTAMPTZ,
     completed_at TIMESTAMPTZ,
     error_message TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- AOER Failures table - tracks failed computations
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS aoer_failures (
     error_message TEXT NOT NULL,
     error_data JSONB DEFAULT '{}',
     retry_count INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create indexes for better performance
@@ -207,9 +207,9 @@ BEGIN
         aoer_result.tenant_id,
         aoer_result.aoer_score,
         aoer_result.visibility_risk,
-        CURRENT_TIMESTAMPTZ,
+        NOW(),
         aoer_result.metrics,
-        CURRENT_TIMESTAMPTZ
+        NOW()
     )
     ON CONFLICT (tenant_id) 
     DO UPDATE SET
@@ -266,7 +266,7 @@ BEGIN
     ) VALUES (
         tenant_uuid,
         priority_level,
-        CURRENT_TIMESTAMPTZ
+        NOW()
     ) RETURNING id INTO queue_id;
 
     RETURN queue_id;
@@ -319,19 +319,19 @@ ALTER TABLE aoer_failures ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies for aoer_summary
 CREATE POLICY "Users can view their own AOER summary" ON aoer_summary
-    FOR SELECT USING (tenant_id = auth.jwt() ->> 'tenant_id'::text);
+    FOR SELECT USING (tenant_id::text = auth.jwt() ->> 'tenant_id'::text);
 
 -- RLS policies for metrics_events
 CREATE POLICY "Users can view their own metrics events" ON metrics_events
-    FOR SELECT USING (tenant_id = auth.jwt() ->> 'tenant_id'::text);
+    FOR SELECT USING (tenant_id::text = auth.jwt() ->> 'tenant_id'::text);
 
 -- RLS policies for aoer_queue
 CREATE POLICY "Users can view their own queue items" ON aoer_queue
-    FOR SELECT USING (tenant_id = auth.jwt() ->> 'tenant_id'::text);
+    FOR SELECT USING (tenant_id::text = auth.jwt() ->> 'tenant_id'::text);
 
 -- RLS policies for aoer_failures
 CREATE POLICY "Users can view their own failures" ON aoer_failures
-    FOR SELECT USING (tenant_id = auth.jwt() ->> 'tenant_id'::text);
+    FOR SELECT USING (tenant_id::text = auth.jwt() ->> 'tenant_id'::text);
 
 -- Log completion
 DO $$

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealershipAI Dashboard - Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .metric-card { background: linear-gradient(145deg, #f8fafc, #e2e8f0); }
+        .status-good { color: #059669; }
+        .status-warning { color: #d97706; }
+        .status-critical { color: #dc2626; }
+    </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 border-b border-slate-700 bg-slate-950/85 backdrop-blur">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-lg gradient-bg"></div>
+                <div class="text-lg font-semibold">dealership<span class="font-bold text-blue-400">AI</span></div>
+            </div>
+            <nav class="hidden md:flex items-center gap-6 text-sm text-slate-300">
+                <a href="#dashboard" class="hover:text-white">Dashboard</a>
+                <a href="#analytics" class="hover:text-white">Analytics</a>
+                <a href="#automation" class="hover:text-white">Automation</a>
+                <a href="#settings" class="hover:text-white">Settings</a>
+            </nav>
+            <div class="flex items-center gap-3">
+                <div class="text-sm text-slate-400">naplesfordfl.com</div>
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold">NF</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Dashboard Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">AI Visibility Dashboard</h1>
+            <p class="text-slate-400">Track visibility across 6 AI engines with real-time scoring</p>
+        </div>
+
+        <!-- Key Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- AIV Score -->
+            <div class="metric-card rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-800">AIV™ Score</h3>
+                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-2xl">🧠</span>
+                    </div>
+                </div>
+                <div class="text-3xl font-bold text-slate-900 mb-2">85.2</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-green-600 font-medium">↑ +5.2</span>
+                    <span class="text-sm text-slate-600">vs last week</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: 85%"></div>
+                </div>
+            </div>
+
+            <!-- ATI Score -->
+            <div class="metric-card rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-800">ATI™ Score</h3>
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <span class="text-2xl">🛡️</span>
+                    </div>
+                </div>
+                <div class="text-3xl font-bold text-slate-900 mb-2">78.9</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-green-600 font-medium">↑ +2.1</span>
+                    <span class="text-sm text-slate-600">vs last week</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
+                    <div class="bg-green-600 h-2 rounded-full" style="width: 79%"></div>
+                </div>
+            </div>
+
+            <!-- CRS Score -->
+            <div class="metric-card rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-800">CRS™ Score</h3>
+                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                        <span class="text-2xl">⭐</span>
+                    </div>
+                </div>
+                <div class="text-3xl font-bold text-slate-900 mb-2">82.1</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-green-600 font-medium">↑ +3.4</span>
+                    <span class="text-sm text-slate-600">vs last week</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
+                    <div class="bg-purple-600 h-2 rounded-full" style="width: 82%"></div>
+                </div>
+            </div>
+
+            <!-- ITI Score -->
+            <div class="metric-card rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-800">ITI™ Score</h3>
+                    <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                        <span class="text-2xl">🚗</span>
+                    </div>
+                </div>
+                <div class="text-3xl font-bold text-slate-900 mb-2">76.5</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-yellow-600 font-medium">↑ +1.2</span>
+                    <span class="text-sm text-slate-600">vs last week</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
+                    <div class="bg-orange-600 h-2 rounded-full" style="width: 77%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Engine Performance -->
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">AI Engine Performance</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-2">
+                        <span class="text-2xl">🤖</span>
+                    </div>
+                    <div class="text-sm font-medium">ChatGPT</div>
+                    <div class="text-lg font-bold text-green-600">3rd</div>
+                    <div class="text-xs text-slate-400">247 mentions</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-2">
+                        <span class="text-2xl">🧠</span>
+                    </div>
+                    <div class="text-sm font-medium">Claude</div>
+                    <div class="text-lg font-bold text-blue-600">5th</div>
+                    <div class="text-xs text-slate-400">89 mentions</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-2">
+                        <span class="text-2xl">🔍</span>
+                    </div>
+                    <div class="text-sm font-medium">Perplexity</div>
+                    <div class="text-lg font-bold text-purple-600">2nd</div>
+                    <div class="text-xs text-slate-400">156 mentions</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-2">
+                        <span class="text-2xl">⚡</span>
+                    </div>
+                    <div class="text-sm font-medium">Copilot</div>
+                    <div class="text-lg font-bold text-orange-600">4th</div>
+                    <div class="text-xs text-slate-400">78 mentions</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-2">
+                        <span class="text-2xl">💎</span>
+                    </div>
+                    <div class="text-sm font-medium">Gemini</div>
+                    <div class="text-lg font-bold text-red-600">6th</div>
+                    <div class="text-xs text-slate-400">45 mentions</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-2">
+                        <span class="text-2xl">🚀</span>
+                    </div>
+                    <div class="text-sm font-medium">Grok</div>
+                    <div class="text-lg font-bold text-gray-600">7th</div>
+                    <div class="text-xs text-slate-400">23 mentions</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- What Changed Analyzer -->
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-semibold mb-4">What Changed?</h2>
+                <div class="space-y-4">
+                    <div class="border-t pt-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium">AI Visibility</span>
+                                    <span class="text-sm font-semibold text-red-600">↓ -7</span>
+                                    <span class="px-2 py-1 rounded text-xs bg-red-50 text-red-600 border border-red-200">high</span>
+                                </div>
+                                <div class="text-xs text-slate-400 mt-1">Schema coverage dropped on 12 VDPs</div>
+                                <div class="text-xs text-slate-500 mt-1">$2.4K monthly revenue at risk</div>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded">Recover AI Citations</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t pt-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium">Trust Score</span>
+                                    <span class="text-sm font-semibold text-red-600">↓ -3</span>
+                                    <span class="px-2 py-1 rounded text-xs bg-yellow-50 text-yellow-600 border border-yellow-200">medium</span>
+                                </div>
+                                <div class="text-xs text-slate-400 mt-1">3 unaddressed negative reviews</div>
+                                <div class="text-xs text-slate-500 mt-1">$1.2K monthly revenue at risk</div>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded">Review Response Optimization</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t pt-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium">Offer Integrity</span>
+                                    <span class="text-sm font-semibold text-green-600">↑ +6</span>
+                                    <span class="px-2 py-1 rounded text-xs bg-green-50 text-green-600 border border-green-200">positive</span>
+                                </div>
+                                <div class="text-xs text-slate-400 mt-1">Price sync fixed across feeds</div>
+                                <div class="text-xs text-slate-500 mt-1">+$1.8K monthly revenue gain</div>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded">None (auto-resolved)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fix Loop Executor -->
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-semibold mb-4">Fix Loop Executor</h2>
+                <div class="space-y-4">
+                    <div class="flex gap-2">
+                        <select class="border rounded p-2 text-sm flex-1 bg-slate-800 text-white border-slate-600">
+                            <option>Recover AI Citations</option>
+                            <option>Review Response Optimization</option>
+                            <option>Zero-Click Win</option>
+                            <option>Citation Recovery</option>
+                            <option>Diagnostic Sweep</option>
+                        </select>
+                        <button class="px-4 py-2 rounded bg-slate-700 text-white text-sm hover:bg-slate-600">Dry Run</button>
+                        <button class="px-4 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">Execute</button>
+                    </div>
+                    <div class="text-sm text-slate-300 border-t pt-3">
+                        <div class="font-medium">Previewing changes for playbook: Recover AI Citations</div>
+                        <div class="grid grid-cols-2 gap-2 text-xs mt-2">
+                            <div><span class="font-medium">Total Time:</span> 55 min</div>
+                            <div><span class="font-medium">Risk Level:</span> <span class="px-2 py-1 rounded bg-green-50 text-green-600">low</span></div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="font-medium mb-1">Actions:</div>
+                            <ul class="list-disc pl-5 text-xs text-slate-400 space-y-1">
+                                <li class="flex justify-between items-center">
+                                    <span>Inject JSON-LD into 12 VDPs</span>
+                                    <div class="flex gap-2 text-xs">
+                                        <span class="text-slate-500">15 min</span>
+                                        <span class="px-1 py-0.5 rounded bg-green-50 text-green-600">low</span>
+                                    </div>
+                                </li>
+                                <li class="flex justify-between items-center">
+                                    <span>Add 40–60 word direct answers to comparison pages</span>
+                                    <div class="flex gap-2 text-xs">
+                                        <span class="text-slate-500">30 min</span>
+                                        <span class="px-1 py-0.5 rounded bg-green-50 text-green-600">low</span>
+                                    </div>
+                                </li>
+                                <li class="flex justify-between items-center">
+                                    <span>Update FAQ schema markup on service pages</span>
+                                    <div class="flex gap-2 text-xs">
+                                        <span class="text-slate-500">10 min</span>
+                                        <span class="px-1 py-0.5 rounded bg-green-50 text-green-600">low</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot Parity Monitor -->
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Bot Parity Monitor</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600 mb-1">92%</div>
+                    <div class="text-sm text-slate-400">Parity Score</div>
+                    <div class="w-full bg-slate-700 rounded-full h-2 mt-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600 mb-1">GPTBot</div>
+                    <div class="text-sm text-slate-400">Weakest Bot</div>
+                    <div class="text-xs text-slate-500 mt-1">Trails by 8%</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600 mb-1">8</div>
+                    <div class="text-sm text-slate-400">URLs Analyzed</div>
+                    <div class="text-xs text-slate-500 mt-1">Schema issues found</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="glass rounded-2xl p-6">
+            <h2 class="text-xl font-semibold mb-4">Recent Activity</h2>
+            <div class="space-y-4">
+                <div class="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <span class="text-sm">✅</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium">Schema optimization completed</div>
+                        <div class="text-xs text-slate-400">12 VDPs updated with JSON-LD markup</div>
+                    </div>
+                    <div class="text-xs text-slate-500">2 min ago</div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-sm">📊</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium">Weekly scan completed</div>
+                        <div class="text-xs text-slate-400">AI visibility score: 85.2 (+5.2)</div>
+                    </div>
+                    <div class="text-xs text-slate-500">1 hour ago</div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                    <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                        <span class="text-sm">⚠️</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium">Bot parity alert</div>
+                        <div class="text-xs text-slate-400">GPTBot schema coverage dropped to 84%</div>
+                    </div>
+                    <div class="text-xs text-slate-500">3 hours ago</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-700 mt-16">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="text-center text-slate-400">
+                <p>DealershipAI Dashboard - Production Ready</p>
+                <p class="text-sm mt-2">Multi-tenant SaaS platform for automotive dealerships</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate metric cards on load
+            const cards = document.querySelectorAll('.metric-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.5s ease';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+
+            // Add hover effects to buttons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-1px)';
+                });
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

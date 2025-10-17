@@ -4,7 +4,7 @@
 -- Raw signals table for ingesting fresh data
 CREATE TABLE aiv_raw_signals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  dealer_id UUID NOT NULL,
+  dealer_id TEXT NOT NULL,
   date DATE NOT NULL,
   seo NUMERIC(5,2),
   aeo NUMERIC(5,2),
@@ -49,7 +49,7 @@ CREATE TABLE model_audit (
   run_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   run_date TIMESTAMPTZ DEFAULT NOW(),
   run_type TEXT NOT NULL, -- 'reinforce', 'evaluate', 'predict', 'anomaly'
-  dealer_id UUID,
+  dealer_id TEXT,
   rmse NUMERIC(5,2),
   mape NUMERIC(5,2),
   r2 NUMERIC(4,3),
@@ -57,18 +57,13 @@ CREATE TABLE model_audit (
   accuracy_gain_mom NUMERIC(5,2), -- Month over month
   model_version TEXT DEFAULT 'v1.0',
   notes TEXT,
-  metadata JSONB,
-  
-  -- Index for performance
-  INDEX idx_model_audit_date (run_date),
-  INDEX idx_model_audit_type (run_type),
-  INDEX idx_model_audit_dealer (dealer_id)
+  metadata JSONB
 );
 
 -- Anomaly detection results
 CREATE TABLE anomaly_detection (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  dealer_id UUID NOT NULL,
+  dealer_id TEXT NOT NULL,
   detection_date TIMESTAMPTZ DEFAULT NOW(),
   anomaly_type TEXT NOT NULL, -- 'velocity_spike', 'sentiment_anomaly', 'fraud_probability'
   severity TEXT NOT NULL, -- 'low', 'medium', 'high', 'critical'
@@ -77,17 +72,13 @@ CREATE TABLE anomaly_detection (
   evidence JSONB,
   resolved BOOLEAN DEFAULT FALSE,
   resolved_at TIMESTAMPTZ,
-  resolved_by UUID,
-  
-  INDEX idx_anomaly_dealer_date (dealer_id, detection_date),
-  INDEX idx_anomaly_severity (severity),
-  INDEX idx_anomaly_resolved (resolved)
+  resolved_by UUID
 );
 
 -- Predictive forecasts storage
 CREATE TABLE predictive_forecasts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  dealer_id UUID NOT NULL,
+  dealer_id TEXT NOT NULL,
   forecast_date DATE NOT NULL,
   predicted_aiv NUMERIC(5,2),
   confidence_interval_lower NUMERIC(5,2),
@@ -98,14 +89,13 @@ CREATE TABLE predictive_forecasts (
   model_accuracy NUMERIC(3,2),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   
-  UNIQUE(dealer_id, forecast_date),
-  INDEX idx_forecast_dealer_date (dealer_id, forecast_date)
+  UNIQUE(dealer_id, forecast_date)
 );
 
 -- Reinforcement learning history
 CREATE TABLE reinforcement_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  dealer_id UUID NOT NULL,
+  dealer_id TEXT NOT NULL,
   training_date TIMESTAMPTZ DEFAULT NOW(),
   old_weights JSONB NOT NULL,
   new_weights JSONB NOT NULL,
@@ -113,9 +103,7 @@ CREATE TABLE reinforcement_history (
   learning_rate NUMERIC(6,4),
   gradient_magnitude NUMERIC(8,4),
   convergence_metric NUMERIC(8,4),
-  training_samples INTEGER,
-  
-  INDEX idx_reinforcement_dealer_date (dealer_id, training_date)
+  training_samples INTEGER
 );
 
 -- Row Level Security (RLS) policies
@@ -129,7 +117,7 @@ ALTER TABLE reinforcement_history ENABLE ROW LEVEL SECURITY;
 -- RLS Policies (adjust based on your auth system)
 CREATE POLICY "Users can view their own dealer data" ON aiv_raw_signals
   FOR SELECT USING (dealer_id IN (
-    SELECT dealer_id FROM user_dealers WHERE user_id = auth.uid()
+    SELECT dealer_id FROM dealer_access WHERE user_id = auth.uid() AND active = TRUE
   ));
 
 CREATE POLICY "Service role can manage all data" ON aiv_raw_signals
@@ -154,7 +142,7 @@ CREATE POLICY "Service role can manage reinforcement" ON reinforcement_history
 -- Functions for automated processing
 
 -- Function to compute 8-week rolling regression
-CREATE OR REPLACE FUNCTION recompute_elasticity_8w(dealer_uuid UUID)
+CREATE OR REPLACE FUNCTION recompute_elasticity_8w(dealer_uuid TEXT)
 RETURNS TABLE (
   slope NUMERIC,
   r2 NUMERIC,
@@ -230,7 +218,7 @@ $$ LANGUAGE plpgsql;
 
 -- Function to update model weights using reinforcement learning
 CREATE OR REPLACE FUNCTION update_model_weights(
-  dealer_uuid UUID,
+  dealer_uuid TEXT,
   reward_signal NUMERIC,
   learning_rate NUMERIC DEFAULT 0.1
 )
@@ -334,7 +322,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function to detect anomalies in review data
-CREATE OR REPLACE FUNCTION detect_review_anomalies(dealer_uuid UUID)
+CREATE OR REPLACE FUNCTION detect_review_anomalies(dealer_uuid TEXT)
 RETURNS TABLE (
   anomaly_type TEXT,
   severity TEXT,
@@ -406,8 +394,15 @@ CREATE INDEX idx_aiv_raw_signals_dealer_date ON aiv_raw_signals(dealer_id, date)
 CREATE INDEX idx_aiv_raw_signals_date ON aiv_raw_signals(date);
 CREATE INDEX idx_model_weights_date ON model_weights(asof_date);
 CREATE INDEX idx_model_audit_run_date ON model_audit(run_date);
+CREATE INDEX idx_model_audit_type ON model_audit(run_type);
+CREATE INDEX idx_model_audit_dealer ON model_audit(dealer_id);
 CREATE INDEX idx_anomaly_detection_dealer ON anomaly_detection(dealer_id);
+CREATE INDEX idx_anomaly_dealer_date ON anomaly_detection(dealer_id, detection_date);
+CREATE INDEX idx_anomaly_severity ON anomaly_detection(severity);
+CREATE INDEX idx_anomaly_resolved ON anomaly_detection(resolved);
 CREATE INDEX idx_predictive_forecasts_dealer ON predictive_forecasts(dealer_id);
+CREATE INDEX idx_forecast_dealer_date ON predictive_forecasts(dealer_id, forecast_date);
+CREATE INDEX idx_reinforcement_dealer_date ON reinforcement_history(dealer_id, training_date);
 
 -- Insert initial model weights
 INSERT INTO model_weights (asof_date, seo_w, aeo_w, geo_w, ugc_w, geolocal_w, r2, rmse)

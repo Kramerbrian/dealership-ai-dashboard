@@ -2,7 +2,7 @@
 
 **Single comprehensive platform - build entire production SaaS in ~30 minutes**
 
-## 🎯 Mission: Build Bloomberg Terminal for Automotive AI Visibility
+## 🎯 Mission: Build AI-Powered Competitive Intelligence for Automotive Dealerships
 
 Create a production-ready SaaS platform that tracks dealership visibility across AI assistants with **90-95% accuracy** and **95%+ profit margins**.
 

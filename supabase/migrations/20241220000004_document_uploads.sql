@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS document_uploads (
     upload_status VARCHAR(50) DEFAULT 'uploading', -- uploading, processing, completed, error
     analysis_data JSONB, -- AI analysis results
     error_message TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create document analysis cache table
@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS document_analysis_cache (
     analysis_type VARCHAR(100) NOT NULL, -- summary, insights, recommendations, sentiment
     analysis_result JSONB NOT NULL,
     confidence_score DECIMAL(5,2),
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    expires_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMPTZ + INTERVAL '30 days')
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '30 days')
 );
 
 -- Create document insights table (for storing insights generated from documents)
@@ -49,8 +49,8 @@ CREATE TABLE IF NOT EXISTS document_insights (
     action_text TEXT,
     tags TEXT[],
     metadata JSONB,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (document_upload_id) REFERENCES document_uploads(id) ON DELETE CASCADE
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS document_categories (
     description TEXT,
     color VARCHAR(7), -- hex color code
     icon VARCHAR(50), -- icon name
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Insert default document categories
@@ -305,7 +305,7 @@ DECLARE
     deleted_count INTEGER;
 BEGIN
     DELETE FROM document_analysis_cache 
-    WHERE expires_at < CURRENT_TIMESTAMPTZ;
+    WHERE expires_at < NOW();
     
     GET DIAGNOSTICS deleted_count = ROW_COUNT;
     

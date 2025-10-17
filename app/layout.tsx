@@ -1,49 +1,22 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { SessionProvider } from '@/lib/session-provider';
-import './globals.css';
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import Providers from './providers'
+import { Analytics } from '@vercel/analytics/react'
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: ['system-ui', 'arial']
+})
 
 export const metadata: Metadata = {
-  title: 'DealershipAI - Dominate AI Search for Car Dealerships',
-  description: 'The only AI visibility platform built specifically for car dealerships. Get cited by ChatGPT, Claude, and Perplexity when customers search for your services.',
-  keywords: 'AI search, car dealership, ChatGPT, Claude, Perplexity, AI visibility, automotive marketing',
+  title: 'DealershipAI - Transform Your Dealership with AI-Powered Analytics',
+  description: 'Get comprehensive AI-powered analytics for your dealership. Track SEO, social media, customer engagement, and boost your online presence with DealershipAI. Join 500+ dealerships already winning with AI.',
+  keywords: ['dealership', 'AI', 'analytics', 'automotive', 'marketing', 'visibility', 'SEO', 'Google SGE', 'ChatGPT', 'Perplexity', 'AI search', 'local marketing', 'dealership marketing'],
   authors: [{ name: 'DealershipAI Team' }],
   creator: 'DealershipAI',
   publisher: 'DealershipAI',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL('https://dash.dealershipai.com'),
-  alternates: {
-    canonical: '/',
-  },
-  openGraph: {
-    title: 'DealershipAI - Dominate AI Search for Car Dealerships',
-    description: 'The only AI visibility platform built specifically for car dealerships. Get cited by ChatGPT, Claude, and Perplexity when customers search for your services.',
-    url: 'https://dash.dealershipai.com',
-    siteName: 'DealershipAI',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'DealershipAI - AI Visibility Platform for Car Dealerships',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'DealershipAI - Dominate AI Search for Car Dealerships',
-    description: 'The only AI visibility platform built specifically for car dealerships. Get cited by ChatGPT, Claude, and Perplexity when customers search for your services.',
-    images: ['/og-image.jpg'],
-    creator: '@dealershipai',
-  },
   robots: {
     index: true,
     follow: true,
@@ -55,46 +28,61 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  openGraph: {
+    title: 'DealershipAI - Transform Your Dealership with AI-Powered Analytics',
+    description: 'Get comprehensive AI-powered analytics for your dealership. Track SEO, social media, customer engagement, and boost your online presence with DealershipAI.',
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://dealershipai.com',
+    siteName: 'DealershipAI',
+    images: [
+      {
+        url: 'https://dealershipai.com/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'DealershipAI - AI-Powered Analytics for Dealerships',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DealershipAI - Transform Your Dealership with AI-Powered Analytics',
+    description: 'Get comprehensive AI-powered analytics for your dealership. Track SEO, social media, customer engagement, and boost your online presence.',
+    images: ['https://dealershipai.com/twitter-image.jpg'],
+    creator: '@dealershipai',
+  },
+  alternates: {
+    canonical: 'https://dealershipai.com',
+  },
   verification: {
     google: 'your-google-verification-code',
   },
-};
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#3b82f6" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-        {/* Theme initialization - prevents flash of wrong theme */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-(function(){
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const saved = localStorage.getItem('theme');
-  const mode = saved ?? (prefersDark ? 'dark' : 'light');
-  document.documentElement.classList.toggle('dark', mode==='dark');
-})();
-`,
-          }}
-        />
+        {process.env.NEXT_PUBLIC_GA && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA}`} />
+            <script dangerouslySetInnerHTML={{__html:`
+              window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+              gtag('js', new Date()); gtag('config','${process.env.NEXT_PUBLIC_GA}');
+            `}} />
+          </>
+        )}
       </head>
-      <body className={`${inter.className} antialiased`}>
-        <SessionProvider>
+      <body className={inter.className}>
+        <Providers>
           {children}
-        </SessionProvider>
+        </Providers>
+        <Analytics />
       </body>
     </html>
-  );
+  )
 }

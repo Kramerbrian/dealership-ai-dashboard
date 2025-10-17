@@ -1,0 +1,382 @@
+-- DTRI-MAXIMUS Micro-Segmentation and Autonomous Feedback Loop
+-- Precision Revenue Streams + Self-Optimizing System
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ==============================================
+-- MICRO-SEGMENTATION FOR PRECISION (REVENUE STREAMS)
+-- ==============================================
+
+-- Micro-Segmented DTRI Scores
+CREATE TABLE IF NOT EXISTS dtri_micro_segmented_scores (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    segment_type VARCHAR(20) NOT NULL CHECK (segment_type IN ('sales', 'service', 'leads', 'lifetime_value')),
+    segment_name VARCHAR(100) NOT NULL, -- 'Sales Trust Score (DTRI-S)', 'Service Trust Score (DTRI-F)', etc.
+    dtri_score DECIMAL(5,2) NOT NULL CHECK (dtri_score >= 0 AND dtri_score <= 100),
+    primary_financial_link VARCHAR(100) NOT NULL, -- 'Sales GPPU', 'Fixed Ops GP/RO', 'CAC Efficiency', 'Customer Lifetime Value'
+    calculation_components JSONB NOT NULL, -- Weighted components for this segment
+    avg_gp_per_unit DECIMAL(10,2) NOT NULL, -- Segment-specific GP (e.g., $450 for Service RO)
+    calculation_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, segment_type, calculation_date)
+);
+
+-- Segmented Lead Flow Quantification
+CREATE TABLE IF NOT EXISTS dtri_segmented_lead_flow (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    segment_type VARCHAR(20) NOT NULL CHECK (segment_type IN ('sales', 'service')),
+    delta_leads INTEGER NOT NULL, -- Change in leads for this segment
+    dtri_gp_per_unit DECIMAL(10,2) NOT NULL, -- DTRI-S GP or DTRI-F GP
+    profit_lift DECIMAL(12,2) GENERATED ALWAYS AS (delta_leads * dtri_gp_per_unit) STORED,
+    calculation_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, segment_type, calculation_date)
+);
+
+-- Micro-Segmented Beta Coefficients
+CREATE TABLE IF NOT EXISTS dtri_micro_beta_coefficients (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    metric_name VARCHAR(100) NOT NULL, -- 'VDP_Speed_Score_LCP', 'FTFR_Proxy', etc.
+    segment_type VARCHAR(20) NOT NULL CHECK (segment_type IN ('sales', 'service', 'leads', 'lifetime_value')),
+    beta_coefficient DECIMAL(6,4) NOT NULL, -- Precision coefficient (e.g., 0.008 for 0.8% CR lift)
+    confidence_score DECIMAL(3,2) NOT NULL CHECK (confidence_score >= 0 AND confidence_score <= 1),
+    sample_size INTEGER NOT NULL,
+    last_calibrated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, metric_name, segment_type)
+);
+
+-- ==============================================
+-- AUTONOMOUS FEEDBACK LOOP (SELF-OPTIMIZING SYSTEM)
+-- ==============================================
+
+-- Closed-Loop Beta Coefficient Recalibration
+CREATE TABLE IF NOT EXISTS dtri_beta_recalibration (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    metric_name VARCHAR(100) NOT NULL,
+    segment_type VARCHAR(20) NOT NULL CHECK (segment_type IN ('sales', 'service', 'leads', 'lifetime_value')),
+    original_beta DECIMAL(6,4) NOT NULL,
+    predicted_impact DECIMAL(6,4) NOT NULL, -- Predicted CR lift, GP increase, etc.
+    actual_impact DECIMAL(6,4) NOT NULL, -- Actual measured impact after 90 days
+    new_beta DECIMAL(6,4) GENERATED ALWAYS AS (
+        CASE 
+            WHEN actual_impact != 0 THEN actual_impact / NULLIF(predicted_impact, 0)
+            ELSE original_beta
+        END
+    ) STORED,
+    recalibration_factor DECIMAL(6,4) GENERATED ALWAYS AS (
+        CASE 
+            WHEN predicted_impact != 0 THEN actual_impact / predicted_impact
+            ELSE 1.0
+        END
+    ) STORED,
+    validation_period_days INTEGER DEFAULT 90,
+    recommendation_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    validation_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    is_applied BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Recommendation Tracking
+CREATE TABLE IF NOT EXISTS dtri_recommendation_tracking (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    recommendation_id VARCHAR(100) NOT NULL,
+    intervention_type VARCHAR(100) NOT NULL, -- 'Fix VDP Speed', 'Improve FTFR', etc.
+    predicted_metric_change DECIMAL(6,4) NOT NULL, -- Predicted CR lift, GP increase, etc.
+    predicted_impact_dollars DECIMAL(12,2) NOT NULL,
+    implementation_date TIMESTAMP WITH TIME ZONE,
+    tracking_start_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    validation_due_date TIMESTAMP WITH TIME ZONE GENERATED ALWAYS AS (tracking_start_date + INTERVAL '90 days') STORED,
+    status VARCHAR(20) DEFAULT 'tracking' CHECK (status IN ('tracking', 'validating', 'completed', 'failed')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, recommendation_id)
+);
+
+-- ==============================================
+-- SENTINEL AGENT (24/7 MONITORING)
+-- ==============================================
+
+-- Autonomous Risk Thresholds
+CREATE TABLE IF NOT EXISTS dtri_sentinel_thresholds (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    metric_name VARCHAR(100) NOT NULL,
+    threshold_type VARCHAR(20) NOT NULL CHECK (threshold_type IN ('minimum', 'maximum', 'percentage_change')),
+    threshold_value DECIMAL(10,4) NOT NULL,
+    breach_action VARCHAR(100) NOT NULL, -- 'Alert CTO and CMO', 'Launch QAI-PROC audit', etc.
+    alert_message TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    last_checked TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, metric_name)
+);
+
+-- Sentinel Alert History
+CREATE TABLE IF NOT EXISTS dtri_sentinel_alerts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    threshold_id UUID REFERENCES dtri_sentinel_thresholds(id),
+    metric_name VARCHAR(100) NOT NULL,
+    current_value DECIMAL(10,4) NOT NULL,
+    threshold_value DECIMAL(10,4) NOT NULL,
+    breach_severity VARCHAR(20) NOT NULL CHECK (breach_severity IN ('low', 'medium', 'high', 'critical')),
+    alert_message TEXT NOT NULL,
+    action_taken TEXT,
+    is_resolved BOOLEAN DEFAULT false,
+    resolved_date TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- TSM Sentinel Monitoring
+CREATE TABLE IF NOT EXISTS dtri_tsm_sentinel (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    tsm_value DECIMAL(3,2) NOT NULL,
+    stress_level VARCHAR(20) NOT NULL CHECK (stress_level IN ('low', 'medium', 'high', 'extreme')),
+    external_factors JSONB NOT NULL, -- Interest rates, consumer confidence, etc.
+    strategy_mode VARCHAR(20) NOT NULL CHECK (strategy_mode IN ('growth', 'defensive', 'crisis')),
+    prescriptive_action TEXT NOT NULL,
+    monitoring_frequency_minutes INTEGER DEFAULT 60,
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==============================================
+-- AUTONOMOUS STRATEGY ADAPTATION
+-- ==============================================
+
+-- Strategy Mode Configuration
+CREATE TABLE IF NOT EXISTS dtri_strategy_modes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    mode_name VARCHAR(20) NOT NULL CHECK (mode_name IN ('growth', 'defensive', 'crisis')),
+    tsm_threshold_min DECIMAL(3,2) NOT NULL,
+    tsm_threshold_max DECIMAL(3,2) NOT NULL,
+    priority_focus VARCHAR(100) NOT NULL, -- 'Trustworthiness fixes', 'Authoritativeness growth', etc.
+    dashboard_theme VARCHAR(20) NOT NULL CHECK (dashboard_theme IN ('growth', 'defensive', 'crisis')),
+    auto_switch_enabled BOOLEAN DEFAULT true,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, mode_name)
+);
+
+-- Autonomous Intervention History
+CREATE TABLE IF NOT EXISTS dtri_autonomous_interventions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    intervention_type VARCHAR(100) NOT NULL,
+    trigger_metric VARCHAR(100) NOT NULL,
+    trigger_value DECIMAL(10,4) NOT NULL,
+    intervention_action TEXT NOT NULL,
+    affected_departments JSONB NOT NULL, -- ['CTO', 'CMO', 'GM', 'Service_Director']
+    intervention_result VARCHAR(20) CHECK (intervention_result IN ('success', 'partial', 'failed', 'pending')),
+    impact_measured DECIMAL(12,2),
+    intervention_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==============================================
+-- PERFORMANCE-OPTIMIZED INDEXES
+-- ==============================================
+
+-- Micro-Segmentation Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_segmented_scores_tenant ON dtri_micro_segmented_scores(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_segmented_scores_dealership ON dtri_micro_segmented_scores(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_segmented_scores_segment ON dtri_micro_segmented_scores(segment_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_segmented_scores_date ON dtri_micro_segmented_scores(calculation_date);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_segmented_lead_flow_tenant ON dtri_segmented_lead_flow(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_segmented_lead_flow_dealership ON dtri_segmented_lead_flow(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_segmented_lead_flow_segment ON dtri_segmented_lead_flow(segment_type);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_beta_coefficients_tenant ON dtri_micro_beta_coefficients(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_beta_coefficients_dealership ON dtri_micro_beta_coefficients(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_beta_coefficients_metric ON dtri_micro_beta_coefficients(metric_name);
+CREATE INDEX IF NOT EXISTS idx_dtri_micro_beta_coefficients_segment ON dtri_micro_beta_coefficients(segment_type);
+
+-- Feedback Loop Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_beta_recalibration_tenant ON dtri_beta_recalibration(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_beta_recalibration_dealership ON dtri_beta_recalibration(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_beta_recalibration_metric ON dtri_beta_recalibration(metric_name);
+CREATE INDEX IF NOT EXISTS idx_dtri_beta_recalibration_applied ON dtri_beta_recalibration(is_applied) WHERE is_applied = false;
+
+CREATE INDEX IF NOT EXISTS idx_dtri_recommendation_tracking_tenant ON dtri_recommendation_tracking(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_recommendation_tracking_dealership ON dtri_recommendation_tracking(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_recommendation_tracking_status ON dtri_recommendation_tracking(status);
+CREATE INDEX IF NOT EXISTS idx_dtri_recommendation_tracking_due_date ON dtri_recommendation_tracking(validation_due_date);
+
+-- Sentinel Agent Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_thresholds_tenant ON dtri_sentinel_thresholds(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_thresholds_dealership ON dtri_sentinel_thresholds(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_thresholds_active ON dtri_sentinel_thresholds(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_thresholds_metric ON dtri_sentinel_thresholds(metric_name);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_alerts_tenant ON dtri_sentinel_alerts(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_alerts_dealership ON dtri_sentinel_alerts(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_alerts_severity ON dtri_sentinel_alerts(breach_severity);
+CREATE INDEX IF NOT EXISTS idx_dtri_sentinel_alerts_resolved ON dtri_sentinel_alerts(is_resolved) WHERE is_resolved = false;
+
+CREATE INDEX IF NOT EXISTS idx_dtri_tsm_sentinel_tenant ON dtri_tsm_sentinel(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_tsm_sentinel_dealership ON dtri_tsm_sentinel(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_tsm_sentinel_stress ON dtri_tsm_sentinel(stress_level);
+CREATE INDEX IF NOT EXISTS idx_dtri_tsm_sentinel_strategy ON dtri_tsm_sentinel(strategy_mode);
+
+-- Strategy Mode Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_strategy_modes_tenant ON dtri_strategy_modes(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_strategy_modes_dealership ON dtri_strategy_modes(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_strategy_modes_active ON dtri_strategy_modes(is_active) WHERE is_active = true;
+
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_interventions_tenant ON dtri_autonomous_interventions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_interventions_dealership ON dtri_autonomous_interventions(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_interventions_type ON dtri_autonomous_interventions(intervention_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_autonomous_interventions_result ON dtri_autonomous_interventions(intervention_result);
+
+-- ==============================================
+-- ROW LEVEL SECURITY (RLS)
+-- ==============================================
+
+-- Enable RLS on all tables
+ALTER TABLE dtri_micro_segmented_scores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_segmented_lead_flow ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_micro_beta_coefficients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_beta_recalibration ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_recommendation_tracking ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_sentinel_thresholds ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_sentinel_alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_tsm_sentinel ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_strategy_modes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_autonomous_interventions ENABLE ROW LEVEL SECURITY;
+
+-- RLS policies for all micro-segmentation tables
+CREATE POLICY IF NOT EXISTS "Users can view their own micro segmented scores" ON dtri_micro_segmented_scores
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own micro segmented scores" ON dtri_micro_segmented_scores
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own segmented lead flow" ON dtri_segmented_lead_flow
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own segmented lead flow" ON dtri_segmented_lead_flow
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own micro beta coefficients" ON dtri_micro_beta_coefficients
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own micro beta coefficients" ON dtri_micro_beta_coefficients
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- RLS policies for feedback loop tables
+CREATE POLICY IF NOT EXISTS "Users can view their own beta recalibration" ON dtri_beta_recalibration
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own beta recalibration" ON dtri_beta_recalibration
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own recommendation tracking" ON dtri_recommendation_tracking
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own recommendation tracking" ON dtri_recommendation_tracking
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- RLS policies for sentinel agent tables
+CREATE POLICY IF NOT EXISTS "Users can view their own sentinel thresholds" ON dtri_sentinel_thresholds
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own sentinel thresholds" ON dtri_sentinel_thresholds
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own sentinel alerts" ON dtri_sentinel_alerts
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own sentinel alerts" ON dtri_sentinel_alerts
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own tsm sentinel" ON dtri_tsm_sentinel
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own tsm sentinel" ON dtri_tsm_sentinel
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own strategy modes" ON dtri_strategy_modes
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own strategy modes" ON dtri_strategy_modes
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own autonomous interventions" ON dtri_autonomous_interventions
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own autonomous interventions" ON dtri_autonomous_interventions
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- ==============================================
+-- TRIGGERS AND FUNCTIONS
+-- ==============================================
+
+-- Add triggers for updated_at timestamps
+CREATE TRIGGER IF NOT EXISTS update_dtri_micro_beta_coefficients_updated_at 
+    BEFORE UPDATE ON dtri_micro_beta_coefficients 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_recommendation_tracking_updated_at 
+    BEFORE UPDATE ON dtri_recommendation_tracking 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_sentinel_thresholds_updated_at 
+    BEFORE UPDATE ON dtri_sentinel_thresholds 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_strategy_modes_updated_at 
+    BEFORE UPDATE ON dtri_strategy_modes 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==============================================
+-- COMMENTS AND DOCUMENTATION
+-- ==============================================
+
+-- Table comments
+COMMENT ON TABLE dtri_micro_segmented_scores IS 'Micro-segmented DTRI scores for precision revenue stream tracking (Sales, Service, Leads, Lifetime Value)';
+COMMENT ON TABLE dtri_segmented_lead_flow IS 'Segmented lead flow quantification with profit lift calculations';
+COMMENT ON TABLE dtri_micro_beta_coefficients IS 'Micro-segmented beta coefficients for precision impact calculations';
+COMMENT ON TABLE dtri_beta_recalibration IS 'Closed-loop beta coefficient recalibration based on actual results';
+COMMENT ON TABLE dtri_recommendation_tracking IS 'Recommendation tracking for 90-day validation cycles';
+COMMENT ON TABLE dtri_sentinel_thresholds IS 'Autonomous risk thresholds for 24/7 monitoring';
+COMMENT ON TABLE dtri_sentinel_alerts IS 'Sentinel alert history and resolution tracking';
+COMMENT ON TABLE dtri_tsm_sentinel IS 'TSM sentinel monitoring for strategy mode adaptation';
+COMMENT ON TABLE dtri_strategy_modes IS 'Strategy mode configuration (Growth, Defensive, Crisis)';
+COMMENT ON TABLE dtri_autonomous_interventions IS 'Autonomous intervention history and impact tracking';
+
+-- Column comments for key fields
+COMMENT ON COLUMN dtri_micro_segmented_scores.avg_gp_per_unit IS 'Segment-specific GP (e.g., $450 for Service RO, $3,500 for vehicle sales)';
+COMMENT ON COLUMN dtri_segmented_lead_flow.profit_lift IS 'Generated column: delta_leads * dtri_gp_per_unit';
+COMMENT ON COLUMN dtri_micro_beta_coefficients.beta_coefficient IS 'Precision coefficient (e.g., 0.008 for 0.8% CR lift)';
+COMMENT ON COLUMN dtri_beta_recalibration.new_beta IS 'Generated column: actual_impact / predicted_impact (recalibrated coefficient)';
+COMMENT ON COLUMN dtri_beta_recalibration.recalibration_factor IS 'Generated column: actual_impact / predicted_impact (factor for adjustment)';
+COMMENT ON COLUMN dtri_recommendation_tracking.validation_due_date IS 'Generated column: tracking_start_date + 90 days';
+COMMENT ON COLUMN dtri_tsm_sentinel.strategy_mode IS 'Current strategy mode based on TSM value (Growth/Defensive/Crisis)';
+COMMENT ON COLUMN dtri_autonomous_interventions.affected_departments IS 'JSONB array of departments affected by the intervention';

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import APIUsageChart from '@/components/APIUsageChart';
+import SLOPanel from '@/components/SLOPanel';
+import PermissionsInspector from '@/components/PermissionsInspector';
 
 export default function AdminDashboard() {
   const [dealershipId, setDealershipId] = useState('11111111-1111-1111-1111-111111111111');
@@ -161,13 +164,22 @@ export default function AdminDashboard() {
                   Runs complete 5-module scoring analysis: AI Visibility, SGP Integrity,
                   Zero-Click, UGC Health, and Geo Trust.
                 </p>
-                <button
-                  onClick={runAudit}
-                  disabled={loading}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-                >
-                  {loading ? 'Running Audit...' : 'Run Full Audit'}
-                </button>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={runAudit}
+                    disabled={loading}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                  >
+                    {loading ? 'Running Audit...' : 'Run Full Audit'}
+                  </button>
+                  <PermissionsInspector 
+                    resource="audit.advanced" 
+                    action="run" 
+                    role="admin" 
+                    plan="professional" 
+                    features={['audit', 'advanced']} 
+                  />
+                </div>
               </div>
             )}
 
@@ -233,6 +245,19 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* API Usage Chart */}
+        <div className="mt-8">
+          <APIUsageChart points={[
+            {t:'08:00',calls:12},{t:'09:00',calls:18},{t:'10:00',calls:9},{t:'11:00',calls:22},
+            {t:'12:00',calls:15},{t:'13:00',calls:28},{t:'14:00',calls:19},{t:'15:00',calls:31}
+          ]}/>
+        </div>
+
+        {/* SLO Monitoring Panel */}
+        <div className="mt-8">
+          <SLOPanel />
+        </div>
 
         {/* Quick Links */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">

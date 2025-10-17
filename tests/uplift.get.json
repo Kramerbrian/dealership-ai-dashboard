@@ -1,0 +1,15 @@
+{
+  "test": "uplift.get",
+  "description": "Test uplift measurement endpoint",
+  "curl": "curl 'http://localhost:3000/api/seo/uplift?a=v1&b=v2' -H 'Authorization: Bearer <JWT>'",
+  "expected": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "data": "array",
+      "variantA": "v1",
+      "variantB": "v2",
+      "tenantId": "string"
+    }
+  }
+}

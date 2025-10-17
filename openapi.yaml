@@ -1,0 +1,349 @@
+openapi: 3.1.0
+info:
+  title: DealershipAI API
+  description: |
+    Analyze car dealership visibility across AI-powered shopping platforms.
+    
+    This API provides instant AI visibility scoring for automotive dealerships,
+    helping them understand how visible they are to AI assistants like ChatGPT,
+    Claude, Perplexity, and Gemini.
+    
+    **Key Metrics**:
+    - AI Visibility Score (0-100): How often AI assistants recommend you
+    - Zero-Click Shield (0-100): Featured snippet presence
+    - UGC Health (0-100): Review quality and quantity
+    - Geo Trust (0-100): Local SEO strength
+    
+    **Use Cases**:
+    - Quick dealership visibility audits
+    - Competitive analysis
+    - Revenue impact calculation
+    
+  version: 1.0.0
+  contact:
+    name: DealershipAI Support
+    url: https://dealershipai.com
+    email: support@dealershipai.com
+
+servers:
+  - url: https://api.dealershipai.com
+    description: Production API
+  - url: https://staging.api.dealershipai.com
+    description: Staging API (for testing)
+
+paths:
+  /api/ai-scores:
+    get:
+      operationId: getDealershipAIScore
+      summary: Get AI visibility scores for a dealership
+      description: |
+        Analyzes a car dealership's visibility across AI assistants and returns
+        comprehensive scoring across 5 key metrics.
+        
+        **This endpoint**:
+        - Checks dealership presence in AI recommendations
+        - Analyzes review health
+        - Measures local SEO strength
+        - Calculates structured data completeness
+        - Returns actionable insights
+        
+        **Results are cached** for 24 hours to ensure fast responses.
+        
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          description: |
+            The full URL of the dealership website.
+            
+            Examples:
+            - https://terryreidsautopark.com
+            - https://johnstonhyundai.com
+            - https://naplesbmw.com
+            
+            Must be a valid URL with protocol (https://).
+          schema:
+            type: string
+            format: uri
+            pattern: '^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+          example: "https://terryreidsautopark.com"
+
+      responses:
+        '200':
+          description: Successful analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIScoreResponse'
+              examples:
+                high_score:
+                  summary: High-performing dealership
+                  value:
+                    dealership:
+                      name: "Terry Reid's Auto Park"
+                      domain: "terryreidsautopark.com"
+                      city: "Naples"
+                      state: "FL"
+                    scores:
+                      ai_visibility:
+                        score: 87
+                        weight: 35
+                        description: "How often AI assistants recommend you"
+                      zero_click:
+                        score: 82
+                        weight: 20
+                        description: "Featured snippet presence"
+                      ugc_health:
+                        score: 91
+                        weight: 20
+                        description: "Review quality and quantity"
+                      geo_trust:
+                        score: 89
+                        weight: 15
+                        description: "Local SEO strength"
+                      sgp_integrity:
+                        score: 85
+                        weight: 10
+                        description: "Structured data completeness"
+                    overall_score: 87
+                    confidence: 0.89
+                    last_updated: "2025-10-05T18:30:00Z"
+                    insights:
+                      strengths:
+                        - "Strong review presence (4.8 stars, 450+ reviews)"
+                        - "Excellent local SEO optimization"
+                        - "High AI recommendation rate"
+                      weaknesses:
+                        - "Limited FAQ schema markup"
+                        - "Could improve response rate to reviews"
+                      recommendations:
+                        - "Add FAQ schema to capture more zero-click traffic"
+                        - "Respond to all reviews within 24 hours"
+                        - "Create content targeting voice search queries"
+                
+                medium_score:
+                  summary: Average-performing dealership
+                  value:
+                    dealership:
+                      name: "Sample Motors"
+                      domain: "samplemotors.com"
+                      city: "Naples"
+                      state: "FL"
+                    scores:
+                      ai_visibility:
+                        score: 58
+                        weight: 35
+                        description: "How often AI assistants recommend you"
+                      zero_click:
+                        score: 52
+                        weight: 20
+                        description: "Featured snippet presence"
+                      ugc_health:
+                        score: 64
+                        weight: 20
+                        description: "Review quality and quantity"
+                      geo_trust:
+                        score: 71
+                        weight: 15
+                        description: "Local SEO strength"
+                      sgp_integrity:
+                        score: 48
+                        weight: 10
+                        description: "Structured data completeness"
+                    overall_score: 59
+                    confidence: 0.85
+                    last_updated: "2025-10-05T18:30:00Z"
+                    revenue_impact:
+                      monthly_missed_leads: 12
+                      estimated_monthly_loss: "$33,600"
+                      annual_loss: "$403,200"
+                      roi_of_improvement: "23x"
+
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid origin format. Must be a valid URL."
+
+        '404':
+          description: Dealership not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Dealership not found in our database"
+
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Rate limit exceeded. Please try again in 1 hour."
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Analysis failed. Please try again later."
+
+components:
+  schemas:
+    AIScoreResponse:
+      type: object
+      required:
+        - dealership
+        - scores
+        - overall_score
+        - confidence
+        - last_updated
+      properties:
+        dealership:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique dealership identifier
+            name:
+              type: string
+              description: Dealership name
+            domain:
+              type: string
+              description: Dealership website domain
+            city:
+              type: string
+              description: Dealership city
+            state:
+              type: string
+              description: Dealership state code
+          example:
+            id: "clx123abc"
+            name: "Terry Reid's Auto Park"
+            domain: "terryreidsautopark.com"
+            city: "Naples"
+            state: "FL"
+
+        scores:
+          type: object
+          description: Individual metric scores (0-100)
+          properties:
+            ai_visibility:
+              $ref: '#/components/schemas/MetricScore'
+            zero_click:
+              $ref: '#/components/schemas/MetricScore'
+            ugc_health:
+              $ref: '#/components/schemas/MetricScore'
+            geo_trust:
+              $ref: '#/components/schemas/MetricScore'
+            sgp_integrity:
+              $ref: '#/components/schemas/MetricScore'
+
+        overall_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Weighted average of all metrics
+          example: 87.3
+
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Confidence level of the analysis (0-1)
+          example: 0.89
+
+        last_updated:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last analysis
+          example: "2025-10-05T18:30:00Z"
+
+        insights:
+          type: object
+          description: Actionable insights (optional)
+          properties:
+            strengths:
+              type: array
+              items:
+                type: string
+              description: What the dealership is doing well
+            weaknesses:
+              type: array
+              items:
+                type: string
+              description: Areas for improvement
+            recommendations:
+              type: array
+              items:
+                type: string
+              description: Specific actions to take
+
+        revenue_impact:
+          type: object
+          description: Revenue impact analysis (optional)
+          properties:
+            monthly_missed_leads:
+              type: integer
+              description: Estimated leads lost per month
+            estimated_monthly_loss:
+              type: string
+              description: Estimated monthly revenue loss
+            annual_loss:
+              type: string
+              description: Estimated annual revenue loss
+            roi_of_improvement:
+              type: string
+              description: Return on investment of fixing issues
+
+    MetricScore:
+      type: object
+      required:
+        - score
+        - weight
+        - description
+      properties:
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Score for this metric (0-100)
+        weight:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Weight of this metric in overall score (%)
+        description:
+          type: string
+          description: What this metric measures
+      example:
+        score: 87
+        weight: 35
+        description: "How often AI assistants recommend you"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        Optional API key for authenticated requests.
+        Public endpoints work without authentication but have lower rate limits.

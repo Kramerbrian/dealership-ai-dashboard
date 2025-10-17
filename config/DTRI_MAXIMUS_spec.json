@@ -1,0 +1,246 @@
+{
+  "Engine_Title": "Dealership Digital Trust Revenue Calculator (DTRI)",
+  "Engine_Version": "1.0-Predictive-Stack-2025",
+  "Engine_Goal": "Quantify the financial ROI of E-E-A-T and Operational Quality for Dealership C-Suites using external data proxies.",
+  "ENGINE_ID": "DTRI-MAXIMUS-3.0",
+  "ENGINE_NAME": "Digital Trust Revenue Index (DTRI) Predictive Model",
+  "RATIONALE": "Quantifies the exact dollar impact of internal quality (QAI) on external revenue drivers (E-E-A-T, AEO, GEO) for C-Suite resource allocation.",
+  "FINANCIAL_BASELINE": {
+    "DATA_SOURCE": "DEALER_INPUT_QANDA",
+    "ASSUMPTIONS": {
+      "Monthly_Units": 100,
+      "Avg_GPPU_Sales": 3500,
+      "Avg_GP_Service_RO": 450,
+      "Baseline_Paid_Leads": 300,
+      "Current_Blended_CAC": 350,
+      "Organic_Closing_Rate": 0.20,
+      "Service_Closing_Rate": 0.65
+    }
+  },
+  "Baseline_Financials": {
+    "Source": "NCM_Industry_Average_Proxy",
+    "Current_Monthly_Units": 100,
+    "Average_Gross_Profit_Per_Unit": 3500,
+    "Current_Total_Gross_Profit": 350000,
+    "Current_Blended_CAC": 350,
+    "Current_Conversion_Rate": 0.03,
+    "Closing_Rate": 0.20,
+    "Baseline_Paid_Lead_Volume": 300,
+    "Baseline_Organic_Lead_Volume": 300
+  },
+  "Metric_Definitions": {
+    "DTRI": "Digital Trust Revenue Index - Composite score combining QAI and E-E-A-T",
+    "QAI": "Quality Audit Index - Internal operational excellence score",
+    "E-E-A-T": "Expertise, Experience, Authoritativeness, Trustworthiness - External perception score",
+    "AEO": "Answer Engine Optimization - Visibility in AI-generated answers",
+    "GEO": "Generative Engine Optimization - Content optimization for AI platforms",
+    "TSM": "Trust Sensitivity Multiplier - Economic context adjustment factor",
+    "Decay_Tax": "Quantified unnecessary ad spend due to digital trust decay",
+    "AROI": "Actionable ROI Score - Prioritizes interventions by financial return",
+    "SLV": "Search and Local Visibility - Local search dominance metrics",
+    "FTFR": "First-Time Fix Rate - Operational efficiency metric"
+  },
+  "EEAT_ALGORITHM_SPEC": {
+    "Expertise": {
+      "weight": 0.25,
+      "components": ["certifications", "staff_credentials", "technical_content", "partnerships"],
+      "max_score": 100
+    },
+    "Experience": {
+      "weight": 0.25,
+      "components": ["years_business", "customer_testimonials", "case_studies"],
+      "max_score": 100
+    },
+    "Authoritativeness": {
+      "weight": 0.25,
+      "components": ["awards", "industry_leadership", "media_mentions", "high_ratings"],
+      "max_score": 100
+    },
+    "Trustworthiness": {
+      "weight": 0.25,
+      "components": ["bbb_rating", "review_rating", "transparency", "secure_website"],
+      "max_score": 100
+    }
+  },
+  "EEAT_COMPONENT_WEIGHTS": [
+    {"component": "Expertise", "weight": 0.25},
+    {"component": "Experience", "weight": 0.25},
+    {"component": "Authoritativeness", "weight": 0.25},
+    {"component": "Trustworthiness", "weight": 0.25}
+  ],
+  "FINANCIAL_CORRELATION_MATRIX": {
+    "QAI_to_Revenue": 0.78,
+    "E-E-A-T_to_Conversion": 0.65,
+    "AEO_to_Organic_Traffic": 0.72,
+    "GEO_to_AI_Visibility": 0.68,
+    "Trust_to_CAC_Reduction": 0.55
+  },
+  "QAI_OPERATIONAL_INDEX": {
+    "components": [
+      {"name": "VDP_Quality", "weight": 0.30, "max_score": 100},
+      {"name": "Schema_Completeness", "weight": 0.25, "max_score": 100},
+      {"name": "Review_Response_Rate", "weight": 0.20, "max_score": 100},
+      {"name": "Photo_Quality", "weight": 0.15, "max_score": 100},
+      {"name": "Content_Freshness", "weight": 0.10, "max_score": 100}
+    ]
+  },
+  "III_PREDICTIVE_FORMULAS_AND_BETAS": {
+    "BETA_COEFFICIENTS": {
+      "Decay_Tax_Loss_Per_Point_Beta": 250,
+      "AEO_Revenue_Lift_Beta": 0.15,
+      "GEO_Visibility_Beta": 0.12,
+      "E-E-A-T_Conversion_Beta": 0.08,
+      "QAI_Operational_Efficiency_Beta": 0.20,
+      "TSM_Economic_Context_Beta": 1.0
+    },
+    "FORMULAS": {
+      "DTRI": "QAI * 0.6 + E-E-A-T * 0.4",
+      "Decay_Tax": "MAX(0, (Baseline_Trust - Current_Trust) * Decay_Tax_Loss_Per_Point_Beta * TSM)",
+      "AEO_Value": "AEO_Score * AEO_Revenue_Lift_Beta * Monthly_Revenue * TSM",
+      "GEO_Value": "GEO_Score * GEO_Visibility_Beta * Organic_Traffic_Value * TSM",
+      "E-E-A-T_Value": "E-E-A-T_Score * E-E-A-T_Conversion_Beta * Conversion_Rate_Lift * Revenue",
+      "QAI_Value": "QAI_Score * QAI_Operational_Efficiency_Beta * Operational_Savings"
+    }
+  },
+  "IV_DASHBOARD_PRESENTATION_SPEC": {
+    "Primary_Metrics": [
+      {"name": "Search & AI Visibility", "description": "How findable and trusted your dealership is in digital search", "weight": 0.35},
+      {"name": "Algorithmic Trust Index™", "description": "Trust = how much the system believes you", "weight": 0.25},
+      {"name": "Clarity Intelligence Score™", "description": "Clarity = how well you're seen", "weight": 0.20},
+      {"name": "Content Reliability Score", "description": "Content precision + freshness", "weight": 0.20}
+    ],
+    "Secondary_Metrics": [
+      {"name": "Elasticity ($/pt)", "description": "Revenue impact per point improvement"},
+      {"name": "OCI – Opportunity Cost of Inaction", "description": "Estimated monthly loss from not fixing issues"}
+    ]
+  },
+  "Enhancements": {
+    "Dynamic_Beta_Calibration": true,
+    "Causal_Forecasting": true,
+    "Cross_Correlation_Discovery": true,
+    "Autonomous_Trigger_Logic": true,
+    "SOW_Blueprint": true,
+    "Competitive_Attack_Detection": true,
+    "TSM_Segment_Calibration": true,
+    "Seasonality_Adjustment": true,
+    "Blue_Sky_Valuation_Link": true
+  },
+  "I_EXTERNAL_CONTEXT_FEEDS": {
+    "CURRENT_TSM_EXAMPLE": 1.2,
+    "ECONOMIC_INDICATORS": {
+      "inflation_rate": 0.03,
+      "interest_rate": 0.05,
+      "consumer_confidence": 0.75
+    },
+    "SEASONALITY_FACTORS": {
+      "Q1": 0.9,
+      "Q2": 1.1,
+      "Q3": 1.0,
+      "Q4": 1.2
+    }
+  },
+  "operational_readiness": {
+    "logging_level": "INFO",
+    "alert_thresholds": { "piqr": 1.20, "hrp": 0.50, "aemd": 60, "qai_drop_pct": -3.0 },
+    "model_registry_path": "s3://dealershipai-model-registry/qai/vco/",
+    "telemetry": { "enabled": true, "sink": "bigquery", "dataset": "qai_ops" }
+  },
+  "continuous_learning": {
+    "feedback_interval": "daily",
+    "trigger_metric": "Δ_QAI > 3%",
+    "update_parameters": ["ΩFin", "ωDS", "αT", "αEx"],
+    "validation_metric": "AUC",
+    "retraining": {
+      "frequency": "weekly",
+      "min_new_labels": 10000,
+      "performance_decay_auc": 0.03
+    },
+    "drift_detection": { "method": "population_stability_index", "psi_warn": 0.2, "psi_fail": 0.3 }
+  },
+  "api_layer": {
+    "endpoints": {
+      "POST /calculate": "Run full QAI* calc for dealer/segment payload",
+      "POST /asr": "Generate Autonomous Strategy Recommendation for target VDPs",
+      "GET /metrics": "Return current KPIs for dealer or segment",
+      "POST /retrain": "Trigger VCO retraining if governance conditions met"
+    },
+    "auth_method": "Bearer Token",
+    "rate_limit": "100 requests/min per dealer",
+    "schemas": {
+      "CalculateRequest": ["dealer_id", "segment", "visibility_inputs", "vdp_batch"],
+      "ASRRequest": ["dealer_id", "segment", "vdp_ids"],
+      "MetricsResponse": ["qai_score", "vai_penalized", "piqr", "hrp", "aemd", "oci", "lambda_A"]
+    }
+  },
+  "security_compliance": {
+    "rbac": {
+      "roles": ["owner","admin","manager","analyst","viewer","svc_bot"],
+      "scopes": ["calc:read","calc:write","model:train","asr:execute","metrics:read","ops:admin"]
+    },
+    "tenant_isolation": "row-level security + per-tenant keys",
+    "pii": { "redaction": "names, emails, phones", "storage": "tokenized", "logs": "hash_only" },
+    "audit_trail": { "enabled": true, "events": ["calc_run","asr_exec","model_deploy","weight_change"], "retention_days": 365 }
+  },
+  "data_freshness_slas": {
+    "vdp_feed_max_lag_min": 15,
+    "schema_latency_budget_min": 60,
+    "reviews_sync_minutes": 60,
+    "visibility_poll_cron": "*/30 * * * *",
+    "breach_actions": ["alert","quarantine_segment","degrade_vai_weighting"]
+  },
+  "feature_store": {
+    "backend": "parquet+s3 or BigQuery",
+    "entities": ["vdp_id","dealer_id","segment_id"],
+    "ttl_days": 180,
+    "point_in_time_join": true,
+    "online_cache": { "type": "redis", "ttl_sec": 3600 }
+  },
+  "eval_ops": {
+    "offline_eval": ["AUC","PR_AUC","calibration_brier","stability_PSI"],
+    "canary": { "traffic_split": 0.1, "abort_if": { "AUC_drop": 0.02, "PSI_gt": 0.3 } },
+    "model_card": ["data_window","top_features","known_limits","hrp_policy"],
+    "bias_checks": ["segment_fairness_by_price_band","geography_leakage"]
+  },
+  "ab_testing": {
+    "unit": "vdp_id",
+    "metrics": ["P_VDP","lead_rate","gross_per_unit","OCI_drop"],
+    "duration_days": 14,
+    "min_sample_size": 300,
+    "stats": "sequential_wald"
+  },
+  "fallbacks_and_resilience": {
+    "platform_timeouts_ms": { "google_ai": 2500, "chatgpt": 2500, "bing": 2500, "perplexity": 2500 },
+    "degradation_policy": "reuse_last_good_visibility_24h",
+    "circuit_breakers": true,
+    "synthetic_estimator": "bayesian_nowcast if 2+ platforms fail"
+  },
+  "negative_signal_registry": {
+    "aeo": ["promotional_fluff_density","citation_voids","query_misalignment","harmful_claims"],
+    "geo": ["nap_inconsistency","irrelevant_categories","out_of_stock_vdp","overwide_service_area"],
+    "actions": ["content_trim","add_citation","rewrite_snippet","gbp_fix"]
+  },
+  "schema_injector": {
+    "modes": ["Offer","Product","FAQPage","BreadcrumbList","LocalBusiness"],
+    "validator": "json-ld schema check + live test",
+    "autofix": { "price_currency":"USD","availability":"https://schema.org/InStock" }
+  },
+  "prompt_templates_registry": {
+    "vdp_top_v1": ["AEO_Snippet","GEO_Authority","SEO_Descriptive","Internal_Links"],
+    "finance_faq_v1": ["FAQ_questions","direct_answers_40w","citations"],
+    "service_faq_v1": ["how_to","cost_ranges","warranty_limits"]
+  },
+  "cost_telemetry": {
+    "rpas": "revenue_per_actionable_signal",
+    "unit_costs": { "photo_set": 75, "text_rewrite": 150, "schema_update": 0, "review_campaign": 200 },
+    "decision_rule": "maximize (Net_Profit_Gain - Action_Cost)"
+  },
+  "streams": {
+    "realtime_updates": { "protocol": "websocket/sse", "topics": ["qai_score","aemd","piqr_alerts","asr_queue"] },
+    "cache_invalidation": { "keys": ["dealer_id:*","segment:*","vdp:*"], "on_events": ["schema_write","photo_upload","price_change"] }
+  },
+  "governance_policies": {
+    "weight_change_approvals": ["owner or ops:admin"],
+    "immutable_history": true,
+    "cron_schedules": { "daily_learning": "0 3 * * *", "weekly_retrain": "30 2 * * 1" }
+  }
+}
