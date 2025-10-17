@@ -30,24 +30,9 @@ import {
 
 function OnboardingLanding() {
   const router = useRouter();
-  const [selectedMethod, setSelectedMethod] = useState<'guided' | 'agent'>('guided');
+  const [selectedMethod, setSelectedMethod] = useState<'guided' | 'agent'>('agent');
 
   const onboardingMethods = [
-    {
-      id: 'guided',
-      title: 'Guided Setup',
-      description: 'Step-by-step walkthrough with visual progress tracking',
-      icon: <Target className="w-8 h-8" />,
-      features: [
-        'Visual progress tracking',
-        'Integration cards with help text',
-        'Real-time connection testing',
-        'Reward system and badges'
-      ],
-      time: '5-10 minutes',
-      difficulty: 'Easy',
-      recommended: true
-    },
     {
       id: 'agent',
       title: 'AI Assistant',
@@ -62,6 +47,21 @@ function OnboardingLanding() {
       time: '3-7 minutes',
       difficulty: 'Very Easy',
       recommended: true
+    },
+    {
+      id: 'guided',
+      title: 'Guided Setup',
+      description: 'Step-by-step walkthrough with visual progress tracking',
+      icon: <Target className="w-8 h-8" />,
+      features: [
+        'Visual progress tracking',
+        'Integration cards with help text',
+        'Real-time connection testing',
+        'Reward system and badges'
+      ],
+      time: '5-10 minutes',
+      difficulty: 'Easy',
+      recommended: false
     }
   ];
 
@@ -160,11 +160,11 @@ function OnboardingLanding() {
             <Brain className="w-10 h-10" />
           </div>
           <h1 className="text-4xl font-semibold mb-4">
-            Let's Supercharge Your AI Visibility
+            Meet Your AI Setup Assistant
           </h1>
           <p className="text-white/70 text-xl max-w-3xl mx-auto mb-8">
-            Connect your marketing platforms to unlock 10x more accurate AI visibility tracking, 
-            automated insights, and actionable recommendations that drive real results.
+            Our AI assistant will guide you through connecting your marketing platforms in just 3-7 minutes. 
+            Get personalized recommendations and unlock 10x more accurate AI visibility tracking.
           </p>
           
           {/* Quick Stats */}
@@ -190,7 +190,7 @@ function OnboardingLanding() {
 
         {/* Onboarding Methods */}
         <div className="mb-16">
-          <h2 className="text-2xl font-semibold text-center mb-8">Choose Your Setup Method</h2>
+          <h2 className="text-2xl font-semibold text-center mb-8">Recommended: AI Assistant Setup</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {onboardingMethods.map((method) => (
               <div
@@ -325,16 +325,17 @@ function OnboardingLanding() {
         {/* CTA Section */}
         <div className="text-center">
           <div className="glass rounded-2xl p-8 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-4">Ready to Get Started?</h2>
+            <h2 className="text-2xl font-semibold mb-4">Ready to Meet Your AI Assistant?</h2>
             <p className="text-white/70 mb-6">
-              Choose your preferred setup method and start tracking your AI visibility with maximum accuracy.
+              Our AI assistant will guide you through the setup process in just 3-7 minutes. 
+              Get personalized recommendations and start tracking your AI visibility with maximum accuracy.
             </p>
             <button
               onClick={handleStartOnboarding}
               className="inline-flex items-center gap-2 rounded-xl px-8 py-4 text-lg font-semibold"
               style={{ backgroundImage: 'var(--brand-gradient)' }}
             >
-              Start {onboardingMethods.find(m => m.id === selectedMethod)?.title} Setup
+              {selectedMethod === 'agent' ? 'Chat with AI Assistant' : `Start ${onboardingMethods.find(m => m.id === selectedMethod)?.title} Setup`}
               <ArrowRight className="w-5 h-5" />
             </button>
             <p className="text-xs text-white/50 mt-4">

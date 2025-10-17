@@ -56,8 +56,8 @@ function SelfCheckoutAgent() {
   const agentSteps = [
     {
       id: 'welcome',
-      message: "Hi! I'm your DealershipAI setup assistant. I'll help you connect your marketing platforms to get the most accurate AI visibility insights. What's your dealership name?",
-      suggestions: ["Skip this step", "I need help"],
+      message: "👋 Hi there! I'm your personal AI setup assistant for DealershipAI. I'll guide you through connecting your marketing platforms in just 3-7 minutes to unlock 10x more accurate AI visibility tracking. What's your dealership name?",
+      suggestions: ["Skip this step", "I need help", "Let's get started!"],
       type: 'text'
     },
     {
