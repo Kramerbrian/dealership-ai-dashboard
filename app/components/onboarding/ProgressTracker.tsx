@@ -357,66 +357,6 @@ export const onboardingSteps: ProgressStep[] = [
     }
   },
   {
-    id: 'facebook',
-    title: 'Facebook Business',
-    description: 'Connect Facebook for social insights',
-    completed: false,
-    optional: true,
-    reward: {
-      type: 'points',
-      value: '5',
-      description: 'Social media tracking'
-    }
-  },
-  {
-    id: 'instagram',
-    title: 'Instagram Business',
-    description: 'Connect Instagram for visual content tracking',
-    completed: false,
-    optional: true,
-    reward: {
-      type: 'points',
-      value: '5',
-      description: 'Visual content insights'
-    }
-  },
-  {
-    id: 'youtube',
-    title: 'YouTube Channel',
-    description: 'Connect YouTube for video performance tracking',
-    completed: false,
-    optional: true,
-    reward: {
-      type: 'points',
-      value: '5',
-      description: 'Video content tracking'
-    }
-  },
-  {
-    id: 'crm',
-    title: 'CRM Integration',
-    description: 'Connect your CRM for lead tracking',
-    completed: false,
-    optional: true,
-    reward: {
-      type: 'feature',
-      value: 'CRM',
-      description: 'Lead quality insights'
-    }
-  },
-  {
-    id: 'reviews',
-    title: 'Review Platforms',
-    description: 'Connect review platforms for reputation tracking',
-    completed: false,
-    optional: true,
-    reward: {
-      type: 'feature',
-      value: 'Reviews',
-      description: 'Reputation monitoring'
-    }
-  },
-  {
     id: 'goals',
     title: 'Set Goals',
     description: 'Define your AI visibility objectives',

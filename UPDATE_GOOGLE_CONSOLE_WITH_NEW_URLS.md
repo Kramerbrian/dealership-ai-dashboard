@@ -3,8 +3,8 @@
 ## 🎉 PRIVACY POLICY & TERMS OF SERVICE CREATED!
 
 ### ✅ NEW PAGES AVAILABLE:
-- **Privacy Policy**: https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/privacy
-- **Terms of Service**: https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/terms
+- **Privacy Policy**: https://dealershipai.com/privacy
+- **Terms of Service**: https://dealershipai.com/terms
 
 ## 🚀 UPDATE GOOGLE CLOUD CONSOLE
 
@@ -14,11 +14,11 @@
 1. **Click on your OAuth 2.0 Client ID**
 2. **Update "Authorized redirect URIs"**:
    ```
-   https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/api/auth/callback/google
+   https://dealershipai.com/api/auth/callback/google
    ```
 3. **Update "Authorized JavaScript origins"**:
    ```
-   https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app
+   https://dealershipai.com
    ```
 4. **Click "Save"**
 
@@ -30,8 +30,8 @@
    - **App name**: DealershipAI
    - **User support email**: your-email@example.com
    - **Developer contact information**: your-email@example.com
-   - **Privacy policy URL**: `https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/privacy`
-   - **Terms of service URL**: `https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/terms`
+   - **Privacy policy URL**: `https://dealershipai.com/privacy`
+   - **Terms of service URL**: `https://dealershipai.com/terms`
 3. **Click "Save and Continue"**
 4. **Click "Publish App"** (if not already published)
 
@@ -41,7 +41,7 @@
 
 ```bash
 # Test Google OAuth
-curl -s -w "Status: %{http_code}\nRedirect: %{redirect_url}\n" "https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/api/auth/signin/google"
+curl -s -w "Status: %{http_code}\nRedirect: %{redirect_url}\n" "https://dealershipai.com/api/auth/signin/google"
 ```
 
 ### Expected Result:
@@ -77,7 +77,7 @@ curl -s -w "Status: %{http_code}\nRedirect: %{redirect_url}\n" "https://dealersh
 - OAuth flow completes successfully
 
 ### ✅ Browser Test Working:
-1. Go to: https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/auth/signin
+1. Go to: https://dealershipai.com/auth/signin
 2. Click "Continue with Google"
 3. Redirects to Google OAuth consent screen
 4. Complete OAuth flow
@@ -105,14 +105,14 @@ curl -s -w "Status: %{http_code}\nRedirect: %{redirect_url}\n" "https://dealersh
 
 ### Latest Deployment URL:
 ```
-https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app
+https://dealershipai.com
 ```
 
 ### Required OAuth Settings:
-- **Redirect URI**: `https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/api/auth/callback/google`
-- **JavaScript Origin**: `https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app`
-- **Privacy Policy**: `https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/privacy`
-- **Terms of Service**: `https://dealershipai-dashboard-e0bzg7ucu-brian-kramers-projects.vercel.app/terms`
+- **Redirect URI**: `https://dealershipai.com/api/auth/callback/google`
+- **JavaScript Origin**: `https://dealershipai.com`
+- **Privacy Policy**: `https://dealershipai.com/privacy`
+- **Terms of Service**: `https://dealershipai.com/terms`
 
 ---
 
