@@ -15,6 +15,16 @@ function SignInContent() {
 
   const callbackUrl = searchParams.get('callbackUrl') || '/intelligence';
   const plan = searchParams.get('plan') || 'professional';
+  
+  // Decode and validate callback URL
+  const decodedCallbackUrl = (() => {
+    try {
+      return callbackUrl ? decodeURIComponent(callbackUrl) : '/intelligence';
+    } catch (error) {
+      console.warn('Invalid callback URL, using default:', error);
+      return '/intelligence';
+    }
+  })();
 
   const handleOAuthSignIn = async (provider: string) => {
     setIsLoading(provider);
@@ -22,7 +32,7 @@ function SignInContent() {
     
     try {
       const result = await signIn(provider, {
-        callbackUrl: callbackUrl,
+        callbackUrl: decodedCallbackUrl,
         redirect: true
       });
 
@@ -32,7 +42,7 @@ function SignInContent() {
         setError('Authentication failed. Please try again.');
       } else if (result?.ok) {
         // Redirect to the callback URL
-        router.push(callbackUrl);
+        router.push(decodedCallbackUrl);
       }
     } catch (error) {
       setError('Something went wrong. Please try again.');
@@ -51,7 +61,7 @@ function SignInContent() {
     try {
       const result = await signIn('email', {
         email,
-        callbackUrl: `${callbackUrl}?plan=${plan}`,
+        callbackUrl: `${decodedCallbackUrl}?plan=${plan}`,
         redirect: false
       });
 
