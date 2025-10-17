@@ -23,6 +23,7 @@ import {
 // Import dashboard components
 import { RAGDashboard } from '@/components/RAGDashboard';
 import EnhancedDealershipDashboard from '@/components/dashboard/EnhancedDealershipDashboard';
+import TabbedDashboard from '@/components/dashboard/TabbedDashboard';
 
 function IntelligenceContent() {
   const { data: session, status } = useSession();
@@ -352,13 +353,7 @@ function IntelligenceContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="glass rounded-2xl p-6">
-            <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-              <LineChart className="w-6 h-6 text-[var(--brand-primary)]" />
-              Advanced Analytics
-            </h3>
-            <EnhancedDealershipDashboard />
-          </div>
+          <TabbedDashboard />
         </motion.div>
       </main>
 

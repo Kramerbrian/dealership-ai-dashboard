@@ -10,8 +10,10 @@ import {
   BarChart3,
   MapPin,
   Info,
-  Zap
+  Zap,
+  AlertCircle
 } from 'lucide-react';
+import { parseAndNormalizeUrl, isValidUrlOrDomain, isValidGoogleBusinessProfileId, getPlaceholderText, getValidationError } from '@/lib/url-utils';
 
 function QuickSetup() {
   const router = useRouter();
@@ -21,12 +23,25 @@ function QuickSetup() {
     ga4PropertyId: '',
     googleBusinessProfileId: ''
   });
+  const [validationErrors, setValidationErrors] = useState({
+    websiteUrl: '',
+    googleBusinessProfileId: ''
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+    
+    // Clear validation errors when user starts typing
+    if (name === 'websiteUrl' && validationErrors.websiteUrl) {
+      setValidationErrors(prev => ({ ...prev, websiteUrl: '' }));
+    }
+    if (name === 'googleBusinessProfileId' && validationErrors.googleBusinessProfileId) {
+      setValidationErrors(prev => ({ ...prev, googleBusinessProfileId: '' }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,16 +121,26 @@ function QuickSetup() {
                 Website URL *
               </label>
               <input
-                type="url"
+                type="text"
                 name="websiteUrl"
                 value={formData.websiteUrl}
                 onChange={handleInputChange}
-                placeholder="https://www.yourdealership.com"
-                className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                placeholder={getPlaceholderText('website')}
+                className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                  validationErrors.websiteUrl 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-white/20 focus:ring-[var(--brand-primary)]'
+                }`}
                 required
               />
+              {validationErrors.websiteUrl && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {validationErrors.websiteUrl}
+                </p>
+              )}
               <p className="text-xs text-white/60 mt-1">
-                We'll analyze your website for AI visibility and performance metrics
+                You can enter: www.yourdealership.com, https://www.yourdealership.com, or yourdealership.com
               </p>
             </div>
 
@@ -149,11 +174,21 @@ function QuickSetup() {
                 name="googleBusinessProfileId"
                 value={formData.googleBusinessProfileId}
                 onChange={handleInputChange}
-                placeholder="ChIJ..."
-                className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                placeholder={getPlaceholderText('gbp')}
+                className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                  validationErrors.googleBusinessProfileId 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-white/20 focus:ring-[var(--brand-primary)]'
+                }`}
               />
+              {validationErrors.googleBusinessProfileId && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {validationErrors.googleBusinessProfileId}
+                </p>
+              )}
               <p className="text-xs text-white/60 mt-1">
-                Optional: Tracks local AI search visibility
+                Optional: Find this in your Google Business Profile settings under "Advanced settings"
               </p>
             </div>
 

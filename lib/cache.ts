@@ -196,7 +196,18 @@ export const CACHE_KEYS = {
   AEO_DATA: (domain: string, timeRange: string) => `aeo:${domain}:${timeRange}`,
   GEO_DATA: (domain: string, timeRange: string) => `geo:${domain}:${timeRange}`,
   DASHBOARD_OVERVIEW: (timeRange: string) => `dashboard:overview:${timeRange}`,
+  AI_HEALTH_DATA: (timeRange: string) => `ai-health:${timeRange}`,
+  WEBSITE_DATA: (domain: string, timeRange: string) => `website:${domain}:${timeRange}`,
+  REVIEWS_DATA: (domain: string, timeRange: string) => `reviews:${domain}:${timeRange}`,
+  SCHEMA_DATA: (domain: string, timeRange: string) => `schema:${domain}:${timeRange}`,
+  MYSTERY_SHOP_DATA: (domain: string, timeRange: string) => `mystery-shop:${domain}:${timeRange}`,
+  PREDICTIVE_DATA: (domain: string, timeRange: string) => `predictive:${domain}:${timeRange}`,
+  GEO_SGE_DATA: (domain: string, timeRange: string) => `geo-sge:${domain}:${timeRange}`,
   USER_SESSION: (userId: string) => `user:session:${userId}`,
+  USER_SUBSCRIPTION: (userId: string) => `user:subscription:${userId}`,
+  USAGE_STATS: (userId: string, feature?: string) => 
+    feature ? `usage:${userId}:${feature}` : `usage:${userId}`,
+  ANALYTICS_EVENTS: (userId: string, days: number) => `analytics:${userId}:${days}d`,
   API_RESPONSE: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
 } as const;
 
@@ -206,6 +217,16 @@ export const CACHE_TTL = {
   AEO_DATA: 300, // 5 minutes
   GEO_DATA: 300, // 5 minutes
   DASHBOARD_OVERVIEW: 60, // 1 minute
+  AI_HEALTH_DATA: 120, // 2 minutes
+  WEBSITE_DATA: 300, // 5 minutes
+  REVIEWS_DATA: 600, // 10 minutes
+  SCHEMA_DATA: 1800, // 30 minutes
+  MYSTERY_SHOP_DATA: 3600, // 1 hour
+  PREDICTIVE_DATA: 1800, // 30 minutes
+  GEO_SGE_DATA: 300, // 5 minutes
   USER_SESSION: 1800, // 30 minutes
+  USER_SUBSCRIPTION: 300, // 5 minutes
+  USAGE_STATS: 60, // 1 minute
+  ANALYTICS_EVENTS: 300, // 5 minutes
   API_RESPONSE: 300, // 5 minutes
 } as const;
