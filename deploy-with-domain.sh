@@ -1,42 +1,42 @@
 #!/bin/bash
 
-# Vercel deployment script with custom domain aliasing
-# Usage: ./deploy-with-domain.sh [custom-domain]
+# DealershipAI - Deploy with Custom Domain Setup
+echo "🚀 Deploying DealershipAI with custom domain setup..."
 
-# Get custom domain from argument or use default
-CUSTOM_DOMAIN=${1:-"dealershipai.com"}
+# Step 1: Deploy to Vercel
+echo "1️⃣ Deploying to Vercel..."
+vercel --prod
 
-echo "🚀 Starting Vercel deployment..."
-echo "📝 Custom domain: $CUSTOM_DOMAIN"
+# Get the latest deployment URL
+LATEST_URL=$(vercel ls | head -n 2 | tail -n 1 | awk '{print $2}')
+echo "📋 Latest deployment: $LATEST_URL"
 
-# save stdout and stderr to files
-vercel deploy --cwd . >deployment-url.txt 2>error.txt
+# Step 2: Update NEXTAUTH_URL
+echo ""
+echo "2️⃣ Updating NEXTAUTH_URL environment variable..."
+vercel env rm NEXTAUTH_URL production --yes
+echo "$LATEST_URL" | vercel env add NEXTAUTH_URL production
 
-# check the exit code
-code=$?
-if [ $code -eq 0 ]; then
-    # Now you can use the deployment url from stdout for the next step of your workflow
-    deploymentUrl=`cat deployment-url.txt`
-    echo "✅ Deployment successful!"
-    echo "🔗 Deployment URL: $deploymentUrl"
-    
-    echo "🌐 Setting up custom domain alias..."
-    vercel alias $deploymentUrl $CUSTOM_DOMAIN
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ Domain alias set successfully!"
-        echo "🌍 Your app is now available at: https://$CUSTOM_DOMAIN"
-    else
-        echo "❌ Failed to set domain alias"
-    fi
-else
-    # Handle the error
-    errorMessage=`cat error.txt`
-    echo "❌ There was an error: $errorMessage"
-    exit 1
-fi
+# Step 3: Instructions for custom domain
+echo ""
+echo "3️⃣ Custom Domain Setup Instructions:"
+echo "   Go to: https://vercel.com/brian-kramers-projects/dealershipai-dashboard/settings/domains"
+echo "   Add domain: dealershipai.com"
+echo "   Follow DNS instructions"
 
-# Clean up temporary files
-rm -f deployment-url.txt error.txt
+# Step 4: Update Google Cloud Console
+echo ""
+echo "4️⃣ Update Google Cloud Console:"
+echo "   Go to: https://console.cloud.google.com/apis/credentials"
+echo "   Add redirect URI: $LATEST_URL/api/auth/callback/google"
+echo "   Add JavaScript origin: $LATEST_URL"
 
-echo "🎉 Deployment process completed!"
+# Step 5: Test deployment
+echo ""
+echo "5️⃣ Testing deployment..."
+echo "   Landing page: $LATEST_URL"
+echo "   OAuth test: curl -I '$LATEST_URL/api/auth/signin/google'"
+
+echo ""
+echo "✅ Deployment complete!"
+echo "   Next: Set up custom domain and update OAuth settings"
