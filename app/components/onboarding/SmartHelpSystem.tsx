@@ -3,204 +3,221 @@
 import React, { useState, useEffect } from 'react';
 import { 
   HelpCircle, 
-  X, 
-  Play, 
-  ExternalLink, 
+  Search, 
+  Lightbulb, 
+  BookOpen, 
+  Video, 
   MessageCircle,
-  Phone,
-  Mail,
+  ExternalLink,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Play,
   Clock,
-  CheckCircle2,
-  AlertTriangle,
-  Lightbulb
+  Star,
+  Zap,
+  Target,
+  Globe,
+  BarChart3,
+  MapPin
 } from 'lucide-react';
 
-interface HelpContent {
+interface HelpItem {
   id: string;
   title: string;
   description: string;
-  type: 'text' | 'video' | 'link' | 'contact';
+  type: 'guide' | 'video' | 'faq' | 'tip';
+  duration?: string;
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
+  category: string;
   content: string;
-  priority: 'high' | 'medium' | 'low';
-  estimatedTime?: string;
+  relatedSteps?: string[];
+  icon?: React.ReactNode;
 }
 
 interface SmartHelpSystemProps {
   stepId: string;
-  userInput?: string;
-  errorType?: string;
+  context?: {
+    dealershipName?: string;
+    currentStep?: string;
+    progress?: number;
+    integrationData?: Record<string, any>;
+  };
   onHelpRequest?: (helpType: string) => void;
 }
 
 export default function SmartHelpSystem({ 
   stepId, 
-  userInput, 
-  errorType, 
+  context, 
   onHelpRequest 
 }: SmartHelpSystemProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [helpContent, setHelpContent] = useState<HelpContent[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showContact, setShowContact] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedItem, setSelectedItem] = useState<HelpItem | null>(null);
 
-  useEffect(() => {
-    if (errorType || userInput) {
-      generateContextualHelp();
+  const helpItems: HelpItem[] = [
+    {
+      id: 'website-setup',
+      title: 'How to find your website URL',
+      description: 'Learn how to locate and format your dealership website URL',
+      type: 'guide',
+      duration: '2 min read',
+      difficulty: 'Beginner',
+      category: 'Website Setup',
+      content: 'Your website URL is the address where customers can find your dealership online. It usually looks like www.yourdealership.com or https://www.yourdealership.com. You can find this in your browser\'s address bar when you visit your website.',
+      relatedSteps: ['required_setup'],
+      icon: <Globe className="w-5 h-5" />
+    },
+    {
+      id: 'gbp-setup',
+      title: 'Finding your Google Business Profile ID',
+      description: 'Step-by-step guide to locate your Google Business Profile ID',
+      type: 'guide',
+      duration: '3 min read',
+      difficulty: 'Beginner',
+      category: 'Google Business Profile',
+      content: 'To find your Google Business Profile ID: 1) Go to your Google Business Profile dashboard, 2) Click on "Info" in the left menu, 3) Scroll down to "Advanced settings", 4) Your Business Profile ID will be listed there (starts with "ChIJ...").',
+      relatedSteps: ['required_setup'],
+      icon: <MapPin className="w-5 h-5" />
+    },
+    {
+      id: 'ga4-setup',
+      title: 'Connecting Google Analytics 4',
+      description: 'Complete guide to setting up GA4 integration',
+      type: 'guide',
+      duration: '5 min read',
+      difficulty: 'Intermediate',
+      category: 'Google Analytics',
+      content: 'To connect Google Analytics 4: 1) Go to your GA4 property, 2) Click on "Admin" in the bottom left, 3) Under "Property", click "Property Settings", 4) Copy your Property ID (starts with "G-..."). This gives you 87% more accurate traffic insights.',
+      relatedSteps: ['google_analytics'],
+      icon: <BarChart3 className="w-5 h-5" />
+    },
+    {
+      id: 'quick-tips',
+      title: 'Quick Setup Tips',
+      description: 'Pro tips to speed up your onboarding process',
+      type: 'tip',
+      duration: '1 min read',
+      difficulty: 'Beginner',
+      category: 'General',
+      content: '💡 Pro Tips: 1) Have your website URL and Google Business Profile ready before starting, 2) Use the AI assistant for personalized guidance, 3) You can always add more integrations later, 4) Start with just the required fields to get going quickly.',
+      relatedSteps: ['welcome', 'required_setup'],
+      icon: <Lightbulb className="w-5 h-5" />
+    },
+    {
+      id: 'troubleshooting',
+      title: 'Common Setup Issues',
+      description: 'Solutions to the most common onboarding problems',
+      type: 'faq',
+      duration: '3 min read',
+      difficulty: 'Beginner',
+      category: 'Troubleshooting',
+      content: 'Common issues and solutions: 1) "Invalid URL" - Make sure to include www. or https://, 2) "Can\'t find GBP ID" - Check your Google Business Profile is verified, 3) "GA4 not working" - Ensure you have admin access to the property.',
+      relatedSteps: ['required_setup', 'google_analytics'],
+      icon: <HelpCircle className="w-5 h-5" />
     }
-  }, [stepId, userInput, errorType]);
+  ];
 
-  const generateContextualHelp = async () => {
-    setIsLoading(true);
+  const categories = [
+    { id: 'all', name: 'All Help', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'Website Setup', name: 'Website', icon: <Globe className="w-4 h-4" /> },
+    { id: 'Google Business Profile', name: 'GBP', icon: <MapPin className="w-4 h-4" /> },
+    { id: 'Google Analytics', name: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> },
+    { id: 'General', name: 'General', icon: <Lightbulb className="w-4 h-4" /> },
+    { id: 'Troubleshooting', name: 'Help', icon: <HelpCircle className="w-4 h-4" /> }
+  ];
+
+  const filteredItems = helpItems.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesStep = !item.relatedSteps || item.relatedSteps.includes(stepId);
     
-    try {
-      // Analyze user input and error type to generate relevant help
-      const helpItems = await getContextualHelp(stepId, userInput, errorType);
-      setHelpContent(helpItems);
-      
-      if (helpItems.length > 0) {
-        setIsOpen(true);
-      }
-    } catch (error) {
-      console.error('Failed to generate help content:', error);
-    } finally {
-      setIsLoading(false);
+    return matchesSearch && matchesCategory && matchesStep;
+  });
+
+  const getContextualTips = () => {
+    const tips = [];
+    
+    if (stepId === 'required_setup') {
+      tips.push({
+        icon: <Globe className="w-4 h-4" />,
+        text: "You can enter just 'yourdealership.com' - we'll add the www and https automatically"
+      });
+      tips.push({
+        icon: <MapPin className="w-4 h-4" />,
+        text: "Your Google Business Profile ID starts with 'ChIJ' and is about 27 characters long"
+      });
     }
+    
+    if (stepId === 'google_analytics') {
+      tips.push({
+        icon: <BarChart3 className="w-4 h-4" />,
+        text: "GA4 Property ID starts with 'G-' followed by 10 characters"
+      });
+      tips.push({
+        icon: <Zap className="w-4 h-4" />,
+        text: "This integration gives you 87% more accurate traffic insights"
+      });
+    }
+    
+    return tips;
   };
 
-  const getContextualHelp = async (stepId: string, userInput?: string, errorType?: string): Promise<HelpContent[]> => {
-    // This would typically call an API to generate contextual help
-    // For now, we'll use predefined help content based on step and context
-    
-    const helpMap: Record<string, HelpContent[]> = {
-      'required-setup': [
-        {
-          id: 'website-url-help',
-          title: 'Finding Your Website URL',
-          description: 'Your website URL is the address where customers can find your dealership online.',
-          type: 'text',
-          content: 'Enter your full website address including https:// (e.g., https://www.yourdealership.com)',
-          priority: 'high'
-        },
-        {
-          id: 'gbp-id-help',
-          title: 'Finding Your Google Business Profile ID',
-          description: 'Your Google Business Profile ID is a unique identifier for your business listing.',
-          type: 'video',
-          content: 'https://youtube.com/watch?v=example',
-          priority: 'high',
-          estimatedTime: '2 minutes'
-        }
-      ],
-      'google-analytics': [
-        {
-          id: 'ga4-property-id',
-          title: 'Finding Your GA4 Property ID',
-          description: 'Your Google Analytics 4 Property ID starts with "G-" followed by 10 characters.',
-          type: 'text',
-          content: 'Go to Google Analytics > Admin > Property Settings. Your Property ID will be displayed at the top.',
-          priority: 'high'
-        },
-        {
-          id: 'ga4-setup-guide',
-          title: 'GA4 Setup Guide',
-          description: 'Complete guide to setting up Google Analytics 4 for your dealership.',
-          type: 'link',
-          content: 'https://support.google.com/analytics/answer/9304153',
-          priority: 'medium'
-        }
-      ],
-      'social-media': [
-        {
-          id: 'facebook-page-id',
-          title: 'Finding Your Facebook Page ID',
-          description: 'Your Facebook Page ID is a unique number associated with your business page.',
-          type: 'text',
-          content: 'Go to your Facebook Page > About > Page Info. The Page ID is listed at the bottom.',
-          priority: 'high'
-        },
-        {
-          id: 'instagram-business-id',
-          title: 'Finding Your Instagram Business ID',
-          description: 'Your Instagram Business ID is required to connect your business account.',
-          type: 'text',
-          content: 'Go to your Instagram Business account > Settings > Account > Business Information.',
-          priority: 'high'
-        }
-      ]
-    };
+  const contextualTips = getContextualTips();
 
-    // Filter help based on error type
-    if (errorType) {
-      const errorHelp: Record<string, HelpContent> = {
-        'invalid_format': {
-          id: 'format-error',
-          title: 'Invalid Format Error',
-          description: 'The ID you entered doesn\'t match the expected format.',
-          type: 'text',
-          content: 'Please check the format and try again. Most IDs are case-sensitive.',
-          priority: 'high'
-        },
-        'connection_failed': {
-          id: 'connection-error',
-          title: 'Connection Failed',
-          description: 'We couldn\'t connect to your account. This might be due to permissions or network issues.',
-          type: 'text',
-          content: 'Please verify your credentials and ensure you have the necessary permissions.',
-          priority: 'high'
-        },
-        'permission_denied': {
-          id: 'permission-error',
-          title: 'Permission Denied',
-          description: 'You don\'t have the necessary permissions to access this account.',
-          type: 'text',
-          content: 'Please ensure you\'re logged into the correct account and have admin access.',
-          priority: 'high'
-        }
-      };
-
-      if (errorHelp[errorType]) {
-        return [errorHelp[errorType], ...(helpMap[stepId] || [])];
-      }
-    }
-
-    return helpMap[stepId] || [];
-  };
-
-  const handleHelpClick = (helpType: string) => {
+  const handleHelpRequest = (helpType: string) => {
     onHelpRequest?.(helpType);
+    setIsOpen(true);
   };
 
-  const handleContactSupport = () => {
-    setShowContact(true);
-    onHelpRequest?.('contact_support');
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-400 bg-red-500/20';
-      case 'medium': return 'text-yellow-400 bg-yellow-500/20';
-      case 'low': return 'text-blue-400 bg-blue-500/20';
-      default: return 'text-gray-400 bg-gray-500/20';
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video': return <Play className="w-4 h-4" />;
-      case 'link': return <ExternalLink className="w-4 h-4" />;
-      case 'contact': return <MessageCircle className="w-4 h-4" />;
-      default: return <Lightbulb className="w-4 h-4" />;
-    }
-  };
-
-  if (!isOpen && !isLoading) {
+  if (selectedItem) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-[var(--brand-primary)] text-white rounded-full shadow-lg hover:bg-[var(--brand-primary)]/80 transition-colors z-50"
-      >
-        <HelpCircle className="w-6 h-6 mx-auto" />
-      </button>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-5 z-50">
+        <div className="glass rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              {selectedItem.icon}
+              <h2 className="text-xl font-semibold">{selectedItem.title}</h2>
+            </div>
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 text-sm text-white/60">
+              {selectedItem.duration && (
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {selectedItem.duration}
+                </div>
+              )}
+              {selectedItem.difficulty && (
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4" />
+                  {selectedItem.difficulty}
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                {selectedItem.type === 'guide' && <BookOpen className="w-4 h-4" />}
+                {selectedItem.type === 'video' && <Video className="w-4 h-4" />}
+                {selectedItem.type === 'faq' && <HelpCircle className="w-4 h-4" />}
+                {selectedItem.type === 'tip' && <Lightbulb className="w-4 h-4" />}
+                {selectedItem.type}
+              </div>
+            </div>
+            
+            <div className="prose prose-invert max-w-none">
+              <p className="text-white/80 leading-relaxed">{selectedItem.content}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -208,193 +225,126 @@ export default function SmartHelpSystem({
     <>
       {/* Help Button */}
       <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-[var(--brand-primary)] text-white rounded-full shadow-lg hover:bg-[var(--brand-primary)]/80 transition-colors z-50"
+        onClick={() => handleHelpRequest('general')}
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/80 transition-all shadow-lg flex items-center justify-center z-40"
       >
-        <HelpCircle className="w-6 h-6 mx-auto" />
+        <HelpCircle className="w-6 h-6" />
       </button>
 
-      {/* Help Modal */}
+      {/* Help Panel */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--brand-card)] border border-[var(--brand-border)] rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-end justify-center p-5 z-50">
+          <div className="glass rounded-t-2xl p-6 w-full max-w-4xl max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Need Help?</h2>
+              <h2 className="text-2xl font-semibold">Smart Help Center</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white/60 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="w-8 h-8 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-white/70">Finding the best help for you...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {helpContent.map((help) => (
-                  <div
-                    key={help.id}
-                    className="glass rounded-xl p-4 border border-white/20"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getPriorityColor(help.priority)}`}>
-                        {getTypeIcon(help.type)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold">{help.title}</h3>
-                          <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(help.priority)}`}>
-                            {help.priority}
-                          </span>
-                        </div>
-                        <p className="text-sm text-white/70 mb-3">{help.description}</p>
-                        
-                        {help.type === 'text' && (
-                          <div className="text-sm text-white/90 bg-white/5 rounded-lg p-3">
-                            {help.content}
-                          </div>
-                        )}
-                        
-                        {help.type === 'video' && (
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleHelpClick('video_help')}
-                              className="flex items-center gap-2 px-3 py-2 bg-[var(--brand-primary)]/20 text-[var(--brand-primary)] rounded-lg hover:bg-[var(--brand-primary)]/30 transition-colors"
-                            >
-                              <Play className="w-4 h-4" />
-                              Watch Video
-                              {help.estimatedTime && (
-                                <span className="text-xs text-white/60">({help.estimatedTime})</span>
-                              )}
-                            </button>
-                          </div>
-                        )}
-                        
-                        {help.type === 'link' && (
-                          <a
-                            href={help.content}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => handleHelpClick('external_link')}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            View Guide
-                          </a>
-                        )}
-                      </div>
+            {/* Contextual Tips */}
+            {contextualTips.length > 0 && (
+              <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <h3 className="font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4" />
+                  Quick Tips for This Step
+                </h3>
+                <div className="space-y-2">
+                  {contextualTips.map((tip, index) => (
+                    <div key={index} className="flex items-start gap-2 text-sm">
+                      {tip.icon}
+                      <span className="text-white/80">{tip.text}</span>
                     </div>
-                  </div>
-                ))}
-
-                {/* Contact Support */}
-                <div className="glass rounded-xl p-4 border border-white/20">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)]/20 flex items-center justify-center">
-                      <MessageCircle className="w-4 h-4 text-[var(--brand-primary)]" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold mb-2">Still Need Help?</h3>
-                      <p className="text-sm text-white/70 mb-4">
-                        Our support team is here to help you get set up quickly.
-                      </p>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={handleContactSupport}
-                          className="flex items-center gap-2 px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-primary)]/80 transition-colors"
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                          Chat Support
-                        </button>
-                        <button
-                          onClick={() => window.open('mailto:support@dealershipai.com')}
-                          className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-                        >
-                          <Mail className="w-4 h-4" />
-                          Email Us
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
 
-      {/* Contact Support Modal */}
-      {showContact && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--brand-card)] border border-[var(--brand-border)] rounded-2xl p-6 max-w-md w-full">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Contact Support</h2>
-              <button
-                onClick={() => setShowContact(false)}
-                className="text-white/60 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
+            {/* Search */}
+            <div className="mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+                <input
+                  type="text"
+                  placeholder="Search help articles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/5 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                />
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="text-center">
-                <MessageCircle className="w-12 h-12 text-[var(--brand-primary)] mx-auto mb-4" />
-                <h3 className="font-semibold mb-2">Live Chat Available</h3>
-                <p className="text-sm text-white/70 mb-4">
-                  Our support team is online and ready to help you with your setup.
-                </p>
-                <div className="flex items-center justify-center gap-2 text-sm text-emerald-400 mb-4">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                  <span>Online now</span>
+            {/* Categories */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                    selectedCategory === category.id
+                      ? 'bg-[var(--brand-primary)] text-white'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  }`}
+                >
+                  {category.icon}
+                  {category.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Help Items */}
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedItem(item)}
+                  className="glass rounded-xl p-4 cursor-pointer hover:bg-white/5 transition-all"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-[var(--brand-primary)]/20 flex items-center justify-center flex-shrink-0">
+                      {item.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1">{item.title}</h3>
+                      <p className="text-sm text-white/70 mb-2">{item.description}</p>
+                      <div className="flex items-center gap-4 text-xs text-white/50">
+                        {item.duration && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {item.duration}
+                          </div>
+                        )}
+                        {item.difficulty && (
+                          <div className="flex items-center gap-1">
+                            <Star className="w-3 h-3" />
+                            {item.difficulty}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                          {item.type === 'guide' && <BookOpen className="w-3 h-3" />}
+                          {item.type === 'video' && <Video className="w-3 h-3" />}
+                          {item.type === 'faq' && <HelpCircle className="w-3 h-3" />}
+                          {item.type === 'tip' && <Lightbulb className="w-3 h-3" />}
+                          {item.type}
+                        </div>
+                      </div>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-white/40" />
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    // Open chat widget
-                    window.open('https://chat.dealershipai.com', '_blank');
-                    setShowContact(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-primary)]/80 transition-colors"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  Start Live Chat
-                </button>
-                
-                <button
-                  onClick={() => {
-                    window.open('mailto:support@dealershipai.com?subject=Onboarding Help', '_blank');
-                    setShowContact(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-                >
-                  <Mail className="w-5 h-5" />
-                  Send Email
-                </button>
-                
-                <button
-                  onClick={() => {
-                    window.open('tel:+1-555-0123', '_blank');
-                    setShowContact(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-                >
-                  <Phone className="w-5 h-5" />
-                  Call Support
-                </button>
-              </div>
-
-              <div className="text-center text-xs text-white/60">
-                <p>Average response time: 2 minutes</p>
-                <p>Available 24/7 for urgent issues</p>
-              </div>
+              ))}
             </div>
+
+            {filteredItems.length === 0 && (
+              <div className="text-center py-8 text-white/60">
+                <HelpCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No help articles found for your search.</p>
+                <p className="text-sm">Try a different search term or category.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
