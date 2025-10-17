@@ -6,12 +6,25 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 -- Create custom types
-CREATE TYPE user_role AS ENUM ('super_admin', 'enterprise_admin', 'dealership_admin', 'user');
-CREATE TYPE audit_status AS ENUM ('pending', 'processing', 'completed', 'failed');
-CREATE TYPE optimization_priority AS ENUM ('low', 'medium', 'high', 'critical');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('super_admin', 'enterprise_admin', 'dealership_admin', 'user');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE audit_status AS ENUM ('pending', 'processing', 'completed', 'failed');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE optimization_priority AS ENUM ('low', 'medium', 'high', 'critical');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Tenants table (multi-tenant architecture)
-CREATE TABLE tenants (
+CREATE TABLE IF NOT EXISTS tenants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     domain VARCHAR(255) UNIQUE,
@@ -21,7 +34,7 @@ CREATE TABLE tenants (
 );
 
 -- Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     clerk_id VARCHAR(255) UNIQUE NOT NULL,
@@ -36,7 +49,7 @@ CREATE TABLE users (
 );
 
 -- Dealerships table
-CREATE TABLE dealerships (
+CREATE TABLE IF NOT EXISTS dealerships (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
@@ -54,7 +67,7 @@ CREATE TABLE dealerships (
 );
 
 -- AI Visibility Audits table
-CREATE TABLE ai_visibility_audits (
+CREATE TABLE IF NOT EXISTS ai_visibility_audits (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
@@ -86,7 +99,7 @@ CREATE TABLE ai_visibility_audits (
 );
 
 -- Optimization Recommendations table
-CREATE TABLE optimization_recommendations (
+CREATE TABLE IF NOT EXISTS optimization_recommendations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
@@ -117,7 +130,7 @@ CREATE TABLE optimization_recommendations (
 );
 
 -- AI Citations tracking table
-CREATE TABLE ai_citations (
+CREATE TABLE IF NOT EXISTS ai_citations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
@@ -135,7 +148,7 @@ CREATE TABLE ai_citations (
 );
 
 -- Competitor Analysis table
-CREATE TABLE competitor_analysis (
+CREATE TABLE IF NOT EXISTS competitor_analysis (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
@@ -152,7 +165,7 @@ CREATE TABLE competitor_analysis (
 );
 
 -- Activity Feed table
-CREATE TABLE activity_feed (
+CREATE TABLE IF NOT EXISTS activity_feed (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
@@ -167,21 +180,21 @@ CREATE TABLE activity_feed (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_users_tenant_id ON users(tenant_id);
-CREATE INDEX idx_users_clerk_id ON users(clerk_id);
-CREATE INDEX idx_dealerships_tenant_id ON dealerships(tenant_id);
-CREATE INDEX idx_dealerships_domain ON dealerships(domain);
-CREATE INDEX idx_audits_dealership_id ON ai_visibility_audits(dealership_id);
-CREATE INDEX idx_audits_tenant_id ON ai_visibility_audits(tenant_id);
-CREATE INDEX idx_audits_created_at ON ai_visibility_audits(created_at);
-CREATE INDEX idx_recommendations_dealership_id ON optimization_recommendations(dealership_id);
-CREATE INDEX idx_recommendations_tenant_id ON optimization_recommendations(tenant_id);
-CREATE INDEX idx_citations_dealership_id ON ai_citations(dealership_id);
-CREATE INDEX idx_citations_platform ON ai_citations(platform);
-CREATE INDEX idx_citations_created_at ON ai_citations(created_at);
-CREATE INDEX idx_competitor_analysis_dealership_id ON competitor_analysis(dealership_id);
-CREATE INDEX idx_activity_feed_tenant_id ON activity_feed(tenant_id);
-CREATE INDEX idx_activity_feed_created_at ON activity_feed(created_at);
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON users(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);
+CREATE INDEX IF NOT EXISTS idx_dealerships_tenant_id ON dealerships(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dealerships_domain ON dealerships(domain);
+CREATE INDEX IF NOT EXISTS idx_audits_dealership_id ON ai_visibility_audits(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_audits_tenant_id ON ai_visibility_audits(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_audits_created_at ON ai_visibility_audits(created_at);
+CREATE INDEX IF NOT EXISTS idx_recommendations_dealership_id ON optimization_recommendations(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_recommendations_tenant_id ON optimization_recommendations(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_citations_dealership_id ON ai_citations(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_citations_platform ON ai_citations(platform);
+CREATE INDEX IF NOT EXISTS idx_citations_created_at ON ai_citations(created_at);
+CREATE INDEX IF NOT EXISTS idx_competitor_analysis_dealership_id ON competitor_analysis(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_tenant_id ON activity_feed(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_created_at ON activity_feed(created_at);
 
 -- Row Level Security (RLS) policies
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
@@ -194,26 +207,54 @@ ALTER TABLE competitor_analysis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_feed ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for multi-tenant isolation
-CREATE POLICY "Users can only see their tenant data" ON users
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+DO $$ BEGIN
+    CREATE POLICY "Users can only see their tenant data" ON users
+        FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Dealerships are isolated by tenant" ON dealerships
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+DO $$ BEGIN
+    CREATE POLICY "Dealerships are isolated by tenant" ON dealerships
+        FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Audits are isolated by tenant" ON ai_visibility_audits
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+DO $$ BEGIN
+    CREATE POLICY "Audits are isolated by tenant" ON ai_visibility_audits
+        FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Recommendations are isolated by tenant" ON optimization_recommendations
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+DO $$ BEGIN
+    CREATE POLICY "Recommendations are isolated by tenant" ON optimization_recommendations
+        FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Citations are isolated by tenant" ON ai_citations
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+DO $$ BEGIN
+    CREATE POLICY "Citations are isolated by tenant" ON ai_citations
+        FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Competitor analysis is isolated by tenant" ON competitor_analysis
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+DO $$ BEGIN
+    CREATE POLICY "Competitor analysis is isolated by tenant" ON competitor_analysis
+        FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Activity feed is isolated by tenant" ON activity_feed
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+DO $$ BEGIN
+    CREATE POLICY "Activity feed is isolated by tenant" ON activity_feed
+        FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Functions for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -225,20 +266,51 @@ END;
 $$ language 'plpgsql';
 
 -- Triggers for updated_at
-CREATE TRIGGER update_tenants_updated_at BEFORE UPDATE ON tenants FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_dealerships_updated_at BEFORE UPDATE ON dealerships FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_audits_updated_at BEFORE UPDATE ON ai_visibility_audits FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_recommendations_updated_at BEFORE UPDATE ON optimization_recommendations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_competitor_analysis_updated_at BEFORE UPDATE ON competitor_analysis FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DO $$ BEGIN
+    CREATE TRIGGER update_tenants_updated_at BEFORE UPDATE ON tenants FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TRIGGER update_dealerships_updated_at BEFORE UPDATE ON dealerships FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TRIGGER update_audits_updated_at BEFORE UPDATE ON ai_visibility_audits FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TRIGGER update_recommendations_updated_at BEFORE UPDATE ON optimization_recommendations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TRIGGER update_competitor_analysis_updated_at BEFORE UPDATE ON competitor_analysis FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Insert sample data
 INSERT INTO tenants (name, domain) VALUES 
 ('DealershipAI Demo', 'demo.dealershipai.com'),
-('Enterprise Customer', 'enterprise.dealershipai.com');
+('Enterprise Customer', 'enterprise.dealershipai.com')
+ON CONFLICT (domain) DO NOTHING;
 
 -- Insert sample dealerships
 INSERT INTO dealerships (tenant_id, name, domain, website_url, city, state, phone, email) VALUES 
 ((SELECT id FROM tenants WHERE domain = 'demo.dealershipai.com'), 'ABC Toyota', 'abctoyota.com', 'https://abctoyota.com', 'Austin', 'TX', '(555) 123-4567', 'info@abctoyota.com'),
 ((SELECT id FROM tenants WHERE domain = 'demo.dealershipai.com'), 'Honda Center', 'hondacenter.com', 'https://hondacenter.com', 'Dallas', 'TX', '(555) 234-5678', 'info@hondacenter.com'),
-((SELECT id FROM tenants WHERE domain = 'demo.dealershipai.com'), 'BMW of Texas', 'bmwoftexas.com', 'https://bmwoftexas.com', 'Houston', 'TX', '(555) 345-6789', 'info@bmwoftexas.com');
+((SELECT id FROM tenants WHERE domain = 'demo.dealershipai.com'), 'BMW of Texas', 'bmwoftexas.com', 'https://bmwoftexas.com', 'Houston', 'TX', '(555) 345-6789', 'info@bmwoftexas.com')
+ON CONFLICT (domain) DO NOTHING;

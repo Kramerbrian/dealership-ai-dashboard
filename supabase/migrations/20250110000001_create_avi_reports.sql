@@ -89,7 +89,7 @@ CREATE POLICY "SuperAdmins can view all AVI reports"
       SELECT 1
       FROM public.users
       WHERE clerk_id = auth.jwt() ->> 'sub'
-      AND role = 'superadmin'
+      AND role = 'super_admin'
     )
   );
 

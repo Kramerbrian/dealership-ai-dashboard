@@ -1,221 +1,249 @@
 -- DealershipAI Database Schema
--- This file contains all the necessary tables for the DealershipAI platform
+-- This schema supports the complete DealershipAI platform with multi-tenancy, AI optimization, and analytics
 
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Create custom types
-CREATE TYPE user_role AS ENUM ('super_admin', 'enterprise_admin', 'dealership_admin', 'user');
-CREATE TYPE audit_status AS ENUM ('pending', 'processing', 'completed', 'failed');
-CREATE TYPE optimization_priority AS ENUM ('low', 'medium', 'high', 'critical');
-
--- Tenants table (multi-tenant architecture)
-CREATE TABLE tenants (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
-    domain VARCHAR(255) UNIQUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    is_active BOOLEAN DEFAULT true
-);
+CREATE TYPE user_tier AS ENUM ('free', 'growth', 'pro', 'enterprise');
+CREATE TYPE user_role AS ENUM ('owner', 'admin', 'editor', 'viewer');
+CREATE TYPE subscription_status AS ENUM ('active', 'cancelled', 'past_due', 'unpaid');
+CREATE TYPE audit_status AS ENUM ('pending', 'running', 'completed', 'failed');
+CREATE TYPE recommendation_priority AS ENUM ('high', 'medium', 'low');
+CREATE TYPE recommendation_category AS ENUM ('content', 'technical', 'citations', 'trust');
 
 -- Users table
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-    clerk_id VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    role user_role DEFAULT 'user',
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    dealership VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+    zip_code VARCHAR(10),
+    phone VARCHAR(20),
+    website VARCHAR(255),
+    role user_role DEFAULT 'owner',
+    tier user_tier DEFAULT 'free',
+    is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    last_login TIMESTAMP WITH TIME ZONE,
-    is_active BOOLEAN DEFAULT true
+    last_login_at TIMESTAMP WITH TIME ZONE
+);
+
+-- User preferences table
+CREATE TABLE user_preferences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    theme VARCHAR(20) DEFAULT 'light',
+    email_notifications BOOLEAN DEFAULT true,
+    push_notifications BOOLEAN DEFAULT true,
+    sms_notifications BOOLEAN DEFAULT false,
+    dashboard_layout VARCHAR(20) DEFAULT 'grid',
+    default_view VARCHAR(20) DEFAULT 'overview',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Subscriptions table
+CREATE TABLE subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    plan user_tier NOT NULL,
+    status subscription_status DEFAULT 'active',
+    current_period_start TIMESTAMP WITH TIME ZONE NOT NULL,
+    current_period_end TIMESTAMP WITH TIME ZONE NOT NULL,
+    cancel_at_period_end BOOLEAN DEFAULT false,
+    trial_end TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Dealerships table
 CREATE TABLE dealerships (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
-    domain VARCHAR(255) UNIQUE NOT NULL,
-    website_url TEXT,
-    address TEXT,
-    city VARCHAR(100),
-    state VARCHAR(50),
-    zip_code VARCHAR(20),
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+    zip_code VARCHAR(10),
     phone VARCHAR(20),
+    website VARCHAR(255),
     email VARCHAR(255),
+    brands TEXT[],
+    ai_visibility_score INTEGER DEFAULT 0,
+    trust_score INTEGER DEFAULT 0,
+    citation_score INTEGER DEFAULT 0,
+    last_audit_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    is_active BOOLEAN DEFAULT true
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- AI Visibility Audits table
-CREATE TABLE ai_visibility_audits (
+-- Audit results table
+CREATE TABLE audit_results (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    overall_score INTEGER NOT NULL,
+    ai_visibility_score INTEGER NOT NULL,
+    trust_score INTEGER NOT NULL,
+    citation_score INTEGER NOT NULL,
+    competitor_scores JSONB,
+    recommendations JSONB,
+    raw_data JSONB,
     status audit_status DEFAULT 'pending',
-    
-    -- AI Visibility Scores
-    ai_visibility_score INTEGER CHECK (ai_visibility_score >= 0 AND ai_visibility_score <= 100),
-    zero_click_score INTEGER CHECK (zero_click_score >= 0 AND zero_click_score <= 100),
-    ugc_health_score INTEGER CHECK (ugc_health_score >= 0 AND ugc_health_score <= 100),
-    geo_trust_score INTEGER CHECK (geo_trust_score >= 0 AND geo_trust_score <= 100),
-    sgp_integrity_score INTEGER CHECK (sgp_integrity_score >= 0 AND sgp_integrity_score <= 100),
-    overall_score INTEGER CHECK (overall_score >= 0 AND overall_score <= 100),
-    
-    -- Trust Scores
-    authority_score INTEGER CHECK (authority_score >= 0 AND authority_score <= 100),
-    expertise_score INTEGER CHECK (expertise_score >= 0 AND expertise_score <= 100),
-    experience_score INTEGER CHECK (experience_score >= 0 AND experience_score <= 100),
-    transparency_score INTEGER CHECK (transparency_score >= 0 AND transparency_score <= 100),
-    consistency_score INTEGER CHECK (consistency_score >= 0 AND consistency_score <= 100),
-    freshness_score INTEGER CHECK (freshness_score >= 0 AND freshness_score <= 100),
-    overall_trust_score INTEGER CHECK (overall_trust_score >= 0 AND overall_trust_score <= 100),
-    
-    -- Metadata
-    audit_data JSONB,
-    error_message TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     completed_at TIMESTAMP WITH TIME ZONE
 );
 
--- Optimization Recommendations table
-CREATE TABLE optimization_recommendations (
+-- Competitor scores table
+CREATE TABLE competitor_scores (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-    audit_id UUID REFERENCES ai_visibility_audits(id) ON DELETE CASCADE,
-    
-    -- Recommendation details
-    actionable_win TEXT NOT NULL,
-    opportunity TEXT NOT NULL,
-    score DECIMAL(3,2) CHECK (score >= 0 AND score <= 1),
-    explanation TEXT NOT NULL,
-    
-    -- Categorization
-    category VARCHAR(50) CHECK (category IN ('seo', 'aeo', 'geo', 'ai_visibility', 'content', 'technical', 'local')),
-    priority optimization_priority DEFAULT 'medium',
-    effort_level VARCHAR(20) CHECK (effort_level IN ('low', 'medium', 'high')),
-    impact_level VARCHAR(20) CHECK (impact_level IN ('low', 'medium', 'high')),
-    
-    -- Implementation details
-    estimated_time VARCHAR(50),
-    required_skills TEXT[],
-    tools_needed TEXT[],
-    
-    -- Status tracking
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
-    created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- AI Citations tracking table
-CREATE TABLE ai_citations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-    
-    -- Citation details
-    platform VARCHAR(50) NOT NULL CHECK (platform IN ('chatgpt', 'claude', 'perplexity', 'gemini', 'google_sge')),
-    query TEXT NOT NULL,
-    response_text TEXT,
-    citation_position INTEGER,
-    confidence_score DECIMAL(3,2),
-    
-    -- Metadata
-    citation_data JSONB,
+    audit_id UUID REFERENCES audit_results(id) ON DELETE CASCADE,
+    competitor_name VARCHAR(255) NOT NULL,
+    score INTEGER NOT NULL,
+    improvement INTEGER DEFAULT 0,
+    is_blurred BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Competitor Analysis table
-CREATE TABLE competitor_analysis (
+-- Recommendations table
+CREATE TABLE recommendations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-    
-    -- Competitor details
-    competitor_name VARCHAR(255) NOT NULL,
-    competitor_domain VARCHAR(255),
-    competitor_score INTEGER CHECK (competitor_score >= 0 AND competitor_score <= 100),
-    
-    -- Analysis data
-    analysis_data JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    audit_id UUID REFERENCES audit_results(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    priority recommendation_priority NOT NULL,
+    impact INTEGER NOT NULL,
+    effort VARCHAR(20) NOT NULL,
+    category recommendation_category NOT NULL,
+    steps JSONB,
+    is_completed BOOLEAN DEFAULT false,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Activity Feed table
+-- Activity feed table
 CREATE TABLE activity_feed (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     dealership_id UUID REFERENCES dealerships(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    
-    -- Activity details
-    activity_type VARCHAR(50) NOT NULL,
-    activity_data JSONB,
-    message TEXT NOT NULL,
-    
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    metadata JSONB,
+    is_public BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Idempotency keys table
+CREATE TABLE idempotency_keys (
+    idempotency_key VARCHAR(255) PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    route VARCHAR(255) NOT NULL,
+    body_hash VARCHAR(255) NOT NULL,
+    response_status INTEGER,
+    response_body JSONB,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
+-- Rate limiting table
+CREATE TABLE rate_limits (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    route VARCHAR(255) NOT NULL,
+    request_count INTEGER DEFAULT 1,
+    window_start TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_users_tenant_id ON users(tenant_id);
-CREATE INDEX idx_users_clerk_id ON users(clerk_id);
-CREATE INDEX idx_dealerships_tenant_id ON dealerships(tenant_id);
-CREATE INDEX idx_dealerships_domain ON dealerships(domain);
-CREATE INDEX idx_audits_dealership_id ON ai_visibility_audits(dealership_id);
-CREATE INDEX idx_audits_tenant_id ON ai_visibility_audits(tenant_id);
-CREATE INDEX idx_audits_created_at ON ai_visibility_audits(created_at);
-CREATE INDEX idx_recommendations_dealership_id ON optimization_recommendations(dealership_id);
-CREATE INDEX idx_recommendations_tenant_id ON optimization_recommendations(tenant_id);
-CREATE INDEX idx_citations_dealership_id ON ai_citations(dealership_id);
-CREATE INDEX idx_citations_platform ON ai_citations(platform);
-CREATE INDEX idx_citations_created_at ON ai_citations(created_at);
-CREATE INDEX idx_competitor_analysis_dealership_id ON competitor_analysis(dealership_id);
-CREATE INDEX idx_activity_feed_tenant_id ON activity_feed(tenant_id);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_tier ON users(tier);
+CREATE INDEX idx_users_city_state ON users(city, state);
+CREATE INDEX idx_dealerships_user_id ON dealerships(user_id);
+CREATE INDEX idx_dealerships_city_state ON dealerships(city, state);
+CREATE INDEX idx_audit_results_dealership_id ON audit_results(dealership_id);
+CREATE INDEX idx_audit_results_created_at ON audit_results(created_at);
+CREATE INDEX idx_competitor_scores_audit_id ON competitor_scores(audit_id);
+CREATE INDEX idx_recommendations_audit_id ON recommendations(audit_id);
+CREATE INDEX idx_recommendations_priority ON recommendations(priority);
+CREATE INDEX idx_activity_feed_user_id ON activity_feed(user_id);
 CREATE INDEX idx_activity_feed_created_at ON activity_feed(created_at);
+CREATE INDEX idx_idempotency_keys_user_id ON idempotency_keys(user_id);
+CREATE INDEX idx_idempotency_keys_expires_at ON idempotency_keys(expires_at);
+CREATE INDEX idx_rate_limits_user_route ON rate_limits(user_id, route);
+CREATE INDEX idx_rate_limits_window_start ON rate_limits(window_start);
+
+-- Create unique constraints
+CREATE UNIQUE INDEX idx_idempotency_keys_unique ON idempotency_keys(idempotency_key, user_id, route);
+CREATE UNIQUE INDEX idx_rate_limits_unique ON rate_limits(user_id, route, window_start);
 
 -- Row Level Security (RLS) policies
-ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dealerships ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ai_visibility_audits ENABLE ROW LEVEL SECURITY;
-ALTER TABLE optimization_recommendations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ai_citations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE competitor_analysis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE competitor_scores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_feed ENABLE ROW LEVEL SECURITY;
+ALTER TABLE idempotency_keys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for multi-tenant isolation
-CREATE POLICY "Users can only see their tenant data" ON users
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+-- RLS Policies for users table
+CREATE POLICY "Users can view their own data" ON users
+    FOR SELECT USING (auth.uid()::text = id::text);
 
-CREATE POLICY "Dealerships are isolated by tenant" ON dealerships
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+CREATE POLICY "Users can update their own data" ON users
+    FOR UPDATE USING (auth.uid()::text = id::text);
 
-CREATE POLICY "Audits are isolated by tenant" ON ai_visibility_audits
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+-- RLS Policies for dealerships table
+CREATE POLICY "Users can view their own dealerships" ON dealerships
+    FOR SELECT USING (auth.uid()::text = user_id::text);
 
-CREATE POLICY "Recommendations are isolated by tenant" ON optimization_recommendations
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+CREATE POLICY "Users can insert their own dealerships" ON dealerships
+    FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
 
-CREATE POLICY "Citations are isolated by tenant" ON ai_citations
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+CREATE POLICY "Users can update their own dealerships" ON dealerships
+    FOR UPDATE USING (auth.uid()::text = user_id::text);
 
-CREATE POLICY "Competitor analysis is isolated by tenant" ON competitor_analysis
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+-- RLS Policies for audit_results table
+CREATE POLICY "Users can view their own audit results" ON audit_results
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM dealerships 
+            WHERE dealerships.id = audit_results.dealership_id 
+            AND dealerships.user_id::text = auth.uid()::text
+        )
+    );
 
-CREATE POLICY "Activity feed is isolated by tenant" ON activity_feed
-    FOR ALL USING (tenant_id = (SELECT tenant_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'));
+CREATE POLICY "Users can insert their own audit results" ON audit_results
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM dealerships 
+            WHERE dealerships.id = audit_results.dealership_id 
+            AND dealerships.user_id::text = auth.uid()::text
+        )
+    );
 
--- Functions for updated_at timestamps
+-- RLS Policies for other tables follow similar patterns
+CREATE POLICY "Users can view their own preferences" ON user_preferences
+    FOR SELECT USING (auth.uid()::text = user_id::text);
+
+CREATE POLICY "Users can update their own preferences" ON user_preferences
+    FOR UPDATE USING (auth.uid()::text = user_id::text);
+
+CREATE POLICY "Users can view their own subscriptions" ON subscriptions
+    FOR SELECT USING (auth.uid()::text = user_id::text);
+
+CREATE POLICY "Users can view their own activity" ON activity_feed
+    FOR SELECT USING (auth.uid()::text = user_id::text);
+
+-- Functions for updating timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -224,21 +252,108 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Triggers for updated_at
-CREATE TRIGGER update_tenants_updated_at BEFORE UPDATE ON tenants FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_dealerships_updated_at BEFORE UPDATE ON dealerships FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_audits_updated_at BEFORE UPDATE ON ai_visibility_audits FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_recommendations_updated_at BEFORE UPDATE ON optimization_recommendations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_competitor_analysis_updated_at BEFORE UPDATE ON competitor_analysis FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Triggers for updating timestamps
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert sample data
-INSERT INTO tenants (name, domain) VALUES 
-('DealershipAI Demo', 'demo.dealershipai.com'),
-('Enterprise Customer', 'enterprise.dealershipai.com');
+CREATE TRIGGER update_dealerships_updated_at BEFORE UPDATE ON dealerships
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferences
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_subscriptions_updated_at BEFORE UPDATE ON subscriptions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Function to clean up expired idempotency keys
+CREATE OR REPLACE FUNCTION cleanup_expired_idempotency_keys()
+RETURNS void AS $$
+BEGIN
+    DELETE FROM idempotency_keys WHERE expires_at < NOW();
+END;
+$$ language 'plpgsql';
+
+-- Function to clean up old rate limit records
+CREATE OR REPLACE FUNCTION cleanup_old_rate_limits()
+RETURNS void AS $$
+BEGIN
+    DELETE FROM rate_limits WHERE window_start < NOW() - INTERVAL '1 hour';
+END;
+$$ language 'plpgsql';
+
+-- Insert sample data for development
+INSERT INTO users (email, name, dealership, city, state, phone, role, tier) VALUES
+('demo@dealershipai.com', 'Demo User', 'Demo Dealership', 'Austin', 'TX', '+1-555-0123', 'owner', 'pro'),
+('test@example.com', 'Test User', 'Test Dealership', 'Round Rock', 'TX', '+1-555-0124', 'admin', 'growth');
 
 -- Insert sample dealerships
-INSERT INTO dealerships (tenant_id, name, domain, website_url, city, state, phone, email) VALUES 
-((SELECT id FROM tenants WHERE domain = 'demo.dealershipai.com'), 'ABC Toyota', 'abctoyota.com', 'https://abctoyota.com', 'Austin', 'TX', '(555) 123-4567', 'info@abctoyota.com'),
-((SELECT id FROM tenants WHERE domain = 'demo.dealershipai.com'), 'Honda Center', 'hondacenter.com', 'https://hondacenter.com', 'Dallas', 'TX', '(555) 234-5678', 'info@hondacenter.com'),
-((SELECT id FROM tenants WHERE domain = 'demo.dealershipai.com'), 'BMW of Texas', 'bmwoftexas.com', 'https://bmwoftexas.com', 'Houston', 'TX', '(555) 345-6789', 'info@bmwoftexas.com');
+INSERT INTO dealerships (user_id, name, city, state, phone, website, brands, ai_visibility_score, trust_score, citation_score) VALUES
+((SELECT id FROM users WHERE email = 'demo@dealershipai.com'), 'Demo Dealership', 'Austin', 'TX', '+1-555-0123', 'https://demo-dealership.com', ARRAY['Toyota', 'Honda'], 87, 82, 91),
+((SELECT id FROM users WHERE email = 'test@example.com'), 'Test Dealership', 'Round Rock', 'TX', '+1-555-0124', 'https://test-dealership.com', ARRAY['BMW', 'Mercedes'], 92, 88, 85);
+
+-- Insert sample audit results
+INSERT INTO audit_results (dealership_id, overall_score, ai_visibility_score, trust_score, citation_score, competitor_scores, recommendations, status, completed_at) VALUES
+((SELECT id FROM dealerships WHERE name = 'Demo Dealership'), 87, 87, 82, 91, 
+ '{"competitors": [{"name": "Austin Toyota", "score": 89, "improvement": 12}, {"name": "Round Rock Honda", "score": 85, "improvement": 8}]}',
+ '{"recommendations": [{"title": "Optimize Google Business Profile", "priority": "high", "impact": 85}, {"title": "Improve Citation Consistency", "priority": "medium", "impact": 72}]}',
+ 'completed', NOW() - INTERVAL '1 day');
+
+-- Insert sample recommendations
+INSERT INTO recommendations (audit_id, title, description, priority, impact, effort, category, steps) VALUES
+((SELECT id FROM audit_results WHERE overall_score = 87), 'Optimize Google Business Profile', 'Your Google Business Profile is missing key information that AI systems use to understand your business.', 'high', 85, 'low', 'citations', 
+ '["Add business hours and holiday hours", "Upload high-quality photos", "Add detailed business description", "Collect and respond to reviews", "Add services and products"]'),
+((SELECT id FROM audit_results WHERE overall_score = 87), 'Improve Citation Consistency', 'Your business information is inconsistent across different directories and platforms.', 'high', 72, 'medium', 'citations',
+ '["Audit all existing citations", "Standardize business information", "Update major directories", "Monitor consistency", "Build new citations"]');
+
+-- Insert sample activity feed
+INSERT INTO activity_feed (user_id, dealership_id, type, title, description, is_public) VALUES
+((SELECT id FROM users WHERE email = 'demo@dealershipai.com'), (SELECT id FROM dealerships WHERE name = 'Demo Dealership'), 'audit_completed', 'AI Visibility Audit Completed', 'Your dealership scored 87/100 on the AI visibility audit.', true),
+((SELECT id FROM users WHERE email = 'demo@dealershipai.com'), (SELECT id FROM dealerships WHERE name = 'Demo Dealership'), 'score_improvement', 'Trust Score Improved', 'Your trust score increased by 5 points this week.', false);
+
+-- Create views for common queries
+CREATE VIEW user_dashboard AS
+SELECT 
+    u.id,
+    u.email,
+    u.name,
+    u.dealership,
+    u.city,
+    u.state,
+    u.tier,
+    u.role,
+    d.ai_visibility_score,
+    d.trust_score,
+    d.citation_score,
+    d.last_audit_at,
+    s.status as subscription_status,
+    s.current_period_end
+FROM users u
+LEFT JOIN dealerships d ON u.id = d.user_id
+LEFT JOIN subscriptions s ON u.id = s.user_id
+WHERE u.is_active = true;
+
+CREATE VIEW recent_activity AS
+SELECT 
+    af.id,
+    af.type,
+    af.title,
+    af.description,
+    af.created_at,
+    u.name as user_name,
+    d.name as dealership_name
+FROM activity_feed af
+JOIN users u ON af.user_id = u.id
+JOIN dealerships d ON af.dealership_id = d.id
+WHERE af.is_public = true
+ORDER BY af.created_at DESC
+LIMIT 50;
+
+-- Grant necessary permissions
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
+
+-- Grant read-only access to public views
+GRANT SELECT ON user_dashboard TO anon, authenticated;
+GRANT SELECT ON recent_activity TO anon, authenticated;

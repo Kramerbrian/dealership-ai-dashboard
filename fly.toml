@@ -1,35 +1,68 @@
-app = 'dealershipai-dtri-ada'
-primary_region = 'iad'
+# Fly.io Configuration for ADA Engine
+# DealershipAI - Python ADA Engine deployment
+
+app = "dealership-ai-ada"
+primary_region = "sjc"
 
 [build]
-  image = 'python:3.11-slim'
+  dockerfile = "Dockerfile.ada"
 
 [env]
-  PORT = '8080'
-  PYTHONPATH = '/app'
-  LOG_LEVEL = 'INFO'
+  PYTHONPATH = "/app"
+  PORT = "8000"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 2
+  memory_mb = 2048
+
+[deploy]
+  release_command = "python -c 'import lib.analysis.ada_workflow; print(\"ADA Engine ready\")'"
 
 [[services]]
-  internal_port = 8080
-  protocol = 'tcp'
-  auto_start_machines = true
-  auto_stop_machines = true
-  min_machines_running = 0
-  max_machines_running = 3
+  protocol = "tcp"
+  internal_port = 8000
 
   [[services.ports]]
-    handlers = ['http']
     port = 80
+    handlers = ["http"]
+    force_https = true
 
   [[services.ports]]
-    handlers = ['tls', 'http']
     port = 443
+    handlers = ["tls", "http"]
 
   [services.concurrency]
-    type = 'connections'
-    hard_limit = 1000
-    soft_limit = 800
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
 
-[metrics]
-  port = 9091
-  path = '/metrics'
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "1s"
+
+  [[services.http_checks]]
+    interval = "10s"
+    timeout = "2s"
+    grace_period = "1s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    tls_skip_verify = false
+
+    [services.http_checks.headers]
+      Content-Type = "application/json"

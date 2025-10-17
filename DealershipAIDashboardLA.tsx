@@ -65,10 +65,7 @@ const DealershipAIDashboardLA: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<ModalContent>({ title: "", body: null });
-  const [profile, setProfile] = useState({ name: "Premium Auto Dealership", location: "Cape Coral, FL" });
-  const [formName, setFormName] = useState<string>("");
-  const [formLocation, setFormLocation] = useState<string>("");
-  const [inputMethod, setInputMethod] = useState<'manual' | 'url' | 'gbp'>("manual");
+  const [profile] = useState({ name: "Premium Auto Dealership", location: "Cape Coral, FL" });
 
   // Update the clock once per minute
   useEffect(() => {
@@ -169,9 +166,6 @@ const DealershipAIDashboardLA: React.FC = () => {
   };
 
   // Placeholder handlers for actions that would normally call APIs or services
-  const autoFix = (platform: string) => {
-    window.alert(`Auto‑fixing ${platform}...\n\nAdding testimonials\nUpdating info\nOptimizing content\n\nEst: 2‑3 days`);
-  };
   const deployOpportunity = (type: string) => {
     const messages: Record<string, string> = {
       faq: "Deploying FAQ Schema...\n\nGenerating markup\nValidating\nPublishing\n\n+23% voice traffic",
@@ -180,40 +174,8 @@ const DealershipAIDashboardLA: React.FC = () => {
     };
     window.alert(messages[type] ?? "Deploying...");
   };
-  const startPlan = (type: 'experience' | 'authority') => {
-    window.alert(
-      type === 'experience'
-        ? 'Experience Boost Started!\n\nWeek 1: Testimonials\nWeek 2: Behind‑scenes\nWeek 3: Certifications\n\n64→82 score'
-        : 'Authority Building Started!\n\nWeek 1: Partnerships\nWeek 2: Awards\nWeek 3: Expert positioning\n\n79→88 score'
-    );
-  };
 
-  // Profile import helpers
-  const importURL = () => {
-    // Show a simple alert and populate example result on form
-    window.alert('URL import detected: Premium Auto, Cape Coral');
-    setFormName('Premium Auto');
-    setFormLocation('Cape Coral');
-  };
-  const importGBP = () => {
-    window.alert('GBP import detected: Premium Auto Dealership, Cape Coral, FL');
-    setFormName('Premium Auto Dealership');
-    setFormLocation('Cape Coral, FL');
-  };
-  const applyData = () => {
-    setFormName(profile.name);
-    setFormLocation(profile.location);
-    setInputMethod('manual');
-  };
-  const saveProfile = () => {
-    if (!formName || !formLocation) {
-      window.alert('Please fill all required fields');
-      return;
-    }
-    setProfile({ name: formName, location: formLocation });
-    setModalOpen(false);
-    window.alert('Profile updated successfully!');
-  };
+  // Profile import helpers - removed unused saveProfile function
 
   // Render function
   return (

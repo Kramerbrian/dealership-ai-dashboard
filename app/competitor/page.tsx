@@ -1,4 +1,4 @@
-import CompetitorAnalysisDashboard from '@/src/components/competitor/CompetitorAnalysisDashboard';
+import CompetitorAnalysisDashboard from '@/components/CompetitorComparisonTable';
 
 export default function CompetitorPage() {
   return (
@@ -10,3 +10,5 @@ export default function CompetitorPage() {
     </div>
   );
 }
+
+

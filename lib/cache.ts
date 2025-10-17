@@ -1,0 +1,211 @@
+import { kv } from '@vercel/kv';
+import { Redis } from 'redis';
+
+// Vercel KV (Recommended for Vercel deployments)
+export class VercelKVCache {
+  private static instance: VercelKVCache;
+  private prefix = 'dealershipai:';
+
+  static getInstance(): VercelKVCache {
+    if (!VercelKVCache.instance) {
+      VercelKVCache.instance = new VercelKVCache();
+    }
+    return VercelKVCache.instance;
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    try {
+      const value = await kv.get(`${this.prefix}${key}`);
+      return value as T | null;
+    } catch (error) {
+      console.error('Vercel KV get error:', error);
+      return null;
+    }
+  }
+
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+    try {
+      if (ttlSeconds) {
+        await kv.setex(`${this.prefix}${key}`, ttlSeconds, JSON.stringify(value));
+      } else {
+        await kv.set(`${this.prefix}${key}`, JSON.stringify(value));
+      }
+    } catch (error) {
+      console.error('Vercel KV set error:', error);
+    }
+  }
+
+  async del(key: string): Promise<void> {
+    try {
+      await kv.del(`${this.prefix}${key}`);
+    } catch (error) {
+      console.error('Vercel KV delete error:', error);
+    }
+  }
+
+  async exists(key: string): Promise<boolean> {
+    try {
+      const result = await kv.exists(`${this.prefix}${key}`);
+      return result === 1;
+    } catch (error) {
+      console.error('Vercel KV exists error:', error);
+      return false;
+    }
+  }
+}
+
+// Redis (For self-hosted or other deployments)
+export class RedisCache {
+  private static instance: RedisCache;
+  private client: Redis;
+  private prefix = 'dealershipai:';
+
+  constructor() {
+    this.client = new Redis({
+      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      retryDelayOnFailover: 100,
+      enableReadyCheck: false,
+      maxRetriesPerRequest: null,
+    });
+
+    this.client.on('error', (error) => {
+      console.error('Redis connection error:', error);
+    });
+  }
+
+  static getInstance(): RedisCache {
+    if (!RedisCache.instance) {
+      RedisCache.instance = new RedisCache();
+    }
+    return RedisCache.instance;
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    try {
+      const value = await this.client.get(`${this.prefix}${key}`);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error('Redis get error:', error);
+      return null;
+    }
+  }
+
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+    try {
+      const serialized = JSON.stringify(value);
+      if (ttlSeconds) {
+        await this.client.setex(`${this.prefix}${key}`, ttlSeconds, serialized);
+      } else {
+        await this.client.set(`${this.prefix}${key}`, serialized);
+      }
+    } catch (error) {
+      console.error('Redis set error:', error);
+    }
+  }
+
+  async del(key: string): Promise<void> {
+    try {
+      await this.client.del(`${this.prefix}${key}`);
+    } catch (error) {
+      console.error('Redis delete error:', error);
+    }
+  }
+
+  async exists(key: string): Promise<boolean> {
+    try {
+      const result = await this.client.exists(`${this.prefix}${key}`);
+      return result === 1;
+    } catch (error) {
+      console.error('Redis exists error:', error);
+      return false;
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    await this.client.quit();
+  }
+}
+
+// Cache Manager - Automatically chooses the best available cache
+export class CacheManager {
+  private static instance: CacheManager;
+  private cache: VercelKVCache | RedisCache;
+
+  constructor() {
+    // Prefer Vercel KV for Vercel deployments, fallback to Redis
+    if (process.env.KV_URL || process.env.VERCEL) {
+      this.cache = VercelKVCache.getInstance();
+    } else {
+      this.cache = RedisCache.getInstance();
+    }
+  }
+
+  static getInstance(): CacheManager {
+    if (!CacheManager.instance) {
+      CacheManager.instance = new CacheManager();
+    }
+    return CacheManager.instance;
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    return this.cache.get<T>(key);
+  }
+
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+    return this.cache.set<T>(key, value, ttlSeconds);
+  }
+
+  async del(key: string): Promise<void> {
+    return this.cache.del(key);
+  }
+
+  async exists(key: string): Promise<boolean> {
+    return this.cache.exists(key);
+  }
+}
+
+// Cache decorator for API routes
+export function withCache<T extends any[], R>(
+  fn: (...args: T) => Promise<R>,
+  keyGenerator: (...args: T) => string,
+  ttlSeconds: number = 300 // 5 minutes default
+) {
+  return async (...args: T): Promise<R> => {
+    const cache = CacheManager.getInstance();
+    const cacheKey = keyGenerator(...args);
+    
+    // Try to get from cache first
+    const cached = await cache.get<R>(cacheKey);
+    if (cached) {
+      console.log(`Cache hit for key: ${cacheKey}`);
+      return cached;
+    }
+
+    // Execute function and cache result
+    console.log(`Cache miss for key: ${cacheKey}`);
+    const result = await fn(...args);
+    await cache.set(cacheKey, result, ttlSeconds);
+    
+    return result;
+  };
+}
+
+// Cache keys for different data types
+export const CACHE_KEYS = {
+  SEO_DATA: (domain: string, timeRange: string) => `seo:${domain}:${timeRange}`,
+  AEO_DATA: (domain: string, timeRange: string) => `aeo:${domain}:${timeRange}`,
+  GEO_DATA: (domain: string, timeRange: string) => `geo:${domain}:${timeRange}`,
+  DASHBOARD_OVERVIEW: (timeRange: string) => `dashboard:overview:${timeRange}`,
+  USER_SESSION: (userId: string) => `user:session:${userId}`,
+  API_RESPONSE: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
+} as const;
+
+// Cache TTL constants (in seconds)
+export const CACHE_TTL = {
+  SEO_DATA: 300, // 5 minutes
+  AEO_DATA: 300, // 5 minutes
+  GEO_DATA: 300, // 5 minutes
+  DASHBOARD_OVERVIEW: 60, // 1 minute
+  USER_SESSION: 1800, // 30 minutes
+  API_RESPONSE: 300, // 5 minutes
+} as const;

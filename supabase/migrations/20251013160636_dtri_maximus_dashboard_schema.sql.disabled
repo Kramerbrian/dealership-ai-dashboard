@@ -1,0 +1,370 @@
+-- DTRI-MAXIMUS Dashboard Schema
+-- Hybrid Modal Strategy: Supermodal + Sub-Modal Tabs
+-- C-Suite Decision Flow: Risk → Reward → Action
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ==============================================
+-- DTRI-MAXIMUS SUPERMODAL (THE ANCHOR GAUGE)
+-- ==============================================
+
+-- Main DTRI-MAXIMUS Score Display
+CREATE TABLE IF NOT EXISTS dtri_maximus_supermodal (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    dtri_score DECIMAL(5,2) NOT NULL CHECK (dtri_score >= 0 AND dtri_score <= 100),
+    score_color_code VARCHAR(10) NOT NULL CHECK (score_color_code IN ('green', 'yellow', 'red')),
+    maximus_insight TEXT NOT NULL, -- "Your current score translates to an immediate $90,000 Profit Opportunity and $18,000 in Decay Tax Risk."
+    profit_opportunity_dollars DECIMAL(12,2) NOT NULL,
+    decay_tax_risk_dollars DECIMAL(12,2) NOT NULL,
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id)
+);
+
+-- ==============================================
+-- SUB-MODAL: RISK & VULNERABILITY TAB (CFO/OWNER VIEW)
+-- ==============================================
+
+-- Risk Metrics for CFO/Owner Decision Making
+CREATE TABLE IF NOT EXISTS dtri_risk_vulnerability_metrics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    metric_name VARCHAR(100) NOT NULL,
+    metric_source VARCHAR(100) NOT NULL,
+    display_value VARCHAR(50) NOT NULL,
+    dollar_amount DECIMAL(12,2) NOT NULL,
+    time_period VARCHAR(20) NOT NULL, -- 'quarter', 'year', 'month'
+    insight_text TEXT NOT NULL,
+    decision_trigger TEXT NOT NULL,
+    priority_level VARCHAR(20) DEFAULT 'medium' CHECK (priority_level IN ('low', 'medium', 'high', 'critical')),
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, metric_name)
+);
+
+-- TSM (Trust Sensitivity Multiplier) Context
+CREATE TABLE IF NOT EXISTS dtri_tsm_context (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    tsm_value DECIMAL(3,2) NOT NULL,
+    stress_level VARCHAR(20) NOT NULL CHECK (stress_level IN ('low', 'medium', 'high', 'critical')),
+    external_factors JSONB NOT NULL, -- Interest rates, consumer confidence, etc.
+    impact_description TEXT NOT NULL,
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id)
+);
+
+-- ==============================================
+-- SUB-MODAL: REWARD & OPPORTUNITY TAB (CMO VIEW)
+-- ==============================================
+
+-- Reward Metrics for CMO Decision Making
+CREATE TABLE IF NOT EXISTS dtri_reward_opportunity_metrics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    opportunity_name VARCHAR(100) NOT NULL,
+    opportunity_type VARCHAR(50) NOT NULL CHECK (opportunity_type IN ('growth', 'efficiency', 'competitive_advantage', 'market_expansion')),
+    potential_revenue DECIMAL(12,2) NOT NULL,
+    implementation_cost DECIMAL(10,2) NOT NULL,
+    roi_percentage DECIMAL(5,2) GENERATED ALWAYS AS (
+        ((potential_revenue - implementation_cost) / NULLIF(implementation_cost, 0)) * 100
+    ) STORED,
+    time_to_impact VARCHAR(20) NOT NULL, -- 'immediate', '30_days', '90_days', '6_months'
+    success_probability DECIMAL(3,2) NOT NULL CHECK (success_probability >= 0 AND success_probability <= 1),
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, opportunity_name)
+);
+
+-- Competitive Advantage Metrics
+CREATE TABLE IF NOT EXISTS dtri_competitive_advantage (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    competitor_name VARCHAR(255) NOT NULL,
+    our_dtri_score DECIMAL(5,2) NOT NULL,
+    competitor_dtri_score DECIMAL(5,2) NOT NULL,
+    advantage_delta DECIMAL(5,2) GENERATED ALWAYS AS (our_dtri_score - competitor_dtri_score) STORED,
+    market_position VARCHAR(20) NOT NULL CHECK (market_position IN ('leading', 'competitive', 'lagging', 'critical')),
+    strategic_window_months DECIMAL(4,2),
+    window_value_dollars DECIMAL(12,2),
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, competitor_name)
+);
+
+-- ==============================================
+-- SUB-MODAL: ACTION & EXECUTION TAB (GM VIEW)
+-- ==============================================
+
+-- Action Items for GM Execution
+CREATE TABLE IF NOT EXISTS dtri_action_execution_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    action_id VARCHAR(50) NOT NULL,
+    action_title VARCHAR(255) NOT NULL,
+    action_description TEXT NOT NULL,
+    responsible_department VARCHAR(100) NOT NULL,
+    responsible_person VARCHAR(100),
+    priority_level VARCHAR(20) DEFAULT 'medium' CHECK (priority_level IN ('low', 'medium', 'high', 'critical')),
+    estimated_effort_hours INTEGER,
+    estimated_cost DECIMAL(10,2),
+    expected_impact_score DECIMAL(5,2),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
+    due_date TIMESTAMP WITH TIME ZONE,
+    completion_date TIMESTAMP WITH TIME ZONE,
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, dealership_id, action_id)
+);
+
+-- Execution Progress Tracking
+CREATE TABLE IF NOT EXISTS dtri_execution_progress (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    dealership_id UUID NOT NULL,
+    action_item_id UUID REFERENCES dtri_action_execution_items(id),
+    progress_percentage DECIMAL(5,2) DEFAULT 0.0 CHECK (progress_percentage >= 0 AND progress_percentage <= 100),
+    milestone_description TEXT,
+    milestone_date TIMESTAMP WITH TIME ZONE,
+    notes TEXT,
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==============================================
+-- DASHBOARD CONFIGURATION & PERSONALIZATION
+-- ==============================================
+
+-- User Dashboard Preferences
+CREATE TABLE IF NOT EXISTS dtri_dashboard_preferences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    role VARCHAR(50) NOT NULL CHECK (role IN ('cfo', 'cmo', 'gm', 'owner', 'admin')),
+    default_tab VARCHAR(50) DEFAULT 'risk' CHECK (default_tab IN ('risk', 'reward', 'action')),
+    alert_thresholds JSONB, -- Custom alert thresholds per role
+    notification_preferences JSONB, -- Email, SMS, dashboard alerts
+    last_accessed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, user_id)
+);
+
+-- Dashboard Widget Configuration
+CREATE TABLE IF NOT EXISTS dtri_dashboard_widgets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    widget_type VARCHAR(50) NOT NULL CHECK (widget_type IN ('supermodal', 'risk_metrics', 'reward_metrics', 'action_items', 'competitive_advantage')),
+    widget_position INTEGER NOT NULL,
+    widget_size VARCHAR(20) DEFAULT 'medium' CHECK (widget_size IN ('small', 'medium', 'large', 'full')),
+    is_visible BOOLEAN DEFAULT true,
+    refresh_interval_seconds INTEGER DEFAULT 300,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    UNIQUE(tenant_id, user_id, widget_type)
+);
+
+-- ==============================================
+-- PERFORMANCE-OPTIMIZED INDEXES
+-- ==============================================
+
+-- Supermodal Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_maximus_supermodal_tenant ON dtri_maximus_supermodal(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_maximus_supermodal_dealership ON dtri_maximus_supermodal(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_maximus_supermodal_score ON dtri_maximus_supermodal(dtri_score);
+CREATE INDEX IF NOT EXISTS idx_dtri_maximus_supermodal_color ON dtri_maximus_supermodal(score_color_code);
+
+-- Risk & Vulnerability Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_risk_metrics_tenant ON dtri_risk_vulnerability_metrics(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_risk_metrics_dealership ON dtri_risk_vulnerability_metrics(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_risk_metrics_priority ON dtri_risk_vulnerability_metrics(priority_level);
+CREATE INDEX IF NOT EXISTS idx_dtri_risk_metrics_amount ON dtri_risk_vulnerability_metrics(dollar_amount);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_tsm_context_tenant ON dtri_tsm_context(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_tsm_context_dealership ON dtri_tsm_context(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_tsm_context_stress ON dtri_tsm_context(stress_level);
+
+-- Reward & Opportunity Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_reward_metrics_tenant ON dtri_reward_opportunity_metrics(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_reward_metrics_dealership ON dtri_reward_opportunity_metrics(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_reward_metrics_type ON dtri_reward_opportunity_metrics(opportunity_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_reward_metrics_roi ON dtri_reward_opportunity_metrics(roi_percentage);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_advantage_tenant ON dtri_competitive_advantage(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_advantage_dealership ON dtri_competitive_advantage(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_advantage_position ON dtri_competitive_advantage(market_position);
+CREATE INDEX IF NOT EXISTS idx_dtri_competitive_advantage_delta ON dtri_competitive_advantage(advantage_delta);
+
+-- Action & Execution Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_action_items_tenant ON dtri_action_execution_items(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_action_items_dealership ON dtri_action_execution_items(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_action_items_status ON dtri_action_execution_items(status);
+CREATE INDEX IF NOT EXISTS idx_dtri_action_items_priority ON dtri_action_execution_items(priority_level);
+CREATE INDEX IF NOT EXISTS idx_dtri_action_items_department ON dtri_action_execution_items(responsible_department);
+CREATE INDEX IF NOT EXISTS idx_dtri_action_items_due_date ON dtri_action_execution_items(due_date);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_execution_progress_tenant ON dtri_execution_progress(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_execution_progress_dealership ON dtri_execution_progress(dealership_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_execution_progress_action ON dtri_execution_progress(action_item_id);
+
+-- Dashboard Configuration Indexes
+CREATE INDEX IF NOT EXISTS idx_dtri_dashboard_preferences_tenant ON dtri_dashboard_preferences(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_dashboard_preferences_user ON dtri_dashboard_preferences(user_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_dashboard_preferences_role ON dtri_dashboard_preferences(role);
+
+CREATE INDEX IF NOT EXISTS idx_dtri_dashboard_widgets_tenant ON dtri_dashboard_widgets(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_dashboard_widgets_user ON dtri_dashboard_widgets(user_id);
+CREATE INDEX IF NOT EXISTS idx_dtri_dashboard_widgets_type ON dtri_dashboard_widgets(widget_type);
+CREATE INDEX IF NOT EXISTS idx_dtri_dashboard_widgets_visible ON dtri_dashboard_widgets(is_visible) WHERE is_visible = true;
+
+-- ==============================================
+-- ROW LEVEL SECURITY (RLS)
+-- ==============================================
+
+-- Enable RLS on all tables
+ALTER TABLE dtri_maximus_supermodal ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_risk_vulnerability_metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_tsm_context ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_reward_opportunity_metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_competitive_advantage ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_action_execution_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_execution_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_dashboard_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dtri_dashboard_widgets ENABLE ROW LEVEL SECURITY;
+
+-- RLS policies for all dashboard tables
+CREATE POLICY IF NOT EXISTS "Users can view their own supermodal" ON dtri_maximus_supermodal
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own supermodal" ON dtri_maximus_supermodal
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own risk metrics" ON dtri_risk_vulnerability_metrics
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own risk metrics" ON dtri_risk_vulnerability_metrics
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own tsm context" ON dtri_tsm_context
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own tsm context" ON dtri_tsm_context
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own reward metrics" ON dtri_reward_opportunity_metrics
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own reward metrics" ON dtri_reward_opportunity_metrics
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own competitive advantage" ON dtri_competitive_advantage
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own competitive advantage" ON dtri_competitive_advantage
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own action items" ON dtri_action_execution_items
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own action items" ON dtri_action_execution_items
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own execution progress" ON dtri_execution_progress
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own execution progress" ON dtri_execution_progress
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own dashboard preferences" ON dtri_dashboard_preferences
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own dashboard preferences" ON dtri_dashboard_preferences
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own dashboard widgets" ON dtri_dashboard_widgets
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can modify their own dashboard widgets" ON dtri_dashboard_widgets
+    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- ==============================================
+-- TRIGGERS AND FUNCTIONS
+-- ==============================================
+
+-- Add triggers for updated_at timestamps
+CREATE TRIGGER IF NOT EXISTS update_dtri_maximus_supermodal_updated_at 
+    BEFORE UPDATE ON dtri_maximus_supermodal 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_risk_metrics_updated_at 
+    BEFORE UPDATE ON dtri_risk_vulnerability_metrics 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_tsm_context_updated_at 
+    BEFORE UPDATE ON dtri_tsm_context 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_reward_metrics_updated_at 
+    BEFORE UPDATE ON dtri_reward_opportunity_metrics 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_competitive_advantage_updated_at 
+    BEFORE UPDATE ON dtri_competitive_advantage 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_action_items_updated_at 
+    BEFORE UPDATE ON dtri_action_execution_items 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_execution_progress_updated_at 
+    BEFORE UPDATE ON dtri_execution_progress 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_dashboard_preferences_updated_at 
+    BEFORE UPDATE ON dtri_dashboard_preferences 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER IF NOT EXISTS update_dtri_dashboard_widgets_updated_at 
+    BEFORE UPDATE ON dtri_dashboard_widgets 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==============================================
+-- COMMENTS AND DOCUMENTATION
+-- ==============================================
+
+-- Table comments
+COMMENT ON TABLE dtri_maximus_supermodal IS 'DTRI-MAXIMUS Supermodal: The primary anchor gauge displaying composite risk/reward score';
+COMMENT ON TABLE dtri_risk_vulnerability_metrics IS 'Risk & Vulnerability tab metrics for CFO/Owner decision making';
+COMMENT ON TABLE dtri_tsm_context IS 'Trust Sensitivity Multiplier context and external factors';
+COMMENT ON TABLE dtri_reward_opportunity_metrics IS 'Reward & Opportunity tab metrics for CMO decision making';
+COMMENT ON TABLE dtri_competitive_advantage IS 'Competitive advantage tracking and strategic window analysis';
+COMMENT ON TABLE dtri_action_execution_items IS 'Action & Execution tab items for GM implementation';
+COMMENT ON TABLE dtri_execution_progress IS 'Execution progress tracking for action items';
+COMMENT ON TABLE dtri_dashboard_preferences IS 'User dashboard preferences and role-based configurations';
+COMMENT ON TABLE dtri_dashboard_widgets IS 'Dashboard widget configuration and positioning';
+
+-- Column comments for key fields
+COMMENT ON COLUMN dtri_maximus_supermodal.maximus_insight IS 'High-impact financial translation: "Your current score translates to an immediate $90,000 Profit Opportunity and $18,000 in Decay Tax Risk."';
+COMMENT ON COLUMN dtri_risk_vulnerability_metrics.decision_trigger IS 'Specific decision trigger text for CFO/Owner action';
+COMMENT ON COLUMN dtri_tsm_context.stress_level IS 'External stress level affecting all trust penalties';
+COMMENT ON COLUMN dtri_reward_opportunity_metrics.roi_percentage IS 'Generated column: ((potential_revenue - implementation_cost) / implementation_cost) * 100';
+COMMENT ON COLUMN dtri_competitive_advantage.advantage_delta IS 'Generated column: our_dtri_score - competitor_dtri_score';
+COMMENT ON COLUMN dtri_action_execution_items.expected_impact_score IS 'Expected impact score for prioritization';
+COMMENT ON COLUMN dtri_dashboard_preferences.default_tab IS 'Default tab to show based on user role (risk/reward/action)';

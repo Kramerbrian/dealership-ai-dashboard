@@ -56,7 +56,7 @@ interface DTRIResult {
   };
 }
 
-const DTRI Dashboard: React.FC = () => {
+const DTRI_Dashboard: React.FC = () => {
   const [data, setData] = useState<DTRIResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -569,4 +569,4 @@ const DTRI Dashboard: React.FC = () => {
   );
 };
 
-export default DTRI Dashboard;
+export default DTRI_Dashboard;

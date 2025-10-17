@@ -1,3 +1,9 @@
+/**
+ * DealershipAI - Prisma Client
+ * 
+ * Database connection and client setup
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {

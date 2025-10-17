@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-10-17T02:44:27.307Z",
+  "summary": {
+    "totalDomains": 5,
+    "workingDomains": 0,
+    "dnsIssues": 5,
+    "sslIssues": 0,
+    "httpsIssues": 0
+  },
+  "results": [
+    {
+      "domain": "main.dealershipai.com",
+      "dnsResolved": false,
+      "sslValid": true,
+      "httpsWorking": true,
+      "responseTime": 185,
+      "statusCode": 200
+    },
+    {
+      "domain": "marketing.dealershipai.com",
+      "dnsResolved": false,
+      "sslValid": true,
+      "httpsWorking": true,
+      "responseTime": 129,
+      "statusCode": 200
+    },
+    {
+      "domain": "dash.dealershipai.com",
+      "dnsResolved": false,
+      "sslValid": true,
+      "httpsWorking": true,
+      "responseTime": 118,
+      "statusCode": 200
+    },
+    {
+      "domain": "dealershipai.com",
+      "dnsResolved": false,
+      "sslValid": true,
+      "httpsWorking": true,
+      "responseTime": 66,
+      "statusCode": 307
+    },
+    {
+      "domain": "www.dealershipai.com",
+      "dnsResolved": false,
+      "sslValid": true,
+      "httpsWorking": true,
+      "responseTime": 206,
+      "statusCode": 200
+    }
+  ]
+}

@@ -12,11 +12,7 @@ CREATE TABLE IF NOT EXISTS review_anomalies (
   detected_at TIMESTAMPTZ DEFAULT NOW(),
   details JSONB,
   resolved BOOLEAN DEFAULT FALSE,
-  resolved_at TIMESTAMPTZ,
-
-  INDEX idx_review_anomalies_dealer_date (dealer_id, detected_at),
-  INDEX idx_review_anomalies_severity (severity),
-  INDEX idx_review_anomalies_resolved (resolved)
+  resolved_at TIMESTAMPTZ
 );
 
 -- Forecasts table (alternative naming for predictive_forecasts)
@@ -30,9 +26,7 @@ CREATE TABLE IF NOT EXISTS forecasts (
   aiv_upper_bound NUMERIC(5,2),
   rar_forecast NUMERIC(10,2),
   confidence NUMERIC(3,2),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-
-  INDEX idx_forecasts_dealer_date (dealer_id, forecast_date)
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Cron job execution tracking
@@ -47,11 +41,7 @@ CREATE TABLE IF NOT EXISTS cron_job_executions (
   execution_time_ms INTEGER,
   error_message TEXT,
   response_data JSONB,
-  metadata JSONB,
-
-  INDEX idx_cron_executions_job (job_name),
-  INDEX idx_cron_executions_status (status),
-  INDEX idx_cron_executions_date (started_at)
+  metadata JSONB
 );
 
 -- Cron job health monitoring
@@ -178,6 +168,15 @@ BEGIN
   ORDER BY h.job_name;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_review_anomalies_dealer_date ON review_anomalies(dealer_id, detected_at);
+CREATE INDEX IF NOT EXISTS idx_review_anomalies_severity ON review_anomalies(severity);
+CREATE INDEX IF NOT EXISTS idx_review_anomalies_resolved ON review_anomalies(resolved);
+CREATE INDEX IF NOT EXISTS idx_forecasts_dealer_date ON forecasts(dealer_id, forecast_date);
+CREATE INDEX IF NOT EXISTS idx_cron_executions_job ON cron_job_executions(job_name);
+CREATE INDEX IF NOT EXISTS idx_cron_executions_status ON cron_job_executions(status);
+CREATE INDEX IF NOT EXISTS idx_cron_executions_date ON cron_job_executions(started_at);
 
 COMMENT ON TABLE review_anomalies IS 'Tracks anomalies detected in review data by FraudGuard';
 COMMENT ON TABLE forecasts IS 'Stores Kalman-smoothed AIV forecasts for dealers';

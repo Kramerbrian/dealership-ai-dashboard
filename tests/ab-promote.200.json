@@ -1,0 +1,16 @@
+{
+  "test": "ab-promote.200",
+  "description": "Test A/B variant promotion endpoint",
+  "curl": "curl -XPOST http://localhost:3000/api/seo/ab/promote -H 'Authorization: Bearer <JWT>' -H 'Content-Type: application/json' --data '{\"productId\":\"p1\",\"winnerVariantId\":\"v1\",\"maxDailyShift\":0.2}'",
+  "expected": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "policy": {
+        "productId": "p1",
+        "winnerVariantId": "v1",
+        "maxDailyShift": 0.2
+      }
+    }
+  }
+}

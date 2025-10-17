@@ -18,9 +18,18 @@ CREATE INDEX IF NOT EXISTS idx_aiv_weekly_dealer_timestamp ON aiv_weekly(dealer_
 CREATE INDEX IF NOT EXISTS idx_aiv_weekly_timestamp ON aiv_weekly(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_aiv_weekly_dealer_id ON aiv_weekly(dealer_id);
 
+-- Create immutable function for week truncation
+CREATE OR REPLACE FUNCTION date_trunc_week_immutable(timestamptz)
+RETURNS timestamptz
+LANGUAGE sql
+IMMUTABLE
+AS $$
+    SELECT date_trunc('week', $1);
+$$;
+
 -- Create unique constraint to prevent duplicate entries for same dealer and timestamp
 CREATE UNIQUE INDEX IF NOT EXISTS idx_aiv_weekly_unique_dealer_timestamp 
-ON aiv_weekly(dealer_id, DATE_TRUNC('week', timestamp));
+ON aiv_weekly(dealer_id, date_trunc_week_immutable(timestamp));
 
 -- Create dealers table if it doesn't exist
 CREATE TABLE IF NOT EXISTS dealers (
@@ -163,7 +172,7 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO aiv_weekly (dealer_id, aiv_score, ati_score, crs_score, elasticity_usd_per_pt, r2_coefficient, metadata) VALUES
     ('demo-dealer', 82, 78, 85, 156.30, 0.87, '{"query_count": 160, "confidence_score": 0.89, "recommendations": ["Improve local SEO citations", "Optimize for voice search queries", "Enhance review response rate"]}'),
     ('test-dealer', 67, 72, 64, 142.50, 0.82, '{"query_count": 140, "confidence_score": 0.85, "recommendations": ["Increase AI platform presence", "Improve content quality", "Build more backlinks"]}')
-ON CONFLICT (dealer_id, DATE_TRUNC('week', timestamp)) DO NOTHING;
+ON CONFLICT (dealer_id, date_trunc_week_immutable(timestamp)) DO NOTHING;
 
 -- Create view for latest AIV metrics
 CREATE OR REPLACE VIEW latest_aiv_metrics AS

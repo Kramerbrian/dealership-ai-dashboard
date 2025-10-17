@@ -1,0 +1,283 @@
+-- ==============================================
+-- Knowledge Graph Materialized Views
+-- Hours Reliability and Citation Depth Index
+-- ==============================================
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ==============================================
+-- 1. HOURS RELIABILITY MATERIALIZED VIEW
+-- ==============================================
+
+-- Create the materialized view for hours reliability tracking
+CREATE MATERIALIZED VIEW IF NOT EXISTS v_hours_reliability AS
+WITH gbp AS (
+  SELECT 
+    n.id AS gbp_id, 
+    (n.props->>'place_id') AS place_id,
+    (n.props->>'hours')::jsonb AS gbp_hours,
+    (n.props->>'tenant_id') AS tenant_id,
+    n.as_of
+  FROM kg_nodes n
+  WHERE n.kind = 'GBP'
+),
+engine_hours AS (
+  SELECT 
+    ea.id AS answer_id, 
+    ea.props->>'engine' AS engine,
+    (ea.props->>'hours')::jsonb AS engine_hours,
+    ea.as_of, 
+    e.subj AS conflict_subj_id, 
+    e.obj AS conflict_obj_id
+  FROM kg_nodes ea
+  JOIN kg_edges e ON e.subj = ea.id AND e.pred = 'CONFLICTS_WITH'
+  WHERE ea.kind = 'EngineAnswer'
+    AND (e.props->>'field') = 'hours'
+),
+joined AS (
+  SELECT 
+    g.tenant_id, 
+    g.place_id, 
+    g.gbp_hours, 
+    g.as_of AS gbp_as_of,
+    eh.engine, 
+    eh.engine_hours, 
+    eh.as_of AS engine_as_of
+  FROM kg_nodes p
+  JOIN kg_edges rel ON rel.subj = p.id AND rel.pred = 'HAS_GBP'
+  JOIN gbp g ON g.gbp_id = rel.obj
+  JOIN engine_hours eh ON eh.conflict_subj_id = rel.obj
+  WHERE p.kind = 'Dealer'
+)
+SELECT
+  tenant_id,
+  place_id,
+  COUNT(*)::int AS comparisons,
+  AVG(CASE WHEN engine_hours = gbp_hours THEN 1 ELSE 0 END)::numeric(5,2) AS match_rate,
+  MAX(engine_as_of) AS last_engine_check,
+  MAX(gbp_as_of) AS last_gbp_update,
+  NOW() AS view_refreshed_at
+FROM joined
+GROUP BY tenant_id, place_id
+WITH NO DATA;
+
+-- Create index for performance
+CREATE INDEX IF NOT EXISTS idx_v_hours_reliability_tenant ON v_hours_reliability(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_v_hours_reliability_place ON v_hours_reliability(place_id);
+CREATE INDEX IF NOT EXISTS idx_v_hours_reliability_match_rate ON v_hours_reliability(match_rate);
+
+-- ==============================================
+-- 2. CITATION DEPTH INDEX MATERIALIZED VIEW
+-- ==============================================
+
+-- Create the materialized view for citation depth tracking
+CREATE MATERIALIZED VIEW IF NOT EXISTS v_citation_depth_index AS
+WITH cites AS (
+  SELECT 
+    a.id AS answer_id, 
+    a.props->>'engine' AS engine,
+    c.id AS cite_id, 
+    (c.props->>'source_domain') AS source_domain
+  FROM kg_nodes a
+  JOIN kg_edges ac ON ac.subj = a.id AND ac.pred = 'CITES'
+  JOIN kg_nodes c ON c.id = ac.obj AND c.kind = 'Citation'
+  WHERE a.kind = 'EngineAnswer'
+),
+targets AS (
+  SELECT 
+    c.cite_id, 
+    p.id AS page_id, 
+    (p.props->>'type') AS page_type,
+    (p.props->>'tenant_id') AS tenant_id
+  FROM cites c
+  JOIN kg_edges cr ON cr.subj = c.cite_id AND cr.pred = 'REFERS_TO'
+  JOIN kg_nodes p ON p.id = cr.obj AND p.kind = 'Page'
+),
+weighted AS (
+  SELECT 
+    t.tenant_id, 
+    c.engine, 
+    c.source_domain, 
+    t.page_type,
+    CASE
+      WHEN t.page_type = 'Homepage' THEN 1
+      WHEN t.page_type = 'SRP' THEN 2
+      WHEN t.page_type = 'VDP' THEN 3
+      WHEN t.page_type IN ('OEM','GBP') THEN 2
+      ELSE 1
+    END AS depth_weight
+  FROM cites c
+  JOIN targets t ON t.cite_id = c.cite_id
+)
+SELECT
+  tenant_id,
+  engine,
+  source_domain,
+  SUM(depth_weight)::int AS citation_depth_score,
+  COUNT(*)::int AS link_count,
+  (SUM(depth_weight)::numeric / GREATEST(COUNT(*),1))::numeric(6,2) AS avg_depth_weight,
+  NOW() AS view_refreshed_at
+FROM weighted
+GROUP BY tenant_id, engine, source_domain
+WITH NO DATA;
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_v_cdi_tenant_engine ON v_citation_depth_index(tenant_id, engine);
+CREATE INDEX IF NOT EXISTS idx_v_cdi_source_domain ON v_citation_depth_index(source_domain);
+CREATE INDEX IF NOT EXISTS idx_v_cdi_citation_score ON v_citation_depth_index(citation_depth_score);
+
+-- ==============================================
+-- 3. OFFER INTEGRITY MATERIALIZED VIEW
+-- ==============================================
+
+-- Create the materialized view for offer integrity tracking
+CREATE MATERIALIZED VIEW IF NOT EXISTS v_offer_integrity AS
+WITH vehicle_prices AS (
+  SELECT 
+    v.id AS vehicle_id,
+    (v.props->>'vin') AS vin,
+    (v.props->>'tenant_id') AS tenant_id,
+    (v.props->>'price')::numeric AS vehicle_price,
+    v.as_of AS vehicle_as_of
+  FROM kg_nodes v
+  WHERE v.kind = 'Vehicle'
+),
+gbp_prices AS (
+  SELECT 
+    g.id AS gbp_id,
+    (g.props->>'place_id') AS place_id,
+    (g.props->>'tenant_id') AS tenant_id,
+    (g.props->>'price')::numeric AS gbp_price,
+    g.as_of AS gbp_as_of
+  FROM kg_nodes g
+  WHERE g.kind = 'GBP'
+),
+price_comparisons AS (
+  SELECT 
+    vp.tenant_id,
+    vp.vin,
+    vp.vehicle_price,
+    vp.vehicle_as_of,
+    gp.gbp_price,
+    gp.gbp_as_of,
+    CASE 
+      WHEN vp.vehicle_price IS NULL OR gp.gbp_price IS NULL THEN 'missing_data'
+      WHEN ABS(vp.vehicle_price - gp.gbp_price) <= 100 THEN 'match'
+      WHEN ABS(vp.vehicle_price - gp.gbp_price) <= 500 THEN 'minor_discrepancy'
+      ELSE 'major_discrepancy'
+    END AS integrity_status,
+    ABS(COALESCE(vp.vehicle_price, 0) - COALESCE(gbp_price, 0)) AS price_difference
+  FROM vehicle_prices vp
+  JOIN kg_edges rel ON rel.subj = vp.vehicle_id AND rel.pred = 'HAS_GBP'
+  JOIN gbp_prices gp ON gp.gbp_id = rel.obj
+  WHERE vp.tenant_id = gp.tenant_id
+)
+SELECT
+  tenant_id,
+  COUNT(*)::int AS total_vehicles,
+  COUNT(CASE WHEN integrity_status = 'match' THEN 1 END)::int AS matching_prices,
+  COUNT(CASE WHEN integrity_status = 'minor_discrepancy' THEN 1 END)::int AS minor_discrepancies,
+  COUNT(CASE WHEN integrity_status = 'major_discrepancy' THEN 1 END)::int AS major_discrepancies,
+  COUNT(CASE WHEN integrity_status = 'missing_data' THEN 1 END)::int AS missing_data,
+  AVG(CASE WHEN integrity_status = 'match' THEN 1 ELSE 0 END)::numeric(5,2) AS integrity_score,
+  AVG(price_difference)::numeric(10,2) AS avg_price_difference,
+  MAX(vehicle_as_of) AS last_vehicle_update,
+  MAX(gbp_as_of) AS last_gbp_update,
+  NOW() AS view_refreshed_at
+FROM price_comparisons
+GROUP BY tenant_id
+WITH NO DATA;
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_v_offer_integrity_tenant ON v_offer_integrity(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_v_offer_integrity_score ON v_offer_integrity(integrity_score);
+
+-- ==============================================
+-- 4. REFRESH FUNCTIONS
+-- ==============================================
+
+-- Function to refresh all materialized views
+CREATE OR REPLACE FUNCTION refresh_kg_materialized_views()
+RETURNS void AS $$
+BEGIN
+  REFRESH MATERIALIZED VIEW CONCURRENTLY v_hours_reliability;
+  REFRESH MATERIALIZED VIEW CONCURRENTLY v_citation_depth_index;
+  REFRESH MATERIALIZED VIEW CONCURRENTLY v_offer_integrity;
+  
+  -- Log the refresh
+  INSERT INTO system_logs (event_type, message, created_at)
+  VALUES ('kg_views_refresh', 'All KG materialized views refreshed successfully', NOW());
+END;
+$$ LANGUAGE plpgsql;
+
+-- ==============================================
+-- 5. ROW LEVEL SECURITY
+-- ==============================================
+
+-- Enable RLS on materialized views
+ALTER TABLE v_hours_reliability ENABLE ROW LEVEL SECURITY;
+ALTER TABLE v_citation_depth_index ENABLE ROW LEVEL SECURITY;
+ALTER TABLE v_offer_integrity ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies
+CREATE POLICY IF NOT EXISTS "Users can view their own hours reliability" ON v_hours_reliability
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own citation depth" ON v_citation_depth_index
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+CREATE POLICY IF NOT EXISTS "Users can view their own offer integrity" ON v_offer_integrity
+    FOR SELECT USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+
+-- ==============================================
+-- 6. COMMENTS AND DOCUMENTATION
+-- ==============================================
+
+COMMENT ON MATERIALIZED VIEW v_hours_reliability IS 'Tracks reliability of business hours data between GBP and AI engines';
+COMMENT ON MATERIALIZED VIEW v_citation_depth_index IS 'Measures citation depth and authority across different page types';
+COMMENT ON MATERIALIZED VIEW v_offer_integrity IS 'Tracks price integrity between vehicle listings and GBP';
+
+-- ==============================================
+-- 7. SAMPLE DATA FOR TESTING
+-- ==============================================
+
+-- Insert sample data for testing (remove in production)
+INSERT INTO v_hours_reliability (
+  tenant_id, place_id, comparisons, match_rate, last_engine_check, last_gbp_update
+) VALUES 
+(
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  'ChIJN1t_tDeuEmsRUsoyG83frY4',
+  15,
+  0.87,
+  NOW() - INTERVAL '2 hours',
+  NOW() - INTERVAL '1 hour'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO v_citation_depth_index (
+  tenant_id, engine, source_domain, citation_depth_score, link_count, avg_depth_weight
+) VALUES 
+(
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  'chatgpt',
+  'dealershipai.com',
+  45,
+  12,
+  3.75
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO v_offer_integrity (
+  tenant_id, total_vehicles, matching_prices, minor_discrepancies, major_discrepancies, 
+  missing_data, integrity_score, avg_price_difference
+) VALUES 
+(
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  150,
+  120,
+  20,
+  8,
+  2,
+  0.80,
+  250.00
+) ON CONFLICT DO NOTHING;

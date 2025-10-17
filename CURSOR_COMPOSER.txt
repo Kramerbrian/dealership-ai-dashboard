@@ -1,0 +1,184 @@
+# 🚀 DealershipAI Dashboard - Cursor Composer Deployment
+
+## Quick Deploy Instructions
+
+Copy this entire content into Cursor Composer and ask: "Deploy this to Vercel"
+
+---
+
+## Project Overview
+
+This is a complete, production-ready Next.js dashboard for DealershipAI - an enterprise SaaS platform for automotive dealerships with AI visibility analytics.
+
+**Key Features:**
+- Multi-tenant architecture with 4-tier RBAC
+- Real-time AI visibility analytics
+- DTRI-MAXIMUS financial integration
+- Bot parity monitoring
+- Automated fix loops
+- Comprehensive API layer
+
+## Tech Stack
+
+- **Frontend**: Next.js 15.5.4, TypeScript, Tailwind CSS
+- **Backend**: tRPC, REST APIs, Prisma ORM
+- **Database**: PostgreSQL with Supabase
+- **Auth**: Clerk with organizations
+- **Billing**: Stripe integration
+- **Caching**: Redis (Upstash)
+- **Deployment**: Vercel-ready
+
+## Environment Variables Required
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Clerk Auth
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+
+# Stripe Billing
+STRIPE_SECRET_KEY=your_stripe_secret_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+
+# Redis Cache
+UPSTASH_REDIS_REST_URL=your_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_redis_token
+
+# AI APIs
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+```
+
+## Database Schema
+
+The application uses Prisma with PostgreSQL. Key tables:
+- `dealerships` - Multi-tenant dealership data
+- `scores` - AI visibility metrics
+- `audits` - Audit trail and lineage
+- `users` - User management with RBAC
+
+## Key Components
+
+### Dashboard Features
+- **AI Visibility Metrics**: AIV™, ATI™, CRS™, ITI™, CIS™
+- **DTRI-MAXIMUS**: Claude AI financial integration
+- **Bot Parity Monitor**: Cross-platform crawl analysis
+- **What Changed Analyzer**: Week-over-week metric tracking
+- **Fix Loop Executor**: Automated remediation system
+
+### API Endpoints
+- `/api/quick-audit` - Main scoring endpoint
+- `/api/changes` - Change analysis
+- `/api/fix-loop` - Automated fixes
+- `/api/bot-parity-drilldown` - Bot analysis
+- `/api/lineage` - Data provenance
+- `/api/usage` - API usage tracking
+
+## Deployment Steps
+
+1. **Create Vercel Project**
+   ```bash
+   vercel --prod
+   ```
+
+2. **Set Environment Variables**
+   - Add all required env vars in Vercel dashboard
+   - Ensure Supabase and Clerk are configured
+
+3. **Database Setup**
+   ```bash
+   npm run db:push
+   npm run db:generate
+   ```
+
+4. **Deploy**
+   ```bash
+   vercel deploy --prod
+   ```
+
+## File Structure
+
+```
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── (dashboard)/       # Dashboard pages
+│   └── page.tsx           # Landing page
+├── components/            # React components
+│   ├── dashboard/         # Dashboard components
+│   ├── ui/               # Reusable UI components
+│   └── landing/          # Landing page components
+├── lib/                  # Utilities and configurations
+│   ├── prisma.ts         # Database client
+│   ├── redis.ts          # Cache client
+│   └── scoring.ts        # AI scoring engine
+├── prisma/               # Database schema
+└── public/               # Static assets
+```
+
+## Key Features Implemented
+
+✅ **Multi-Tenant Architecture**
+- Row-level security with Supabase RLS
+- Tenant isolation and data protection
+- Role-based access control (4 tiers)
+
+✅ **AI Analytics Dashboard**
+- Real-time visibility metrics
+- Elasticity analysis and forecasting
+- Anomaly detection and alerts
+
+✅ **Automation & Fix Loops**
+- Automated issue detection
+- Playbook-based remediation
+- Dry-run and execution modes
+
+✅ **Enterprise Features**
+- Stripe billing integration
+- API key management
+- Audit logging and lineage
+
+✅ **Bot Parity Monitoring**
+- Cross-platform crawl analysis
+- Schema compliance tracking
+- Diff viewer for HTML snapshots
+
+## Quick Start Commands
+
+```bash
+# Development
+npm run dev
+
+# Build
+npm run build
+
+# Database
+npm run db:generate
+npm run db:push
+
+# Deploy
+vercel deploy --prod
+```
+
+## Production Checklist
+
+- [ ] Environment variables configured
+- [ ] Supabase database set up with RLS
+- [ ] Clerk authentication configured
+- [ ] Stripe webhooks configured
+- [ ] Redis cache configured
+- [ ] Domain configured in Vercel
+- [ ] SSL certificate active
+
+## Support
+
+- **Documentation**: See MANIFEST.md for complete details
+- **Quick Reference**: QUICK_REFERENCE.txt for common tasks
+- **Status**: LIVE_STATUS.md for current feature status
+
+---
+
+**Ready to deploy?** This is a complete, production-ready application with enterprise features, multi-tenancy, and advanced AI analytics. Just add your environment variables and deploy to Vercel!

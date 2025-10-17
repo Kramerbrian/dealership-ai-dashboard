@@ -12,24 +12,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Content Security Policy
+// Content Security Policy - Match vercel.json configuration
 app.use((req, res, next) => {
-  // More permissive CSP to resolve eval issues
-  const csp = [
-    "default-src 'self' 'unsafe-inline' 'unsafe-eval'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://js.clerk.com https://js.clerk.dev https://clerk.dealershipai.com https://vercel.live https://cdn.jsdelivr.net https://unpkg.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
-    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
-    "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://api.stripe.com https://clerk.dealershipai.com https://api.clerk.com https://vercel.live wss: https:",
-    "frame-src 'self' https://js.stripe.com https://js.clerk.com https://js.clerk.dev https://clerk.dealershipai.com https://vercel.live",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self' https://checkout.stripe.com",
-    "worker-src 'self' blob:",
-    "child-src 'self' blob:",
-    "frame-ancestors 'none'"
-  ].join('; ');
+  // Use same CSP as vercel.json to avoid conflicts
+  const csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.live https://vercel.live/_next-live/feedback/ https://*.vercel.live/_next-live/feedback/ https://js.stripe.com https://js.clerk.com https://js.clerk.dev https://clerk.dealershipai.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob: https://dealershipai.com; connect-src 'self' https://api.openai.com https://api.anthropic.com https://*.upstash.io https://*.supabase.co https://vercel.live https://*.vercel.live https://api.stripe.com https://clerk.dealershipai.com https://api.clerk.com wss: https:; frame-src 'self' https://vercel.live https://*.vercel.live https://js.stripe.com https://js.clerk.com https://js.clerk.dev https://clerk.dealershipai.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self';";
   
   res.setHeader('Content-Security-Policy', csp);
   res.setHeader('X-Content-Type-Options', 'nosniff');

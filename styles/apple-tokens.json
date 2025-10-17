@@ -1,0 +1,100 @@
+{
+  "colors": {
+    "cupertino": {
+      "bg": "#f2f2f7",
+      "text": "#1d1d1f",
+      "subtext": "#8e8e93",
+      "accent": "#007aff",
+      "green": "#34c759",
+      "orange": "#ff9500",
+      "red": "#ff3b30",
+      "purple": "#af52de",
+      "pink": "#ff2d92",
+      "yellow": "#ffcc00",
+      "gray": "#8e8e93",
+      "light-gray": "#f2f2f7",
+      "dark-gray": "#1c1c1e"
+    },
+    "system": {
+      "blue": "#007aff",
+      "green": "#34c759",
+      "indigo": "#5856d6",
+      "orange": "#ff9500",
+      "pink": "#ff2d92",
+      "purple": "#af52de",
+      "red": "#ff3b30",
+      "teal": "#5ac8fa",
+      "yellow": "#ffcc00"
+    }
+  },
+  "spacing": {
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "2xl": "48px",
+    "3xl": "64px"
+  },
+  "borderRadius": {
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "20px",
+    "2xl": "24px",
+    "full": "9999px"
+  },
+  "shadows": {
+    "soft": "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+    "medium": "0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
+    "large": "0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)",
+    "glow": "0 0 20px rgba(59, 130, 246, 0.3)"
+  },
+  "typography": {
+    "fontFamily": {
+      "sans": ["-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Helvetica Neue", "Arial", "sans-serif"],
+      "mono": ["SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "monospace"]
+    },
+    "fontSize": {
+      "xs": "12px",
+      "sm": "14px",
+      "base": "16px",
+      "lg": "18px",
+      "xl": "20px",
+      "2xl": "24px",
+      "3xl": "30px",
+      "4xl": "36px",
+      "5xl": "48px"
+    },
+    "fontWeight": {
+      "light": "300",
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    },
+    "lineHeight": {
+      "tight": "1.2",
+      "normal": "1.5",
+      "relaxed": "1.75"
+    }
+  },
+  "motion": {
+    "duration": {
+      "fast": "150ms",
+      "normal": "250ms",
+      "slow": "350ms"
+    },
+    "easing": {
+      "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeInOut": "cubic-bezier(0.4, 0, 0.2, 1)"
+    }
+  },
+  "glass": {
+    "background": "rgba(255, 255, 255, 0.8)",
+    "backdrop": "blur(20px)",
+    "border": "rgba(255, 255, 255, 0.2)"
+  }
+}

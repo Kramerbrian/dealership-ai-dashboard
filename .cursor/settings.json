@@ -1,0 +1,265 @@
+{
+  "version": "1.0.0",
+  "name": "DealershipAI Development Environment",
+  "description": "Next.js SaaS for automotive dealership AI visibility tracking",
+  
+  "ai": {
+    "model": "claude-sonnet-4",
+    "contextWindow": 200000,
+    "rules": ".cursorrules",
+    "customInstructions": "You are an expert Next.js developer building a high-margin SaaS product. Prioritize: (1) Server-side logic for IP protection, (2) Minimal dependencies, (3) Demo-ready synthetic data, (4) Cupertino aesthetic, (5) Fast deployment. The business model is $0.15 cost → $499 revenue per dealer. Always think: 'Will this help close deals faster?'"
+  },
+  
+  "project": {
+    "type": "nextjs",
+    "framework": "Next.js 14",
+    "language": "JavaScript",
+    "styling": "TailwindCSS",
+    "auth": "NextAuth.js",
+    "deployment": "Vercel",
+    "database": "Redis (optional)",
+    "apis": ["Google My Business", "Review Platforms"]
+  },
+  
+  "prompts": {
+    "nextjs": {
+      "pageGeneration": {
+        "description": "Create Next.js pages with proper structure",
+        "template": "When creating a Next.js page:\n1. Use functional components\n2. Add proper imports (React, Next/Head, Next/Link)\n3. Include SEO meta tags in <Head>\n4. Use TailwindCSS for styling\n5. Export default at bottom\n6. Add getServerSideProps or getStaticProps if data fetching needed\n7. Implement responsive design (mobile-first)\n8. Include loading states\n9. Handle error states\n10. Add proper TypeScript types if using TS",
+        "example": "import { useState, useEffect } from 'react';\nimport Head from 'next/head';\nimport Link from 'next/link';\n\nexport default function PageName() {\n  return (\n    <>\n      <Head>\n        <title>Page Title - DealershipAI</title>\n        <meta name=\"description\" content=\"Description\" />\n      </Head>\n      <main className=\"min-h-screen bg-gray-50\">\n        {/* Content */}\n      </main>\n    </>\n  );\n}"
+      },
+      
+      "apiRouteGeneration": {
+        "description": "Create secure, server-side API routes",
+        "template": "When creating API routes:\n1. Place in /pages/api/ directory\n2. Export default async function handler(req, res)\n3. Add proper error handling with try-catch\n4. Validate all inputs\n5. Return consistent JSON structure\n6. Use proper HTTP status codes\n7. Keep business logic server-side\n8. Add rate limiting if needed\n9. Use environment variables for secrets\n10. Add CORS headers if needed",
+        "example": "// pages/api/endpoint.js\nexport default async function handler(req, res) {\n  try {\n    // Validate inputs\n    if (!req.query.param) {\n      return res.status(400).json({ \n        success: false, \n        error: 'Parameter required' \n      });\n    }\n    \n    // Business logic here\n    const data = await fetchData(req.query.param);\n    \n    return res.status(200).json({ \n      success: true, \n      data \n    });\n    \n  } catch (error) {\n    console.error('API Error:', error);\n    return res.status(500).json({ \n      success: false, \n      error: 'Internal server error' \n    });\n  }\n}"
+      },
+      
+      "protectedRoutePattern": {
+        "description": "Protect pages with NextAuth authentication",
+        "template": "For protected routes:\n1. Import useSession from next-auth/react\n2. Import useRouter from next/router\n3. Check session status in useEffect\n4. Redirect to /login if unauthenticated\n5. Show loading state while checking\n6. Return null if no session\n7. Only render content for authenticated users",
+        "example": "import { useSession } from 'next-auth/react';\nimport { useRouter } from 'next/router';\nimport { useEffect } from 'react';\n\nexport default function ProtectedPage() {\n  const { data: session, status } = useSession();\n  const router = useRouter();\n  \n  useEffect(() => {\n    if (status === 'unauthenticated') {\n      router.push('/login');\n    }\n  }, [status, router]);\n  \n  if (status === 'loading') {\n    return <LoadingSpinner />;\n  }\n  \n  if (!session) return null;\n  \n  return <ActualContent />;\n}"
+      },
+      
+      "componentGeneration": {
+        "description": "Create reusable React components",
+        "template": "When creating components:\n1. Use functional components\n2. Accept props with destructuring\n3. Use TailwindCSS for styling\n4. Make components reusable\n5. Add PropTypes or TypeScript types\n6. Export at bottom\n7. Keep components small (<200 lines)\n8. Use React.memo for expensive renders\n9. Extract common logic to hooks\n10. Follow single responsibility principle",
+        "example": "export default function Card({ title, description, icon, onClick }) {\n  return (\n    <div \n      onClick={onClick}\n      className=\"p-6 bg-white rounded-2xl shadow-sm hover:shadow-xl transition cursor-pointer\"\n    >\n      <div className=\"text-4xl mb-4\">{icon}</div>\n      <h3 className=\"text-xl font-semibold mb-2\">{title}</h3>\n      <p className=\"text-gray-600\">{description}</p>\n    </div>\n  );\n}"
+      },
+      
+      "dataFetchingPattern": {
+        "description": "Fetch data from API routes",
+        "template": "For client-side data fetching:\n1. Use useState for data storage\n2. Use useEffect for fetch on mount\n3. Add loading state\n4. Add error handling\n5. Show loading UI\n6. Handle empty states\n7. Consider SWR or React Query for advanced caching\n8. Add retry logic if needed\n9. Implement proper cleanup\n10. Debounce frequent requests",
+        "example": "const [data, setData] = useState(null);\nconst [loading, setLoading] = useState(true);\nconst [error, setError] = useState(null);\n\nuseEffect(() => {\n  let cancelled = false;\n  \n  async function fetchData() {\n    try {\n      const res = await fetch('/api/endpoint');\n      if (!res.ok) throw new Error('Failed to fetch');\n      const json = await res.json();\n      if (!cancelled) setData(json);\n    } catch (err) {\n      if (!cancelled) setError(err.message);\n    } finally {\n      if (!cancelled) setLoading(false);\n    }\n  }\n  \n  fetchData();\n  return () => { cancelled = true; };\n}, []);\n\nif (loading) return <Loading />;\nif (error) return <Error message={error} />;\nif (!data) return <Empty />;\nreturn <Content data={data} />;"
+      }
+    },
+    
+    "rendering": {
+      "ssr": {
+        "description": "Server-Side Rendering for dynamic pages",
+        "when": "Use SSR when: (1) Page needs SEO, (2) Data changes frequently, (3) Content is user-specific, (4) Real-time data required",
+        "example": "export async function getServerSideProps(context) {\n  // Runs on every request\n  const { params, req, res, query } = context;\n  \n  // Fetch data\n  const data = await fetchData();\n  \n  // Return props to page component\n  return {\n    props: {\n      data,\n      timestamp: Date.now()\n    }\n  };\n}\n\nexport default function Page({ data, timestamp }) {\n  return <div>{/* Use data */}</div>;\n}"
+      },
+      
+      "ssg": {
+        "description": "Static Site Generation for static pages",
+        "when": "Use SSG when: (1) Content rarely changes, (2) Same for all users, (3) Can be pre-rendered, (4) Marketing/landing pages",
+        "example": "export async function getStaticProps() {\n  // Runs at build time\n  const data = await fetchData();\n  \n  return {\n    props: { data },\n    revalidate: 60 // ISR: Revalidate every 60 seconds\n  };\n}\n\nexport default function Page({ data }) {\n  return <div>{/* Use data */}</div>;\n}"
+      },
+      
+      "csr": {
+        "description": "Client-Side Rendering for interactive apps",
+        "when": "Use CSR when: (1) No SEO needed, (2) Behind authentication, (3) Highly interactive, (4) Dashboard/app pages",
+        "example": "'use client'; // Next.js 13+ App Router\n\nimport { useState, useEffect } from 'react';\n\nexport default function Dashboard() {\n  const [data, setData] = useState(null);\n  \n  useEffect(() => {\n    fetch('/api/data')\n      .then(res => res.json())\n      .then(setData);\n  }, []);\n  \n  return <div>{/* Render data */}</div>;\n}"
+      },
+      
+      "isr": {
+        "description": "Incremental Static Regeneration",
+        "when": "Use ISR when: (1) Static content that updates occasionally, (2) Want fast loads + fresh data, (3) E-commerce, blogs, documentation",
+        "example": "export async function getStaticProps() {\n  const data = await fetchData();\n  \n  return {\n    props: { data },\n    revalidate: 3600 // Regenerate every hour\n  };\n}\n\nexport async function getStaticPaths() {\n  return {\n    paths: [\n      { params: { id: '1' } },\n      { params: { id: '2' } }\n    ],\n    fallback: 'blocking' // or true or false\n  };\n}"
+      }
+    },
+    
+    "styling": {
+      "tailwind": {
+        "description": "TailwindCSS utility-first styling",
+        "guidelines": "1. Use utilities over custom CSS\n2. Mobile-first responsive design\n3. Use design tokens (spacing, colors)\n4. Compose with @apply only for repeated patterns\n5. Use JIT mode for custom values\n6. Keep className readable (max 10-12 classes)\n7. Extract components if too complex\n8. Use arbitrary values sparingly: className=\"w-[137px]\"",
+        "commonPatterns": {
+          "button": "className=\"px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full font-medium hover:shadow-xl transition\"",
+          "card": "className=\"p-6 bg-white rounded-2xl shadow-sm hover:shadow-xl transition\"",
+          "input": "className=\"px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500\"",
+          "container": "className=\"max-w-7xl mx-auto px-6 py-12\"",
+          "grid": "className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6\""
+        }
+      },
+      
+      "cupertino": {
+        "description": "Apple-inspired design aesthetic",
+        "principles": "1. Generous white space\n2. Subtle gradients and shadows\n3. Rounded corners (8px, 12px, 16px, 24px)\n4. San Francisco font (-apple-system)\n5. Minimal color palette\n6. Smooth animations (300ms)\n7. Glass morphism effects\n8. Clean typography hierarchy",
+        "colorPalette": {
+          "primary": "#06b6d4 (cyan-500)",
+          "secondary": "#3b82f6 (blue-500)",
+          "accent": "#5fcdd9 (custom teal)",
+          "background": "#f9fafb (gray-50)",
+          "surface": "#ffffff (white)",
+          "text": "#111827 (gray-900)",
+          "textMuted": "#6b7280 (gray-600)"
+        }
+      }
+    },
+    
+    "authentication": {
+      "nextauth": {
+        "description": "NextAuth.js setup and usage",
+        "setup": "1. Install: npm install next-auth\n2. Create /pages/api/auth/[...nextauth].js\n3. Configure providers (Google, Microsoft, Email)\n4. Set environment variables\n5. Wrap app with SessionProvider\n6. Use useSession hook in components",
+        "providers": {
+          "google": "GoogleProvider({\n  clientId: process.env.GOOGLE_CLIENT_ID,\n  clientSecret: process.env.GOOGLE_CLIENT_SECRET\n})",
+          "microsoft": "AzureADProvider({\n  clientId: process.env.AZURE_AD_CLIENT_ID,\n  clientSecret: process.env.AZURE_AD_CLIENT_SECRET,\n  tenantId: process.env.AZURE_AD_TENANT_ID\n})",
+          "email": "EmailProvider({\n  server: process.env.EMAIL_SERVER,\n  from: process.env.EMAIL_FROM\n})"
+        }
+      }
+    },
+    
+    "performance": {
+      "optimization": {
+        "images": "Use next/image for automatic optimization",
+        "fonts": "Use next/font for font optimization",
+        "bundleSize": "Monitor with @next/bundle-analyzer",
+        "caching": "Implement Redis for API responses",
+        "codeSpitting": "Use dynamic imports for heavy components",
+        "lazyLoading": "Defer non-critical content",
+        "prefetching": "Use Link prefetch for navigation"
+      }
+    }
+  },
+  
+  "snippets": {
+    "page": {
+      "prefix": "npage",
+      "body": [
+        "import Head from 'next/head';",
+        "",
+        "export default function ${1:PageName}() {",
+        "  return (",
+        "    <>",
+        "      <Head>",
+        "        <title>${2:Page Title} - DealershipAI</title>",
+        "        <meta name=\"description\" content=\"${3:Description}\" />",
+        "      </Head>",
+        "      <main className=\"min-h-screen bg-gray-50\">",
+        "        ${4:// Content}",
+        "      </main>",
+        "    </>",
+        "  );",
+        "}"
+      ]
+    },
+    
+    "api": {
+      "prefix": "napi",
+      "body": [
+        "export default async function handler(req, res) {",
+        "  try {",
+        "    const { ${1:param} } = req.query;",
+        "    ",
+        "    if (!${1:param}) {",
+        "      return res.status(400).json({ ",
+        "        success: false, ",
+        "        error: '${1:param} required' ",
+        "      });",
+        "    }",
+        "    ",
+        "    // Business logic",
+        "    const data = await ${2:fetchData}(${1:param});",
+        "    ",
+        "    return res.status(200).json({ ",
+        "      success: true, ",
+        "      data ",
+        "    });",
+        "    ",
+        "  } catch (error) {",
+        "    console.error('API Error:', error);",
+        "    return res.status(500).json({ ",
+        "      success: false, ",
+        "      error: 'Internal server error' ",
+        "    });",
+        "  }",
+        "}"
+      ]
+    },
+    
+    "component": {
+      "prefix": "ncomp",
+      "body": [
+        "export default function ${1:ComponentName}({ ${2:props} }) {",
+        "  return (",
+        "    <div className=\"${3:p-6 bg-white rounded-2xl}\">",
+        "      ${4:// Content}",
+        "    </div>",
+        "  );",
+        "}"
+      ]
+    },
+    
+    "protected": {
+      "prefix": "nprotected",
+      "body": [
+        "import { useSession } from 'next-auth/react';",
+        "import { useRouter } from 'next/router';",
+        "import { useEffect } from 'react';",
+        "",
+        "export default function ${1:ProtectedPage}() {",
+        "  const { data: session, status } = useSession();",
+        "  const router = useRouter();",
+        "  ",
+        "  useEffect(() => {",
+        "    if (status === 'unauthenticated') {",
+        "      router.push('/login');",
+        "    }",
+        "  }, [status, router]);",
+        "  ",
+        "  if (status === 'loading') return <div>Loading...</div>;",
+        "  if (!session) return null;",
+        "  ",
+        "  return (",
+        "    <div>",
+        "      ${2:// Protected content}",
+        "    </div>",
+        "  );",
+        "}"
+      ]
+    }
+  },
+  
+  "shortcuts": {
+    "descriptions": {
+      "Cmd+K": "Open command palette",
+      "Cmd+Shift+P": "AI chat",
+      "Cmd+L": "Generate code with AI",
+      "Cmd+I": "Inline AI edit",
+      "Cmd+Shift+K": "Terminal AI",
+      "Cmd+.": "Quick fix",
+      "Cmd+Shift+F": "Search project"
+    }
+  },
+  
+  "extensions": {
+    "recommended": [
+      "bradlc.vscode-tailwindcss",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-typescript-next"
+    ]
+  },
+  
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "tailwindCSS.experimental.classRegex": [
+      ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+    ]
+  }
+}

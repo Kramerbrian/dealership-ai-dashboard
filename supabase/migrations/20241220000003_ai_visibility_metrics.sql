@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS ai_source_configs (
     enabled BOOLEAN DEFAULT true,
     sync_status VARCHAR(50) DEFAULT 'idle', -- idle, syncing, error, success
     last_sync TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create AI visibility metrics table
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS ai_visibility_metrics (
     growth DECIMAL(5,2) NOT NULL, -- 0-100
     timestamp TIMESTAMPTZ NOT NULL,
     metadata JSONB,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create AI insights table
@@ -64,8 +64,8 @@ CREATE TABLE IF NOT EXISTS ai_insights (
     cost DECIMAL(10,2) DEFAULT 0,
     effort VARCHAR(20) DEFAULT 'medium', -- low, medium, high
     timeframe VARCHAR(20) DEFAULT 'medium', -- immediate, short, medium, long
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create AI recommendations table
@@ -92,8 +92,8 @@ CREATE TABLE IF NOT EXISTS ai_recommendations (
     assigned_to VARCHAR(255),
     due_date TIMESTAMPTZ,
     progress DECIMAL(5,2) DEFAULT 0, -- 0-100
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create AI insights metrics aggregation table
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS ai_insights_metrics (
     completed_recommendations INTEGER DEFAULT 0,
     average_roi DECIMAL(5,2) DEFAULT 0,
     success_rate DECIMAL(5,2) DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(tenant_id, date)
 );
 

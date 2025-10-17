@@ -1,0 +1,94 @@
+{
+  "timestamp": "2025-10-17T04:41:26.982Z",
+  "summary": {
+    "PASS": 1,
+    "FAIL": 9,
+    "ERROR": 4
+  },
+  "results": [
+    {
+      "test": "Authentication",
+      "status": "PASS",
+      "message": "Redirected to sign-in as expected",
+      "timestamp": "2025-10-17T04:41:23.727Z"
+    },
+    {
+      "test": "Google OAuth Button",
+      "status": "FAIL",
+      "message": "Google OAuth button not found",
+      "timestamp": "2025-10-17T04:41:23.730Z"
+    },
+    {
+      "test": "GitHub OAuth Button",
+      "status": "FAIL",
+      "message": "GitHub OAuth button not found",
+      "timestamp": "2025-10-17T04:41:23.730Z"
+    },
+    {
+      "test": "Run Full Audit",
+      "status": "ERROR",
+      "message": "Test failed: this.page.$x is not a function",
+      "timestamp": "2025-10-17T04:41:23.730Z"
+    },
+    {
+      "test": "AI Health Check",
+      "status": "ERROR",
+      "message": "Test failed: this.page.$x is not a function",
+      "timestamp": "2025-10-17T04:41:23.730Z"
+    },
+    {
+      "test": "Competitor Analysis",
+      "status": "ERROR",
+      "message": "Test failed: this.page.$x is not a function",
+      "timestamp": "2025-10-17T04:41:23.730Z"
+    },
+    {
+      "test": "Get Recommendations",
+      "status": "ERROR",
+      "message": "Test failed: this.page.$x is not a function",
+      "timestamp": "2025-10-17T04:41:23.730Z"
+    },
+    {
+      "test": "Auto Refresh Toggle",
+      "status": "FAIL",
+      "message": "Control not found",
+      "timestamp": "2025-10-17T04:41:23.731Z"
+    },
+    {
+      "test": "Manual Refresh",
+      "status": "FAIL",
+      "message": "Control not found",
+      "timestamp": "2025-10-17T04:41:23.731Z"
+    },
+    {
+      "test": "Theme Toggle",
+      "status": "FAIL",
+      "message": "Control not found",
+      "timestamp": "2025-10-17T04:41:23.732Z"
+    },
+    {
+      "test": "Settings Button",
+      "status": "FAIL",
+      "message": "Control not found",
+      "timestamp": "2025-10-17T04:41:23.732Z"
+    },
+    {
+      "test": "Mobile Layout",
+      "status": "FAIL",
+      "message": "Main elements not visible",
+      "timestamp": "2025-10-17T04:41:24.743Z"
+    },
+    {
+      "test": "Tablet Layout",
+      "status": "FAIL",
+      "message": "Main elements not visible",
+      "timestamp": "2025-10-17T04:41:25.785Z"
+    },
+    {
+      "test": "Desktop Layout",
+      "status": "FAIL",
+      "message": "Main elements not visible",
+      "timestamp": "2025-10-17T04:41:26.800Z"
+    }
+  ]
+}

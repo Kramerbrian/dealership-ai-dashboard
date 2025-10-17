@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealershipai.com/schemas/elasticity.schema.json",
+  "title": "ElasticityModel",
+  "type": "object",
+  "required": ["tenantId","asOf","windowWeeks","usdPerPoint","r2","status","ci95"],
+  "properties": {
+    "tenantId": { "type": "string", "format": "uuid" },
+    "asOf": { "type": "string", "format": "date" },
+    "windowWeeks": { "type": "integer", "minimum": 4, "maximum": 16, "default": 8 },
+    "usdPerPoint": { "type": "number", "minimum": 0 },
+    "r2": { "type": "number", "minimum": 0, "maximum": 1 },
+    "status": { "type": "string", "enum": ["stable","unstable","insufficient_data"] },
+    "ci95": { "type": "object", "required": ["low","high"], "properties": { "low": { "type": "number" }, "high": { "type": "number" } } },
+    "deltas": {
+      "type": "array",
+      "items": { "type": "object", "required": ["dAiv","dRar"], "properties": {
+        "dAiv": { "type": "number" }, "dRar": { "type": "number" } } }
+    }
+  },
+  "additionalProperties": false
+}

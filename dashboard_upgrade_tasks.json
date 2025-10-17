@@ -1,0 +1,367 @@
+{
+  "project": "DealershipAI Dashboard 2026",
+  "version": "2.0.0",
+  "last_updated": "2025-01-15T20:30:00Z",
+  "phases": {
+    "phase_1": {
+      "name": "Core Infrastructure",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "api_contract",
+          "name": "API Contract + Cache",
+          "status": "completed",
+          "description": "Add runtime='edge', revalidate=30, Zod schema, v:'1' to /api/ai-scores",
+          "files": ["app/api/ai-scores/route.ts"],
+          "acceptance_criteria": "200 OK with versioned payload; bad shape → 500 with Zod error"
+        },
+        {
+          "id": "theme_tokens",
+          "name": "Theme + Tokens",
+          "status": "completed",
+          "description": "app/providers.tsx with next-themes; wrap in app/layout.tsx",
+          "files": ["app/providers.tsx", "app/layout.tsx"],
+          "acceptance_criteria": "Header toggle flips light/dark without reload"
+        },
+        {
+          "id": "plan_gating",
+          "name": "Plan Gating",
+          "status": "completed",
+          "description": "components/Gate.tsx; wrap locked tiles",
+          "files": ["components/Gate.tsx"],
+          "acceptance_criteria": "Non-entitled users see inline upsell CTA, entitled see content"
+        },
+        {
+          "id": "drawer_a11y",
+          "name": "Drawer a11y + URL State",
+          "status": "completed",
+          "description": "?panel=vli opens correct drawer; ESC closes; role='dialog'",
+          "files": ["components/Drawer.tsx"],
+          "acceptance_criteria": "Focus trap works; deep link share opens same panel"
+        },
+        {
+          "id": "telemetry",
+          "name": "Telemetry",
+          "status": "completed",
+          "description": "lib/telemetry.ts stub + calls on drawer_open, playbook_run",
+          "files": ["lib/telemetry.ts"],
+          "acceptance_criteria": "Events log with {tenant, kpi, ts}"
+        },
+        {
+          "id": "rate_limit",
+          "name": "Rate Limit",
+          "status": "completed",
+          "description": "middleware.ts throttle /api/ai-scores 60 req/min/IP",
+          "files": ["middleware.ts"],
+          "acceptance_criteria": ">60/min returns 429"
+        },
+        {
+          "id": "micro_trends",
+          "name": "Micro-trends",
+          "status": "completed",
+          "description": "Add <Spark points={[...]} /> and <Delta v={…} /> to each KPI",
+          "files": ["components/Spark.tsx", "components/Delta.tsx"],
+          "acceptance_criteria": "Shows 7-point trend and ±% badge"
+        },
+        {
+          "id": "evidence_tabs",
+          "name": "Evidence Tabs Stub",
+          "status": "completed",
+          "description": "Drawer tabs: Why · Evidence · Actions · ROI (static for now)",
+          "files": ["components/Tabs.tsx"],
+          "acceptance_criteria": "Switching tabs is instant; no layout shift"
+        }
+      ]
+    },
+    "phase_2": {
+      "name": "Benchmarks, Confidence, Export",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "cohort_benchmarks",
+          "name": "Cohort Benchmarks",
+          "status": "completed",
+          "description": "Add side-by-side vs market and vs peers",
+          "files": ["components/KPIBench.tsx"],
+          "acceptance_criteria": "Shows vs Market and vs Peers with color-coded deltas"
+        },
+        {
+          "id": "confidence_bands",
+          "name": "Confidence Bands",
+          "status": "completed",
+          "description": "Display P10/P50/P90 and freshness",
+          "files": ["components/KPIConfidence.tsx"],
+          "acceptance_criteria": "Shows confidence interval with P10/P50/P90 and as-of date"
+        },
+        {
+          "id": "export_snapshot",
+          "name": "Export Snapshot (JSON + PNG)",
+          "status": "completed",
+          "description": "Add server endpoint and client button",
+          "files": ["app/api/snapshot/route.ts", "components/ExportButton.tsx"],
+          "acceptance_criteria": "JSON export works; PNG export via html2canvas"
+        },
+        {
+          "id": "evidence_tabs_wire",
+          "name": "Evidence Tabs (Wire)",
+          "status": "completed",
+          "description": "Minimal tabs and lists",
+          "files": ["components/Tabs.tsx"],
+          "acceptance_criteria": "Why · Evidence · Actions · ROI tabs with content"
+        },
+        {
+          "id": "inline_benchmark_api",
+          "name": "Inline Benchmark Data API",
+          "status": "completed",
+          "description": "Add optional benchmarks and bands to the payload",
+          "files": ["app/api/ai-scores/route.ts"],
+          "acceptance_criteria": "API returns benchmark data when available"
+        }
+      ]
+    },
+    "phase_3": {
+      "name": "DealerGPT 2.0 + Voice",
+      "status": "in_progress",
+      "tasks": [
+        {
+          "id": "dealergpt_voice",
+          "name": "DealerGPT Voice Input",
+          "status": "completed",
+          "description": "Voice recognition for natural language queries",
+          "files": ["components/DealerGPTVoice.tsx"],
+          "acceptance_criteria": "Speech-to-text works; processes voice queries"
+        },
+        {
+          "id": "dealergpt_api",
+          "name": "DealerGPT API Endpoint",
+          "status": "completed",
+          "description": "Contextual matching and explanation generation",
+          "files": ["app/api/dealergpt/route.ts"],
+          "acceptance_criteria": "Returns contextual answers for metric queries"
+        },
+        {
+          "id": "dealergpt_context",
+          "name": "DealerGPT Context Memory",
+          "status": "completed",
+          "description": "Retains previous Q&A per tenant",
+          "files": ["components/DealerGPTContext.tsx", "lib/contextStore.ts"],
+          "acceptance_criteria": "Remembers previous conversations"
+        },
+        {
+          "id": "explain_lib",
+          "name": "Explanation Library",
+          "status": "pending",
+          "description": "lib/explain.ts for metric explanations",
+          "files": ["lib/explain.ts"],
+          "acceptance_criteria": "Generates explanations for metric changes"
+        }
+      ]
+    },
+    "phase_4": {
+      "name": "Advanced Analytics",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "what_changed_analyzer",
+          "name": "What Changed? Analyzer",
+          "status": "pending",
+          "description": "Multi-metric diff timeline",
+          "files": ["components/WhatChangedAnalyzer.tsx", "lib/diffAnalyzer.ts"],
+          "acceptance_criteria": "Shows timeline of metric changes with explanations"
+        },
+        {
+          "id": "fix_loop",
+          "name": "DealerGPT Fix Loop",
+          "status": "pending",
+          "description": "Auto-inject JSON-LD (safe mode)",
+          "files": ["lib/fixLoop.ts", "components/FixLoop.tsx"],
+          "acceptance_criteria": "Automatically applies fixes with approval"
+        },
+        {
+          "id": "oem_rollup",
+          "name": "OEM Roll-up Mode",
+          "status": "pending",
+          "description": "Aggregate QAI / AEMD across rooftops",
+          "files": ["components/OEMRollup.tsx", "lib/oemAggregator.ts"],
+          "acceptance_criteria": "Shows aggregated metrics across multiple rooftops"
+        },
+        {
+          "id": "executive_pdf",
+          "name": "Weekly Executive PDF + Slack Webhook",
+          "status": "pending",
+          "description": "Auto digest generation and delivery",
+          "files": ["lib/pdfGenerator.ts", "app/api/webhooks/slack/route.ts"],
+          "acceptance_criteria": "Generates PDF reports and sends to Slack"
+        }
+      ]
+    },
+    "phase_5": {
+      "name": "AI Calibration System",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "calibration_prompts",
+          "name": "40 Critical Prompts Framework",
+          "status": "completed",
+          "description": "Complete prompt library across 4 intent categories",
+          "files": ["lib/ai-calibration/prompts.ts"],
+          "acceptance_criteria": "All 40 prompts with weighted scoring"
+        },
+        {
+          "id": "calibration_engine",
+          "name": "Multi-Platform AI Testing",
+          "status": "completed",
+          "description": "ChatGPT, Claude, Perplexity, Gemini testing",
+          "files": ["lib/ai-calibration/calibrator.ts"],
+          "acceptance_criteria": "Tests across all 4 AI platforms with rate limiting"
+        },
+        {
+          "id": "calibration_api",
+          "name": "Calibration API Endpoints",
+          "status": "completed",
+          "description": "Start and monitor calibration jobs",
+          "files": ["app/api/ai-calibration/start/route.ts", "app/api/ai-calibration/status/[jobId]/route.ts"],
+          "acceptance_criteria": "Can start and monitor calibration jobs"
+        },
+        {
+          "id": "calibration_dashboard",
+          "name": "Calibration Dashboard",
+          "status": "completed",
+          "description": "Monitor calibration results and costs",
+          "files": ["app/components/CalibrationDashboard.tsx", "app/(dashboard)/calibration/page.tsx"],
+          "acceptance_criteria": "Shows job status, results, and cost tracking"
+        }
+      ]
+    },
+    "phase_6": {
+      "name": "ChatGPT Custom GPT Integration",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "openapi_spec",
+          "name": "OpenAPI Specification",
+          "status": "completed",
+          "description": "Complete API spec for ChatGPT integration",
+          "files": ["openapi.yaml"],
+          "acceptance_criteria": "Full OpenAPI 3.1.0 specification with examples"
+        },
+        {
+          "id": "chatgpt_instructions",
+          "name": "ChatGPT Custom GPT Instructions",
+          "status": "completed",
+          "description": "Setup guide and configuration",
+          "files": ["docs/CHATGPT_CUSTOM_GPT_SETUP.md"],
+          "acceptance_criteria": "Complete setup guide for ChatGPT Custom GPT"
+        },
+        {
+          "id": "lead_generation",
+          "name": "Free Lead Generation",
+          "status": "completed",
+          "description": "ChatGPT Custom GPT for organic lead generation",
+          "files": ["app/api/ai-scores/route.ts"],
+          "acceptance_criteria": "CORS enabled, ChatGPT tracking, lead generation flow"
+        }
+      ]
+    }
+  },
+  "current_features": {
+    "core_dashboard": {
+      "status": "production",
+      "components": [
+        "Enhanced Chat Panel",
+        "Live Mock Metrics",
+        "Quick Actions Panel",
+        "AI Visibility Bias Panel",
+        "Quality Operations Section",
+        "Calibration Dashboard"
+      ]
+    },
+    "api_endpoints": {
+      "status": "production",
+      "endpoints": [
+        "/api/ai-scores",
+        "/api/ai-calibration/start",
+        "/api/ai-calibration/status/[jobId]",
+        "/api/admin/status",
+        "/api/snapshot",
+        "/api/dealergpt"
+      ]
+    },
+    "integrations": {
+      "status": "production",
+      "integrations": [
+        "ChatGPT Custom GPT",
+        "Voice Recognition",
+        "Export Functionality",
+        "Real-time Status Monitoring"
+      ]
+    }
+  },
+  "next_priorities": [
+    {
+      "id": "explain_lib",
+      "priority": "high",
+      "description": "Complete lib/explain.ts for DealerGPT explanations"
+    },
+    {
+      "id": "what_changed_analyzer",
+      "priority": "high",
+      "description": "Build What Changed? Analyzer for metric diff timeline"
+    },
+    {
+      "id": "fix_loop",
+      "priority": "medium",
+      "description": "Implement DealerGPT Fix Loop for automatic fixes"
+    },
+    {
+      "id": "oem_rollup",
+      "priority": "medium",
+      "description": "Add OEM Roll-up Mode for multi-rooftop aggregation"
+    },
+    {
+      "id": "executive_pdf",
+      "priority": "low",
+      "description": "Weekly Executive PDF + Slack Webhook automation"
+    }
+  ],
+  "technical_debt": [
+    {
+      "id": "build_errors",
+      "description": "Fix missing component imports causing build failures",
+      "files": ["app/components/AivBiasPanel.tsx", "app/components/QualityOpsSection.tsx"],
+      "priority": "high"
+    },
+    {
+      "id": "type_safety",
+      "description": "Add proper TypeScript types for all components",
+      "priority": "medium"
+    },
+    {
+      "id": "error_handling",
+      "description": "Improve error handling and user feedback",
+      "priority": "medium"
+    },
+    {
+      "id": "performance",
+      "description": "Optimize bundle size and loading performance",
+      "priority": "low"
+    }
+  ],
+  "deployment_status": {
+    "environment": "development",
+    "last_deployment": null,
+    "deployment_blockers": [
+      "Build errors need to be resolved",
+      "Missing components need to be created",
+      "Environment variables need to be configured"
+    ],
+    "ready_for_production": false
+  },
+  "metrics": {
+    "total_tasks": 32,
+    "completed_tasks": 25,
+    "in_progress_tasks": 1,
+    "pending_tasks": 6,
+    "completion_percentage": 78
+  }
+}

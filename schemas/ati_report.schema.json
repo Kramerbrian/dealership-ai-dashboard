@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealershipai.com/schemas/ati_report.schema.json",
+  "title": "AtiReport",
+  "type": "object",
+  "required": ["id","tenantId","asOf","windowWeeks","atiPct","core","guards","ci95","regimeState","version"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "tenantId": { "type": "string", "format": "uuid" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "asOf": { "type": "string", "format": "date" },
+    "windowWeeks": { "type": "integer", "minimum": 4, "maximum": 16 },
+    "atiPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "core": {
+      "type": "object",
+      "required": ["schemaConsistency","reviewLegitimacy","topicalAuthority","sourceCredibility"],
+      "properties": {
+        "schemaConsistency": { "type": "number", "minimum": 0, "maximum": 100 },
+        "reviewLegitimacy":   { "type": "number", "minimum": 0, "maximum": 100 },
+        "topicalAuthority":   { "type": "number", "minimum": 0, "maximum": 100 },
+        "sourceCredibility":  { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "guards": {
+      "type": "object",
+      "required": ["srv","fps","hp","fraudGuard","localAccuracyMult","adi","scr"],
+      "properties": {
+        "srv": { "type": "number", "minimum": 0, "maximum": 2 },
+        "fps": { "type": "number", "minimum": 0, "maximum": 2 },
+        "hp":  { "type": "number", "minimum": 0, "maximum": 1 },
+        "fraudGuard": { "type": "number", "minimum": 0, "maximum": 2 },
+        "localAccuracyMult": { "type": "number", "minimum": 0, "maximum": 2 },
+        "adi": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scr": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "ci95": {
+      "type": "object",
+      "required": ["ati"],
+      "properties": {
+        "ati": { "type": "object", "required": ["low","high"], "properties": {
+          "low": { "type": "number" }, "high": { "type": "number" } } }
+      }
+    },
+    "regimeState": { "type": "string", "enum": ["Normal","ShiftDetected","Quarantine"] },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

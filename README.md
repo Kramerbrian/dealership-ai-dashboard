@@ -1,284 +1,228 @@
-# DealershipAI v2.0 - Production SaaS
+# DealershipAI ZeroPoint Dashboard
 
-> AI Visibility Platform for Car Dealerships - Next.js + Prisma + Redis
+A comprehensive AI-powered dashboard for dealerships featuring Digital Trust Revenue Index (DTRI) analytics, automated SOW generation, and predictive elasticity modeling.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5.4-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-6.17.0-2D3748)](https://prisma.io/)
-[![Redis](https://img.shields.io/badge/Redis-Upstash-DC382D)](https://upstash.com/)
+## 🚀 Features
 
-## 🚀 Overview
+### Core Analytics
+- **DTRI Analytics Superpanel** - Interactive vertical filters (Sales, Acquisition, Service, Parts)
+- **Rolling 90-day elasticity forecast** with mini-charts
+- **Real-time trend visualization** with multi-line charts
+- **Auto-refresh indicators** and health status badges
 
-DealershipAI v2.0 is an enterprise SaaS platform that helps car dealerships stay visible in AI-powered search engines (ChatGPT, Perplexity, Claude, Gemini). When AI doesn't know you exist, you lose customers. We track, measure, and optimize AI visibility.
+### MAXIMUS System
+- **SOW Generation** - Automated Statement of Work creation
+- **ROI Verification & Close-Out** - Track predicted vs actual ROI
+- **Sentinel Monitoring** - Real-time alerts and automated responses
+- **Intervention Audit** - β-calibration for model accuracy
 
-### Key Features
+### Predictive Engine
+- **Elasticity Modeling** - Trust-to-revenue correlation analysis
+- **Revenue Forecasting** - 90-day predictive analytics
+- **Feature Importance** - XGBoost-based model insights
+- **Prophet Integration** - Time series forecasting
 
-- **3-Tier Pricing**: FREE, PRO ($499/month), ENTERPRISE ($999/month)
-- **5-Pillar Scoring System**: AI Visibility, Zero-Click Shield, UGC Health, Geo Trust, SGP Integrity
-- **E-E-A-T Analysis**: Expertise, Experience, Authoritativeness, Trustworthiness (Pro+)
-- **Mystery Shop Automation**: Automated customer experience testing (Enterprise)
-- **Geographic Pooling**: 50x cost reduction through shared AI queries
-- **Session Tracking**: Redis-based usage limits and monitoring
+### Automation & Monitoring
+- **BullMQ Job System** - Automated DTRI refresh every 4 AM UTC
+- **Cron Scheduling** - SOW nudges, Sentinel monitoring
+- **Queue Management** - Real-time job status and health monitoring
+- **Comprehensive Logging** - Structured logging with Logtail integration
 
 ## 🏗️ Architecture
 
-### Tech Stack
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Express.js, tRPC, Prisma ORM
-- **Database**: PostgreSQL with Supabase
-- **Cache**: Redis (Upstash)
-- **Payments**: Stripe
-- **Deployment**: Vercel
+### Frontend
+- **Next.js 14** with App Router
+- **React 18** with TypeScript
+- **TailwindCSS** for styling
+- **Recharts** for data visualization
+- **Framer Motion** for animations
 
-### Core Components
-- **Scoring Engine**: 5-pillar AI visibility calculation
-- **Tier Manager**: Session tracking and feature gating
-- **Auth Manager**: JWT-based authentication
-- **API Client**: Centralized backend communication
-- **Stripe Integration**: Seamless upgrade flow
+### Backend
+- **Supabase** - PostgreSQL database with real-time subscriptions
+- **Redis/Upstash** - Caching and queue management
+- **BullMQ** - Job queue system
+- **Vercel Functions** - Serverless API endpoints
 
-## 📦 Quick Start
-
-### 1. Clone and Install
-```bash
-git clone <repository-url>
-cd dealership-ai-dashboard
-npm install
-```
-
-### 2. Environment Setup
-```bash
-cp .env.example .env.local
-# Edit .env.local with your configuration
-```
-
-### 3. Database Setup
-```bash
-# Run the setup script
-./scripts/setup-database.sh
-
-# Or manually:
-npx prisma generate
-npx prisma db push
-npx prisma db seed
-```
-
-### 4. Start Development
-```bash
-npm run dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000) to see the dashboard.
-
-## 🔧 Configuration
-
-### Required Environment Variables
-
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/dealershipai"
-
-# Redis (Upstash)
-UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io"
-UPSTASH_REDIS_REST_TOKEN="your-redis-token"
-
-# Stripe
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_PUBLISHABLE_KEY="pk_test_..."
-STRIPE_PRICE_PRO="price_..."
-STRIPE_PRICE_ENTERPRISE="price_..."
-
-# Session Limits
-FREE_SESSION_LIMIT="0"
-PRO_SESSION_LIMIT="50"
-ENTERPRISE_SESSION_LIMIT="200"
-
-# App Configuration
-NEXTAUTH_SECRET="your-nextauth-secret"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-```
-
-### Database Providers
-
-#### Option 1: Supabase (Recommended)
-1. Create project at [supabase.com](https://supabase.com)
-2. Copy connection string from Settings > Database
-3. Update `DATABASE_URL` in `.env.local`
-
-#### Option 2: Local PostgreSQL
-1. Install PostgreSQL locally
-2. Create database: `createdb dealershipai`
-3. Update `DATABASE_URL` in `.env.local`
-
-#### Option 3: Railway/Neon
-1. Create PostgreSQL database on Railway or Neon
-2. Copy connection string
-3. Update `DATABASE_URL` in `.env.local`
-
-### Redis Setup (Upstash)
-1. Create account at [upstash.com](https://upstash.com)
-2. Create new Redis database
-3. Copy REST URL and Token
-4. Update environment variables
-
-### Stripe Setup
-1. Create account at [stripe.com](https://stripe.com)
-2. Create products and prices in dashboard
-3. Copy price IDs to environment variables
-4. Set up webhooks for subscription events
+### Python Analytics
+- **Prophet** - Time series forecasting
+- **XGBoost** - Machine learning models
+- **Pandas** - Data manipulation
+- **NumPy** - Numerical computing
 
 ## 📊 API Endpoints
 
-### Core Analysis
-- `GET /api/analyze` - Analyze dealership AI visibility
-- `POST /api/analyze` - Batch analysis (Pro+)
+### DTRI Analytics
+- `GET /api/dtri/trend` - Fetch DTRI trend data
+- `GET /api/queue/status` - Queue system status
+- `GET /api/health` - System health check
 
-### E-E-A-T Analysis (Pro+)
-- `POST /api/eeat` - Calculate E-E-A-T scores
+### SOW Management
+- `POST /api/sow/generate` - Generate new SOW
+- `GET /api/sow/due` - Fetch due SOWs
+- `POST /api/sow/closeout` - Submit SOW closeout
 
-### Mystery Shop (Enterprise)
-- `GET /api/mystery-shop` - Get test results
-- `POST /api/mystery-shop` - Schedule new test
-- `PUT /api/mystery-shop` - Execute test
+### Monitoring
+- `GET /api/supabase/sentinel_events` - Fetch Sentinel events
+- `POST /api/supabase/sentinel_events` - Create new event
+- `PUT /api/supabase/sentinel_events` - Update event status
 
-### Stripe Integration
-- `POST /api/stripe/create-checkout-session` - Create checkout session
-- `POST /api/stripe/create-portal-session` - Create customer portal
-- `GET /api/stripe/subscription-status` - Get subscription status
+### Predictive Analytics
+- `GET /api/predictive/elasticity` - Fetch elasticity data
+- `POST /api/predictive/elasticity` - Trigger analysis
 
-## 🎯 Usage Examples
+### Automation
+- `GET /api/cron/dtri-refresh` - Trigger DTRI refresh
+- `GET /api/cron/sow-nudges` - Trigger SOW nudges
+- `GET /api/cron/sentinel-monitor` - Trigger Sentinel monitoring
 
-### Basic Analysis
-```typescript
-import { apiClient } from '@/src/lib/api-client';
+## 🗄️ Database Schema
 
-const result = await apiClient.analyzeDealership({
-  dealerId: 'dealer-123',
-  dealerName: 'ABC Motors',
-  city: 'Los Angeles',
-  state: 'CA',
-  website: 'https://abcmotors.com'
-});
-```
-
-### E-E-A-T Analysis
-```typescript
-const eeatResult = await apiClient.analyzeEEAT({
-  domain: 'abcmotors.com',
-  dealershipName: 'ABC Motors',
-  city: 'Los Angeles',
-  state: 'CA',
-  reviews: [...],
-  localData: {...}
-});
-```
-
-### Stripe Upgrade
-```typescript
-import { redirectToCheckout } from '@/src/lib/stripe';
-
-await redirectToCheckout('price_pro_monthly', 'user-123');
-```
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Run specific test suites
-npm run test:api
-npm run test:components
-```
+### Core Tables
+- `score_event` - DTRI scoring history
+- `sow_records` - Statement of Work documents
+- `sow_closeout` - SOW completion tracking
+- `intervention_audit` - ROI accuracy tracking
+- `sentinel_events` - Monitoring alerts
+- `elasticity_coefficients` - Trust-to-revenue factors
+- `dtri_forecast` - Predictive forecasts
+- `revenue_predictions` - Revenue projections
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
-1. Connect GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main
+### Environment Setup
+1. Copy `.env.example` to `.env`
+2. Configure Supabase, Redis, and API keys
+3. Run database migrations
+4. Deploy to Vercel
 
-### Manual Deployment
+### Vercel Configuration
+- **Python Runtime** - For analytics scripts
+- **Cron Jobs** - Automated scheduling
+- **Edge Functions** - Global distribution
+- **Environment Variables** - Secure configuration
+
+### GitHub Actions
+- **Automated Testing** - Type checking, linting, tests
+- **Build Process** - Production optimization
+- **Deployment** - Preview and production environments
+- **Health Checks** - Post-deployment validation
+
+## 📈 Monitoring & Observability
+
+### Logging
+- **Structured Logging** - JSON format with context
+- **Logtail Integration** - Centralized log management
+- **Performance Metrics** - API timing, memory usage
+- **Business Metrics** - DTRI scores, ROI accuracy
+
+### Error Tracking
+- **Sentry Integration** - Error monitoring and alerting
+- **Database Errors** - Connection and query issues
+- **External Service Errors** - API failures
+- **Validation Errors** - Input validation
+
+### Health Monitoring
+- **System Health** - Database, Redis, queue status
+- **Service Dependencies** - External API availability
+- **Performance Metrics** - Response times, throughput
+- **Queue Health** - Job success rates, backlog
+
+## 🔧 Development
+
+### Prerequisites
+- Node.js 18+
+- Python 3.11+
+- Redis instance
+- Supabase project
+
+### Local Development
 ```bash
-npm run build
-npm start
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env
+
+# Run database migrations
+npm run db:migrate
+
+# Start development server
+npm run dev
+
+# Start queue worker
+npm run queue:worker
+
+# Start scheduler
+npm run queue:start
 ```
 
-## 📈 Performance
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run type-check` - TypeScript checking
+- `npm run test` - Run tests
+- `npm run queue:worker` - Start BullMQ worker
+- `npm run queue:start` - Start job scheduler
 
-### Cost Optimization
-- **Geographic Pooling**: Share AI queries across city ($0.30 vs $15 per dealer)
-- **Redis Caching**: Reduce API calls by 80%
-- **Session Tracking**: Prevent overuse and optimize costs
+## 📋 Features by Vertical
 
-### Scaling
-- **Database**: Use read replicas for heavy queries
-- **Redis**: Cluster mode for high availability
-- **CDN**: Static asset optimization
-- **Monitoring**: Real-time performance tracking
+### Sales
+- DTRI scoring and trend analysis
+- Conversion rate optimization
+- Revenue at risk calculation
+- Competitive analysis
 
-## 🔐 Security
+### Acquisition
+- Trust signal monitoring
+- Lead quality scoring
+- Cost per acquisition tracking
+- Market positioning
 
-### Authentication
-- JWT-based token authentication
-- Secure token storage and validation
-- Session-based access control
+### Service
+- Customer satisfaction metrics
+- Service lane optimization
+- Retention rate analysis
+- Upsell opportunities
 
-### Data Protection
-- Row-level security (RLS) in database
-- Input validation with Zod schemas
-- Rate limiting on API endpoints
-- HTTPS enforcement in production
+### Parts
+- Inventory optimization
+- Demand forecasting
+- Supplier performance
+- Profit margin analysis
 
-### Privacy
-- No PII storage in logs
-- Encrypted sensitive data
-- GDPR compliance ready
-- SOC 2 Type II preparation
+## 🎯 Key Metrics
 
-## 📊 Monitoring
+### DTRI Components
+- **QAI (Quantum Authority Index)** - AI visibility score
+- **PIQR (Page Integrity Quality Rating)** - Content quality
+- **EEAT (Experience, Expertise, Authority, Trust)** - Trust signals
+- **Elasticity** - Trust-to-revenue correlation
 
-### Health Checks
-- `GET /api/health` - Overall system health
-- `GET /api/health/database` - Database connectivity
-- `GET /api/health/redis` - Redis connectivity
+### Business Metrics
+- **Revenue at Risk** - Potential loss calculation
+- **ROI Accuracy** - Prediction vs actual performance
+- **Queue Health** - System performance indicators
+- **Alert Response Time** - Monitoring effectiveness
 
-### Metrics
-- Session usage tracking
-- API response times
-- Error rates and patterns
-- User engagement analytics
+## 🔮 Future Enhancements
 
-## 🤝 Contributing
+### Planned Features
+- **Real-time WebSocket** - Live data updates
+- **Advanced ML Models** - Deep learning integration
+- **Mobile App** - Native iOS/Android support
+- **API Marketplace** - Third-party integrations
 
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open Pull Request
+### Scaling Considerations
+- **Microservices** - Service decomposition
+- **Event Sourcing** - Audit trail and replay
+- **CQRS** - Command Query Responsibility Segregation
+- **Multi-tenant** - Enterprise deployment
 
-## 📄 License
+## 📞 Support
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- **Documentation**: [docs.dealershipai.com](https://docs.dealershipai.com)
-- **API Reference**: [api.dealershipai.com](https://api.dealershipai.com)
-- **Support Email**: [support@dealershipai.com](mailto:support@dealershipai.com)
-- **GitHub Issues**: [github.com/dealershipai/issues](https://github.com/dealershipai/issues)
-
-## 🎉 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/)
-- Database powered by [Prisma](https://prisma.io/)
-- Caching with [Upstash Redis](https://upstash.com/)
-- Payments via [Stripe](https://stripe.com/)
-- Icons by [Lucide](https://lucide.dev/)
+For technical support or feature requests, please contact the DealershipAI team.
 
 ---
 
-**DealershipAI v2.0** - Making car dealerships visible in the AI era 🚗✨
+**Built with ❤️ by the DealershipAI Team**

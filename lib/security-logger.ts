@@ -1,21 +1,47 @@
 /**
- * Security Logger - Mock implementation for deployment
+ * Security logging utilities
  */
 
+export interface SecurityEvent {
+  type: 'auth' | 'access' | 'violation' | 'error'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  message: string
+  metadata?: Record<string, any>
+  timestamp?: Date
+  userId?: string
+  tenantId?: string
+  ip?: string
+  userAgent?: string
+}
+
 export class SecurityLogger {
-  static async logAuthAttempt(userId: string, success: boolean, ip?: string) {
-    console.log(`Auth attempt: ${userId}, success: ${success}, ip: ${ip}`);
+  private events: SecurityEvent[] = []
+
+  log(event: SecurityEvent): void {
+    const fullEvent = {
+      ...event,
+      timestamp: event.timestamp || new Date()
+    }
+    
+    this.events.push(fullEvent)
+    
+    // In production, this would send to a security monitoring service
+    console.log('[SECURITY]', fullEvent)
   }
 
-  static async logApiAccess(endpoint: string, userId: string, tier: string) {
-    console.log(`API access: ${endpoint}, user: ${userId}, tier: ${tier}`);
+  getEvents(filter?: Partial<SecurityEvent>): SecurityEvent[] {
+    if (!filter) return [...this.events]
+    
+    return this.events.filter(event => {
+      return Object.entries(filter).every(([key, value]) => {
+        return event[key as keyof SecurityEvent] === value
+      })
+    })
   }
 
-  static async logSecurityEvent(event: string, details: any) {
-    console.log(`Security event: ${event}`, details);
-  }
-
-  static async logError(error: Error, context: string) {
-    console.error(`Error in ${context}:`, error);
+  clear(): void {
+    this.events = []
   }
 }
+
+export const securityLogger = new SecurityLogger()

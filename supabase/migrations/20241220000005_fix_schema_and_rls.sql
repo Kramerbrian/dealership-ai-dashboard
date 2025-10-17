@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS public.security_events (
     event_data JSONB,
     ip_address INET,
     user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 4. Enable RLS on all tables

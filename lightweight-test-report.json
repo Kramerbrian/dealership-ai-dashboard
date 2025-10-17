@@ -1,0 +1,79 @@
+{
+  "timestamp": "2025-10-16T04:51:10.435Z",
+  "summary": {
+    "total": 6,
+    "passed": 5,
+    "failed": 1,
+    "warnings": 0,
+    "successRate": 83.33333333333334,
+    "averageResponseTime": 410.0377430000001
+  },
+  "results": [
+    {
+      "test": "Health Endpoint",
+      "status": "PASS",
+      "duration": 458.608125,
+      "response": {
+        "status": "healthy",
+        "timestamp": "2025-10-16T04:36:20.233Z",
+        "version": "1.0.0",
+        "uptime": 3.427649291,
+        "memory": {
+          "rss": 90509312,
+          "heapTotal": 39702528,
+          "heapUsed": 21095992,
+          "external": 3643812,
+          "arrayBuffers": 81279
+        },
+        "environment": "production"
+      }
+    },
+    {
+      "test": "Dashboard API",
+      "status": "PASS",
+      "duration": 385.51079200000004,
+      "response": {
+        "hasKPIs": true,
+        "hasTrends": true
+      }
+    },
+    {
+      "test": "Performance Monitor",
+      "status": "PASS",
+      "duration": 1127.5453330000003,
+      "response": {
+        "performanceScore": 100,
+        "hasMetrics": false,
+        "hasAlerts": true
+      }
+    },
+    {
+      "test": "Analytics API",
+      "status": "PASS",
+      "duration": 243.5657080000001,
+      "response": {
+        "hasVisitors": true,
+        "hasPageViews": true,
+        "hasConversions": true
+      }
+    },
+    {
+      "test": "Opportunity Calculator Page",
+      "status": "FAIL",
+      "duration": 97.34354200000007,
+      "response": {
+        "status": 404,
+        "contentType": "text/html; charset=utf-8"
+      }
+    },
+    {
+      "test": "AI Answer Intelligence Page",
+      "status": "PASS",
+      "duration": 147.65295800000013,
+      "response": {
+        "status": 200,
+        "contentType": "text/html; charset=utf-8"
+      }
+    }
+  ]
+}

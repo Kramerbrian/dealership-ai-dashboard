@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft-2020-12/schema",
+  "$id": "https://dealershipai.com/schemas/inventory_truth_index.schema.json",
+  "title": "InventoryTruthIndex",
+  "type": "object",
+  "required": ["tenantId","asOf","itiPct","components","modifiers","ci95","version"],
+  "properties": {
+    "tenantId": { "type": "string", "format": "uuid" },
+    "asOf": { "type": "string", "format": "date" },
+    "itiPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "components": {
+      "type": "object",
+      "required": ["specAccuracy","priceFreshness","photoCompleteness","schemaValidity","discrepancyRate"],
+      "properties": {
+        "specAccuracy":      { "type": "number", "minimum": 0, "maximum": 100 },
+        "priceFreshness":    { "type": "number", "minimum": 0, "maximum": 100 },
+        "photoCompleteness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "schemaValidity":    { "type": "number", "minimum": 0, "maximum": 100 },
+        "discrepancyRate":   { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "modifiers": {
+      "type": "object",
+      "required": ["temporalWeight","verificationConfidence"],
+      "properties": {
+        "temporalWeight": { "type": "number", "minimum": 0, "maximum": 2 },
+        "verificationConfidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "ci95": { "type": "object", "required": ["iti"], "properties": { "iti": { "type": "object", "required": ["low","high"], "properties": {
+      "low": { "type": "number" }, "high": { "type": "number" } } } } },
+    "version": { "type": "string" }
+  },
+  "additionalProperties": false
+}

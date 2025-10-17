@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft-2020-12/schema",
+  "$id": "https://dealershipai.com/schemas/signals.schema.json",
+  "title": "Signals",
+  "type": "object",
+  "required": ["tenantId","dateWeek","clarity","secondary"],
+  "properties": {
+    "tenantId": { "type": "string", "format": "uuid" },
+    "dateWeek": { "type": "string", "format": "date" },
+    "clarity": {
+      "type": "object",
+      "required": ["scs","sis","adi","scr"],
+      "properties": {
+        "scs": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sis": { "type": "number", "minimum": 0, "maximum": 1 },
+        "adi": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scr": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "secondary": {
+      "type": "object",
+      "required": ["engagementDepth","technicalHealth","localEntityAccuracy","brandSemanticFootprint"],
+      "properties": {
+        "engagementDepth": { "type": "number", "minimum": 0, "maximum": 100 },
+        "technicalHealth": { "type": "number", "minimum": 0, "maximum": 100 },
+        "localEntityAccuracy": { "type": "number", "minimum": 0, "maximum": 100 },
+        "brandSemanticFootprint": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    }
+  },
+  "additionalProperties": false
+}

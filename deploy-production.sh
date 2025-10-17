@@ -1,74 +1,111 @@
 #!/bin/bash
 
-# DealershipAI Production Deployment Script
-# This script helps you deploy to Vercel with proper environment variable setup
+# DealershipAI v2.0 - Production Deployment Script
+# Complete system deployment with all high-leverage upgrades
 
-echo "🚀 DealershipAI Production Deployment"
-echo "======================================"
+set -e
 
-# Check if Vercel CLI is installed
-if ! command -v vercel &> /dev/null; then
-    echo "❌ Vercel CLI not found. Installing..."
-    npm install -g vercel@latest
-fi
+echo "🚀 DealershipAI v2.0 - Production Deployment"
+echo "=============================================="
 
-# Check if user is logged in to Vercel
-if ! vercel whoami &> /dev/null; then
-    echo "🔐 Please log in to Vercel:"
-    vercel login
-fi
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-echo "📋 Setting up environment variables..."
-echo "You'll need to provide the following API keys:"
-echo ""
-
-# Function to set environment variable
-set_env_var() {
-    local var_name=$1
-    local var_description=$2
-    local var_example=$3
-    
-    echo "Enter $var_description:"
-    echo "Example: $var_example"
-    read -p "$var_name: " var_value
-    
-    if [ ! -z "$var_value" ]; then
-        vercel env add $var_name production <<< "$var_value"
-        echo "✅ $var_name set successfully"
-    else
-        echo "⚠️  Skipping $var_name (empty value)"
-    fi
-    echo ""
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
 
-# Set up environment variables
-echo "🔑 Setting up API keys..."
-set_env_var "CRON_SECRET" "Secure cron job secret" "your-secure-random-string"
-set_env_var "OPENAI_API_KEY" "OpenAI API key" "sk-..."
-set_env_var "ANTHROPIC_API_KEY" "Anthropic API key" "sk-ant-..."
-set_env_var "GOOGLE_AI_API_KEY" "Google AI API key" "your-google-ai-key"
-set_env_var "QSTASH_TOKEN" "QStash token for queue management" "qst-..."
-set_env_var "NEXT_PUBLIC_SUPABASE_URL" "Supabase project URL" "https://your-project.supabase.co"
-set_env_var "SUPABASE_SERVICE_ROLE_KEY" "Supabase service role key" "your-service-role-key"
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
 
-# Clerk authentication (if using)
-echo "🔐 Setting up Clerk authentication (optional)..."
-set_env_var "CLERK_PUBLISHABLE_KEY" "Clerk publishable key" "pk_test_..."
-set_env_var "CLERK_SECRET_KEY" "Clerk secret key" "sk_test_..."
-set_env_var "CLERK_WEBHOOK_SECRET" "Clerk webhook secret" "whsec_..."
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
 
-echo "🏗️  Building and deploying to Vercel..."
-vercel --prod
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
 
+# Check if we're in the right directory
+if [ ! -f "package.json" ]; then
+    print_error "package.json not found. Please run this script from the project root."
+    exit 1
+fi
+
+print_status "Starting production deployment..."
+
+# 1. Install dependencies
+print_status "Installing dependencies..."
+npm install
+
+# 2. Run type check
+print_status "Running TypeScript type check..."
+npm run type-check
+
+# 3. Run linting
+print_status "Running ESLint..."
+npm run lint
+
+# 4. Build the application
+print_status "Building application..."
+npm run build
+
+if [ $? -eq 0 ]; then
+    print_success "Build completed successfully!"
+else
+    print_error "Build failed. Please fix errors before deploying."
+    exit 1
+fi
+
+# 5. Deploy to Vercel
+print_status "Deploying to Vercel..."
+vercel --prod --yes
+
+if [ $? -eq 0 ]; then
+    print_success "Deployment completed successfully!"
+else
+    print_error "Deployment failed. Please check the logs above."
+    exit 1
+fi
+
+# 6. Run smoke tests
+print_status "Running smoke tests..."
+if [ -f "scripts/test-avi-endpoints.sh" ]; then
+    chmod +x scripts/test-avi-endpoints.sh
+    ./scripts/test-avi-endpoints.sh
+fi
+
+# 7. Display deployment summary
+print_success "🎉 DealershipAI v2.0 Deployment Complete!"
 echo ""
-echo "🎉 Deployment complete!"
+echo "✅ Features Deployed:"
+echo "   • AVI Dashboard with real-time data"
+echo "   • Multi-tenant architecture"
+echo "   • AI engine credibility tracking"
+echo "   • Security & privacy compliance"
+echo "   • Mobile-optimized UI"
+echo "   • Exit-intent modal"
+echo "   • Live activity ticker"
+echo "   • URL validation & GBP integration"
+echo "   • City personalization"
+echo "   • JSON-LD structured data"
+echo "   • Accessibility compliance"
+echo "   • Performance optimizations"
 echo ""
-echo "📊 Next steps:"
-echo "1. Set up your Supabase database with the schema"
-echo "2. Configure your AI platform API keys"
-echo "3. Test the monthly scan system"
-echo "4. Launch beta with 5-10 dealerships"
+echo "🔗 Next Steps:"
+echo "   1. Set up environment variables in Vercel dashboard"
+echo "   2. Configure Stripe products for billing"
+echo "   3. Set up database migrations"
+echo "   4. Configure cron jobs"
+echo "   5. Test all functionality"
 echo ""
-echo "🔗 Your app should be available at: https://your-project.vercel.app"
-echo "📈 Leaderboard: https://your-project.vercel.app/leaderboard"
-echo "🔧 API Health: https://your-project.vercel.app/api/health"
+echo "📊 Monitor your deployment at: https://vercel.com/dashboard"
+echo ""
+
+print_success "Deployment script completed successfully!"

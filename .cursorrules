@@ -1,89 +1,697 @@
 # DealershipAI - Cursor AI Rules
 
-## Project Overview
-This is DealershipAI, an enterprise SaaS platform for automotive dealerships with AI visibility analytics. The system supports multi-tenancy with 4-tier RBAC and handles 5,000+ dealerships.
+You are an expert Next.js developer building DealershipAI, a high-margin SaaS product for automotive dealerships. 
 
-## Architecture
-- **Frontend**: Next.js 14 with App Router, TypeScript, Tailwind CSS
-- **Backend**: Express.js with TypeScript, tRPC for type-safe APIs
-- **Database**: PostgreSQL with Supabase, Row-Level Security (RLS)
-- **Auth**: Clerk with multi-tenant support
-- **Caching**: Redis (Upstash) for cost optimization
-- **Deployment**: Vercel with cron jobs
+## Project Context
+- **Business Model**: $0.15 cost → $499 revenue per dealer (99% margins)
+- **Target**: Automotive dealerships needing AI visibility tracking
+- **Tech Stack**: Next.js 14, TailwindCSS, NextAuth, Vercel, Redis
+- **Goal**: Help close deals faster with demo-ready, production-quality code
 
-## Key Patterns
+## Core Principles
+1. **Server-side logic for IP protection** - Never expose business logic to client
+2. **Minimal dependencies** - Keep bundle size small and fast
+3. **Demo-ready synthetic data** - Always have working examples
+4. **Cupertino aesthetic** - Apple-inspired design with glass morphism
+5. **Fast deployment** - Optimize for Vercel and production
 
-### Multi-Tenant Queries
-Always filter by tenant_id to prevent data leakage:
-```typescript
-// ✅ CORRECT
-const data = await db.dealership_data.findMany({
-  where: { tenant_id: ctx.user.tenant_id }
-})
+## Next.js 14 Patterns
 
-// ❌ WRONG - Leaks data
-const data = await db.dealership_data.findMany()
-```
+### Pages & Routing
+```javascript
+// ✅ GOOD - App Router structure
+app/
+├── (dashboard)/
+│   ├── dashboard/page.tsx
+│   └── intelligence/page.tsx
+├── api/
+│   └── ai-scores/route.ts
+└── layout.tsx
 
-### RBAC Enforcement
-Always check permissions before sensitive operations:
-```typescript
-// ✅ CORRECT
-if (!ctx.user.can('delete:users')) {
-  throw new TRPCError({ code: 'FORBIDDEN' })
+// ✅ GOOD - Server components for data fetching
+export default async function Dashboard() {
+  const data = await fetchData(); // Server-side only
+  return <DashboardClient data={data} />;
+}
+
+// ❌ BAD - Client-side data fetching in server components
+export default function Dashboard() {
+  const [data, setData] = useState(null); // Wrong!
+  useEffect(() => fetchData(), []); // Wrong!
 }
 ```
 
-### Cache-First Data Fetching
-Use cache manager for all expensive operations:
-```typescript
-// ✅ CORRECT
-const scores = await cacheManager.getOrCompute(
-  `scores:${dealerId}`,
-  () => computeScores(dealerId),
-  { strategy: 'pool', pool: `${city}:${state}` }
-)
+### API Routes
+```javascript
+// ✅ GOOD - Server-side API with validation
+export async function POST(req: Request) {
+  const { email } = await req.json();
+  
+  if (!email || !isValidEmail(email)) {
+    return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+  }
+  
+  const result = await processEmail(email); // Protected logic
+  return NextResponse.json({ success: true, result });
+}
+
+// ❌ BAD - No validation, exposed logic
+export async function POST(req: Request) {
+  const data = await req.json();
+  const result = calculateScore(data.domain); // Exposed!
+  return NextResponse.json({ result });
+}
 ```
 
-## User Hierarchy
-1. **SuperAdmin** - System-wide access, manage all tenants
-2. **Enterprise Admin** - Manage enterprise groups (up to 350 rooftops)
-3. **Dealership Admin** - Manage single dealership
-4. **User** - View-only access
+### Component Structure
+```javascript
+// ✅ GOOD - Server component with client interaction
+export default function Dashboard() {
+  return (
+    <div className="p-4 space-y-6">
+      <DashboardHeader />
+      <KPIGrid />
+      <ClientInteractiveWidget />
+    </div>
+  );
+}
 
-## File Structure
-- `app/` - Next.js app directory (pages, API routes)
-- `src/components/` - React components
-- `src/lib/` - Utilities, caching, monitoring
-- `backend/src/` - Express.js backend
-- `scripts/` - Automation scripts (cron jobs)
+// ✅ GOOD - Client component for interactivity
+'use client';
+export default function ClientInteractiveWidget() {
+  const [state, setState] = useState();
+  return <div>Interactive content</div>;
+}
+```
 
-## Code Style
-- Use TypeScript for all new files
-- Follow existing naming conventions
-- Add proper error handling
-- Include JSDoc comments for complex functions
-- Use Zod for input validation
-- Implement proper logging with monitoring
+## Styling Guidelines
 
-## Security Requirements
-- Always validate user permissions
-- Use tenant isolation middleware
-- Sanitize all inputs
-- Log sensitive operations
-- Use environment variables for secrets
+### TailwindCSS + Cupertino
+```javascript
+// ✅ GOOD - Apple Park aesthetic
+<div className="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur ring-1 ring-gray-900/5 p-6 shadow-sm hover:shadow-md transition-all duration-200">
+  <div className="text-2xl font-mono tabular-nums font-semibold text-gray-900">
+    87.3%
+  </div>
+</div>
 
-## Performance
-- Cache expensive operations
-- Use geographic pooling for similar queries
-- Implement proper error boundaries
-- Monitor API response times
-- Optimize database queries
+// ✅ GOOD - Consistent spacing and typography
+<h1 className="text-2xl font-semibold text-gray-900 mb-4">
+  AI Visibility Index
+</h1>
+<p className="text-sm text-gray-500 mb-6">
+  Track your presence across AI platforms
+</p>
 
-## When generating code:
-1. Follow the existing patterns in the codebase
-2. Include proper TypeScript types
-3. Add error handling and logging
-4. Consider multi-tenant implications
-5. Use the established component structure
-6. Include proper imports and exports
+// ❌ BAD - Inconsistent styling
+<div className="bg-white p-4 rounded">
+  <h1>Title</h1>
+  <p>Description</p>
+</div>
+```
+
+### Design Tokens
+```javascript
+// ✅ GOOD - Use design system
+const colors = {
+  primary: 'bg-blue-600 hover:bg-blue-700',
+  secondary: 'bg-gray-100 hover:bg-gray-200',
+  success: 'bg-green-600 hover:bg-green-700',
+  warning: 'bg-yellow-600 hover:bg-yellow-700',
+  error: 'bg-red-600 hover:bg-red-700'
+};
+
+// ✅ GOOD - Consistent button styles
+<button className={`px-6 py-3 rounded-lg font-medium transition-colors ${colors.primary} text-white`}>
+  Action Button
+</button>
+```
+
+## Security Rules
+
+### Environment Variables
+```javascript
+// ✅ GOOD - Server-side only
+const apiKey = process.env.SECRET_API_KEY; // Server only
+
+// ❌ BAD - Client exposure
+const apiKey = process.env.NEXT_PUBLIC_API_KEY; // Exposed to client!
+```
+
+### Input Validation
+```javascript
+// ✅ GOOD - Always validate inputs
+export async function POST(req: Request) {
+  const { domain, score } = await req.json();
+  
+  if (!domain || typeof domain !== 'string') {
+    return NextResponse.json({ error: 'Domain required' }, { status: 400 });
+  }
+  
+  if (!isValidDomain(domain)) {
+    return NextResponse.json({ error: 'Invalid domain' }, { status: 400 });
+  }
+  
+  // Process validated input
+}
+
+// ❌ BAD - No validation
+export async function POST(req: Request) {
+  const { domain } = await req.json();
+  const result = processDomain(domain); // Unsafe!
+}
+```
+
+### Authentication
+```javascript
+// ✅ GOOD - Protected API routes
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  const data = await fetchUserData(session.user.id);
+  return NextResponse.json({ data });
+}
+
+// ❌ BAD - No auth check
+export async function GET(req: Request) {
+  const data = await fetchAllUserData(); // Exposed!
+  return NextResponse.json({ data });
+}
+```
+
+## Performance Optimization
+
+### Image Optimization
+```javascript
+// ✅ GOOD - Next.js Image component
+import Image from 'next/image';
+
+<Image
+  src="/logo.png"
+  alt="DealershipAI Logo"
+  width={200}
+  height={60}
+  priority
+  className="rounded-lg"
+/>
+
+// ❌ BAD - Regular img tag
+<img src="/logo.png" alt="Logo" />
+```
+
+### Code Splitting
+```javascript
+// ✅ GOOD - Dynamic imports for heavy components
+import dynamic from 'next/dynamic';
+
+const HeavyChart = dynamic(() => import('./HeavyChart'), {
+  loading: () => <ChartSkeleton />,
+  ssr: false
+});
+
+// ✅ GOOD - Lazy load non-critical components
+const AdminPanel = dynamic(() => import('./AdminPanel'), {
+  loading: () => <div>Loading admin panel...</div>
+});
+```
+
+### Caching
+```javascript
+// ✅ GOOD - Proper caching headers
+export async function GET() {
+  const data = await fetchData();
+  
+  return NextResponse.json(data, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+    }
+  });
+}
+
+// ✅ GOOD - SWR for client-side caching
+import useSWR from 'swr';
+
+function Dashboard() {
+  const { data, error } = useSWR('/api/dashboard-data', fetcher);
+  
+  if (error) return <ErrorState />;
+  if (!data) return <LoadingState />;
+  
+  return <DashboardContent data={data} />;
+}
+```
+
+## Business Logic Patterns
+
+### Scoring System
+```javascript
+// ✅ GOOD - Server-side scoring (protected IP)
+export async function calculateAIScore(domain: string) {
+  // Protected business logic
+  const visibility = await getVisibilityData(domain);
+  const trust = await getTrustMetrics(domain);
+  const risk = await calculateRisk(domain);
+  
+  return {
+    vai: visibility * 0.4 + trust * 0.3 + (1 - risk) * 0.3,
+    breakdown: { visibility, trust, risk }
+  };
+}
+
+// ❌ BAD - Client-side scoring (exposed IP)
+const calculateScore = (data) => {
+  return data.visibility * 0.4 + data.trust * 0.3; // Exposed formula!
+};
+```
+
+### Demo Data
+```javascript
+// ✅ GOOD - Realistic demo data
+const DEMO_SCORES = {
+  vai: 87.3,
+  piqr: 92.1,
+  hrp: 0.12,
+  qai: 78.9,
+  revenueAtRisk: 24800
+};
+
+// ✅ GOOD - Synthetic but realistic
+const generateDemoData = () => ({
+  domain: 'demo-dealership.com',
+  scores: DEMO_SCORES,
+  trends: generateTrendData(),
+  competitors: generateCompetitorData()
+});
+```
+
+## Error Handling
+
+### API Error Handling
+```javascript
+// ✅ GOOD - Comprehensive error handling
+export async function POST(req: Request) {
+  try {
+    const data = await req.json();
+    
+    if (!data.domain) {
+      return NextResponse.json(
+        { error: 'Domain is required' }, 
+        { status: 400 }
+      );
+    }
+    
+    const result = await processDomain(data.domain);
+    return NextResponse.json({ success: true, result });
+    
+  } catch (error) {
+    console.error('API Error:', error);
+    
+    if (error instanceof ValidationError) {
+      return NextResponse.json(
+        { error: error.message }, 
+        { status: 400 }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+### Component Error Boundaries
+```javascript
+// ✅ GOOD - Error boundary for components
+'use client';
+import { ErrorBoundary } from 'react-error-boundary';
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+      <h2 className="text-red-800 font-semibold">Something went wrong</h2>
+      <p className="text-red-600 text-sm mt-1">{error.message}</p>
+      <button 
+        onClick={resetErrorBoundary}
+        className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <DashboardContent />
+    </ErrorBoundary>
+  );
+}
+```
+
+## Authentication Patterns
+
+### NextAuth Setup
+```javascript
+// ✅ GOOD - NextAuth configuration
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+
+export const authOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+  ],
+  callbacks: {
+    async session({ session, token }) {
+      session.user.id = token.sub;
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/login',
+  },
+};
+
+export default NextAuth(authOptions);
+```
+
+### Protected Routes
+```javascript
+// ✅ GOOD - Server-side auth check
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export default async function Dashboard() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    redirect('/login');
+  }
+  
+  return <DashboardContent user={session.user} />;
+}
+
+// ✅ GOOD - Client-side auth check
+'use client';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
+export default function ProtectedPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
+  
+  if (status === 'loading') return <LoadingSpinner />;
+  if (!session) return null;
+  
+  return <ProtectedContent />;
+}
+```
+
+## Analytics & Tracking
+
+### GA4 Integration
+```javascript
+// ✅ GOOD - GA4 event tracking
+import { ga } from '@/lib/ga';
+
+function CTAButton({ id, children }) {
+  const handleClick = () => {
+    ga('cta_click', { id });
+    // Handle click
+  };
+  
+  return (
+    <button onClick={handleClick}>
+      {children}
+    </button>
+  );
+}
+
+// ✅ GOOD - Form tracking
+function NewsletterForm() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    ga('form_submit', { form_name: 'newsletter' });
+    
+    // Submit form
+  };
+  
+  return <form onSubmit={handleSubmit}>...</form>;
+}
+```
+
+## File Organization
+
+### Project Structure
+```
+app/
+├── (dashboard)/
+│   ├── dashboard/
+│   │   └── page.tsx
+│   ├── intelligence/
+│   │   └── page.tsx
+│   └── layout.tsx
+├── api/
+│   ├── ai-scores/
+│   │   └── route.ts
+│   └── newsletter/
+│       └── route.ts
+├── components/
+│   ├── ui/
+│   │   ├── Button.tsx
+│   │   └── Card.tsx
+│   └── dashboard/
+│       ├── KPIGrid.tsx
+│       └── Chart.tsx
+├── lib/
+│   ├── auth.ts
+│   ├── ga.ts
+│   └── utils.ts
+└── styles/
+    └── globals.css
+```
+
+### Import Organization
+```javascript
+// ✅ GOOD - Organized imports
+import React from 'react';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { authOptions } from '@/lib/auth';
+import { validateInput } from '@/lib/validation';
+import { calculateScore } from '@/lib/scoring';
+
+// Local imports
+import { DashboardCard } from './components/DashboardCard';
+import styles from './Dashboard.module.css';
+```
+
+## Testing Patterns
+
+### Component Testing
+```javascript
+// ✅ GOOD - Component test
+import { render, screen } from '@testing-library/react';
+import { KPICard } from './KPICard';
+
+describe('KPICard', () => {
+  it('displays score with proper formatting', () => {
+    render(<KPICard title="VAI" value={87.3} />);
+    
+    expect(screen.getByText('VAI')).toBeInTheDocument();
+    expect(screen.getByText('87.3%')).toBeInTheDocument();
+  });
+  
+  it('shows trend indicator', () => {
+    render(<KPICard title="VAI" value={87.3} trend="up" />);
+    
+    expect(screen.getByText('↗')).toBeInTheDocument();
+  });
+});
+```
+
+### API Testing
+```javascript
+// ✅ GOOD - API route test
+import { POST } from './route';
+import { NextRequest } from 'next/server';
+
+describe('/api/ai-scores', () => {
+  it('returns score for valid domain', async () => {
+    const req = new NextRequest('http://localhost:3000/api/ai-scores', {
+      method: 'POST',
+      body: JSON.stringify({ domain: 'test.com' })
+    });
+    
+    const response = await POST(req);
+    const data = await response.json();
+    
+    expect(response.status).toBe(200);
+    expect(data).toHaveProperty('vai');
+    expect(data).toHaveProperty('piqr');
+  });
+  
+  it('returns 400 for invalid domain', async () => {
+    const req = new NextRequest('http://localhost:3000/api/ai-scores', {
+      method: 'POST',
+      body: JSON.stringify({ domain: '' })
+    });
+    
+    const response = await POST(req);
+    expect(response.status).toBe(400);
+  });
+});
+```
+
+## Deployment Optimization
+
+### Vercel Configuration
+```javascript
+// ✅ GOOD - vercel.json optimization
+{
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, s-maxage=60, stale-while-revalidate=300"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard"
+    }
+  ]
+}
+```
+
+### Environment Variables
+```bash
+# ✅ GOOD - Proper env var naming
+NEXT_PUBLIC_GA=G-XXXXXXX
+HUBSPOT_PORTAL_ID=xxxxx
+HUBSPOT_FORM_GUID=yyyyy
+KV_URL=YOUR_WRITE_ENDPOINT
+KV_READ_URL=YOUR_READ_ENDPOINT
+MAUTOMATE_URL=https://your-automation-host
+MAUTOMATE_KEY=******
+
+# ❌ BAD - Exposed secrets
+API_SECRET_KEY=sk_live_1234567890
+DATABASE_PASSWORD=super_secret_password
+```
+
+## Common Anti-Patterns to Avoid
+
+### ❌ Client-Side Business Logic
+```javascript
+// DON'T: Expose scoring algorithms
+const calculateScore = (data) => {
+  return data.visibility * 0.4 + data.trust * 0.3; // Exposed!
+};
+
+// DON'T: Client-side API keys
+const apiKey = 'sk_live_1234567890'; // Exposed!
+```
+
+### ❌ Insecure API Routes
+```javascript
+// DON'T: No validation
+export async function POST(req: Request) {
+  const data = await req.json();
+  const result = processData(data); // Unsafe!
+  return NextResponse.json({ result });
+}
+
+// DON'T: No auth check
+export async function GET() {
+  const data = await getAllUserData(); // Exposed!
+  return NextResponse.json({ data });
+}
+```
+
+### ❌ Poor Error Handling
+```javascript
+// DON'T: Silent failures
+export async function POST(req: Request) {
+  try {
+    const data = await req.json();
+    const result = await processData(data);
+    return NextResponse.json({ result });
+  } catch (error) {
+    // Silent failure - user gets no feedback
+    return NextResponse.json({});
+  }
+}
+```
+
+### ❌ Inconsistent Styling
+```javascript
+// DON'T: Inconsistent classes
+<div className="bg-white p-4 rounded">
+  <h1 className="text-xl font-bold">Title</h1>
+  <p className="text-gray-600">Description</p>
+</div>
+
+<div className="bg-gray-100 p-6 rounded-lg">
+  <h2 className="text-2xl font-semibold">Another Title</h2>
+  <p className="text-gray-500">Another Description</p>
+</div>
+```
+
+## Performance Anti-Patterns
+
+### ❌ Unoptimized Images
+```javascript
+// DON'T: Regular img tags
+<img src="/large-image.jpg" alt="Image" />
+
+// DON'T: No lazy loading
+<img src="/image.jpg" alt="Image" loading="eager" />
+```
+
+### ❌ No Code Splitting
+```javascript
+// DON'T: Import heavy components directly
+import HeavyChart from './HeavyChart'; // Loads immediately
+
+// DON'T: No loading states
+const HeavyComponent = dynamic(() => import('./HeavyComponent'));
+// No loading fallback
+```
+
+## Remember: Always Think Business Value
+
+Every line of code should:
+1. **Protect IP** - Keep business logic server-side
+2. **Close deals** - Demo-ready, production-quality
+3. **Scale efficiently** - Minimal dependencies, fast performance
+4. **Look professional** - Cupertino aesthetic, consistent design
+5. **Deploy quickly** - Optimized for Vercel, error-free
+
+When in doubt, ask: "Will this help close the next $499 deal?"

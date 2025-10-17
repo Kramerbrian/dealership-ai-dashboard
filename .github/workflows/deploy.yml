@@ -1,74 +1,123 @@
-name: CI + Deploy
+name: Deploy to Vercel
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
 
-permissions:
-  contents: read
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  ci-deploy:
+  test:
     runs-on: ubuntu-latest
-
-    env:
-      # From GitHub → Repo → Settings → Secrets and variables → Actions
-      NEXT_PUBLIC_APP_NAME: ${{ secrets.NEXT_PUBLIC_APP_NAME }}
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "pnpm"
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type checking
+        run: npm run type-check
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test
+        env:
+          NODE_ENV: test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          version: 9
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Typecheck
-        run: pnpm ts:check || pnpm tsc --noEmit
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
 
-      - name: Lint
-        run: pnpm lint || true
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: .next/
 
-      - name: Unit tests
-        run: pnpm test -- --ci || true
+  deploy-preview:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install Supabase CLI
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Run post-deployment health check
         run: |
-          curl -fsSL https://get.supabase.com/install | sh
-          echo "$HOME/.supabase/bin" >> $GITHUB_PATH
+          sleep 30
+          curl -f ${{ secrets.VERCEL_URL }}/api/health || exit 1
 
-      - name: Supabase migrations (local shadow)
-        run: |
-          supabase db start
-          supabase db reset --linked --db-url "postgresql://postgres:postgres@localhost:54322/postgres" || true
-          supabase db push || true
-
-      - name: Build
-        run: pnpm build
-
-      - name: Deploy to Vercel (build on CI, deploy prod)
-        run: |
-          pnpm dlx vercel pull --yes --token=$VERCEL_TOKEN
-          pnpm dlx vercel build --prod --token=$VERCEL_TOKEN
-          pnpm dlx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy-preview, deploy-production]
+    if: always()
+    steps:
+      - name: Notify deployment status
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()

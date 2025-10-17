@@ -1,0 +1,61 @@
+# 🚀 DealershipAI Dashboard - START HERE
+
+## Quick Decision Tree (30 seconds)
+
+**What do you want to do?**
+
+### 🎯 **See the Dashboard Right Now**
+→ Open `DASHBOARD_PREVIEW.html` in your browser
+- **Time**: 10 seconds
+- **Result**: See the complete UI without any setup
+
+### ⚡ **Quick Cursor Setup** 
+→ Copy `CURSOR_COMPOSER.txt` → Paste in Cursor Composer
+- **Time**: 2 minutes
+- **Result**: Full project context in Cursor
+
+### 🔧 **Deep Development Work**
+→ Read `CURSOR_CONTEXT.md` → Add to Cursor file context
+- **Time**: 5 minutes  
+- **Result**: Complete technical context for building
+
+### 📚 **Understand the Project**
+→ Read `MANIFEST.md` → Choose your path
+- **Time**: 10 minutes
+- **Result**: Know exactly what's available and what to do next
+
+### 🏃‍♂️ **Deploy Immediately**
+→ Read `QUICKSTART.md` → Run commands
+- **Time**: 5 minutes
+- **Result**: Live dashboard on Vercel
+
+---
+
+## 🎯 **Recommended Path**
+
+1. **First** → Open `DASHBOARD_PREVIEW.html` (see what you're building)
+2. **Then** → Copy `CURSOR_COMPOSER.txt` into Cursor 
+3. **Finally** → Ask Cursor: "Deploy this dashboard to Vercel"
+
+---
+
+## 📁 **File Guide**
+
+| File | Purpose | When to Use |
+|------|---------|-------------|
+| `DASHBOARD_PREVIEW.html` | See the UI | Always start here |
+| `CURSOR_COMPOSER.txt` | Quick setup | Want to start coding immediately |
+| `CURSOR_CONTEXT.md` | Deep context | Building complex features |
+| `MANIFEST.md` | Project overview | Understanding what's available |
+| `QUICKSTART.md` | Deploy guide | Ready to go live |
+| `PROJECT_SCAFFOLDING.md` | Technical details | Need to understand architecture |
+| `LIVE_STATUS.md` | What's working | Checking current state |
+| `QUICK_REFERENCE.txt` | Cheat sheet | Need quick commands/info |
+
+---
+
+## 🎉 **You're Ready!**
+
+Pick any file above and start building. Everything is documented, tested, and ready to deploy.
+
+**Most Popular**: `DASHBOARD_PREVIEW.html` → `CURSOR_COMPOSER.txt` → Deploy

@@ -1,0 +1,250 @@
+{
+  "version": "4.0",
+  "last_updated": "2025-01-13T00:00:00Z",
+  "tenant_id": "default",
+  "kpi_metrics_and_calculations": [
+    {
+      "metric_name": "QAI*",
+      "display_name": "Quality AI Index",
+      "description": "Composite score measuring overall AI visibility quality",
+      "calculation": "weighted_average",
+      "weight": 0.35,
+      "thresholds": {
+        "excellent": 85,
+        "good": 70,
+        "fair": 55,
+        "poor": 40
+      },
+      "components": [
+        {
+          "name": "AIV",
+          "weight": 0.4,
+          "description": "Algorithmic Visibility Index"
+        },
+        {
+          "name": "ATI",
+          "weight": 0.3,
+          "description": "Algorithmic Trust Index"
+        },
+        {
+          "name": "VLI",
+          "weight": 0.2,
+          "description": "Vehicle Listing Integrity"
+        },
+        {
+          "name": "AEO",
+          "weight": 0.1,
+          "description": "AI Engine Optimization"
+        }
+      ]
+    },
+    {
+      "metric_name": "Authority Velocity",
+      "display_name": "Authority Velocity",
+      "description": "Rate of authority signal accumulation",
+      "calculation": "rate_of_change",
+      "weight": 0.25,
+      "thresholds": {
+        "excellent": 15,
+        "good": 10,
+        "fair": 5,
+        "poor": 0
+      }
+    },
+    {
+      "metric_name": "OCI",
+      "display_name": "Organic Citation Index",
+      "description": "Frequency of organic citations across AI engines",
+      "calculation": "citation_frequency",
+      "weight": 0.2,
+      "thresholds": {
+        "excellent": 25,
+        "good": 15,
+        "fair": 8,
+        "poor": 3
+      }
+    },
+    {
+      "metric_name": "PIQR",
+      "display_name": "Platform Integrity Quality Rating",
+      "description": "Overall platform integrity and quality score",
+      "calculation": "composite_score",
+      "weight": 0.2,
+      "thresholds": {
+        "excellent": 0.9,
+        "good": 0.7,
+        "fair": 0.5,
+        "poor": 0.3
+      },
+      "alert_threshold": 0.5
+    }
+  ],
+  "visualization_and_action_mapping": [
+    {
+      "type": "executive_scoreboard",
+      "title": "Executive Scoreboard",
+      "metrics": ["QAI*", "Authority Velocity", "OCI", "PIQR"],
+      "layout": "grid_2x2",
+      "refresh_interval": 30
+    },
+    {
+      "type": "heatmap",
+      "title": "Segment Health Heatmap",
+      "description": "Visual representation of segment performance with defensive weight overlay",
+      "segments": [
+        "New Vehicles",
+        "Used Vehicles", 
+        "Service",
+        "Parts",
+        "Finance",
+        "Trade-in"
+      ],
+      "overlay": "defensive_weight"
+    },
+    {
+      "type": "asr_terminal",
+      "title": "ASR Queue Terminal",
+      "description": "Ranked fixes with Apply and Open Playbook actions",
+      "queue_size": 50,
+      "actions": [
+        {
+          "type": "apply",
+          "label": "Apply Fix",
+          "description": "Site-inject the recommended fix"
+        },
+        {
+          "type": "playbook",
+          "label": "Open Playbook",
+          "description": "View detailed implementation guide"
+        }
+      ]
+    }
+  ],
+  "aemd_breakdown_and_optimization": {
+    "title": "AEMD Panel",
+    "description": "AI Engine Market Distribution breakdown and optimization",
+    "engines": [
+      {
+        "name": "Google",
+        "weight": 0.35,
+        "current_performance": 78,
+        "optimization_potential": 15
+      },
+      {
+        "name": "ChatGPT",
+        "weight": 0.25,
+        "current_performance": 82,
+        "optimization_potential": 12
+      },
+      {
+        "name": "Gemini",
+        "weight": 0.15,
+        "current_performance": 65,
+        "optimization_potential": 20
+      },
+      {
+        "name": "Perplexity",
+        "weight": 0.15,
+        "current_performance": 71,
+        "optimization_potential": 18
+      },
+      {
+        "name": "Claude",
+        "weight": 0.10,
+        "current_performance": 68,
+        "optimization_potential": 22
+      }
+    ],
+    "what_if_calculator": {
+      "enabled": true,
+      "scenarios": [
+        "Optimize all engines",
+        "Focus on top 3 engines",
+        "Emergency boost mode",
+        "Conservative improvement"
+      ]
+    }
+  },
+  "vdp_quality_standards": {
+    "photo_requirements": {
+      "minimum_count": 20,
+      "resolution_minimum": "1920x1080",
+      "real_photo_ratio": 0.8,
+      "angle_coverage": ["front", "side", "rear", "interior", "engine"]
+    },
+    "metadata_requirements": {
+      "vin_present": true,
+      "price_present": true,
+      "mileage_present": true,
+      "stock_id_present": true,
+      "price_parity_tolerance": 50
+    },
+    "schema_requirements": {
+      "vehicle_schema": true,
+      "offer_schema": true,
+      "error_tolerance": 0,
+      "validation_required": true
+    },
+    "content_requirements": {
+      "headline_structure": "Year Make Model Trim - Key Features",
+      "description_minimum_length": 150,
+      "cta_present": true,
+      "no_duplication": true
+    }
+  },
+  "alert_configurations": {
+    "hrp_alert": {
+      "enabled": true,
+      "threshold": 0.5,
+      "type": "red_banner",
+      "message": "High Risk Profile detected. Human review required before AI content goes live.",
+      "action_required": "human_acknowledgment"
+    },
+    "qai_drop_alert": {
+      "enabled": true,
+      "threshold": 10,
+      "type": "notification",
+      "message": "QAI* score dropped significantly. Review recent changes."
+    },
+    "piqr_critical_alert": {
+      "enabled": true,
+      "threshold": 0.3,
+      "type": "critical",
+      "message": "Platform integrity critical. Immediate attention required."
+    }
+  },
+  "trial_configuration": {
+    "duration_days": 14,
+    "feature_visibility": "full",
+    "post_trial_behavior": "blur_modals",
+    "upgrade_cta": "Upgrade to view details",
+    "quota_bars": true,
+    "unlock_preview": true
+  },
+  "api_configuration": {
+    "units": {
+      "standard": 1,
+      "trends": 2,
+      "listings": 3,
+      "map_rank_tracker": 5
+    },
+    "metering": {
+      "hard_cap": false,
+      "pay_as_you_go": true,
+      "auto_top_up": false
+    },
+    "rate_limits": {
+      "requests_per_minute": 100,
+      "requests_per_hour": 1000,
+      "burst_limit": 50
+    }
+  },
+  "feature_flags": {
+    "asr_apply": true,
+    "blockdrive_ctv": false,
+    "fixed_ops": false,
+    "mystery_shop": false,
+    "ai_pr": false,
+    "multi_api": false
+  }
+}

@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   AlertTriangle, TrendingUp, Eye, Search, Shield, Brain, Target,
   BarChart3, RefreshCw, ChevronDown, ChevronUp, ExternalLink
@@ -119,9 +119,9 @@ const initialDashboard: DashboardState = {
 
 const DealershipAIDashboard: React.FC = () => {
   const [userTier, setUserTier] = useState<"Level 1" | "Level 2" | "Level 3">("Level 1");
-  const [selectedDealership, setSelectedDealership] = useState("Toyota of Naples");
-  const [selectedLocation, setSelectedLocation] = useState("Naples, FL");
-  const [dealershipUrl, setDealershipUrl] = useState("https://toyotaofnaples.com");
+  const [selectedDealership] = useState("Toyota of Naples");
+  const [selectedLocation] = useState("Naples, FL");
+  const [dealershipUrl] = useState("https://toyotaofnaples.com");
 
   const [activeTab, setActiveTab] = useState<
     "risk-assessment" | "ai-analysis" | "website-health" | "schema-audit" | "reviews" | "mystery-shop" | "predictive" | "competitor"

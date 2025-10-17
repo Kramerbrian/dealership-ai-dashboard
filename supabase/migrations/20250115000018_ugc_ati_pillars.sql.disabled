@@ -1,0 +1,233 @@
+-- Add UGC and ATI pillars to DealershipAI scoring system
+-- Migration: 20250115000018_ugc_ati_pillars.sql
+
+-- Add UGC visibility tracking table
+CREATE TABLE IF NOT EXISTS ugc_visibility_signals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL,
+  dealership_id UUID,
+  source_type TEXT NOT NULL, -- 'reviews', 'reddit', 'youtube', 'tiktok', 'forums'
+  source_platform TEXT NOT NULL, -- 'google', 'yelp', 'reddit', 'youtube', 'tiktok', 'dealerrater'
+  content_id TEXT, -- external ID from platform
+  content_type TEXT, -- 'review', 'post', 'video', 'comment'
+  sentiment_score DECIMAL(3,2), -- -1.0 to 1.0
+  engagement_score DECIMAL(5,2), -- likes, shares, views normalized
+  media_count INTEGER DEFAULT 0, -- photos/videos attached
+  brand_mentions INTEGER DEFAULT 0, -- explicit brand name mentions
+  visibility_echo INTEGER DEFAULT 0, -- citations in AI answers
+  recency_hours INTEGER, -- hours since posted
+  as_of TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add ATI (Algorithmic Trust Index) tracking table
+CREATE TABLE IF NOT EXISTS ati_trust_signals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL,
+  dealership_id UUID,
+  signal_type TEXT NOT NULL, -- 'schema_consistency', 'review_legitimacy', 'topical_authority', 'mention_credibility', 'citation_accuracy'
+  score DECIMAL(5,2) NOT NULL, -- 0-100
+  confidence DECIMAL(3,2) DEFAULT 0.9, -- 0-1
+  details JSONB, -- additional context
+  as_of TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Update scores table to include UGC and ATI pillars
+ALTER TABLE scores ADD COLUMN IF NOT EXISTS ugc_visibility_score INTEGER CHECK (ugc_visibility_score >= 0 AND ugc_visibility_score <= 100);
+ALTER TABLE scores ADD COLUMN IF NOT EXISTS ati_trust_score INTEGER CHECK (ati_trust_score >= 0 AND ati_trust_score <= 100);
+ALTER TABLE scores ADD COLUMN IF NOT EXISTS crs_composite_score DECIMAL(5,2) CHECK (crs_composite_score >= 0 AND crs_composite_score <= 100);
+
+-- Add indexes for performance
+CREATE INDEX IF NOT EXISTS idx_ugc_visibility_tenant ON ugc_visibility_signals(tenant_id, as_of DESC);
+CREATE INDEX IF NOT EXISTS idx_ugc_visibility_source ON ugc_visibility_signals(source_type, source_platform);
+CREATE INDEX IF NOT EXISTS idx_ugc_visibility_recency ON ugc_visibility_signals(recency_hours);
+
+CREATE INDEX IF NOT EXISTS idx_ati_trust_tenant ON ati_trust_signals(tenant_id, as_of DESC);
+CREATE INDEX IF NOT EXISTS idx_ati_trust_type ON ati_trust_signals(signal_type);
+
+-- Add RLS policies
+ALTER TABLE ugc_visibility_signals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ati_trust_signals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY ugc_visibility_tenant_sel ON ugc_visibility_signals
+  FOR SELECT USING (tenant_id = current_setting('app.tenant')::uuid);
+
+CREATE POLICY ugc_visibility_tenant_ins ON ugc_visibility_signals
+  FOR INSERT WITH CHECK (tenant_id = current_setting('app.tenant')::uuid);
+
+CREATE POLICY ati_trust_tenant_sel ON ati_trust_signals
+  FOR SELECT USING (tenant_id = current_setting('app.tenant')::uuid);
+
+CREATE POLICY ati_trust_tenant_ins ON ati_trust_signals
+  FOR INSERT WITH CHECK (tenant_id = current_setting('app.tenant')::uuid);
+
+-- Create materialized view for UGC aggregation
+CREATE MATERIALIZED VIEW IF NOT EXISTS v_ugc_visibility_aggregated AS
+WITH ugc_metrics AS (
+  SELECT 
+    tenant_id,
+    dealership_id,
+    COUNT(*) as total_ugc_count,
+    AVG(sentiment_score) as avg_sentiment,
+    SUM(engagement_score) as total_engagement,
+    SUM(media_count) as total_media,
+    SUM(brand_mentions) as total_brand_mentions,
+    SUM(visibility_echo) as total_echo,
+    AVG(CASE WHEN recency_hours <= 24 THEN 1.0 ELSE 0.0 END) as recent_content_ratio,
+    MAX(as_of) as last_updated
+  FROM ugc_visibility_signals
+  WHERE as_of > NOW() - INTERVAL '30 days'
+  GROUP BY tenant_id, dealership_id
+),
+ugc_scored AS (
+  SELECT 
+    tenant_id,
+    dealership_id,
+    -- UGC Visibility Score calculation (0-100)
+    LEAST(100, GREATEST(0, 
+      (total_ugc_count * 0.2) + 
+      ((avg_sentiment + 1) * 50 * 0.3) + -- sentiment normalized to 0-100
+      (LEAST(total_engagement / 100, 1) * 100 * 0.2) + -- engagement capped
+      (LEAST(total_media / 50, 1) * 100 * 0.15) + -- media ratio
+      (recent_content_ratio * 100 * 0.15) -- recency bonus
+    )) as ugc_visibility_score,
+    last_updated
+  FROM ugc_metrics
+)
+SELECT * FROM ugc_scored
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_v_ugc_visibility_tenant ON v_ugc_visibility_aggregated(tenant_id);
+
+-- Create materialized view for ATI aggregation
+CREATE MATERIALIZED VIEW IF NOT EXISTS v_ati_trust_aggregated AS
+WITH ati_metrics AS (
+  SELECT 
+    tenant_id,
+    dealership_id,
+    signal_type,
+    AVG(score) as avg_score,
+    AVG(confidence) as avg_confidence,
+    COUNT(*) as signal_count,
+    MAX(as_of) as last_updated
+  FROM ati_trust_signals
+  WHERE as_of > NOW() - INTERVAL '7 days'
+  GROUP BY tenant_id, dealership_id, signal_type
+),
+ati_weighted AS (
+  SELECT 
+    tenant_id,
+    dealership_id,
+    -- Weighted ATI calculation based on signal types
+    SUM(
+      CASE signal_type
+        WHEN 'schema_consistency' THEN avg_score * 0.25
+        WHEN 'review_legitimacy' THEN avg_score * 0.30
+        WHEN 'topical_authority' THEN avg_score * 0.20
+        WHEN 'mention_credibility' THEN avg_score * 0.15
+        WHEN 'citation_accuracy' THEN avg_score * 0.10
+        ELSE avg_score * 0.05
+      END
+    ) as ati_trust_score,
+    AVG(avg_confidence) as overall_confidence,
+    last_updated
+  FROM ati_metrics
+  GROUP BY tenant_id, dealership_id, last_updated
+)
+SELECT * FROM ati_weighted
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_v_ati_trust_tenant ON v_ati_trust_aggregated(tenant_id);
+
+-- Function to refresh materialized views
+CREATE OR REPLACE FUNCTION refresh_ugc_ati_views()
+RETURNS void AS $$
+BEGIN
+  REFRESH MATERIALIZED VIEW v_ugc_visibility_aggregated;
+  REFRESH MATERIALIZED VIEW v_ati_trust_aggregated;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to calculate updated AIV with UGC pillar
+CREATE OR REPLACE FUNCTION calculate_aiv_with_ugc(
+  p_tenant_id UUID,
+  p_dealership_id UUID DEFAULT NULL
+)
+RETURNS TABLE(
+  aiv_score DECIMAL(5,2),
+  ugc_score DECIMAL(5,2),
+  ati_score DECIMAL(5,2),
+  crs_score DECIMAL(5,2),
+  pillar_breakdown JSONB
+) AS $$
+DECLARE
+  v_seo_score DECIMAL(5,2) := 0;
+  v_aeo_score DECIMAL(5,2) := 0;
+  v_geo_score DECIMAL(5,2) := 0;
+  v_ugc_score DECIMAL(5,2) := 0;
+  v_geo_local_score DECIMAL(5,2) := 0;
+  v_ati_score DECIMAL(5,2) := 0;
+  v_aiv_score DECIMAL(5,2) := 0;
+  v_crs_score DECIMAL(5,2) := 0;
+BEGIN
+  -- Get latest scores from scores table
+  SELECT 
+    COALESCE(seo_score, 0),
+    COALESCE(aeo_score, 0),
+    COALESCE(geo_score, 0),
+    COALESCE(ugc_visibility_score, 0),
+    COALESCE(geo_local_score, 0)
+  INTO v_seo_score, v_aeo_score, v_geo_score, v_ugc_score, v_geo_local_score
+  FROM scores
+  WHERE tenant_id = p_tenant_id
+    AND (p_dealership_id IS NULL OR dealership_id = p_dealership_id)
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  -- Get ATI score from aggregated view
+  SELECT COALESCE(ati_trust_score, 0)
+  INTO v_ati_score
+  FROM v_ati_trust_aggregated
+  WHERE tenant_id = p_tenant_id
+    AND (p_dealership_id IS NULL OR dealership_id = p_dealership_id);
+
+  -- Calculate AIV with UGC pillar
+  v_aiv_score := (v_seo_score * 0.25) + (v_aeo_score * 0.30) + (v_geo_score * 0.25) + (v_ugc_score * 0.10) + (v_geo_local_score * 0.05);
+
+  -- Calculate CRS (Composite Reputation Score) as harmonic mean
+  IF v_aiv_score > 0 AND v_ati_score > 0 THEN
+    v_crs_score := 2 * (v_aiv_score * v_ati_score) / (v_aiv_score + v_ati_score);
+  ELSE
+    v_crs_score := GREATEST(v_aiv_score, v_ati_score);
+  END IF;
+
+  RETURN QUERY SELECT 
+    v_aiv_score,
+    v_ugc_score,
+    v_ati_score,
+    v_crs_score,
+    jsonb_build_object(
+      'seo', v_seo_score,
+      'aeo', v_aeo_score,
+      'geo', v_geo_score,
+      'ugc', v_ugc_score,
+      'geo_local', v_geo_local_score,
+      'weights', jsonb_build_object(
+        'seo', 0.25,
+        'aeo', 0.30,
+        'geo', 0.25,
+        'ugc', 0.10,
+        'geo_local', 0.05
+      )
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Grant permissions
+GRANT SELECT ON ugc_visibility_signals TO authenticated;
+GRANT SELECT ON ati_trust_signals TO authenticated;
+GRANT SELECT ON v_ugc_visibility_aggregated TO authenticated;
+GRANT SELECT ON v_ati_trust_aggregated TO authenticated;
+GRANT EXECUTE ON FUNCTION calculate_aiv_with_ugc TO authenticated;
+GRANT EXECUTE ON FUNCTION refresh_ugc_ati_views TO authenticated;

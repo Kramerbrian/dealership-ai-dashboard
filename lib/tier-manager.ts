@@ -4,8 +4,36 @@
  * Handles tier-based session tracking, feature access, and upgrade recommendations
  */
 
-import { prisma } from './prisma';
-import { redisClient } from '@/src/lib/redis';
+// import { prisma } from './prisma';
+// import { redisClient } from '@/lib/redis';
+
+// Mock Redis client for development
+const mockRedisClient = {
+  getUserSessionUsage: async (userId: string) => ({
+    analysis: { used: 5, limit: 50 },
+    eeat: { used: 2, limit: 50 },
+    mystery_shop: { used: 1, limit: 50 },
+    api_call: { used: 10, limit: 50 }
+  }),
+  trackSession: async (userId: string, sessionType: string) => {
+    console.log(`Mock: Tracking ${sessionType} session for ${userId}`);
+  },
+  resetUserSessions: async (userId: string) => {
+    console.log(`Mock: Resetting sessions for ${userId}`);
+  }
+};
+
+// Mock Prisma client for development
+const mockPrisma = {
+  user: {
+    findUnique: async ({ where }: any) => ({
+      id: where.id,
+      plan: 'PRO',
+      email: 'user@example.com',
+      name: 'Mock User'
+    })
+  }
+};
 
 // Session limits by tier
 const SESSION_LIMITS = {
@@ -66,7 +94,7 @@ export class TierManager {
   static async checkSessionLimit(userId: string): Promise<SessionInfo> {
     try {
       // Get user's current plan
-      const user = await prisma.user.findUnique({
+      const user = await mockPrisma.user.findUnique({
         where: { id: userId },
         select: { plan: true }
       });
@@ -79,7 +107,7 @@ export class TierManager {
       const sessionsLimit = SESSION_LIMITS[currentTier];
 
       // Get current session count from Redis
-      const sessionsUsed = await redisClient.getUserSessionUsage(userId);
+      const sessionsUsed = await mockRedisClient.getUserSessionUsage(userId);
       const totalUsed = sessionsUsed.analysis.used + sessionsUsed.eeat.used + 
                        sessionsUsed.mystery_shop.used + sessionsUsed.api_call.used;
 
@@ -111,7 +139,7 @@ export class TierManager {
    */
   static async incrementSession(userId: string, sessionType: 'analysis' | 'eeat' | 'mystery_shop' | 'api_call' = 'analysis'): Promise<void> {
     try {
-      await redisClient.trackSession(userId, sessionType);
+      await mockRedisClient.trackSession(userId, sessionType);
     } catch (error) {
       console.error('Session increment failed:', error);
       // Don't throw - session tracking is not critical

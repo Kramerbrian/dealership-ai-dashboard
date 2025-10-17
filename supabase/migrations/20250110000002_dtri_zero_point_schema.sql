@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS dtri_audit_log (
     dealer_id text NOT NULL,
     job_type text NOT NULL,
     results jsonb NOT NULL DEFAULT '{}',
+    status text NOT NULL DEFAULT 'completed',
+    error text,
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );

@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "dsl": "infix",
+  "clamp": { "AIV_sel_min": 0, "AIV_sel_max": 1 },
+  "expr": {
+    "AIV_core": "0.25*SEO + 0.30*AEO + 0.25*GEO + 0.10*UGC + 0.05*GeoLocal",
+    "AIV_sel":  "0.35*SCS + 0.35*SIS + 0.30*SCR",
+    "AIV":      "(AIV_core)*(TemporalWeight)*(EntityConfidence)*(CrawlBudgetMult)*(InventoryTruthMult)*(1 + 0.25*clamp(AIV_sel,0,1))",
+    "ATI_core": "0.25*SchemaCons + 0.25*ReviewLegit + 0.25*TopicalAuth + 0.25*SourceCred",
+    "ATI_sel":  "0.5*ADI + 0.5*SCR",
+    "ATI":      "(ATI_core)*(SRV)*(FPS)*(1-HP)*(FraudGuard)*(LocalAccuracyMult)*(1 + 0.20*ATI_sel)",
+    "w1":       "1/var(AIV)",
+    "w2":       "1/var(ATI)",
+    "CRS":      "(w1*AIV + w2*ATI) / (w1 + w2)",
+    "Elasticity":"Delta(RaR)/Delta(AIV)"
+  },
+  "caps": {
+    "AIV_boost_max_pct": 25,
+    "ATI_boost_max_pct": 20
+  }
+}

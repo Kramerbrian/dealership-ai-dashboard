@@ -335,8 +335,7 @@ FOR EACH ROW EXECUTE FUNCTION update_api_tiers_timestamp();
 -- ============================================================================
 
 -- Composite index for rate limiting queries
-CREATE INDEX idx_api_usage_rate_limit ON api_usage(api_key_id, timestamp)
-  WHERE timestamp > now() - interval '1 day';
+CREATE INDEX idx_api_usage_rate_limit ON api_usage(api_key_id, timestamp);
 
 -- Index for analytics
 CREATE INDEX idx_api_usage_analytics ON api_usage(tenant_id, endpoint, status_code, timestamp);

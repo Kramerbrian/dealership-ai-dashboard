@@ -1,189 +1,130 @@
 /**
- * DealershipAI v2.0 - Authentication Manager
+ * DealershipAI - NextAuth Configuration
  * 
- * Handles JWT token verification and user authentication
+ * OAuth SSO setup for Google and Microsoft Azure AD
  */
 
-import { jwtVerify } from 'jose';
-import { prisma } from './prisma';
+import { NextAuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
+import AzureADProvider from 'next-auth/providers/azure-ad';
+import FacebookProvider from 'next-auth/providers/facebook';
+// import { PrismaAdapter } from '@auth/prisma-adapter';
+// import { prisma } from '@/lib/prisma';
 
-// JWT Secret (in production, use environment variable)
-const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'your-secret-key');
-
-export interface User {
-  userId: string;
-  plan: 'FREE' | 'PRO' | 'ENTERPRISE';
-  email: string;
-  name?: string;
-}
-
-export interface AuthResult {
-  success: boolean;
-  user?: User;
-  error?: string;
-}
-
-export class AuthManager {
-  /**
-   * Verify JWT token and extract user information
-   */
-  static async getUserFromToken(token: string): Promise<AuthResult> {
-    try {
-      const { payload } = await jwtVerify(token, JWT_SECRET);
-      
-      const userId = payload.sub as string;
-      const email = payload.email as string;
-      const name = payload.name as string;
-      
-      if (!userId || !email) {
-        return {
-          success: false,
-          error: 'Invalid token payload'
-        };
+export const authOptions: NextAuthOptions = {
+  // adapter: PrismaAdapter(prisma), // Temporarily disabled for testing
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+          scope: 'openid email profile'
+        }
       }
-
-      // Get user from database to verify they exist and get current plan
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          plan: true
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'read:user user:email'
         }
-      });
-
-      if (!user) {
-        return {
-          success: false,
-          error: 'User not found'
-        };
       }
-
-      return {
-        success: true,
-        user: {
-          userId: user.id,
-          plan: user.plan as 'FREE' | 'PRO' | 'ENTERPRISE',
-          email: user.email,
-          name: user.name || undefined
+    }),
+    AzureADProvider({
+      clientId: process.env.AZURE_AD_CLIENT_ID!,
+      clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
+      tenantId: process.env.AZURE_AD_TENANT_ID!,
+      authorization: {
+        params: {
+          scope: 'openid email profile User.Read'
         }
-      };
-
-    } catch (error) {
-      console.error('JWT verification failed:', error);
-      return {
-        success: false,
-        error: 'Invalid or expired token'
-      };
-    }
-  }
-
-  /**
-   * Create a new user (for registration)
-   */
-  static async createUser(userData: {
-    email: string;
-    name?: string;
-    plan?: 'FREE' | 'PRO' | 'ENTERPRISE';
-  }): Promise<AuthResult> {
-    try {
-      const user = await prisma.user.create({
-        data: {
-          email: userData.email,
-          name: userData.name,
-          plan: userData.plan || 'FREE'
-        }
-      });
-
-      return {
-        success: true,
-        user: {
-          userId: user.id,
-          plan: user.plan as 'FREE' | 'PRO' | 'ENTERPRISE',
-          email: user.email,
-          name: user.name || undefined
-        }
-      };
-
-    } catch (error) {
-      console.error('User creation failed:', error);
-      return {
-        success: false,
-        error: 'Failed to create user'
-      };
-    }
-  }
-
-  /**
-   * Update user plan (for upgrades)
-   */
-  static async updateUserPlan(userId: string, newPlan: 'FREE' | 'PRO' | 'ENTERPRISE'): Promise<AuthResult> {
-    try {
-      const user = await prisma.user.update({
-        where: { id: userId },
-        data: { plan: newPlan }
-      });
-
-      return {
-        success: true,
-        user: {
-          userId: user.id,
-          plan: user.plan as 'FREE' | 'PRO' | 'ENTERPRISE',
-          email: user.email,
-          name: user.name || undefined
-        }
-      };
-
-    } catch (error) {
-      console.error('Plan update failed:', error);
-      return {
-        success: false,
-        error: 'Failed to update user plan'
-      };
-    }
-  }
-
-  /**
-   * Get user by ID
-   */
-  static async getUserById(userId: string): Promise<AuthResult> {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          plan: true
-        }
-      });
-
-      if (!user) {
-        return {
-          success: false,
-          error: 'User not found'
-        };
       }
-
-      return {
-        success: true,
-        user: {
-          userId: user.id,
-          plan: user.plan as 'FREE' | 'PRO' | 'ENTERPRISE',
-          email: user.email,
-          name: user.name || undefined
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'email,public_profile'
         }
-      };
-
-    } catch (error) {
-      console.error('Get user failed:', error);
-      return {
-        success: false,
-        error: 'Failed to get user'
-      };
+      }
+    })
+  ],
+  callbacks: {
+    async signIn({ user, account, profile }) {
+      // Allow sign in for business domains
+      if (user.email) {
+        const domain = user.email.split('@')[1];
+        const businessDomains = [
+          'gmail.com', 'outlook.com', 'hotmail.com', // Personal domains
+          'dealershipai.com', // Our domain
+          // Add more business domains as needed
+        ];
+        
+        // Allow personal domains for demo purposes
+        if (businessDomains.includes(domain)) {
+          return true;
+        }
+        
+        // For other domains, you might want to add additional validation
+        return true;
+      }
+      return false;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      // Default redirect to intelligence dashboard
+      return `${baseUrl}/intelligence`;
+    },
+    async session({ session, user, token }) {
+      // Add user ID to session
+      if (session.user && token) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
     }
-  }
-}
-
-export default AuthManager;
+  },
+  pages: {
+    signIn: '/auth/signin',
+    signUp: '/signup',
+    error: '/auth/error'
+  },
+  session: {
+    strategy: 'jwt', // Changed to JWT for testing
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  // events: {
+  //   async createUser({ user }) {
+  //     // Create a free trial subscription for new users
+  //     try {
+  //       await prisma.subscription.create({
+  //         data: {
+  //           userId: user.id,
+  //           plan: 'FREE',
+  //           status: 'ACTIVE',
+  //           currentPeriodStart: new Date(),
+  //           currentPeriodEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+  //           trialEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+  //         }
+  //       });
+  //     } catch (error) {
+  //       console.error('Error creating trial subscription:', error);
+  //     }
+  //   }
+  // }
+};
