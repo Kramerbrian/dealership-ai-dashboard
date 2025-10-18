@@ -209,6 +209,10 @@ export const CACHE_KEYS = {
     feature ? `usage:${userId}:${feature}` : `usage:${userId}`,
   ANALYTICS_EVENTS: (userId: string, days: number) => `analytics:${userId}:${days}d`,
   API_RESPONSE: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
+  ONBOARDING_ANALYSIS: (domain: string) => `onboarding:analysis:${domain}`,
+  ONBOARDING_PROFILE: (domain: string) => `onboarding:profile:${domain}`,
+  ONBOARDING_PROGRESS: (userId: string) => `onboarding:progress:${userId}`,
+  PERSONALIZED_MESSAGES: (userId: string, step: string) => `personalized:${userId}:${step}`,
 } as const;
 
 // Cache TTL constants (in seconds)
@@ -229,4 +233,8 @@ export const CACHE_TTL = {
   USAGE_STATS: 60, // 1 minute
   ANALYTICS_EVENTS: 300, // 5 minutes
   API_RESPONSE: 300, // 5 minutes
+  ONBOARDING_ANALYSIS: 1800, // 30 minutes
+  ONBOARDING_PROFILE: 3600, // 1 hour
+  ONBOARDING_PROGRESS: 300, // 5 minutes
+  PERSONALIZED_MESSAGES: 600, // 10 minutes
 } as const;

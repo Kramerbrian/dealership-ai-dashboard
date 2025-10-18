@@ -1,5 +1,5 @@
-import DealershipAILanding from './landing/page';
+import EnhancedLandingPage from '@/components/landing/EnhancedLandingPage';
 
 export default function HomePage() {
-  return <DealershipAILanding />;
+  return <EnhancedLandingPage />;
 }
