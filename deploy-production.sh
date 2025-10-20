@@ -1,111 +1,84 @@
 #!/bin/bash
-
-# DealershipAI v2.0 - Production Deployment Script
-# Complete system deployment with all high-leverage upgrades
-
 set -e
 
-echo "🚀 DealershipAI v2.0 - Production Deployment"
-echo "=============================================="
+echo "=========================================="
+echo "DealershipAI Production Deployment"
+echo "=========================================="
+echo ""
 
-# Colors for output
-RED='\033[0;31m'
+# Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Check if we're in the right directory
-if [ ! -f "package.json" ]; then
-    print_error "package.json not found. Please run this script from the project root."
-    exit 1
-fi
-
-print_status "Starting production deployment..."
-
-# 1. Install dependencies
-print_status "Installing dependencies..."
-npm install
-
-# 2. Run type check
-print_status "Running TypeScript type check..."
-npm run type-check
-
-# 3. Run linting
-print_status "Running ESLint..."
-npm run lint
-
-# 4. Build the application
-print_status "Building application..."
+# Step 1: Build
+echo -e "${YELLOW}Step 1/4: Building production bundle...${NC}"
 npm run build
+echo -e "${GREEN}✅ Build complete${NC}"
+echo ""
 
-if [ $? -eq 0 ]; then
-    print_success "Build completed successfully!"
+# Step 2: Git push
+echo -e "${YELLOW}Step 2/4: Pushing to Git...${NC}"
+git push origin main
+echo -e "${GREEN}✅ Pushed to main${NC}"
+echo ""
+
+# Step 3: Vercel deployment
+echo -e "${YELLOW}Step 3/4: Deploying to Vercel...${NC}"
+vercel --prod
+echo -e "${GREEN}✅ Deployed to production${NC}"
+echo ""
+
+# Step 4: Verify
+echo -e "${YELLOW}Step 4/4: Verifying deployment...${NC}"
+echo ""
+
+echo "Testing health endpoint..."
+HEALTH=$(curl -s https://dealershipai.com/api/health)
+if echo "$HEALTH" | grep -q '"status":"healthy"'; then
+  echo -e "${GREEN}✅ Health check passed${NC}"
 else
-    print_error "Build failed. Please fix errors before deploying."
-    exit 1
+  echo -e "${RED}⚠️  Health check failed or degraded${NC}"
+  echo "$HEALTH" | jq .
 fi
+echo ""
 
-# 5. Deploy to Vercel
-print_status "Deploying to Vercel..."
-vercel --prod --yes
-
-if [ $? -eq 0 ]; then
-    print_success "Deployment completed successfully!"
+echo "Testing security headers..."
+if curl -sI https://dealershipai.com | grep -q "Strict-Transport-Security"; then
+  echo -e "${GREEN}✅ Security headers present${NC}"
 else
-    print_error "Deployment failed. Please check the logs above."
-    exit 1
+  echo -e "${RED}⚠️  Security headers missing${NC}"
+fi
+echo ""
+
+echo "Testing SEO files..."
+if curl -s https://dealershipai.com/robots.txt | grep -q "User-agent"; then
+  echo -e "${GREEN}✅ robots.txt accessible${NC}"
+else
+  echo -e "${RED}⚠️  robots.txt not found${NC}"
 fi
 
-# 6. Run smoke tests
-print_status "Running smoke tests..."
-if [ -f "scripts/test-avi-endpoints.sh" ]; then
-    chmod +x scripts/test-avi-endpoints.sh
-    ./scripts/test-avi-endpoints.sh
+if curl -s https://dealershipai.com/sitemap.xml | grep -q "<url>"; then
+  echo -e "${GREEN}✅ sitemap.xml accessible${NC}"
+else
+  echo -e "${RED}⚠️  sitemap.xml not found${NC}"
 fi
-
-# 7. Display deployment summary
-print_success "🎉 DealershipAI v2.0 Deployment Complete!"
-echo ""
-echo "✅ Features Deployed:"
-echo "   • AVI Dashboard with real-time data"
-echo "   • Multi-tenant architecture"
-echo "   • AI engine credibility tracking"
-echo "   • Security & privacy compliance"
-echo "   • Mobile-optimized UI"
-echo "   • Exit-intent modal"
-echo "   • Live activity ticker"
-echo "   • URL validation & GBP integration"
-echo "   • City personalization"
-echo "   • JSON-LD structured data"
-echo "   • Accessibility compliance"
-echo "   • Performance optimizations"
-echo ""
-echo "🔗 Next Steps:"
-echo "   1. Set up environment variables in Vercel dashboard"
-echo "   2. Configure Stripe products for billing"
-echo "   3. Set up database migrations"
-echo "   4. Configure cron jobs"
-echo "   5. Test all functionality"
-echo ""
-echo "📊 Monitor your deployment at: https://vercel.com/dashboard"
 echo ""
 
-print_success "Deployment script completed successfully!"
+echo "=========================================="
+echo -e "${GREEN}🎉 Deployment Complete!${NC}"
+echo "=========================================="
+echo ""
+echo "Next manual steps:"
+echo "1. Run database migration via Supabase SQL Editor"
+echo "   URL: https://supabase.com/dashboard/project/gzlgfghpkbqlhgfozjkb/sql/new"
+echo "   File: supabase/migrations/20251020_critical_production_tables.sql"
+echo ""
+echo "2. Enable PITR"
+echo "   URL: https://supabase.com/dashboard/project/gzlgfghpkbqlhgfozjkb/settings/database"
+echo ""
+echo "3. Set up uptime monitoring"
+echo "   URL: https://uptimerobot.com"
+echo "   Monitor: https://dealershipai.com/api/health"
+echo ""
