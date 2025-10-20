@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Star, Zap, Shield, Users, ArrowRight } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+// import { useSession } from 'next-auth/react'; // Disabled for demo mode
 import { SUBSCRIPTION_PLANS, SubscriptionPlan } from '@/lib/user-management';
+import { TrustBadges, MoneyBackGuarantee } from '@/components/marketing/TrustBadges';
 
 interface PricingPageProps {
   onSelectPlan?: (plan: SubscriptionPlan) => void;
 }
 
 export default function PricingPage({ onSelectPlan }: PricingPageProps) {
-  const { data: session } = useSession();
+  // Demo mode - no session required
+  const session = null;
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>('professional');
 
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
