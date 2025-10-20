@@ -141,7 +141,7 @@ function generateOptimizationPredictions(currentMetrics: any): OptimizationPredi
   return predictions;
 }
 
-function generateAITestRecommendations(currentMetrics: any): AITestRecommendation[] {
+function generateAITestRecommendations(_currentMetrics: any): AITestRecommendation[] {
   const tests: AITestRecommendation[] = [];
   
   // DTRI Testing
@@ -192,7 +192,7 @@ function generateAITestRecommendations(currentMetrics: any): AITestRecommendatio
   return tests;
 }
 
-function generatePredictiveInsights(currentMetrics: any, marketData: any): PredictiveInsight[] {
+function generatePredictiveInsights(currentMetrics: any, _marketData: any): PredictiveInsight[] {
   const insights: PredictiveInsight[] = [];
   
   // Performance Insights
