@@ -154,7 +154,7 @@ export async function POST(req: Request) {
       return a;
     }, {}));
 
-    function enhancedTopDrivers() {
+    const enhancedTopDrivers = () => {
       const deltas: { k: string; v: number; confidence: number }[] = [];
       
       (byMetric(scores, "metric") as any[]).forEach((group: any[]) => {
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
       return `📊 **Performance Drivers Analysis (48h):**\n${top.join(", ")}\n\n🚨 **Critical Alerts:** ${alertSummary.join("; ")}\n\n💡 **Key Insight:** ${getInsight(deltas[0])}`;
     }
 
-    function getInsight(topDriver: any): string {
+    const getInsight = (topDriver: any): string => {
       if (!topDriver) return "Continue monitoring current trends.";
       
       const insights = {
@@ -198,7 +198,7 @@ export async function POST(req: Request) {
       return insights[topDriver.k as keyof typeof insights] || 'Focus on the primary metric for maximum impact.';
     }
 
-    function enhancedRisk() {
+    const enhancedRisk = () => {
       const tsm = 1.0 + Math.max(0, (Math.sin(Date.now() / 8.64e7) * 0.15));
       const dtriScore = scores.filter(x => x.metric === "DTRI").slice(0, 1)[0]?.score ?? 0;
       const riskScore = Math.max(0, Math.round((100 - dtriScore) * 2500 * (tsm > 1.2 ? 1.2 : 1)));
@@ -209,7 +209,7 @@ export async function POST(req: Request) {
       return `⚠️ **Risk Assessment:**\n• TSM: ${tsm.toFixed(2)} (${tsm > 1.1 ? 'Elevated' : 'Normal'})\n• Decay Tax: $${riskScore.toLocaleString()}\n• Risk Trend: ${riskTrend}\n• Active Alerts: ${highRiskAlerts.length}\n\n🎯 **Priority:** ${riskScore > 50000 ? 'Immediate action required' : 'Monitor closely'}`;
     }
 
-    function enhancedActions() {
+    const enhancedActions = () => {
       const alerts = sentinel.slice(0, 5);
       const actionCategories = {
         'immediate': alerts.filter(a => a.severity === 'critical'),
@@ -228,7 +228,7 @@ export async function POST(req: Request) {
       return `🎯 **Recommended Actions:**\n\n**Immediate (${actionCategories.immediate.length}):** ${actionCategories.immediate.map(a => a.recommended_action).join(", ")}\n\n**Short-term (${actionCategories.short_term.length}):** ${actionCategories.short_term.map(a => a.recommended_action).join(", ")}\n\n**Strategic:** ${recommendations.slice(0, 3).join("; ")}`;
     }
 
-    function enhancedForecast() {
+    const enhancedForecast = () => {
       const latest = Object.fromEntries(revenue.map((r: any) => [r.vertical, Math.round(r.predicted_revenue || 0)]));
       const total = Object.values(latest).reduce((a: number, b: number) => a + b, 0);
       const avgConfidence = revenue.reduce((sum, r) => sum + r.confidence, 0) / revenue.length;
@@ -238,7 +238,7 @@ export async function POST(req: Request) {
       return `🔮 **90-Day Revenue Forecast:**\n${Object.entries(latest).map(([v, x]) => `• ${v}: $${x.toLocaleString()}`).join("\n")}\n\n💰 **Total Projected:** $${total.toLocaleString()}\n📈 **Outlook:** ${growth}\n🎯 **Confidence:** ${Math.round(avgConfidence * 100)}%`;
     }
 
-    function enhancedCompetitors() {
+    const enhancedCompetitors = () => {
       const competitorData = [
         { name: "AutoMax Dealership", score: 92.1, trend: "+2.3%", threat: "high" },
         { name: "Premier Motors", score: 88.7, trend: "-1.1%", threat: "medium" },
@@ -250,7 +250,7 @@ export async function POST(req: Request) {
       ).join("\n")}\n\n💡 **Strategy:** Focus on ${competitorData[0].name}'s strengths while capitalizing on ${competitorData[1].name}'s decline.`;
     }
 
-    function enhancedOptimize() {
+    const enhancedOptimize = () => {
       const optimizationAreas = [
         { area: "Trust Signals", impact: "High", effort: "Medium", roi: "3.2x" },
         { area: "Content Quality", impact: "High", effort: "High", roi: "2.8x" },
