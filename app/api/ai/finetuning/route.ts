@@ -16,7 +16,7 @@ interface FineTuningJob {
   };
 }
 
-const handler = async (request: NextRequest, user: any) => {
+const handler = async (request: NextRequest, _user: any) => {
   try {
     const { dealership, trainingData, model = 'gpt-3.5-turbo' } = await request.json();
 
