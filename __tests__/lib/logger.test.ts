@@ -19,25 +19,25 @@ describe('Logger', () => {
   describe('Basic logging', () => {
     it('logs info messages', () => {
       const consoleSpy = jest.spyOn(console, 'info').mockImplementation()
-      
+
       logger.info('Test info message')
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[INFO]: Test info message')
+        expect.stringContaining('INFO: Test info message')
       )
-      
+
       consoleSpy.mockRestore()
     })
 
     it('logs error messages', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
-      
+
       logger.error('Test error message')
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[ERROR]: Test error message')
+        expect.stringContaining('ERROR: Test error message')
       )
-      
+
       consoleSpy.mockRestore()
     })
 
