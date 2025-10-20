@@ -126,7 +126,3 @@ public
 # Temporary folders
 tmp/
 temp/
-# Disabled auth routes
-app/sign-in/
-app/sign-up/
-app/auth/

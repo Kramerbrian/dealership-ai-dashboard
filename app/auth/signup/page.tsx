@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import { SignIn } from '@clerk/nextjs';
+import { SignUp } from '@clerk/nextjs';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default function SignInPage() {
+export default function SignUpPage() {
   // Check if Clerk is configured
   const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   if (!clerkKey || clerkKey.includes('your_key_here') || clerkKey.includes('emergency')) {
@@ -39,7 +39,7 @@ export default function SignInPage() {
             <div className="glass rounded-2xl p-8">
               <div className="text-center mb-8">
                 <div className="h-12 w-12 rounded-lg mx-auto mb-4" style={{background: 'var(--brand-gradient)'}}></div>
-                <h1 className="text-2xl font-semibold">Sign In</h1>
+                <h1 className="text-2xl font-semibold">Sign Up</h1>
                 <p className="text-white/70 mt-2">Clerk authentication not configured</p>
               </div>
               
@@ -84,7 +84,7 @@ export default function SignInPage() {
         }}
       />
       <div className="w-full max-w-md">
-        <SignIn 
+        <SignUp 
           appearance={{
             elements: {
               rootBox: "glass rounded-2xl p-8",
