@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Mock Supabase client for demo purposes
+const createMockSupabaseClient = () => ({
+  from: (table: string) => ({
+    select: (columns: string) => ({
+      gte: (column: string, value: string) => ({
+        order: (column: string, options: any) => ({
+          eq: (column: string, value: string) => Promise.resolve({
+            data: [],
+            error: null
+          })
+        })
+      })
+    })
+  })
+});
+
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? require('@supabase/supabase-js').createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : createMockSupabaseClient();
 
 export async function GET(request: NextRequest) {
   try {
