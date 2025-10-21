@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   StarIcon, 
   TrophyIcon, 
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ChatBubbleLeftRightIcon,
   PlayIcon
 } from '@heroicons/react/24/outline'
@@ -270,7 +270,7 @@ export default function SocialProofSystem({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4 text-xs text-gray-500">
                   <div className="flex items-center">
-                    <TrendingUpIcon className="h-4 w-4 mr-1" />
+                    <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                     {story.timeframe}
                   </div>
                   <div className={`px-2 py-1 rounded-full ${getCategoryColor(story.category)}`}>

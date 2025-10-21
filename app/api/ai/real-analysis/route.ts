@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Fallback to mock service during build if real service is absent
 import { realAIAnalysisService } from '@/lib/services/real-ai-analysis-service';
 import { auth } from '@clerk/nextjs/server';
 

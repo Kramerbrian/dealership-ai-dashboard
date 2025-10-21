@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
   try {
     const { searchParams } = new URL(request.url);
     const domain = searchParams.get('domain');
@@ -59,7 +60,8 @@ export async function GET(request: NextRequest) {
     };
 
     const duration = Date.now() - startTime;
-    trackSLO('api.ai.visibility-index', duration);
+    // Optional telemetry hook; no-op if undefined
+    try { (globalThis as any).trackSLO?.('api.ai.visibility-index', duration); } catch {}
     
     const response = NextResponse.json(visibilityData);
     response.headers.set('Server-Timing', `ai-visibility-index;dur=${duration}`);
@@ -68,7 +70,7 @@ export async function GET(request: NextRequest) {
     console.error('AI Visibility Index API error:', error);
     
     const duration = Date.now() - startTime;
-    trackSLO('api.ai.visibility-index', duration);
+    try { (globalThis as any).trackSLO?.('api.ai.visibility-index', duration); } catch {}
     
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest) {
     console.error('AI Visibility Index POST error:', error);
     
     const duration = Date.now() - startTime;
-    trackSLO('api.ai.visibility-index.post', duration);
+    try { (globalThis as any).trackSLO?.('api.ai.visibility-index.post', duration); } catch {}
     
     return NextResponse.json(
       { error: 'Internal server error' },

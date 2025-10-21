@@ -36,8 +36,19 @@ export async function GET(req: Request) {
   }
 }
 
-function generateMockBreakdownData(days: number) {
-  const mockData = []
+type BreakdownRow = {
+  date: string
+  engine: string
+  surface_type: string
+  query_count: number
+  appearances: number
+  appearance_rate_pct: number
+  citations: number
+  citation_rate_pct: number
+}
+
+function generateMockBreakdownData(days: number): BreakdownRow[] {
+  const mockData: BreakdownRow[] = []
   const engines = ['google_sge', 'perplexity', 'gemini', 'chatgpt']
   const surfaceTypes = ['overview', 'snippet', 'paa', 'featured']
   
@@ -52,7 +63,7 @@ function generateMockBreakdownData(days: number) {
         const citations = Math.floor(appearances * (Math.random() * 0.3 + 0.1))
         
         mockData.push({
-          date: date.toISOString().split('T')[0],
+          date: date.toISOString().split('T')[0] as string,
           engine,
           surface_type: surfaceType,
           query_count: queryCount,

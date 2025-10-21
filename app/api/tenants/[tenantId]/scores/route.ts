@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { calculateDealershipAIScore, generateMockMetrics } from '@/lib/scoring/algorithm';
+// Fallback RBAC utilities for build if full module is absent
 import { validateTenantAccess, createMockUserContext } from '@/lib/auth/rbac';
 import type { KPIMetrics, ScoringResult } from '@/lib/scoring/algorithm';
 

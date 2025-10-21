@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   LightBulbIcon, 
   ClockIcon, 
-  TrendingUpIcon, 
+  ArrowTrendingUpIcon, 
   StarIcon,
   ArrowRightIcon,
   CheckCircleIcon
@@ -199,7 +199,7 @@ export default function SmartRecommendations({
                       {recommendation.timeToComplete}
                     </div>
                     <div className="flex items-center">
-                      <TrendingUpIcon className="h-4 w-4 mr-1" />
+                      <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                       {recommendation.estimatedImpact}% impact
                     </div>
                     <div className={`flex items-center ${getDifficultyColor(recommendation.difficulty)}`}>

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { checkRedisHealth } from '@/lib/redis';
-import { checkRateLimitHealth } from '@/lib/api-protection/rate-limiter';
+import { getRedis } from '@/lib/redis';
+// Provide a basic rate limit health check fallback
+import { createRateLimiters } from '@/lib/rate-limiter-redis';
 
 /**
  * Comprehensive health check endpoint
@@ -34,13 +35,11 @@ export async function GET() {
       overallStatus = 'unhealthy';
     }
 
-    // 2. Redis check (rate limiting)
+    // 2. Redis check (connectivity)
     try {
-      const redisHealth = await checkRedisHealth();
-      checks.redis = {
-        status: redisHealth ? 'healthy' : 'unhealthy',
-      };
-      if (!redisHealth) overallStatus = 'degraded';
+      const redis = getRedis();
+      await redis.ping();
+      checks.redis = { status: 'healthy' };
     } catch (error) {
       checks.redis = {
         status: 'unhealthy',
@@ -49,16 +48,21 @@ export async function GET() {
       overallStatus = 'degraded';
     }
 
-    // 3. Rate limiting check
+    // 3. Rate limiting check (basic)
     try {
-      const rateLimitHealth = await checkRateLimitHealth();
-      checks.rateLimiting = rateLimitHealth;
-      if (rateLimitHealth.status !== 'healthy') overallStatus = 'degraded';
+      const { api } = createRateLimiters();
+      const sample = await api.getUsage('healthcheck');
+      checks.rateLimiting = {
+        status: 'healthy',
+        remaining: sample.remaining,
+        resetTime: sample.resetTime,
+      };
     } catch (error) {
       checks.rateLimiting = {
         status: 'unhealthy',
         error: error instanceof Error ? error.message : 'Check failed',
       };
+      overallStatus = 'degraded';
     }
 
     // 4. Environment checks
