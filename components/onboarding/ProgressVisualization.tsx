@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChartBarIcon, TrendingUpIcon, TrophyIcon } from '@heroicons/react/24/outline'
+import { ChartBarIcon, ArrowTrendingUpIcon, TrophyIcon } from '@heroicons/react/24/outline'
 
 interface ProgressMetrics {
   aiVisibility: number
@@ -109,7 +109,7 @@ export default function ProgressVisualization({
           isAnimating={isAnimating}
         />
         <MetricCard
-          icon={TrendingUpIcon}
+          icon={ArrowTrendingUpIcon}
           label="Data Sources"
           value={animatedMetrics.dataConnections}
           target={targetMetrics.dataConnections}

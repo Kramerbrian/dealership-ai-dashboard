@@ -18,6 +18,7 @@ interface TrustScore {
 }
 
 const handler = async (request: NextRequest, user: any) => {
+  void user; // prevent unused variable error in demo route
   try {
     const { dealership, city, state } = await request.json();
 

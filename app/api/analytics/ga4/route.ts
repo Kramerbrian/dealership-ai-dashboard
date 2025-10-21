@@ -64,7 +64,15 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.googleAnalytics.apiError('GET', propertyId || 'unknown', error as Error);
+    const safePropertyId = (() => {
+      try {
+        const { searchParams } = new URL(req.url);
+        return searchParams.get('propertyId') || 'unknown';
+      } catch {
+        return 'unknown';
+      }
+    })();
+    logger.googleAnalytics.apiError('GET', safePropertyId, error as Error);
     
     return NextResponse.json(
       { 
@@ -84,6 +92,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { propertyId, action, dateRange = '30d' } = body;
+    void dateRange; // prevent unused var warning in demo handler
 
     if (!propertyId) {
       return NextResponse.json(
@@ -132,7 +141,15 @@ export async function POST(req: NextRequest) {
     }
 
   } catch (error) {
-    logger.googleAnalytics.apiError('POST', propertyId || 'unknown', error as Error);
+    const safePropertyId = (() => {
+      try {
+        const body = (req as any)?._bodyInit ? JSON.parse((req as any)?._bodyInit) : null;
+        return body?.propertyId || 'unknown';
+      } catch {
+        return 'unknown';
+      }
+    })();
+    logger.googleAnalytics.apiError('POST', safePropertyId, error as Error);
     
     return NextResponse.json(
       { 

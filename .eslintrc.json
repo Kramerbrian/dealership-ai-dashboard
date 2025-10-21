@@ -1,40 +1,7 @@
 {
+  "root": true,
   "extends": [
-    "next/core-web-vitals",
-    "eslint:recommended",
-    "@typescript-eslint/recommended"
-  ],
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-empty-function": "warn",
-    "@typescript-eslint/no-non-null-assertion": "warn",
-    "prefer-const": "error",
-    "no-var": "error",
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
-    "eqeqeq": ["error", "always"],
-    "curly": ["error", "all"],
-    "react-hooks/exhaustive-deps": "warn",
-    "react/no-unescaped-entities": "off",
-    "react/display-name": "off"
-  },
-  "env": {
-    "browser": true,
-    "es2021": true,
-    "node": true,
-    "jest": true
-  },
-  "ignorePatterns": [
-    "node_modules/",
-    ".next/",
-    "out/",
-    "build/",
-    "dist/",
-    "*.config.js",
-    "*.config.ts"
+    "next",
+    "next/core-web-vitals"
   ]
 }

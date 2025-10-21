@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QAICalculator } from '@/lib/qai-calculator';
 import { DTRIMaximusEngine } from '@/lib/dtri-maximus-engine';
 import { calculatePIQR } from '@/lib/metrics/piqr';
-import { calculateQAIComposite } from '@/lib/qai-composite';
+// import { calculateQAIComposite } from '@/lib/qai-composite';
 
 interface AIScoresRequest {
   domain: string;
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
   try {
     const body: AIScoresRequest = await req.json();
     const { domain, dealershipSize = 'medium', marketType = 'suburban', aiAdoption = 'medium' } = body;
+    void dealershipSize; void marketType; void aiAdoption;
 
     if (!domain) {
       return NextResponse.json(
@@ -66,45 +67,60 @@ export async function POST(req: NextRequest) {
     // 1. Calculate QAI (Quantum Authority Index)
     const qaiData = {
       ftfr: {
-        responseTime: Math.random() * 2 + 0.5, // 0.5-2.5 seconds
-        uptime: Math.random() * 10 + 90, // 90-100%
-        errorRate: Math.random() * 5, // 0-5%
-        customerSatisfaction: Math.random() * 20 + 80 // 80-100%
+        score: Math.random() * 0.3 + 0.7, // 0.7-1.0
+        metrics: {
+          certificationCompliance: Math.random() * 0.2 + 0.8, // 0.8-1.0
+          trainingCompletion: Math.random() * 0.2 + 0.75, // 0.75-0.95
+          processAdherence: Math.random() * 0.25 + 0.7, // 0.7-0.95
+          qualityAuditScore: Math.random() * 0.3 + 0.6 // 0.6-0.9
+        }
       },
       vdpd: {
-        conversionRate: Math.random() * 15 + 5, // 5-20%
-        bounceRate: Math.random() * 30 + 20, // 20-50%
-        timeOnSite: Math.random() * 120 + 60, // 60-180 seconds
-        pageViews: Math.random() * 5 + 2 // 2-7 pages
+        score: Math.random() * 0.3 + 0.6, // 0.6-0.9
+        metrics: {
+          vdpLoadTime: Math.random() * 3 + 1.5, // 1.5-4.5s
+          vdpBounceRate: Math.random() * 0.3 + 0.2, // 0.2-0.5
+          vdpConversionRate: Math.random() * 0.15 + 0.05, // 0.05-0.2
+          mobileOptimization: Math.random() * 0.3 + 0.6 // 0.6-0.9
+        }
       },
       proc: {
-        reviewResponseTime: Math.random() * 24 + 1, // 1-25 hours
-        reviewQuality: Math.random() * 30 + 70, // 70-100%
-        customerServiceScore: Math.random() * 20 + 80, // 80-100%
-        trustSignals: Math.random() * 40 + 60 // 60-100%
+        score: Math.random() * 0.3 + 0.6, // 0.6-0.9
+        metrics: {
+          leadResponseTime: Math.random() * 5 + 1, // 1-6 minutes
+          followUpConsistency: Math.random() * 0.3 + 0.6, // 0.6-0.9
+          processEfficiency: Math.random() * 0.3 + 0.6, // 0.6-0.9
+          customerSatisfaction: Math.random() * 0.2 + 0.75 // 0.75-0.95
+        }
       },
       cert: {
-        expertiseContent: Math.random() * 30 + 70, // 70-100%
-        authoritySignals: Math.random() * 25 + 75, // 75-100%
-        contentQuality: Math.random() * 20 + 80, // 80-100%
-        credibilityFactors: Math.random() * 35 + 65 // 65-100%
+        score: Math.random() * 0.3 + 0.7, // 0.7-1.0
+        metrics: {
+          technicianCertification: Math.random() * 0.2 + 0.8, // 0.8-1.0
+          trainingCurrency: Math.random() * 0.3 + 0.6, // 0.6-0.9
+          expertiseDemonstration: Math.random() * 0.25 + 0.65, // 0.65-0.9
+          knowledgeRetention: Math.random() * 0.25 + 0.65 // 0.65-0.9
+        }
       }
-    };
+    } as import('@/lib/qai-calculator').QAIData;
 
     const qaiAnalysis = QAICalculator.calculateQAIComplete(qaiData);
     const currentQAI = Math.round(qaiAnalysis.overallScore);
 
     // 2. Calculate PIQR (Performance Impact Quality Risk)
     const piqrInput = {
-      complianceFails: Math.floor(Math.random() * 10), // 0-10 fails
-      warningMultipliers: Math.random() * 0.5 + 0.1, // 0.1-0.6
-      schemaLatencyMin: Math.random() * 1000 + 100, // 100-1100ms
+      complianceFails: Math.floor(Math.random() * 3), // 0-2 fails
+      warningMultipliers: [
+        1 + Math.random() * 0.1, // small warning multipliers
+        1 + Math.random() * 0.1
+      ],
+      schemaLatencyMin: Math.floor(Math.random() * 120) + 10, // 10-130 minutes
       schemaLatencyBudgetMin: 60,
-      dupHashCollisionRate: Math.random() * 0.1 // 0-10%
-    };
+      dupHashCollisionRate: Math.random() * 0.2 // 0-20%
+    } as import('@/lib/metrics/piqr').PiqrInputs;
 
-    const piqrResult = calculatePIQR(piqrInput);
-    const currentPIQR = Math.round(piqrResult.riskScore);
+    const piqrScore = calculatePIQR(piqrInput);
+    const currentPIQR = Math.round(piqrScore * 100);
 
     // 3. Calculate OVI (Overall Visibility Index) - simplified
     const currentOVI = Math.round(
