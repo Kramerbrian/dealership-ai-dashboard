@@ -17,7 +17,7 @@ interface TrustScore {
   };
 }
 
-const handler = async (request: NextRequest, user: any) => {
+const handler = async (request: NextRequest, _user: any) => {
   try {
     const { dealership, city, state } = await request.json();
 

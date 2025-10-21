@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QAICalculator } from '@/lib/qai-calculator';
 import { DTRIMaximusEngine } from '@/lib/dtri-maximus-engine';
 import { calculatePIQR } from '@/lib/metrics/piqr';
-import { calculateQAIComposite } from '@/lib/qai-composite';
+// import { calculateQAIComposite } from '@/lib/qai-composite';
 
 interface AIScoresRequest {
   domain: string;
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   
   try {
     const body: AIScoresRequest = await req.json();
-    const { domain, dealershipSize = 'medium', marketType = 'suburban', aiAdoption = 'medium' } = body;
+    const { domain } = body;
 
     if (!domain) {
       return NextResponse.json(
