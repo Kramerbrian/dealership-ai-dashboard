@@ -44,7 +44,7 @@ export default function EnhancedDealershipAILanding() {
         }, 2000);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      // Error submitting form - handle silently;
       alert('There was an error processing your request. Please try again.');
     } finally {
       setLoading(false);
