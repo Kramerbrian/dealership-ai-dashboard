@@ -1,51 +1,83 @@
-# ⚡ Quick Start - Apply Migration
+# 🚀 Google Policy Compliance - Quick Start
 
-## ✅ Step 1: Paste SQL in Supabase SQL Editor
-
-**The migration SQL is already in your clipboard!**
-
-### In your Supabase SQL Editor:
-
-1. **Paste** (Cmd+V or Ctrl+V)
-2. **Click "Run"** (bottom right)
-3. **Verify success** - Should see: `Success. No rows returned`
+**5 Minutes to Production**
 
 ---
 
-## ✅ Step 2: Verify Tables Created
+## Right Now (Supabase SQL Editor is open!)
 
-Run this in SQL Editor:
-
-```sql
-SELECT tablename FROM pg_tables
-WHERE schemaname = 'public'
-AND (tablename LIKE '%aemd%' OR tablename LIKE '%accuracy%')
-ORDER BY tablename;
-```
-
-**Expected: 4 tables**
-- accuracy_alerts
-- accuracy_monitoring  
-- accuracy_thresholds
-- aemd_metrics
+1. **Paste** the migration SQL (already in your clipboard)
+2. **Click "Run"** in Supabase SQL Editor
+3. **Verify:** Should see success message
 
 ---
 
-## ✅ Step 3: Test APIs
-
-In your terminal:
+## Test Locally (2 min)
 
 ```bash
-cd /Users/briankramer/dealership-ai-dashboard
-./scripts/test-aemd-accuracy.sh
+# Start dev server
+npm run dev
+
+# In another terminal, test the API
+curl http://localhost:3000/api/compliance/google-pricing/summary
+
+# Should return:
+# { "riskScore": 0, "compliant": true, ... }
 ```
 
 ---
 
-## ✅ Step 4: View Dashboard
+## Deploy to Production (1 min)
 
-```
-http://localhost:3000/monitoring?tenant=test-tenant
+Vercel is already deploying automatically from your GitHub push!
+
+Check status: https://vercel.com/dashboard
+
+---
+
+## Add Optional Notifications
+
+**Resend (Email):**
+1. Get API key: https://resend.com/api-keys
+2. Add to Vercel: `RESEND_API_KEY=...`
+
+**Slack (Webhook):**
+1. Get webhook: https://api.slack.com/messaging/webhooks
+2. Add to Vercel: `SLACK_WEBHOOK_URL=...`
+
+---
+
+## Test with Real URLs
+
+```bash
+curl -X POST http://localhost:3000/api/audit/google-pricing \
+  -H "Content-Type: application/json" \
+  -d '[{
+    "adUrl": "https://your-dealership.com/ad",
+    "lpUrl": "https://your-dealership.com/special",
+    "vdpUrl": "https://your-dealership.com/vehicle/123"
+  }]'
 ```
 
-Done! 🎉
+---
+
+## View Dashboard
+
+Visit: http://localhost:3000/intelligence
+
+(After production deployment: https://yourdomain.com/intelligence)
+
+---
+
+## That's It!
+
+✅ Database migrated
+✅ Code deployed  
+✅ CRON active
+✅ Dashboard live
+
+**Next:** Run real audits and watch the compliance metrics roll in!
+
+📚 **Full Docs:** 
+- [GOOGLE_POLICY_COMPLIANCE_GUIDE.md](GOOGLE_POLICY_COMPLIANCE_GUIDE.md)
+- [GOOGLE_POLICY_PRODUCTION_DEPLOYMENT.md](GOOGLE_POLICY_PRODUCTION_DEPLOYMENT.md)
