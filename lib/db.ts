@@ -1,31 +1,11 @@
-/**
- * DealershipAI Site Intelligence - Database Helper
- * 
- * RLS-enabled database connection with tenant context
- */
+import { PrismaClient } from '@prisma/client';
 
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import * as schema from '../drizzle/schema';
+// Global Prisma client instance
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-// Create connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+export const db = globalForPrisma.prisma ?? new PrismaClient();
+export const prisma = db; // Alias for compatibility
 
-// Create Drizzle instance
-export const db = drizzle(pool, { schema });
-
-// Export schema for convenience
-export * from '../drizzle/schema';
-
-/**
- * Per-request tenant context helper for RLS
- */
-export async function withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
-  await db.execute(`select set_config('app.tenant', $1, true)`, [tenantId]); // RLS key
-  return fn();
-}
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
