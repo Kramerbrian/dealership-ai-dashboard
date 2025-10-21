@@ -11,7 +11,7 @@ import {
   TrophyIcon, 
   StarIcon, 
   FireIcon, 
-  LightningBoltIcon,
+  BoltIcon,
   CheckCircleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
@@ -56,7 +56,7 @@ export default function GamificationSystem({
       id: 'data-pioneer',
       name: 'Data Pioneer',
       description: 'Connect your first data source',
-      icon: LightningBoltIcon,
+      icon: BoltIcon,
       points: 25,
       unlocked: false,
       category: 'setup',
