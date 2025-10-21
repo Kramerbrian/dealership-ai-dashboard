@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const analysis = await realAIAnalysisService.performRealAIAnalysis(domain);
+    const analysis = await realAIAnalysisService.analyzeVisibility({ domain, type: 'visibility' });
 
     return NextResponse.json({
       success: true,
