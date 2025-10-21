@@ -1,0 +1,149 @@
+/* Enhanced Design System CSS */
+
+/* Custom CSS Variables for Enhanced Design System */
+:root {
+  /* Primary Colors */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+
+  /* Glass Morphism */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-backdrop: blur(4px);
+
+  /* Shadows */
+  --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  --shadow-medium: 0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-strong: 0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Glass Morphism Components */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+}
+
+/* Enhanced Buttons */
+.btn-glass {
+  @apply glass rounded-lg px-6 py-3 font-medium transition-all duration-200;
+  @apply hover:bg-white/20 hover:shadow-lg active:scale-95;
+}
+
+.btn-primary-glass {
+  @apply btn-glass bg-blue-500/20 text-blue-900 border-blue-300/30;
+  @apply hover:bg-blue-500/30 hover:border-blue-400/40;
+}
+
+/* Enhanced Cards */
+.card-glass {
+  @apply glass rounded-2xl p-6 transition-all duration-300;
+  @apply hover:shadow-xl hover:scale-[1.02];
+}
+
+.card-premium {
+  @apply bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm;
+  @apply border border-gray-200/50 rounded-2xl shadow-soft;
+  @apply hover:shadow-medium transition-all duration-300;
+}
+
+/* Enhanced Inputs */
+.input-glass {
+  @apply glass rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500;
+  @apply focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/50;
+  @apply transition-all duration-200;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-premium {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+.animate-bounce-soft {
+  animation: bounceSoft 2s infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceSoft {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Responsive Design Enhancements */
+@media (max-width: 768px) {
+  .card-glass {
+    @apply p-4 rounded-xl;
+  }
+  
+  .btn-glass {
+    @apply px-4 py-2 text-sm;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass-bg: rgba(0, 0, 0, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  }
+  
+  .card-premium {
+    @apply bg-gradient-to-br from-gray-900/80 to-gray-800/60;
+    @apply border-gray-700/50 text-white;
+  }
+  
+  .input-glass {
+    @apply text-white placeholder-gray-400;
+  }
+}

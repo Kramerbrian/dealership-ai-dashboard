@@ -5,7 +5,8 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'framer-motion'
+import React, { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { MapPinIcon, TrophyIcon, TrendingUpIcon, UsersIcon } from '@heroicons/react/24/outline'
 
 interface Competitor {
@@ -226,7 +227,7 @@ export default function InteractiveMarketMap({
             </div>
             <div className="flex items-center text-xs">
               <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
-              Low AI Visibility (<40%)
+              Low AI Visibility (&lt;40%)
             </div>
             <div className="flex items-center text-xs">
               <div className="w-3 h-3 bg-blue-500 rounded-full mr-2" />
