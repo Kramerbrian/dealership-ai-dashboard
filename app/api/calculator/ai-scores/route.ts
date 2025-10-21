@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QAICalculator } from '@/lib/qai-calculator';
 import { DTRIMaximusEngine } from '@/lib/dtri-maximus-engine';
 import { calculatePIQR } from '@/lib/metrics/piqr';
-import { calculateQAIComposite } from '@/lib/qai-composite';
 
 interface AIScoresRequest {
   domain: string;
@@ -52,6 +51,7 @@ export async function POST(req: NextRequest) {
   try {
     const body: AIScoresRequest = await req.json();
     const { domain, dealershipSize = 'medium', marketType = 'suburban', aiAdoption = 'medium' } = body;
+    console.log('Processing AI scores for:', { domain, dealershipSize, marketType, aiAdoption });
 
     if (!domain) {
       return NextResponse.json(
@@ -216,6 +216,7 @@ export async function POST(req: NextRequest) {
     console.error('AI Scores API Error:', error);
     
     const duration = Date.now() - startTime;
+    console.log('AI Scores calculation failed after', duration, 'ms');
     
     return NextResponse.json(
       { 

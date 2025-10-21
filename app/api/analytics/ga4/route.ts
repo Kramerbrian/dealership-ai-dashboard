@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAnalyticsService } from '@/lib/services/GoogleAnalyticsService';
-import { logger } from '@/lib/utils/logger';
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
@@ -64,7 +63,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.googleAnalytics.apiError('GET', propertyId || 'unknown', error as Error);
+    console.error('GA4 API Error:', error);
     
     return NextResponse.json(
       { 
@@ -84,6 +83,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { propertyId, action, dateRange = '30d' } = body;
+    console.log('Processing GA4 action:', action, 'for date range:', dateRange);
 
     if (!propertyId) {
       return NextResponse.json(
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
     }
 
   } catch (error) {
-    logger.googleAnalytics.apiError('POST', propertyId || 'unknown', error as Error);
+    console.error('GA4 POST API Error:', error);
     
     return NextResponse.json(
       { 
