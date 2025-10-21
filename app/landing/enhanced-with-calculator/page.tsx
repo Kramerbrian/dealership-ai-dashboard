@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Brain, Search, Sparkles, Shield, Gauge, LineChart, CheckCircle2, MapPin, Target, TrendingUp, Zap } from 'lucide-react';
 import { EnhancedTextRotator } from '@/app/components/TextRotator';
-import { useGeoPersonalization, getPersonalizedGreeting, formatLocation, getMarketInsights } from '@/app/hooks/useGeoPersonalization';
+import { useGeoPersonalization } from '@/hooks/useGeoPersonalization';
 import EnhancedAIOpportunityCalculator from '@/app/components/calculator/EnhancedAIOpportunityCalculator';
 
 export default function EnhancedDealershipAILanding() {
@@ -35,14 +35,58 @@ export default function EnhancedDealershipAILanding() {
     
     if (!domain) return;
     
+    // Validate URL format
+    const isValidUrl = (url: string) => {
+      try {
+        // Add https:// if no protocol
+        const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+        new URL(fullUrl);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    
+    if (!isValidUrl(domain)) {
+      alert('Please enter a valid website URL (e.g., www.yourdealership.com)');
+      return;
+    }
+    
     setUserDomain(domain);
     setIsAnalyzing(true);
     
-    // Simulate analysis time
-    setTimeout(() => {
+    try {
+      // Call the real scan API
+      const response = await fetch('/api/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domain: domain,
+          includeCompetitors: true,
+          analysisType: 'comprehensive'
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Scan failed');
+      }
+      
+      const scanResult = await response.json();
+      
+      if (scanResult.success) {
+        // Store the scan result for the calculator
+        localStorage.setItem('scanResult', JSON.stringify(scanResult.data));
+        setShowCalculator(true);
+      } else {
+        alert('Analysis failed. Please try again.');
+      }
+    } catch (error) {
+      alert('Analysis failed. Please try again.');
+    } finally {
       setIsAnalyzing(false);
-      setShowCalculator(true);
-    }, 2000);
+    }
   };
 
   const handleCalculateOpportunity = async () => {
@@ -97,7 +141,7 @@ export default function EnhancedDealershipAILanding() {
             <a href="#features" className="text-sm text-white/70 hover:text-white transition-colors">Features</a>
             <a href="#pricing" className="text-sm text-white/70 hover:text-white transition-colors">Pricing</a>
             <a href="#about" className="text-sm text-white/70 hover:text-white transition-colors">About</a>
-            <a href="/auth/signin" className="text-sm px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">Sign In</a>
+            <a href="/sign-in" className="text-sm px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">Sign In</a>
           </nav>
         </div>
       </header>
@@ -150,7 +194,7 @@ export default function EnhancedDealershipAILanding() {
               >
                 <input
                   name="dealerUrl"
-                  type="url"
+                  type="text"
                   required
                   placeholder="www.yourdealership.com"
                   className="flex-1 bg-transparent outline-none px-3 py-3 text-sm placeholder:text-white/40"
