@@ -1,0 +1,303 @@
+/**
+ * DealershipAI Enhanced Design System
+ * Premium UI components with Cupertino aesthetic
+ */
+
+/* Glass Morphism Effects */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Premium Gradients */
+.gradient-premium {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+.gradient-warning {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.gradient-danger {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Smooth Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.5s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Card Styles */
+.card-premium {
+  @apply bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200;
+}
+
+.card-elevated {
+  @apply bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1;
+}
+
+/* Button Enhancements */
+.btn-premium {
+  @apply px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 active:scale-95;
+}
+
+.btn-glass {
+  @apply glass text-gray-900 hover:bg-white/90 active:bg-white/70;
+}
+
+/* Input Styles */
+.input-premium {
+  @apply w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200;
+}
+
+/* KPI Cards */
+.kpi-card {
+  @apply bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200;
+}
+
+.kpi-value {
+  @apply text-3xl font-bold tabular-nums;
+}
+
+.kpi-label {
+  @apply text-sm text-gray-500 font-medium uppercase tracking-wider;
+}
+
+/* Chart Containers */
+.chart-container {
+  @apply bg-white rounded-xl p-6 shadow-sm border border-gray-100;
+}
+
+/* Status Indicators */
+.status-indicator {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-operational {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-degraded {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-down {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Loading Skeleton */
+.skeleton {
+  @apply bg-gray-200 animate-pulse rounded;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full hover:bg-gray-500;
+}
+
+/* Focus Styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* Typography */
+.heading-xl {
+  @apply text-4xl font-bold text-gray-900;
+}
+
+.heading-lg {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.heading-md {
+  @apply text-2xl font-semibold text-gray-900;
+}
+
+.heading-sm {
+  @apply text-xl font-semibold text-gray-900;
+}
+
+.text-muted {
+  @apply text-gray-500;
+}
+
+/* Grid Layouts */
+.dashboard-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+}
+
+.metrics-grid {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-4;
+}
+
+/* Responsive Utilities */
+@media (max-width: 640px) {
+  .mobile-full {
+    @apply w-full;
+  }
+  
+  .mobile-stack {
+    @apply flex-col;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break {
+    page-break-after: always;
+  }
+}
+
+/* Custom Animations */
+.hover-lift {
+  @apply transition-transform duration-200 hover:-translate-y-1;
+}
+
+.hover-grow {
+  @apply transition-transform duration-200 hover:scale-105;
+}
+
+.hover-shrink {
+  @apply transition-transform duration-200 hover:scale-95;
+}
+
+/* Tooltips */
+.tooltip {
+  @apply relative inline-block;
+}
+
+.tooltip-content {
+  @apply absolute z-10 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 pointer-events-none transition-opacity duration-200;
+}
+
+.tooltip:hover .tooltip-content {
+  @apply opacity-100;
+}
+
+/* Badge Styles */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-blue {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.badge-green {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-red {
+  @apply bg-red-100 text-red-800;
+}
+
+.badge-yellow {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+/* Dividers */
+.divider {
+  @apply border-t border-gray-200 my-6;
+}
+
+.divider-vertical {
+  @apply border-l border-gray-200 mx-4;
+}
+
+/* Overlay */
+.overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40;
+}
+
+/* Modal */
+.modal {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+}
+
+.modal-content {
+  @apply bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto;
+}
+
+/* Notification */
+.notification {
+  @apply flex items-start p-4 rounded-lg shadow-lg;
+}
+
+.notification-success {
+  @apply bg-green-50 text-green-800;
+}
+
+.notification-error {
+  @apply bg-red-50 text-red-800;
+}
+
+.notification-warning {
+  @apply bg-yellow-50 text-yellow-800;
+}
+
+.notification-info {
+  @apply bg-blue-50 text-blue-800;
+}

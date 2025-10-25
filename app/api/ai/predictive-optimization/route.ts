@@ -280,7 +280,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const analysisType = searchParams.get('type') || 'full';
-    const dealerId = searchParams.get('dealerId') || 'demo-dealer';
+    // const dealerId = searchParams.get('dealerId') || 'demo-dealer';
     
     // Demo metrics
     const currentMetrics = {
