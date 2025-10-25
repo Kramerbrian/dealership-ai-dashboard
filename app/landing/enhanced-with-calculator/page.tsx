@@ -54,19 +54,17 @@ export default function EnhancedDealershipAILanding() {
     
     setUserDomain(domain);
     setIsAnalyzing(true);
-    
-    try {
-      // Call the real scan API
-      const response = await fetch('/api/scan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          domain: domain,
-          includeCompetitors: true,
-          analysisType: 'comprehensive'
-        }),
+ const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: domain,
+        revenue: 100000,
+        marketSize: 'medium',
+        competition: 'moderate',
+         }),
       });
       
       if (!response.ok) {
@@ -75,17 +73,9 @@ export default function EnhancedDealershipAILanding() {
       
       const scanResult = await response.json();
       
-      if (scanResult.success) {
-        // Store the scan result for the calculator
-        localStorage.setItem('scanResult', JSON.stringify(scanResult.data));
-        setShowCalculator(true);
-      } else {
-        alert('Analysis failed. Please try again.');
-      }
-    } catch (error) {
-      alert('Analysis failed. Please try again.');
-    } finally {
-      setIsAnalyzing(false);
+   // Store the analysis result for the calculator
+ 
+ setIsAnalyzing(false);
     }
   };
 
