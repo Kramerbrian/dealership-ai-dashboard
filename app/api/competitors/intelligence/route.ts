@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
+  console.log('Fetching competitive intelligence data for:', req.url);
   try {
     // Mock competitive intelligence data
     const competitiveData = {
@@ -284,7 +285,7 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    const result = actionResults[tacticId] || {
+    const result = (actionResults as any)[tacticId] || {
       success: false,
       message: 'Unknown action',
       impact: 'No impact',

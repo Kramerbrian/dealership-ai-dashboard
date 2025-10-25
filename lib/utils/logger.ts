@@ -1,133 +1,129 @@
 /**
- * Production-ready logging utility for DealershipAI
- * Handles Google API logs and other application logging
+ * Logger Utility
+ * Centralized logging for the application
  */
 
-export enum LogLevel {
-  ERROR = 'error',
-  WARN = 'warn',
-  INFO = 'info',
-  DEBUG = 'debug'
+interface LogLevel {
+  ERROR: 'error';
+  WARN: 'warn';
+  INFO: 'info';
+  DEBUG: 'debug';
 }
 
-export interface LogEntry {
-  level: LogLevel;
-  message: string;
-  context?: string;
-  error?: Error;
-  metadata?: Record<string, any>;
-  timestamp: string;
-}
+const LOG_LEVELS: LogLevel = {
+  ERROR: 'error',
+  WARN: 'warn',
+  INFO: 'info',
+  DEBUG: 'debug'
+};
 
 class Logger {
-  private isDevelopment: boolean;
-  private isProduction: boolean;
+  private isDevelopment = process.env.NODE_ENV === 'development';
 
-  constructor() {
-    this.isDevelopment = process.env.NODE_ENV === 'development';
-    this.isProduction = process.env.NODE_ENV === 'production';
-  }
-
-  private formatMessage(level: LogLevel, message: string, context?: string): string {
+  private log(level: keyof LogLevel, message: string, data?: any) {
     const timestamp = new Date().toISOString();
-    const contextStr = context ? `[${context}]` : '';
-    return `${timestamp} ${level.toUpperCase()} ${contextStr} ${message}`;
-  }
-
-  private shouldLog(level: LogLevel): boolean {
-    // In development, log everything
-    if (this.isDevelopment) return true;
-    
-    // In production, only log errors and warnings
-    if (this.isProduction) {
-      return level === LogLevel.ERROR || level === LogLevel.WARN;
-    }
-    
-    // Default: log everything
-    return true;
-  }
-
-  private log(level: LogLevel, message: string, context?: string, error?: Error, metadata?: Record<string, any>): void {
-    if (!this.shouldLog(level)) return;
-
-    const formattedMessage = this.formatMessage(level, message, context);
-    
-    const logEntry: LogEntry = {
-      level,
+    const logEntry = {
+      timestamp,
+      level: LOG_LEVELS[level],
       message,
-      context,
-      error,
-      metadata,
-      timestamp: new Date().toISOString()
+      ...(data && { data })
     };
 
-    switch (level) {
-      case LogLevel.ERROR:
-        console.error(formattedMessage, error ? error.stack : '', metadata ? JSON.stringify(metadata) : '');
-        break;
-      case LogLevel.WARN:
-        console.warn(formattedMessage, metadata ? JSON.stringify(metadata) : '');
-        break;
-      case LogLevel.INFO:
-        console.info(formattedMessage, metadata ? JSON.stringify(metadata) : '');
-        break;
-      case LogLevel.DEBUG:
-        console.debug(formattedMessage, metadata ? JSON.stringify(metadata) : '');
-        break;
-    }
-
-    // In production, you might want to send logs to an external service
-    if (this.isProduction && level === LogLevel.ERROR) {
-      this.sendToExternalService(logEntry);
+    if (this.isDevelopment) {
+      console[level.toLowerCase() as keyof Console](
+        `[${timestamp}] ${level}: ${message}`,
+        data ? data : ''
+      );
+    } else {
+      // In production, you might want to send logs to a service like Logtail, Sentry, etc.
+      console.log(JSON.stringify(logEntry));
     }
   }
 
-  private sendToExternalService(logEntry: LogEntry): void {
-    // TODO: Implement external logging service (e.g., Sentry, LogRocket, etc.)
-    // For now, we'll just keep it in console for production errors
+  error(message: string, error?: Error | any) {
+    this.log('ERROR', message, error);
   }
 
-  // Public logging methods
-  error(message: string, context?: string, error?: Error, metadata?: Record<string, any>): void {
-    this.log(LogLevel.ERROR, message, context, error, metadata);
+  warn(message: string, data?: any) {
+    this.log('WARN', message, data);
   }
 
-  warn(message: string, context?: string, metadata?: Record<string, any>): void {
-    this.log(LogLevel.WARN, message, context, undefined, metadata);
+  info(message: string, data?: any) {
+    this.log('INFO', message, data);
   }
 
-  info(message: string, context?: string, metadata?: Record<string, any>): void {
-    this.log(LogLevel.INFO, message, context, undefined, metadata);
+  debug(message: string, data?: any) {
+    if (this.isDevelopment) {
+      this.log('DEBUG', message, data);
+    }
   }
 
-  debug(message: string, context?: string, metadata?: Record<string, any>): void {
-    this.log(LogLevel.DEBUG, message, context, undefined, metadata);
-  }
+  // Specialized loggers for different components
+  api = {
+    request: (method: string, path: string, duration?: number) => {
+      this.info(`API ${method} ${path}`, { duration: duration ? `${duration}ms` : undefined });
+    },
+    error: (method: string, path: string, error: Error) => {
+      this.error(`API ${method} ${path} failed`, error);
+    },
+    response: (method: string, path: string, status: number, duration: number) => {
+      this.info(`API ${method} ${path} ${status}`, { duration: `${duration}ms` });
+    }
+  };
 
-  // Google Analytics specific logging
+  database = {
+    query: (query: string, duration?: number) => {
+      this.debug(`DB Query: ${query}`, { duration: duration ? `${duration}ms` : undefined });
+    },
+    error: (operation: string, error: Error) => {
+      this.error(`DB ${operation} failed`, error);
+    }
+  };
+
+  auth = {
+    login: (userId: string, method: string) => {
+      this.info(`User login: ${userId}`, { method });
+    },
+    logout: (userId: string) => {
+      this.info(`User logout: ${userId}`);
+    },
+    error: (operation: string, error: Error) => {
+      this.error(`Auth ${operation} failed`, error);
+    }
+  };
+
   googleAnalytics = {
-    initialized: (propertyId?: string) => {
-      this.info('Google Analytics client initialized successfully', 'GA4', { propertyId });
+    apiCall: (endpoint: string, propertyId: string, duration: number) => {
+      this.info(`GA4 API call: ${endpoint}`, { propertyId, duration: `${duration}ms` });
     },
-    
-    usingMockData: (reason: string) => {
-      this.info(`Using mock data: ${reason}`, 'GA4');
-    },
-    
-    apiCall: (method: string, propertyId: string, duration: number) => {
-      this.debug(`GA4 API call: ${method}`, 'GA4', { propertyId, duration: `${duration}ms` });
-    },
-    
     apiError: (method: string, propertyId: string, error: Error) => {
-      this.error(`GA4 API error in ${method}`, 'GA4', error, { propertyId });
+      this.error(`GA4 API ${method} failed for property ${propertyId}`, error);
     },
-    
-    validationSuccess: (propertyId: string) => {
-      this.info('GA4 property validation successful', 'GA4', { propertyId });
+    dataProcessed: (metric: string, recordCount: number) => {
+      this.info(`GA4 data processed: ${metric}`, { records: recordCount });
+    }
+  };
+
+  performance = {
+    slow: (operation: string, duration: number, threshold: number = 1000) => {
+      if (duration > threshold) {
+        this.warn(`Slow operation: ${operation}`, { duration: `${duration}ms`, threshold: `${threshold}ms` });
+      }
     },
-    
-    validationFailed: (propertyId: string, error: Error) => {
-      this.error('GA4 property validation failed', 'GA4', error, { propertyId });
+    metric: (name: string, value: number, unit: string = 'ms') => {
+      this.debug(`Performance metric: ${name}`, { value: `${value}${unit}` });
+    }
+  };
+
+  security = {
+    rateLimitExceeded: (ip: string, endpoint: string) => {
+      this.warn(`Rate limit exceeded`, { ip, endpoint });
+    },
+    unauthorizedAccess: (ip: string, endpoint: string, reason: string) => {
+      this.warn(`Unauthorized access attempt`, { ip, endpoint, reason });
+    },
+    suspiciousActivity: (description: string, data: any) => {
+      this.warn(`Suspicious activity: ${description}`, data);
     }
   };
 }
@@ -135,15 +131,6 @@ class Logger {
 // Export singleton instance
 export const logger = new Logger();
 
-// Export convenience functions
-export const logError = (message: string, context?: string, error?: Error, metadata?: Record<string, any>) => 
-  logger.error(message, context, error, metadata);
-
-export const logWarn = (message: string, context?: string, metadata?: Record<string, any>) => 
-  logger.warn(message, context, metadata);
-
-export const logInfo = (message: string, context?: string, metadata?: Record<string, any>) => 
-  logger.info(message, context, metadata);
-
-export const logDebug = (message: string, context?: string, metadata?: Record<string, any>) => 
-  logger.debug(message, context, metadata);
+// Export types for external use
+export type { LogLevel };
+export { LOG_LEVELS };

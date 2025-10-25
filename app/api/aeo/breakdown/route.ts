@@ -37,7 +37,7 @@ export async function GET(req: Request) {
 }
 
 function generateMockBreakdownData(days: number) {
-  const mockData = []
+  const mockData: any[] = []
   const engines = ['google_sge', 'perplexity', 'gemini', 'chatgpt']
   const surfaceTypes = ['overview', 'snippet', 'paa', 'featured']
   
