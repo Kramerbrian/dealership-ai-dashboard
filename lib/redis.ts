@@ -1,50 +1,33 @@
-import { Redis } from 'ioredis';
+/**
+ * Redis Configuration
+ * Redis client for caching and rate limiting
+ */
 
-let redis: Redis | null = null;
+import { Redis } from 'ioredis'
 
-export function getRedis(): Redis {
-  if (!redis) {
-    const redisUrl = process.env.REDIS_URL || process.env.KV_URL || 'redis://localhost:6379';
-    
-    redis = new Redis(redisUrl, {
-      retryDelayOnFailover: 100,
-      maxRetriesPerRequest: 3,
-      lazyConnect: true,
-      keepAlive: 30000,
-      connectTimeout: 10000,
-      commandTimeout: 5000,
-      // Graceful shutdown
-      onClose: () => {
-        console.log('Redis connection closed');
-      },
-      onError: (err) => {
-        console.error('Redis error:', err);
-      }
-    });
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
 
-    // Test connection
-    redis.ping().catch(err => {
-      console.error('Failed to connect to Redis:', err);
-    });
+export async function checkRedisHealth(): Promise<boolean> {
+  try {
+    await redis.ping()
+    return true
+  } catch (error) {
+    console.error('Redis health check failed:', error)
+    return false
   }
-
-  return redis;
 }
 
-export function closeRedis(): Promise<void> {
-  if (redis) {
-    const connection = redis;
-    redis = null;
-    return connection.quit();
+export async function checkRateLimitHealth(): Promise<boolean> {
+  try {
+    // Test basic Redis operations
+    await redis.set('health_check', 'ok', 'EX', 10)
+    const result = await redis.get('health_check')
+    await redis.del('health_check')
+    return result === 'ok'
+  } catch (error) {
+    console.error('Rate limit health check failed:', error)
+    return false
   }
-  return Promise.resolve();
 }
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  closeRedis().then(() => process.exit(0));
-});
-
-process.on('SIGTERM', () => {
-  closeRedis().then(() => process.exit(0));
-});
+export { redis }
