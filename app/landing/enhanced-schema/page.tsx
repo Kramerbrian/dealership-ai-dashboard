@@ -8,6 +8,8 @@ import UrlEntryModal from '@/components/landing/UrlEntryModal';
 import ProfileSection from '@/components/landing/ProfileSection';
 import landingPageSchema from '@/lib/landing-page-schema.json';
 
+export const dynamic = 'force-dynamic';
+
 // Define query keys for type safety
 export const queryKeys = {
   scan: ['scan'] as const,

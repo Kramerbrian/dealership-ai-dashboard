@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { auth } from '@clerk/nextjs/server';
 import { calculateQAI, calculateQAIWithGeographicPooling } from '@/lib/qai';
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
