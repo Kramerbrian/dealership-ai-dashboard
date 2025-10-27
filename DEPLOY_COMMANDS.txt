@@ -1,0 +1,14 @@
+# Copy & Paste These Commands to Deploy
+
+# 1. Go to your project directory
+cd /Users/stephaniekramer/dealership-ai-dashboard
+
+# 2. Install missing dependency
+npm install @swc/helpers --save-dev
+
+# 3. Build and deploy
+npm run build && vercel --prod
+
+# Done! Your PLG landing page will be live at:
+# https://dealership-ai-dashboard.vercel.app/landing/plg
+

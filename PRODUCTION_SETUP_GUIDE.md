@@ -1,540 +1,517 @@
-# 🚀 Production Setup Guide - dealershipai.com
+# 🚀 DealershipAI Production Setup Guide
 
 ## Overview
+This guide will walk you through setting up all production services for DealershipAI to go from mock data to fully functional SaaS platform.
 
-Complete guide to configure all production features including analytics, lead capture, CRM integration, and email notifications.
-
----
-
-## 1. Social Media Images ✅
-
-### Files Created
-- `/public/og-image-placeholder.svg` - Open Graph image (1200x630)
-- `/public/twitter-image-placeholder.svg` - Twitter Card image (1200x675)
-
-### Next Steps
-1. **Convert SVG to JPG/PNG** (recommended for better compatibility):
-   ```bash
-   # Using ImageMagick or online converter
-   convert public/og-image-placeholder.svg public/og-image.jpg
-   convert public/twitter-image-placeholder.svg public/twitter-image.jpg
-   ```
-
-2. **Or create custom images** with:
-   - Your logo
-   - Real dealership photos
-   - Actual metrics/results
-   - Brand colors
-
-3. **Upload to /public** folder
-4. **Update metadata** in `app/layout.tsx` if filenames change
+**Estimated Time:** 30-45 minutes  
+**Cost:** Free tier for most services (scales automatically)
 
 ---
 
-## 2. Google Analytics Setup ✅
+## Step 1: Configure Vercel Environment Variables
 
-### Files Created
-- `lib/analytics/google-analytics.ts` - Analytics tracking functions
-- Event tracking functions for:
-  - Form submissions
-  - Button clicks
-  - Lead captures
-  - Pricing views
-  - Dashboard views
+### A. Access Vercel Dashboard
+1. Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
+2. Click **Settings** → **Environment Variables**
+3. Add each variable below
 
-### Configuration Steps
+### B. Clerk Authentication Keys
 
-1. **Get Google Analytics ID**
-   ```
-   https://analytics.google.com/
-   → Create Property
-   → Get Measurement ID (G-XXXXXXXXXX)
-   ```
+#### Get Your Keys
+1. Go to: https://dashboard.clerk.com/apps
+2. Select your app: `dealership-ai-dashboard`
+3. Go to **API Keys** section
 
-2. **Add to Environment Variables**
-   ```bash
-   # .env.local
-   NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
-   ```
+#### Add to Vercel
+```bash
+# Add these 4 variables:
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxxxx
+CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxx
 
-3. **Or update directly in** `app/layout.tsx`:
-   ```typescript
-   const GA_TRACKING_ID = 'G-YOUR-ACTUAL-ID';
-   ```
+# Optional: Force redirect URLs
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=https://your-domain.vercel.app/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=https://your-domain.vercel.app/dashboard
 
-4. **Deploy to Vercel**
-   ```bash
-   vercel env add NEXT_PUBLIC_GA_ID production
-   # Enter your G-XXXXXXXXXX ID
-   vercel --prod
-   ```
+# Environment: Production (select from dropdown)
+```
 
-### Usage in Components
-```typescript
-import { trackFormSubmit, trackLeadCapture } from '@/lib/analytics/google-analytics';
+#### Configure Redirect URLs in Clerk
+1. Go to **URLs** in Clerk dashboard
+2. Add these URLs:
+   - **Sign-in URL:** `https://your-domain.vercel.app/auth/signin`
+   - **Sign-up URL:** `https://your-domain.vercel.app/auth/signup`
+   - **After sign-in:** `https://your-domain.vercel.app/dashboard`
+   - **After sign-up:** `https://your-domain.vercel.app/dashboard`
 
-// Track form submission
-trackFormSubmit('landing_page_scan');
+---
 
-// Track lead capture
-trackLeadCapture('landing_page');
+## Step 2: Set Up Supabase PostgreSQL Database
+
+### A. Create Supabase Account
+1. Go to: https://supabase.com
+2. Click **Start your project** (free tier is fine)
+3. Sign in with GitHub/Google
+4. Create new project:
+   - **Name:** `dealershipai-production`
+   - **Database Password:** Save this securely!
+   - **Region:** Choose closest to your users
+   - **Pricing Plan:** Free (to start)
+
+### B. Get Connection String
+1. In Supabase dashboard, go to **Settings** → **Database**
+2. Scroll down to **Connection string**
+3. Copy the URI (it looks like: `postgresql://postgres:[YOUR-PASSWORD]@db.xxx.supabase.co:5432/postgres`)
+
+### C. Add to Vercel Environment Variables
+```bash
+# Add to Vercel:
+DATABASE_URL=postgresql://postgres.xxx:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+
+# Also add for migrations:
+DIRECT_URL=postgresql://postgres.xxx:YOUR_PASSWORD@aws-0-us-east-1.xxxx.supabase.co:5432/postgres
+```
+
+### D. Set Up Database Schema
+```bash
+# On your local machine or Vercel:
+cd /Users/stephaniekramer/dealership-ai-dashboard
+
+# Copy production schema
+cp prisma/schema.production.prisma prisma/schema.prisma
+
+# Generate Prisma Client
+npx prisma generate
+
+# Push schema to Supabase
+npx prisma db push
+
+# Optional: Seed with demo data
+npx prisma db seed
+```
+
+### E. Run Migrations (One-Time Setup)
+```bash
+# Update vercel.json to include Prisma generate in build
+npx prisma migrate deploy
 ```
 
 ---
 
-## 3. Sitemap & SEO ✅
+## Step 3: Set Up Upstash Redis
 
-### Files Created
-- `app/sitemap.ts` - Dynamic XML sitemap
-- `app/robots.ts` - Robots.txt configuration
+### A. Create Upstash Account
+1. Go to: https://upstash.com
+2. Sign up (free tier: 10,000 commands/day)
+3. Click **Create Database**
+4. Settings:
+   - **Name:** `dealershipai-redis`
+   - **Type:** Regional (closest to Vercel region)
+   - **Consistency:** Eventual (faster)
+   - **Multi-Zone:** Disabled (save costs)
 
-### Sitemap URL
+### B. Get Credentials
+1. After creating database, click **Details**
+2. Copy:
+   - **UPSTASH_REDIS_REST_URL** (looks like: `https://xxx.upstash.io`)
+   - **UPSTASH_REDIS_REST_TOKEN** (long string of characters)
+
+### C. Add to Vercel
+```bash
+# Add to Vercel environment variables:
+UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_token_here
+
+# Environment: Production
 ```
-https://www.dealershipai.com/sitemap.xml
-https://www.dealershipai.com/robots.txt
+
+### D. Install Upstash in Project
+```bash
+# Already installed via package.json
+# But verify it's there:
+npm list @upstash/redis
 ```
-
-### Submit to Google Search Console
-
-1. **Verify Ownership**
-   ```
-   https://search.google.com/search-console
-   → Add Property: dealershipai.com
-   → Verify via DNS or HTML file
-   ```
-
-2. **Submit Sitemap**
-   ```
-   → Sitemaps
-   → Add new sitemap: https://www.dealershipai.com/sitemap.xml
-   → Submit
-   ```
-
-3. **Monitor Performance**
-   - Check indexing status
-   - Monitor search queries
-   - Track click-through rates
 
 ---
 
-## 4. Lead Capture & CRM Integration ✅
+## Step 4: Configure Stripe for Payments
 
-### Files Created
-- `app/api/leads/capture/route.ts` - Lead capture API endpoint
-- `lib/services/email-service.ts` - Email service with templates
+### A. Create Stripe Account
+1. Go to: https://stripe.com
+2. Sign up → Activate account
+3. Complete business info
 
-### Lead Capture Flow
+### B. Get API Keys
+1. Go to **Developers** → **API keys**
+2. Toggle to **Test mode** (for now)
+3. Copy:
+   - **Publishable key:** `pk_test_xxxxx`
+   - **Secret key:** `sk_test_xxxxx`
+
+### C. Add to Vercel
+```bash
+# Add to Vercel:
+STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
+STRIPE_SECRET_KEY=sk_test_xxxxx
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
+
+# For production, switch to live keys:
+# pk_live_xxxxx and sk_live_xxxxx
 ```
-User submits form → /api/leads/capture → Save to DB + Send to CRM + Email notification
+
+### D. Configure Webhooks
+1. Go to **Developers** → **Webhooks**
+2. Click **Add endpoint**
+3. **URL:** `https://your-domain.vercel.app/api/stripe/webhook`
+4. **Events to send:** Select these:
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `checkout.session.completed`
+   - `invoice.payment_succeeded`
+   - `invoice.payment_failed`
+5. Copy **Signing secret** (starts with `whsec_`)
+6. Add to Vercel: `STRIPE_WEBHOOK_SECRET=whsec_xxxxx`
+
+### E. Create Products in Stripe
+1. Go to **Products**
+2. Create products matching your tiers:
+
+**Level 2 (Pro):**
+- Name: "DealershipAI Pro"
+- Price: $499/month
+- Billing: Recurring
+
+**Level 3 (Enterprise):**
+- Name: "DealershipAI Enterprise"
+- Price: $999/month
+- Billing: Recurring
+
+3. Copy Product IDs and add to environment variables:
+```bash
+STRIPE_PRO_PRICE_ID=price_xxxxx
+STRIPE_ENTERPRISE_PRICE_ID=price_xxxxx
 ```
 
-### CRM Integration Options
+---
 
-#### Option A: HubSpot (Recommended)
+## Step 5: Configure Google APIs (Optional but Recommended)
 
-1. **Get HubSpot Credentials**
-   ```
-   https://app.hubspot.com/
-   → Settings → Integrations → API Key
-   → Get Portal ID and Form GUID
-   ```
+### A. Google Search Console API
+1. Go to: https://console.cloud.google.com
+2. Create new project: `DealershipAI`
+3. Enable **Google Search Console API**
+4. Create credentials → Service Account
+5. Download JSON key file
+6. Add contents to Vercel: `GOOGLE_SEARCH_CONSOLE_CREDENTIALS={...}`
 
-2. **Add to Environment Variables**
-   ```bash
-   HUBSPOT_ACCESS_TOKEN=your-hubspot-api-key
-   HUBSPOT_PORTAL_ID=your-portal-id
-   HUBSPOT_FORM_GUID=your-form-guid
-   ```
+### B. Google Business Profile API
+1. In same Google Cloud project, enable **Google My Business API**
+2. Enable **Places API**
+3. Same credentials work for both
 
-3. **Deploy**
-   ```bash
-   vercel env add HUBSPOT_ACCESS_TOKEN production
-   vercel env add HUBSPOT_PORTAL_ID production
-   vercel env add HUBSPOT_FORM_GUID production
-   vercel --prod
-   ```
+### C. Google Analytics (GA4)
+1. Go to: https://analytics.google.com
+2. Create new property → **Measurement ID** (G-XXXXXXX)
+3. Add to Vercel: `NEXT_PUBLIC_GA_ID=G-XXXXXXX`
 
-#### Option B: Salesforce
+---
 
-1. **Get Salesforce API Credentials**
-2. **Update** `app/api/leads/capture/route.ts` with Salesforce integration
-3. **Add environment variables**
+## Step 6: Additional Services (Optional)
 
-#### Option C: Custom CRM
+### A. Sentry (Error Tracking)
+1. Go to: https://sentry.io (free tier: 5K events/month)
+2. Create project → Next.js
+3. Copy DSN
+4. Add to Vercel: `SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx`
 
-1. **Modify** `sendToHubSpot()` function in `app/api/leads/capture/route.ts`
-2. **Add your CRM API endpoint**
-3. **Configure authentication**
+### B. PostHog (Product Analytics)
+1. Go to: https://posthog.com (free tier: 1M events/month)
+2. Create project
+3. Copy API key
+4. Add to Vercel: `NEXT_PUBLIC_POSTHOG_KEY=phc_xxxxx`
 
-### Database Storage
+### C. Resend (Email)
+1. Go to: https://resend.com (free tier: 100 emails/day)
+2. Create API key
+3. Add to Vercel: `RESEND_API_KEY=re_xxxxx`
 
-To persist leads, add database integration:
+---
 
-```typescript
-// In app/api/leads/capture/route.ts
-import { db } from '@/lib/db';
+## Step 7: Update Vercel Build Settings
 
-async function saveLead(leadData: any) {
-  await db.insert('leads').values({
-    dealer_url: leadData.dealerUrl,
-    email: leadData.email,
-    name: leadData.name,
-    source: leadData.source,
-    created_at: new Date(),
-  });
+### A. Update `package.json` Scripts
+```json
+{
+  "scripts": {
+    "build": "prisma generate && prisma db push && next build",
+    "postbuild": "prisma generate"
+  }
 }
 ```
 
+### B. Configure Vercel
+1. Go to **Settings** → **General**
+2. Under **Build & Development Settings**:
+   - **Node Version:** 18.x
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `.next`
+   - **Install Command:** `npm install`
+
 ---
 
-## 5. Email Notifications ✅
+## Step 8: Deploy Updated Configuration
 
-### SendGrid Setup
+### A. Commit Changes
+```bash
+cd /Users/stephaniekramer/dealership-ai-dashboard
 
-1. **Create SendGrid Account**
-   ```
-   https://sendgrid.com/
-   → Sign up
-   → Verify email
-   ```
+# Add all environment configurations
+git add prisma/schema.production.prisma
+git add PRODUCTION_SETUP_GUIDE.md
 
-2. **Create API Key**
-   ```
-   → Settings → API Keys
-   → Create API Key (Full Access)
-   → Copy key
-   ```
+# Commit
+git commit -m "Add production configuration and setup guide"
 
-3. **Verify Sender**
-   ```
-   → Settings → Sender Authentication
-   → Verify Single Sender
-   → Use: noreply@dealershipai.com
-   ```
+# Don't push yet - add environment variables first
+```
 
-4. **Add to Environment Variables**
-   ```bash
-   SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxx
-   FROM_EMAIL=noreply@dealershipai.com
-   NOTIFY_EMAIL=leads@dealershipai.com
-   ```
+### B. Add Environment Variables in Vercel
+Use the Vercel dashboard to add all variables from Steps 1-5 above.
 
-5. **Deploy**
-   ```bash
-   vercel env add SENDGRID_API_KEY production
-   vercel env add FROM_EMAIL production
-   vercel env add NOTIFY_EMAIL production
-   vercel --prod
-   ```
-
-### Email Templates Available
-
-1. **Welcome Email** - Sent to new leads
-2. **Lead Notification** - Sent to your team when lead captured
-
-### Customize Templates
-
-Edit templates in `lib/services/email-service.ts`:
-```typescript
-export const emailTemplates = {
-  welcomeEmail: (name, dealerUrl) => `...`,
-  leadNotification: (leadData) => `...`,
-};
+### C. Redeploy
+```bash
+# Trigger new deployment with environment variables
+npx vercel --prod --yes
 ```
 
 ---
 
-## 6. Environment Variables Summary
+## Step 9: Test Production Features
 
-### Required for Production
+### Test Authentication
+1. Visit: https://your-domain.vercel.app
+2. Click **Sign Up**
+3. Complete registration
+4. Should redirect to `/dashboard`
+
+### Test Database Connection
+```bash
+# In production logs or local:
+curl https://your-domain.vercel.app/api/test-db
+# Should return: {"connected": true}
+```
+
+### Test Redis Connection
+```bash
+curl https://your-domain.vercel.app/api/test-redis
+# Should return: {"connected": true}
+```
+
+### Test Stripe
+1. Go to dashboard
+2. Click **Upgrade to Pro**
+3. Test checkout flow
+4. Verify webhook receives event
+
+---
+
+## Step 10: Configure Custom Domain (Optional)
+
+### A. Add Domain in Vercel
+1. Go to **Settings** → **Domains**
+2. Add domain: `dealershipai.com`
+3. Vercel provides DNS records
+
+### B. Update DNS Records
+Go to your DNS provider and add:
+- **A Record:** `@` → Vercel IP
+- **CNAME:** `www` → `cname.vercel-dns.com`
+
+### C. SSL Certificate
+Vercel automatically provisions SSL (takes 1-24 hours)
+
+---
+
+## Complete Environment Variables Checklist
+
+Copy this entire section and fill in with your actual values:
 
 ```bash
+# Authentication (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
+CLERK_SECRET_KEY=sk_live_xxx
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=https://your-domain.com/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=https://your-domain.com/dashboard
+
+# Database (Supabase)
+DATABASE_URL=postgresql://postgres.xxx:[PASSWORD]@aws-0-us-east-1.xxx.supabase.co:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.xxx:[PASSWORD]@aws-0-us-east-1.xxx.supabase.co:5432/postgres
+
+# Caching (Upstash Redis)
+UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=xxx
+
+# Payments (Stripe)
+STRIPE_PUBLISHABLE_KEY=pk_live_xxx
+STRIPE_SECRET_KEY=sk_live_xxx
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+STRIPE_PRO_PRICE_ID=price_xxx
+STRIPE_ENTERPRISE_PRICE_ID=price_xxx
+
 # Analytics
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_GA_ID=G-XXXXXXX
 
-# CRM (Choose one)
-# HubSpot
-HUBSPOT_ACCESS_TOKEN=your-hubspot-api-key
-HUBSPOT_PORTAL_ID=your-portal-id
-HUBSPOT_FORM_GUID=your-form-guid
+# Optional Services
+SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+NEXT_PUBLIC_POSTHOG_KEY=phc_xxx
+RESEND_API_KEY=re_xxx
 
-# OR Salesforce
-SALESFORCE_CLIENT_ID=your-client-id
-SALESFORCE_CLIENT_SECRET=your-client-secret
+# Google APIs (optional)
+GOOGLE_SEARCH_CONSOLE_CREDENTIALS={"type":"service_account",...}
 
-# Email (SendGrid)
-SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxx
-FROM_EMAIL=noreply@dealershipai.com
-NOTIFY_EMAIL=leads@dealershipai.com
+# Encryption
+ENCRYPTION_KEY=32-character-hex-string-for-credential-encryption
 
-# Database (Already configured)
-DATABASE_URL=postgresql://...
-DIRECT_URL=postgresql://...
+# Cron Secret
+CRON_SECRET=random-secret-for-cron-webhook-authentication
 ```
 
-### Add to Vercel
+---
+
+## Troubleshooting
+
+### Database Connection Issues
+```bash
+# Test connection locally
+npx prisma db push
+npx prisma studio  # Opens database browser
+```
+
+### Redis Connection Issues
+```bash
+# Test Redis connection
+node -e "const {Redis} = require('@upstash/redis'); const r = new Redis({url:process.env.UPSTASH_REDIS_REST_URL,token:process.env.UPSTASH_REDIS_REST_TOKEN}); r.ping().then(console.log);"
+```
+
+### Stripe Webhook Issues
+```bash
+# Install Stripe CLI locally
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+
+# Test webhook
+stripe trigger checkout.session.completed
+```
+
+---
+
+## Cost Breakdown (Month 1)
+
+**Free Tier Options:**
+- ✅ Vercel: Free (until > $20/mo usage)
+- ✅ Supabase: Free (500MB database + 2GB bandwidth)
+- ✅ Upstash: Free (10K commands/day)
+- ✅ Clerk: Free (10K MAU + unlimited organizations)
+- ❌ Stripe: 2.9% + $0.30 per transaction (no free tier)
+- ❌ Sentry: Free (5K events/month)
+- ❌ PostHog: Free (1M events/month)
+
+**Total Monthly Cost:** ~$0-50 (before customers)
+
+**With 10 Customers ($5K MRR):**
+- Stripe fees: $50
+- Various services: $0-20
+- **Total Cost:** ~$70
+- **Net Profit:** $4,930/month (98.6% margin)
+
+---
+
+## Security Checklist
+
+- [ ] All API keys are in environment variables (not in code)
+- [ ] Database password is strong and unique
+- [ ] Stripe webhooks are verified with signature
+- [ ] Clerk authentication is configured correctly
+- [ ] HTTPS is enforced (automatic with Vercel)
+- [ ] CORS is configured properly
+- [ ] Rate limiting is enabled
+- [ ] Secrets are rotated regularly
+
+---
+
+## Next Steps After Setup
+
+1. **Test All Features** (Week 1)
+   - Authentication flows
+   - Payment flows
+   - API endpoints
+   - Database operations
+
+2. **Connect Real Data** (Week 2)
+   - Google Search Console
+   - Google Business Profile
+   - Replace mock data
+
+3. **Beta Launch** (Week 3)
+   - Invite 5-10 dealers
+   - Gather feedback
+   - Iterate
+
+4. **Public Launch** (Month 2)
+   - Marketing site live
+   - Start acquiring customers
+   - Monitor metrics
+
+---
+
+## Success Criteria
+
+✅ **Authentication** - Users can sign up and sign in  
+✅ **Database** - Data persists and queries are fast  
+✅ **Payments** - Users can upgrade tiers  
+✅ **Analytics** - You can track user behavior  
+✅ **APIs** - All endpoints return real data  
+✅ **Performance** - Page load < 2s  
+✅ **Uptime** - 99.9%+
+
+---
+
+## Support Resources
+
+- **Vercel Docs:** https://vercel.com/docs
+- **Supabase Docs:** https://supabase.com/docs
+- **Upstash Docs:** https://docs.upstash.com
+- **Stripe Docs:** https://stripe.com/docs
+- **Clerk Docs:** https://clerk.com/docs
+
+---
+
+## Quick Reference Commands
 
 ```bash
-# Add each variable
-vercel env add NEXT_PUBLIC_GA_ID production
-vercel env add SENDGRID_API_KEY production
-vercel env add HUBSPOT_ACCESS_TOKEN production
-# ... etc
-
-# Redeploy
-vercel --prod
-```
-
-### Or use Vercel Dashboard
-
-```
-1. Go to: https://vercel.com/brian-kramers-projects/dealershipai-dashboard/settings/environment-variables
-2. Add each variable
-3. Select "Production" environment
-4. Save
-5. Redeploy
-```
-
----
-
-## 7. Conversion Tracking
-
-### Events to Track
-
-1. **Landing Page**
-   - Page view
-   - Form submission
-   - CTA clicks
-
-2. **Dashboard**
-   - Dashboard loaded
-   - Metrics viewed
-   - Export actions
-
-3. **Pricing**
-   - Pricing page viewed
-   - Plan selected
-   - Signup initiated
-
-### Custom Events
-
-Add custom events in `lib/analytics/google-analytics.ts`:
-
-```typescript
-export const trackCustomEvent = (action: string, category: string) => {
-  event({ action, category });
-};
-```
-
----
-
-## 8. Lead Nurturing Workflow
-
-### Automated Sequence (via CRM)
-
-**Day 0: Lead Capture**
-- Send welcome email
-- Provide dashboard access
-- Set follow-up task
-
-**Day 1: Value Demonstration**
-- Email: "Your AI Visibility Report"
-- Show specific opportunities
-- Include actionable tips
-
-**Day 3: Social Proof**
-- Email: Case study
-- Success metrics
-- Testimonials
-
-**Day 7: Offer Call**
-- Email: "Let's discuss your results"
-- Calendar link
-- Personalized insights
-
-**Day 14: Final Touch**
-- Email: Special offer
-- Limited-time pricing
-- Urgency
-
-### Setup in HubSpot
-
-```
-1. Go to: Automation → Workflows
-2. Create new workflow
-3. Enrollment trigger: Form submission (dealershipai.com)
-4. Add delays and email actions
-5. Activate workflow
-```
-
----
-
-## 9. Marketing & Traffic
-
-### Traffic Sources to Track
-
-1. **Organic Search**
-   - Google
-   - Bing
-   - DuckDuckGo
-
-2. **Paid Advertising**
-   - Google Ads
-   - Facebook Ads
-   - LinkedIn Ads
-
-3. **Social Media**
-   - LinkedIn
-   - Twitter/X
-   - Facebook
-
-4. **Referrals**
-   - Partner sites
-   - Directories
-   - Industry publications
-
-### UTM Parameters
-
-Use UTM parameters for tracking:
-
-```
-https://www.dealershipai.com/?utm_source=google&utm_medium=cpc&utm_campaign=launch
-```
-
-**Standard Parameters:**
-- `utm_source` - Traffic source (google, facebook, email)
-- `utm_medium` - Marketing medium (cpc, social, email)
-- `utm_campaign` - Campaign name (launch, retargeting)
-- `utm_content` - Ad variation
-- `utm_term` - Keyword
-
-### Launch Checklist
-
-- [ ] Submit to Google Search Console
-- [ ] Set up Google Ads campaign
-- [ ] Create LinkedIn posts
-- [ ] Launch Facebook ads
-- [ ] Email existing contacts
-- [ ] Post in industry forums
-- [ ] Reach out to partners
-- [ ] Create press release
-- [ ] Update directory listings
-
----
-
-## 10. Monitoring & Optimization
-
-### Key Metrics to Track
-
-**Traffic Metrics:**
-- Unique visitors
-- Page views
-- Bounce rate
-- Time on site
-
-**Conversion Metrics:**
-- Form submissions
-- Lead capture rate
-- Cost per lead
-- Conversion rate by source
-
-**Engagement Metrics:**
-- Dashboard usage
-- Return visitors
-- Feature adoption
-- Support requests
-
-### Tools
-
-1. **Google Analytics**
-   - Traffic analysis
-   - Conversion tracking
-   - User behavior
-
-2. **Vercel Analytics**
-   - Performance monitoring
-   - Web Vitals
-   - Real User Monitoring
-
-3. **Hotjar / Microsoft Clarity**
-   - Heatmaps
-   - Session recordings
-   - User feedback
-
-### A/B Testing
-
-Test these elements:
-- Headlines
-- CTA button text
-- Form placement
-- Pricing display
-- Social proof
-
----
-
-## 11. Production Checklist
-
-### Pre-Launch
-- [x] Site deployed to dealershipai.com
-- [ ] Google Analytics configured
-- [ ] Social images created
-- [ ] Sitemap submitted
-- [ ] CRM integration tested
-- [ ] Email notifications working
-- [ ] Lead capture tested
-- [ ] Analytics events firing
-
-### Post-Launch
-- [ ] Monitor error logs
-- [ ] Check analytics data
-- [ ] Test lead flow end-to-end
-- [ ] Verify email delivery
-- [ ] Monitor conversion rate
-- [ ] Review user feedback
-- [ ] Optimize based on data
-
----
-
-## 12. Quick Start Commands
-
-```bash
-# Test lead capture locally
-curl -X POST http://localhost:3000/api/leads/capture \
-  -H "Content-Type: application/json" \
-  -d '{"dealerUrl":"test-dealer.com","source":"test"}'
-
-# Check sitemap
-curl https://www.dealershipai.com/sitemap.xml
-
-# Check robots.txt
-curl https://www.dealershipai.com/robots.txt
-
-# Deploy with new env vars
-vercel env pull
-vercel --prod
+# Deploy to production
+npx vercel --prod
 
 # View logs
-vercel logs www.dealershipai.com
+npx vercel logs
+
+# Open dashboard
+npx vercel --open
+
+# Pull environment variables
+npx vercel env pull .env.production
+
+# Database management
+npx prisma studio  # Browse database
+npx prisma db push  # Push schema changes
+npx prisma generate  # Generate client
+
+# Test Redis
+node -e "const r=require('@upstash/redis');new r.Redis({url:process.env.UPSTASH_REDIS_REST_URL,token:process.env.UPSTASH_REDIS_REST_TOKEN}).ping().then(console.log);"
 ```
 
 ---
 
-## Support
-
-### Documentation
-- **API Integration**: `DASH_API_CONNECTION_COMPLETE.md`
-- **Live Data**: `LIVE_DATA_INTEGRATION_COMPLETE.md`
-- **Deployment**: `DEALERSHIPAI_COM_ACTIVATION.md`
-
-### Vercel Dashboard
-https://vercel.com/brian-kramers-projects/dealershipai-dashboard
-
-### Analytics Dashboard
-- Google Analytics: https://analytics.google.com/
-- Vercel Analytics: https://vercel.com/[project]/analytics
-
----
-
-**Status: Ready for Production Traffic**
-
-Last Updated: October 16, 2025
+**Status**: 🎯 Ready for Production Setup  
+**Next**: Follow steps 1-10 above  
+**Time**: 30-45 minutes total
