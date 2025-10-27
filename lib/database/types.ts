@@ -3,9 +3,9 @@
  * Generated from schema.sql
  */
 export interface Database {
-  public: {;
-    Tables: {;
-      dealerships: {;
+  public: {
+    Tables: {
+      dealerships: {
         Row: {;
           id: string;
           name: string;

@@ -1,0 +1,336 @@
+// DealershipAI v2.0 - Complete Production Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER & AUTH ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  role          UserRole  @default(VIEWER)
+  tier          Tier      @default(FREE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  
+  // Relations
+  dealers       Dealer[]
+  sessions      Session[]
+  mysteryShops  MysteryShop[]
+  credentials   Credential[]
+  
+  @@index([email])
+  @@index([tier])
+  @@map("users")
+}
+
+enum UserRole {
+  VIEWER
+  EDITOR
+  ADMIN
+  OWNER
+}
+
+enum Tier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+// ==================== DEALERSHIP ====================
+
+model Dealer {
+  id                String    @id @default(cuid())
+  domain            String    @unique
+  name              String
+  city              String
+  state             String
+  zip               String?
+  phone             String?
+  brands            String[]  // ["Hyundai", "Genesis"]
+  type              DealerType @default(FRANCHISE)
+  
+  // Geographic pooling
+  poolKey           String    // "Naples-FL" for city-level pooling
+  
+  // Ownership
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastAnalyzedAt    DateTime?
+  
+  // Relations
+  scores            Score[]
+  sessions          Session[]
+  competitors       Competitor[]
+  mysteryShops      MysteryShop[]
+  eatScores         EATScore[]
+  
+  @@index([userId])
+  @@index([poolKey])
+  @@index([domain])
+  @@map("dealers")
+}
+
+enum DealerType {
+  FRANCHISE
+  INDEPENDENT
+  LUXURY
+  VOLUME
+}
+
+// ==================== SCORING ====================
+
+model Score {
+  id                String    @id @default(cuid())
+  dealerId          String
+  dealer            Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  
+  // Overall QAI Score
+  qaiScore          Float     // 0-100
+  
+  // Five Pillars
+  aiVisibility      Float     // 0-100
+  zeroClickShield   Float     // 0-100
+  ugcHealth         Float     // 0-100
+  geoTrust          Float     // 0-100
+  sgpIntegrity      Float     // 0-100
+  
+  // Platform-specific scores
+  platforms         Json      // {"chatgpt": 85, "claude": 78, ...}
+  
+  // Metadata
+  isRealQuery       Boolean   @default(false)  // True = real AI query, False = synthetic
+  confidence        Float     @default(0.85)   // 0.0-1.0
+  pooledFrom        String?   // City if using geographic pooling
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  analyzedAt        DateTime  @default(now())
+  
+  @@index([dealerId])
+  @@index([analyzedAt])
+  @@index([pooledFrom])
+  @@map("scores")
+}
+
+// ==================== E-E-A-T SCORING (PRO+) ====================
+
+model EATScore {
+  id                String    @id @default(cuid())
+  dealerId          String
+  dealer            Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  
+  // E-E-A-T Components
+  experience        Float     // 0-100
+  expertise         Float     // 0-100
+  authoritativeness Float     // 0-100
+  trustworthiness   Float     // 0-100
+  
+  // Overall E-E-A-T
+  overallEAT        Float     // 0-100
+  
+  // Supporting data
+  signals           Json      // {"years_in_business": 15, "certifications": [...]}
+  recommendations   Json      // [{"action": "Add staff bios", "impact": "high"}]
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  analyzedAt        DateTime  @default(now())
+  
+  @@index([dealerId])
+  @@index([analyzedAt])
+  @@map("eat_scores")
+}
+
+// ==================== SESSIONS (USAGE TRACKING) ====================
+
+model Session {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealerId          String?
+  dealer            Dealer?   @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+  
+  // Session details
+  action            SessionAction
+  tier              Tier      // Tier at time of session
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@map("sessions")
+}
+
+enum SessionAction {
+  ANALYZE
+  VIEW_DASHBOARD
+  GENERATE_SCHEMA
+  MYSTERY_SHOP
+  EXPORT_REPORT
+}
+
+// ==================== COMPETITIVE INTELLIGENCE ====================
+
+model Competitor {
+  id                String    @id @default(cuid())
+  dealerId          String    // Who is tracking this competitor
+  dealer            Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  
+  // Competitor info
+  competitorDomain  String
+  competitorName    String
+  
+  // Latest comparison
+  myScore           Float?
+  theirScore        Float?
+  delta             Float?    // Positive = I'm winning
+  
+  // Tracking
+  isActive          Boolean   @default(true)
+  alertsEnabled     Boolean   @default(true)
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastComparedAt    DateTime?
+  
+  @@unique([dealerId, competitorDomain])
+  @@index([dealerId])
+  @@map("competitors")
+}
+
+// ==================== MYSTERY SHOP (ENTERPRISE) ====================
+
+model MysteryShop {
+  id                String    @id @default(cuid())
+  dealerId          String
+  dealer            Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  
+  // Shop details
+  platform          String    // "ChatGPT", "Claude", etc.
+  query             String    // "Best Honda dealer near me"
+  persona           String    // "first-time-buyer", "trade-in", "service"
+  
+  // Results
+  mentioned         Boolean   @default(false)
+  position          Int?      // 1-10, null if not mentioned
+  citationQuality    String?   // "strong", "weak", "none"
+  competitorsMentioned String[] // ["Honda of Naples", "Rick Hendrick Honda"]
+  
+  // AI Response
+  fullResponse      String    @db.Text
+  responseTime      Int?      // milliseconds
+  
+  // Scoring
+  responseScore     Float?    // 0-100 based on response_time, personalization, transparency
+  followUpScore     Float?    // 0-100 if follow-up occurred
+  overallScore      Float?    // Weighted average
+  
+  // Metadata
+  status            ShopStatus @default(COMPLETED)
+  cost              Float     @default(0.02)  // AI API cost in USD
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  executedAt        DateTime  @default(now())
+  
+  @@index([dealerId])
+  @@index([executedAt])
+  @@index([platform])
+  @@map("mystery_shops")
+}
+
+enum ShopStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+// ==================== CREDENTIAL VAULT (ENTERPRISE) ====================
+
+model Credential {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Platform
+  platform          String    // "google", "facebook", "yelp", "dealerrater"
+  platformType      CredentialType
+  
+  // Encrypted credentials
+  encryptedData     String    @db.Text  // AES-256-GCM encrypted JSON
+  iv                String    // Initialization vector
+  authTag           String    // Authentication tag
+  
+  // Status
+  isActive          Boolean   @default(true)
+  lastVerifiedAt    DateTime?
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@unique([userId, platform])
+  @@index([userId])
+  @@map("credentials")
+}
+
+enum CredentialType {
+  OAUTH
+  API_KEY
+  USERNAME_PASSWORD
+}
+
+// ==================== CACHE TRACKING ====================
+
+model CacheEntry {
+  id                String    @id @default(cuid())
+  key               String    @unique
+  
+  // Cache metadata
+  poolKey           String?   // For geographic pooling
+  hitCount          Int       @default(0)
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime
+  lastAccessedAt    DateTime  @default(now())
+  
+  @@index([poolKey])
+  @@index([expiresAt])
+  @@map("cache_entries")
+}
+
+// ==================== WEBHOOK LOGS ====================
+
+model WebhookLog {
+  id                String    @id @default(cuid())
+  endpoint          String
+  method            String
+  payload           Json
+  response          Json?
+  statusCode        Int?
+  error             String?
+  createdAt         DateTime  @default(now())
+  
+  @@index([createdAt])
+  @@map("webhook_logs")
+}
+

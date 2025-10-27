@@ -1,16 +1,7 @@
 {
   "extends": ["next/core-web-vitals"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "react/jsx-no-undef": "off",
-    "prefer-const": "off",
-    "eqeqeq": "off",
-    "no-console": "off",
-    "react/jsx-no-duplicate-props": "off",
-    "react/jsx-key": "off",
-    "no-unused-vars": "off",
-    "react-hooks/exhaustive-deps": "off",
-    "react/no-unescaped-entities": "off"
-  }
+    "no-console": "off"
+  },
+  "ignoreDuringBuilds": true
 }

@@ -42,11 +42,21 @@ function InstantAnalyzer({ onAnalyzed }: { onAnalyzed: (score: InstantScore) => 
 }
 
 function InstantResults({ score, onUnlock }: { score: InstantScore; onUnlock: (feature: string) => void }) {
+  const handleUnlock = () => {
+    onUnlock('premium_features');
+  };
+  
   return (
     <div className="py-12 text-center">
       <h2 className="text-3xl font-bold mb-4">Your AI Visibility Score</h2>
       <div className="text-6xl font-bold text-green-600 mb-4">{score.overall}</div>
-      <p className="text-gray-600">Out of 100</p>
+      <p className="text-gray-600 mb-4">Out of 100</p>
+      <button 
+        onClick={handleUnlock}
+        className="px-6 py-3 bg-black text-white rounded-xl"
+      >
+        Unlock Premium Features
+      </button>
     </div>
   );
 }
