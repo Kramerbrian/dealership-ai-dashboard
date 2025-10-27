@@ -1,20 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Optional Supabase - only if configured
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? require('@supabase/supabase-js').createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
-  : null;
+// Lazy-loaded clients to avoid build-time errors
+function getSupabase() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return null;
+  }
+  return require('@supabase/supabase-js').createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
-// Optional Redis - only if configured
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new (require('@upstash/redis').Redis)({
+function getRedis() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return null;
+  }
+  try {
+    return new (require('@upstash/redis').Redis)({
       url: process.env.UPSTASH_REDIS_REST_URL,
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-  : null;
+    });
+  } catch (e) {
+    console.warn('Failed to initialize Redis:', e);
+    return null;
+  }
+}
 
 interface PolicyVersion {
   version: string;
@@ -30,6 +40,7 @@ interface PolicyDriftEvent {
 }
 
 async function detectPolicyDrift(): Promise<PolicyDriftEvent | null> {
+  const supabase = getSupabase();
   if (!supabase) {
     console.log('Supabase not configured, skipping policy drift detection');
     return null;
@@ -114,6 +125,7 @@ async function checkGooglePolicyAPI(): Promise<PolicyVersion | null> {
 }
 
 async function savePolicyVersion(version: PolicyVersion): Promise<void> {
+  const supabase = getSupabase();
   if (!supabase) return;
   
   const { error } = await supabase
@@ -132,6 +144,7 @@ async function savePolicyVersion(version: PolicyVersion): Promise<void> {
 }
 
 async function saveDriftEvent(event: PolicyDriftEvent): Promise<void> {
+  const supabase = getSupabase();
   if (!supabase) return;
   
   const { error } = await supabase
@@ -265,6 +278,7 @@ export async function GET(request: NextRequest) {
     await notifyPolicyDrift(driftEvent);
     
     // Update Redis cache
+    const redis = getRedis();
     if (redis) {
       try {
         await redis.del('compliance_summary:*'); // Clear compliance cache
