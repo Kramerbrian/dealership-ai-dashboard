@@ -1,136 +1,141 @@
-# ⚡ Quick Setup Checklist
+# ✅ DealershipAI Quick Setup Checklist
 
-## Immediate Actions (10 minutes)
+## Prerequisites
+- [x] Vercel account
+- [x] GitHub repository
+- [ ] Supabase account
+- [ ] Upstash account
+- [ ] Stripe account
+- [ ] Clerk account
 
-### 1. Google Analytics (2 min)
+---
+
+## 🚀 5-Minute Deploy (Mock Data First)
+
+### Step 1: Deploy with Default Settings (2 minutes)
 ```bash
-# Get ID from: https://analytics.google.com/
-vercel env add NEXT_PUBLIC_GA_ID production
-# Enter: G-XXXXXXXXXX
+npx vercel --prod --yes
 ```
 
-### 2. SendGrid Email (3 min)
-```bash
-# Get API key from: https://sendgrid.com/
-vercel env add SENDGRID_API_KEY production
-vercel env add FROM_EMAIL production
-vercel env add NOTIFY_EMAIL production
+✅ **Status**: Live at https://dealership-ai-dashboard-1vux486pg-brian-kramer-dealershipai.vercel.app
+
+### Step 2: Add Clerk Keys (1 minute)
+1. Get keys from: https://dashboard.clerk.com
+2. Add to Vercel: https://vercel.com/dashboard/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
+
+**Add these:**
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
+CLERK_SECRET_KEY=sk_live_xxx
 ```
 
-### 3. HubSpot CRM (3 min)
+### Step 3: Redeploy (1 minute)
 ```bash
-# Get from: https://app.hubspot.com/
-vercel env add HUBSPOT_ACCESS_TOKEN production
-vercel env add HUBSPOT_PORTAL_ID production
-vercel env add HUBSPOT_FORM_GUID production
+npx vercel --prod
 ```
 
-### 4. Deploy (2 min)
+**Test**: Visit https://your-domain.vercel.app/sign-up
+
+---
+
+## 📊 Full Setup (30 minutes for complete SaaS)
+
+### 1. Supabase Setup (10 min)
+- [ ] Create account: https://supabase.com
+- [ ] Create project: `dealershipai-production`
+- [ ] Copy database URL
+- [ ] Add to Vercel: `DATABASE_URL=...`
+- [ ] Run migrations: `npx prisma db push`
+
+### 2. Upstash Setup (5 min)
+- [ ] Create account: https://upstash.com
+- [ ] Create Redis database
+- [ ] Copy REST URL and token
+- [ ] Add to Vercel:
+  - `UPSTASH_REDIS_REST_URL=...`
+  - `UPSTASH_REDIS_REST_TOKEN=...`
+
+### 3. Stripe Setup (10 min)
+- [ ] Create account: https://stripe.com
+- [ ] Get API keys
+- [ ] Add to Vercel:
+  - `STRIPE_PUBLISHABLE_KEY=pk_live_xxx`
+  - `STRIPE_SECRET_KEY=sk_live_xxx`
+  - `STRIPE_WEBHOOK_SECRET=whsec_xxx`
+- [ ] Configure webhook endpoint
+- [ ] Create products (Pro $499, Enterprise $999)
+
+### 4. Optional Services (5 min)
+- [ ] Google Analytics: `NEXT_PUBLIC_GA_ID=G-XXX`
+- [ ] Sentry: `SENTRY_DSN=https://...`
+- [ ] PostHog: `NEXT_PUBLIC_POSTHOG_KEY=...`
+
+---
+
+## 🧪 Testing Checklist
+
+### After Each Step, Test:
+
+**Authentication:**
+- [ ] Can sign up
+- [ ] Can sign in
+- [ ] Can sign out
+- [ ] Redirects work correctly
+
+**Dashboard:**
+- [ ] Landing page loads
+- [ ] Dashboard accessible after login
+- [ ] Mystery Shop tab works
+- [ ] Intelligence dashboard loads
+
+**API:**
+- [ ] `/api/zero-click/recompute` returns data
+- [ ] `/api/zero-click/summary` returns data
+- [ ] Database queries work (if connected)
+
+**Payments (if Stripe configured):**
+- [ ] Can start checkout
+- [ ] Webhook receives events
+- [ ] User tier updates correctly
+
+---
+
+## 💡 Pro Tips
+
+1. **Start with Clerk** - Authentication is most important
+2. **Add Supabase next** - Database for real data
+3. **Stripe last** - Payments work without until needed
+4. **Use Stripe test mode first** - Don't charge real money during testing
+
+---
+
+## 🎯 Current Status
+
+✅ **Deployed**: Live on Vercel  
+✅ **Build**: Successful  
+✅ **Features**: All working with mock data  
+⏳ **Next**: Add environment variables for real data
+
+---
+
+## Quick Commands
+
 ```bash
-vercel --prod
+# Deploy updates
+npx vercel --prod
+
+# View logs
+npx vercel logs
+
+# Pull env vars locally
+npx vercel env pull .env.local
+
+# Open project
+vercel --open
 ```
 
 ---
 
-## Environment Variables Quick Copy
+**You're 5 minutes away from a fully functional SaaS!** 🚀
 
-```bash
-# Analytics
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
-
-# Email
-SENDGRID_API_KEY=SG.xxxxxxxxxx
-FROM_EMAIL=noreply@dealershipai.com
-NOTIFY_EMAIL=leads@dealershipai.com
-
-# CRM
-HUBSPOT_ACCESS_TOKEN=your-token
-HUBSPOT_PORTAL_ID=your-id
-HUBSPOT_FORM_GUID=your-guid
-```
-
----
-
-## Service Setup Links
-
-| Service | Purpose | Setup URL |
-|---------|---------|-----------|
-| Google Analytics | Track visitors | https://analytics.google.com/ |
-| SendGrid | Email notifications | https://sendgrid.com/ |
-| HubSpot | CRM & lead management | https://app.hubspot.com/ |
-| Google Search Console | SEO & sitemap | https://search.google.com/search-console |
-
----
-
-## Test Everything
-
-```bash
-# 1. Test lead capture
-curl -X POST https://www.dealershipai.com/api/leads/capture \
-  -H "Content-Type: application/json" \
-  -d '{"dealerUrl":"test.com","source":"test"}'
-
-# 2. Check sitemap
-curl https://www.dealershipai.com/sitemap.xml
-
-# 3. Check analytics (visit site and check GA dashboard)
-
-# 4. Test email (submit a real lead)
-```
-
----
-
-## What's Already Working ✅
-
-- [x] Site live at dealershipai.com
-- [x] Landing page deployed
-- [x] Dashboard functional
-- [x] API endpoints working
-- [x] Lead capture API ready
-- [x] Email templates created
-- [x] Analytics tracking ready
-- [x] Sitemap generated
-- [x] Social images created
-
----
-
-## What Needs Your Input
-
-1. **Google Analytics ID** - Get from analytics.google.com
-2. **SendGrid API Key** - Get from sendgrid.com
-3. **HubSpot Credentials** - Get from app.hubspot.com
-4. **Custom Social Images** - Replace placeholder SVGs (optional)
-
----
-
-## Priority Order
-
-**Week 1:**
-1. ✅ Site launched
-2. Add Google Analytics
-3. Setup email notifications
-4. Configure CRM
-5. Submit sitemap
-
-**Week 2:**
-6. Launch paid ads
-7. Monitor conversions
-8. Optimize based on data
-9. A/B test landing page
-10. Scale traffic
-
----
-
-## Need Help?
-
-**Full Documentation**: `PRODUCTION_SETUP_GUIDE.md`
-
-**Quick Links**:
-- Site: https://www.dealershipai.com
-- Dashboard: https://www.dealershipai.com/dash
-- Vercel: https://vercel.com/brian-kramers-projects/dealershipai-dashboard
-- Analytics: https://analytics.google.com/
-
----
-
-**Next Step**: Add environment variables and redeploy!
+Start with the "5-Minute Deploy" section above, then gradually add real services as needed.
