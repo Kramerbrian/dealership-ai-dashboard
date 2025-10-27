@@ -1,0 +1,10 @@
+# DealershipAI Chrome Extension Environment Variables
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_your-clerk-key-here"
+
+# DealershipAI API
+NEXT_PUBLIC_API_URL="https://api.dealershipai.com"
+
+# Development
+NODE_ENV="development"

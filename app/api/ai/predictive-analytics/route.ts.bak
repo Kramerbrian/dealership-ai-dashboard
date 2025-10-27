@@ -1,0 +1,61 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PredictiveAnalyticsService } from '@/lib/ai/predictive-analytics';
+
+export async function POST(req: NextRequest) {
+  try {
+    const { dealership } = await req.json();
+
+    if (!dealership) {
+      return NextResponse.json({ error: 'Dealership is required' }, { status: 400 });
+    }
+
+    // Initialize the predictive analytics service
+    const analyticsService = new PredictiveAnalyticsService();
+
+    // Generate predictive analytics
+    const analytics = await analyticsService.generatePredictiveAnalytics(dealership);
+
+    return NextResponse.json({
+      success: true,
+      analytics,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error: any) {
+    console.error('Predictive analytics error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to generate predictive analytics' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const dealership = searchParams.get('dealership');
+
+    if (!dealership) {
+      return NextResponse.json({ error: 'Dealership parameter is required' }, { status: 400 });
+    }
+
+    // Initialize the predictive analytics service
+    const analyticsService = new PredictiveAnalyticsService();
+
+    // Generate predictive analytics
+    const analytics = await analyticsService.generatePredictiveAnalytics(dealership);
+
+    return NextResponse.json({
+      success: true,
+      analytics,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error: any) {
+    console.error('Predictive analytics error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to generate predictive analytics' },
+      { status: 500 }
+    );
+  }
+}

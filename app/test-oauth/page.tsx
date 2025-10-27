@@ -1,60 +1,29 @@
 'use client';
 
-import { signIn, getSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
-export default function TestOAuthPage() {
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+export default function TestAuthPage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      const result = await signIn('google', { 
-        callbackUrl: '/test-oauth',
-        redirect: false 
-      });
-      console.log('Sign in result:', result);
-    } catch (error) {
-      console.error('Sign in error:', error);
-    }
-    setLoading(false);
-  };
-
-  const checkSession = async () => {
-    const sessionData = await getSession();
-    setSession(sessionData);
-    console.log('Current session:', sessionData);
-  };
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold mb-6">OAuth Test Page</h1>
-        
-        <div className="space-y-4">
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            {loading ? 'Signing in...' : 'Sign in with Google'}
-          </button>
-          
-          <button
-            onClick={checkSession}
-            className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-          >
-            Check Session
-          </button>
-        </div>
-
-        {session && (
-          <div className="mt-6 p-4 bg-gray-50 rounded">
-            <h3 className="font-semibold mb-2">Current Session:</h3>
-            <pre className="text-xs overflow-auto">
-              {JSON.stringify(session, null, 2)}
-            </pre>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md w-full bg-white rounded-lg shadow p-6">
+        <h1 className="text-2xl font-bold mb-4">Authentication Test</h1>
+        {user ? (
+          <div>
+            <p className="text-green-600">✅ Authenticated</p>
+            <p>User: {user.primaryEmailAddress?.emailAddress}</p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-yellow-600">⚠️ Not authenticated</p>
+            <a href="/dashboard" className="text-blue-600 underline">Go to Dashboard</a>
           </div>
         )}
       </div>

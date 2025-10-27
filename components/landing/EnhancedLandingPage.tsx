@@ -7,8 +7,15 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRightIcon, CheckCircleIcon, SparklesIcon, TrophyIcon } from '@heroicons/react/24/outline'
+import { ArrowRightIcon, CheckCircleIcon, SparklesIcon, TrophyIcon, CheckIcon, SearchIcon, GlobeAltIcon, StarIcon, ArrowRightIcon as ArrowRight } from '@heroicons/react/24/outline'
 import { personalizationEngine, DealershipProfile } from '@/lib/onboarding/personalization-engine'
+
+// Additional components for Apple-style landing page
+const Search = SearchIcon
+const Globe = GlobeAltIcon
+const Stars = StarIcon
+const Check = CheckIcon
+const ArrowRightComp = ArrowRight
 
 interface EnhancedLandingPageProps {
   onAnalyze?: (domain: string) => void
@@ -626,6 +633,145 @@ export default function EnhancedLandingPage({ onAnalyze, onSignIn }: EnhancedLan
           </div>
         </div>
       </footer>
+
+      {/* Add missing components after footer */}
+      <Logos />
+      <Explainers />
+      <QuickAudit />
+      <Pricing />
+      <CTA />
+      <Footer />
     </div>
   )
+}
+
+/* ---------- Missing sections (compact) ---------- */
+function Logos(){
+  return (
+    <section>
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <div className="text-xs uppercase tracking-wide text-gray-500 text-center">Trusted by data-driven operators</div>
+        <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-6 opacity-70">
+          {Array.from({length:6}).map((_,i)=>(<div key={i} className="h-8 rounded bg-gray-100"/>))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Explainers(){
+  const blocks=[
+    {t:'AEO (Answer Engine Optimization)',b:'Structure answers AI can cite. Validate FAQ/Entity schema, citations, and review signals used by AI Overviews & assistants.',list:['FAQPage & AutoDealer JSON-LD','Citations & sources','Review response velocity'],icon:<Search className="w-4 h-4"/>},
+    {t:'SEO (Search Foundations)',b:'Fix vitals, sitemaps, robots, and semantics so crawlers and AIs trust your site.',list:['LCP/INP/CLS','Sitemap + robots.txt','Title/Meta/OG hygiene'],icon:<Globe className="w-4 h-4"/>},
+    {t:'GEO (Local & Maps)',b:'Complete GBP, NAP consistency, and service-area entities to win local AI answers.',list:['GBP completeness','Local citations','Service entity markup'],icon:<Stars className="w-4 h-4"/>},
+  ];
+  return (
+    <section id="explainers">
+      <div className="mx-auto max-w-7xl px-4 py-12 grid lg:grid-cols-3 gap-6">
+        {blocks.map(x=>(
+          <div key={x.t} className="rounded-2xl border bg-white p-6 shadow-sm ring-1 ring-gray-900/5 transition-shadow hover:shadow-md relative overflow-hidden group">
+            <div className="flex items-center gap-2 text-sm font-medium">{x.icon}{x.t}</div>
+            <p className="mt-3 text-sm text-gray-600">{x.b}</p>
+            <ul className="mt-4 space-y-2 text-sm text-gray-700">
+              {x.list.map(i=> (<li key={i} className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600"/>{i}</li>))}
+            </ul>
+            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-gray-50/0 via-gray-50/60 to-gray-50/0"/>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function QuickAudit(){
+  const [site,setSite]=useState(''); const [email,setEmail]=useState('');
+  const valid=/^(https?:\/\/)?[\w-]+\.[\w.-]+$/.test(site)&&/@/.test(email);
+  return (
+    <section id="audit" className="border-t bg-gradient-to-b from-gray-50 to-white">
+      <div className="mx-auto max-w-7xl px-4 py-16 grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <h2 className="text-2xl font-semibold">Run a free AI Visibility audit</h2>
+          <p className="mt-2 text-gray-600">We check AI mentions, zero-click coverage, schema health, and review responsiveness.</p>
+          <ul className="mt-4 space-y-2 text-sm text-gray-700">
+            {['60-second scan','Email report with fixes'].map(t=> (<li key={t} className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600"/>{t}</li>))}
+          </ul>
+        </div>
+        <form onSubmit={(e)=>{e.preventDefault(); if(valid) window.location.href='/dashboard?domain='+encodeURIComponent(site)}} className="rounded-2xl border bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
+          <label className="text-sm font-medium">Dealership website</label>
+          <input value={site} onChange={e=>setSite(e.target.value)} placeholder="www.exampledealer.com" className="mt-2 w-full rounded-lg border px-3 py-3"/>
+          <label className="mt-4 block text-sm font-medium">Work email</label>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@dealer.com" className="mt-2 w-full rounded-lg border px-3 py-3"/>
+          <button disabled={!valid} className="mt-4 w-full h-11 px-4 rounded-xl bg-black text-white disabled:opacity-50">Run audit</button>
+          <p className="mt-3 text-xs text-gray-500">No card. Cached public signals with periodic calibration.</p>
+        </form>
+      </div>
+    </section>
+  );
+}
+
+function Pricing(){
+  const tiers=[
+    {name:'Level 1',price:'$0/mo',badge:'Free',highlight:false,features:['AI Visibility score + 3 competitors','Zero-click snapshot','Email report']},
+    {name:'Level 2',price:'$499/mo',badge:'Pro',highlight:true,features:['AEO/SEO/GEO dashboards','E-E-A-T analysis & playbooks','Unlimited competitors, API access']},
+    {name:'Level 3',price:'$999/mo',badge:'Enterprise',highlight:false,features:['Mystery Shop engine','Multi-rooftop intelligence','Auto-fix workflows']},
+  ];
+  return (
+    <section id="pricing" className="border-t">
+      <div className="mx-auto max-w-7xl px-4 py-16">
+        <h2 className="text-2xl font-semibold text-center">Pricing that matches your ambition</h2>
+        <div className="mt-8 grid md:grid-cols-3 gap-6">
+          {tiers.map(t=>(
+            <div key={t.name} className={`rounded-2xl border bg-white p-6 shadow-sm ring-1 ring-gray-900/5 transition-shadow hover:shadow-md ${t.highlight?'border-black shadow-sm':''}`}>
+              <span className="text-xs inline-flex items-center gap-2 px-2 py-1 rounded-full border">{t.badge}</span>
+              <div className="mt-3 text-lg font-medium">{t.name}</div>
+              <div className="mt-1 text-3xl font-semibold">{t.price}</div>
+              <ul className="mt-4 space-y-2 text-sm text-gray-700">
+                {t.features.map(f=>(<li key={f} className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600"/>{f}</li>))}
+              </ul>
+              <a href="/signup" className={`mt-6 inline-flex w-full items-center justify-center gap-2 h-11 px-4 rounded-xl ${t.highlight?'bg-black text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-black/30':'border hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-black/10'} transition`}>Get started <ArrowRightComp className="w-4 h-4"/></a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CTA(){
+  return (
+    <section className="border-y bg-gray-50">
+      <div className="mx-auto max-w-7xl px-4 py-12 grid md:grid-cols-2 gap-6 items-center">
+        <div>
+          <div className="text-sm font-medium">Algorithmic Trust Index (ATI)</div>
+          <p className="mt-1 text-gray-600">Clarity = how well you're seen. Trust = how much the system believes you.</p>
+        </div>
+        <div className="md:text-right">
+          <a href="#audit" className="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-black text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-black/30 transition">
+            Run free audit <ArrowRightComp className="w-4 h-4"/>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer(){
+  const cols=[{title:'Product',links:[['#explainers','AEO · SEO · GEO'],['#pricing','Pricing']]},{title:'Company',links:[['/privacy','Privacy'],['/terms','Terms']]}];
+  return (
+    <footer>
+      <div className="mx-auto max-w-7xl px-4 py-10 grid md:grid-cols-3 gap-6 text-sm">
+        <div>
+          <div className="text-lg font-semibold">dealership<span className="font-normal">AI</span></div>
+          <p className="mt-2 text-gray-600">The Bloomberg-grade control panel for AI-search visibility.</p>
+        </div>
+        {cols.map(c=>(
+          <div key={c.title}>
+            <div className="font-medium">{c.title}</div>
+            <ul className="mt-2 space-y-1 text-gray-600">{c.links.map(([h,l]:any)=>(<li key={h}><a href={h}>{l}</a></li>))}</ul>
+          </div>
+        ))}
+      </div>
+      <div className="border-t py-6 text-center text-xs text-gray-500">© {new Date().getFullYear()} DealershipAI</div>
+    </footer>
+  );
 }

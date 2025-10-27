@@ -54,7 +54,7 @@ export default function EnhancedDealershipAILanding() {
     
     setUserDomain(domain);
     setIsAnalyzing(true);
- const response = await fetch('/api/analyze', {
+    const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,19 +64,18 @@ export default function EnhancedDealershipAILanding() {
         revenue: 100000,
         marketSize: 'medium',
         competition: 'moderate',
-         }),
-      });
+      }),
+    });
       
-      if (!response.ok) {
-        throw new Error('Scan failed');
-      }
-      
-      const scanResult = await response.json();
-      
-   // Store the analysis result for the calculator
- 
- setIsAnalyzing(false);
+    if (!response.ok) {
+      throw new Error('Scan failed');
     }
+      
+    const scanResult = await response.json();
+      
+    // Store the analysis result for the calculator
+ 
+    setIsAnalyzing(false);
   };
 
   const handleCalculateOpportunity = async () => {
