@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { Redis } from '@upstash/redis';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Optional Supabase - only if configured
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? require('@supabase/supabase-js').createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
-const redis = new Redis({
-  url: process.env.REDIS_URL!,
-  token: process.env.REDIS_TOKEN!,
-});
+// Optional Redis - only if configured
+const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  ? new (require('@upstash/redis').Redis)({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+  : null;
 
 interface PolicyVersion {
   version: string;
@@ -26,6 +30,11 @@ interface PolicyDriftEvent {
 }
 
 async function detectPolicyDrift(): Promise<PolicyDriftEvent | null> {
+  if (!supabase) {
+    console.log('Supabase not configured, skipping policy drift detection');
+    return null;
+  }
+  
   try {
     // Get current policy version from database
     const { data: currentVersion, error: versionError } = await supabase
@@ -105,6 +114,8 @@ async function checkGooglePolicyAPI(): Promise<PolicyVersion | null> {
 }
 
 async function savePolicyVersion(version: PolicyVersion): Promise<void> {
+  if (!supabase) return;
+  
   const { error } = await supabase
     .from('google_policy_versions')
     .insert({
@@ -121,6 +132,8 @@ async function savePolicyVersion(version: PolicyVersion): Promise<void> {
 }
 
 async function saveDriftEvent(event: PolicyDriftEvent): Promise<void> {
+  if (!supabase) return;
+  
   const { error } = await supabase
     .from('google_policy_drift_events')
     .insert({
@@ -252,10 +265,12 @@ export async function GET(request: NextRequest) {
     await notifyPolicyDrift(driftEvent);
     
     // Update Redis cache
-    try {
-      await redis.del('compliance_summary:*'); // Clear compliance cache
-    } catch (error) {
-      console.warn('Failed to clear compliance cache:', error);
+    if (redis) {
+      try {
+        await redis.del('compliance_summary:*'); // Clear compliance cache
+      } catch (error) {
+        console.warn('Failed to clear compliance cache:', error);
+      }
     }
 
     return NextResponse.json({
