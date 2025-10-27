@@ -1,47 +1,62 @@
 #!/bin/bash
 
-# DealershipAI Deployment Script
-echo "🚀 Deploying DealershipAI Landing Page..."
+echo "🚀 DealershipAI - Production Deployment"
+echo "========================================"
+echo ""
 
-# Build the project
-echo "📦 Building project..."
-npm run build
-
-if [ $? -eq 0 ]; then
-    echo "✅ Build successful!"
-    
-    # Create a temporary directory structure that matches Vercel's expected path
-    echo "📁 Creating deployment structure..."
-    mkdir -p temp-deploy/apps/web
-    
-    # Copy all necessary files to the expected location
-    cp -r .next temp-deploy/apps/web/
-    cp -r app temp-deploy/apps/web/
-    cp -r components temp-deploy/apps/web/
-    cp -r lib temp-deploy/apps/web/
-    cp -r types temp-deploy/apps/web/
-    cp -r public temp-deploy/apps/web/
-    cp -r prisma temp-deploy/apps/web/
-    cp package.json temp-deploy/apps/web/
-    cp next.config.js temp-deploy/apps/web/
-    cp tailwind.config.js temp-deploy/apps/web/
-    cp tsconfig.json temp-deploy/apps/web/
-    cp postcss.config.js temp-deploy/apps/web/
-    cp vercel.json temp-deploy/apps/web/
-    
-    # Change to the deployment directory
-    cd temp-deploy
-    
-    # Deploy from the correct directory
-    echo "🚀 Deploying to Vercel..."
-    vercel --prod --yes
-    
-    # Clean up
-    cd ..
-    rm -rf temp-deploy
-    
-    echo "✅ Deployment complete!"
-else
-    echo "❌ Build failed. Please fix errors and try again."
+# Check if already logged in
+if ! vercel whoami &>/dev/null; then
+    echo "⚠️  Not logged in to Vercel"
+    echo "Please run: vercel login"
     exit 1
 fi
+
+echo "✅ Logged in to Vercel"
+echo ""
+
+# Step 1: Install @swc/helpers
+echo "Step 1: Installing @swc/helpers..."
+npm install @swc/helpers --save-dev
+
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to install @swc/helpers"
+    exit 1
+fi
+echo "✅ @swc/helpers installed"
+echo ""
+
+# Step 2: Build for production
+echo "Step 2: Building for production..."
+npm run build
+
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed!"
+    echo "Please fix build errors and try again"
+    exit 1
+fi
+echo "✅ Build successful"
+echo ""
+
+# Step 3: Deploy to Vercel
+echo "Step 3: Deploying to Vercel production..."
+vercel --prod
+
+if [ $? -ne 0 ]; then
+    echo "❌ Deployment failed!"
+    exit 1
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ DEPLOYMENT SUCCESSFUL!"
+echo ""
+echo "📱 Your PLG landing page is now live:"
+echo "   https://dealershipai.com/landing/plg"
+echo ""
+echo "🎯 Next steps:"
+echo "   1. Test the landing page"
+echo "   2. Configure custom domain in Vercel"
+echo "   3. Set up monitoring"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
