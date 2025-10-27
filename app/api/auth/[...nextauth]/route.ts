@@ -1,6 +1,16 @@
-import NextAuth from 'next-auth';
-import { authOptions } from '@/lib/auth';
+// Disabled for Clerk integration
+export const dynamic = 'force-dynamic';
 
-const handler = NextAuth(authOptions);
+export async function GET() {
+  return new Response(JSON.stringify({ message: 'Disabled for Clerk integration' }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
 
-export { handler as GET, handler as POST };
+export async function POST() {
+  return new Response(JSON.stringify({ message: 'Disabled for Clerk integration' }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}

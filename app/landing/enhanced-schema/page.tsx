@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Brain, Search, Sparkles, Shield, Gauge, LineChart, CheckCircle2, MapPin, Target, TrendingUp, Zap, Clock, Users, Building2, Globe, BarChart3 } from 'lucide-react';
+import { ArrowRight, Brain, Search, Sparkles, Shield, Gauge, LineChart, CheckCircle2, MapPin, Target, TrendingUp, Zap, Clock, Users, Building2, Globe, BarChart3, Check, Stars } from 'lucide-react';
 import UrlEntryModal from '@/components/landing/UrlEntryModal';
 import ProfileSection from '@/components/landing/ProfileSection';
 import landingPageSchema from '@/lib/landing-page-schema.json';
@@ -218,6 +218,9 @@ export default function EnhancedSchemaLanding() {
           </div>
         </div>
       </section>
+
+      {/* Logos Section */}
+      <Logos />
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-white">

@@ -1,0 +1,12 @@
+{
+  "title": "DealershipAI Landing Page Schema",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "url",
+      "type": "url",
+      "label": "Website URL",
+      "required": true
+    }
+  ]
+}

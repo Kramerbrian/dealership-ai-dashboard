@@ -170,3 +170,41 @@ model AuditLog {
   
   @@map("audit_logs")
 }
+
+model ZeroClickDaily {
+  id               String   @id @default(cuid())
+  tenantId         String
+  date             DateTime @default(now())
+  // GSC
+  impressions      Int
+  clicks           Int
+  ctrActual        Float    // clicks/impressions
+  ctrBaseline      Float    // stored baseline for same cohort
+  zcr              Float    // 1 - ctrActual
+  // dAI probes
+  aiPresenceRate   Float    // share of queries with AI answer visible
+  airi             Float    // AI Replacement Index
+  // GBP
+  gbpImpressions   Int
+  gbpActions       Int      // calls+directions+messages+bookings
+  zcco             Float    // gbpActions/gbpImpressions
+  // Final
+  adjustedZeroClick Float   // clamp(zcr - zcco, 0..1)
+  createdAt        DateTime @default(now())
+
+  @@unique([tenantId, date])
+  @@map("zero_click_daily")
+}
+
+model CtrBaseline {
+  id        String   @id @default(cuid())
+  tenantId  String
+  // cohorting: device, brand/nonbrand, avg position bucket, etc.
+  device    String
+  cohort    String
+  ctr       Float
+  updatedAt DateTime @default(now())
+
+  @@unique([tenantId, device, cohort])
+  @@map("ctr_baseline")
+}

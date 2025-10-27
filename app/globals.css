@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Import Enhanced Design System */
-@import './styles/enhanced-design-system.css';
+
 @import './styles/design-tokens.css';
 
 /* Global Styles */

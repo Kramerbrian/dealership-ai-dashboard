@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DealershipAI</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <div class="logo">
+        <span class="logo-icon">🚗</span>
+        <span class="logo-text">DealershipAI</span>
+      </div>
+      <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Scanning...</span>
+      </div>
+    </header>
+
+    <main class="popup-content">
+      <div class="current-site" id="currentSite">
+        <div class="site-info">
+          <div class="site-url" id="siteUrl">Loading...</div>
+          <div class="site-type" id="siteType">Automotive Dealership</div>
+        </div>
+      </div>
+
+      <div class="ai-visibility-card">
+        <div class="card-header">
+          <h3>AI Visibility Score</h3>
+          <div class="score-badge" id="scoreBadge">
+            <span class="score-value" id="scoreValue">--</span>
+            <span class="score-unit">%</span>
+          </div>
+        </div>
+        <div class="score-bar">
+          <div class="score-fill" id="scoreFill"></div>
+        </div>
+        <div class="score-details">
+          <div class="detail-item">
+            <span class="detail-label">Rank:</span>
+            <span class="detail-value" id="rankValue">--</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Quick Wins:</span>
+            <span class="detail-value" id="quickWinsValue">--</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="competitors-section">
+        <h4>Top Competitors</h4>
+        <div class="competitors-list" id="competitorsList">
+          <div class="competitor-item">
+            <div class="competitor-name">Loading...</div>
+            <div class="competitor-score">--%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="action-btn primary" id="fullScanBtn">
+          <span class="btn-icon">🔍</span>
+          Full AI Scan
+        </button>
+        <button class="action-btn secondary" id="viewDashboardBtn">
+          <span class="btn-icon">📊</span>
+          View Dashboard
+        </button>
+      </div>
+
+      <div class="insights-section" id="insightsSection" style="display: none;">
+        <h4>AI Insights</h4>
+        <div class="insights-list" id="insightsList">
+          <!-- Insights will be populated here -->
+        </div>
+      </div>
+    </main>
+
+    <footer class="popup-footer">
+      <div class="footer-links">
+        <a href="#" id="settingsLink">Settings</a>
+        <a href="#" id="helpLink">Help</a>
+        <a href="#" id="upgradeLink">Upgrade</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
