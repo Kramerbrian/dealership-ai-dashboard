@@ -114,15 +114,7 @@
       "source": "/main",
       "destination": "/landing"
     },
-    {
-      "source": "/dashboard",
-      "destination": "/intelligence"
-    },
-    {
-      "source": "/app",
-      "destination": "/intelligence"
-    },
-    {
+        {
       "source": "/api/health",
       "destination": "/api/health"
     },
