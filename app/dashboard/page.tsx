@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation';
+'use client';
+import DealershipAIDashboardLA from '../../DealershipAIDashboardLA';
 
-export default function DashboardRedirect() {
-  redirect('/dash');
+export default function DashboardPage() {
+  return <DealershipAIDashboardLA />;
 }
