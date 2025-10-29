@@ -1,5 +1,6 @@
-import EnhancedLandingPage from '@/components/landing/EnhancedLandingPage';
+'use client';
+import DealershipAI17SectionPLG from '../dealershipai-17-section-plg';
 
-export default function HomePage() {
-  return <EnhancedLandingPage />;
+export default function Home() {
+  return <DealershipAI17SectionPLG />;
 }
