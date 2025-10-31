@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Simple SLO tracking function
+function trackSLO(endpoint: string, duration: number) {
+  console.log(`SLO: ${endpoint} took ${duration}ms`);
+}
+
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
   try {
     const { searchParams } = new URL(request.url);
     const domain = searchParams.get('domain');

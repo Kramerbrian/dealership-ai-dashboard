@@ -280,7 +280,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const analysisType = searchParams.get('type') || 'full';
-    const dealerId = searchParams.get('dealerId') || 'demo-dealer';
+    // const dealerId = searchParams.get('dealerId') || 'demo-dealer';
     
     // Demo metrics
     const currentMetrics = {
@@ -360,7 +360,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { currentMetrics, marketData, preferences } = await req.json();
+    const { currentMetrics, marketData } = await req.json();
     
     if (!currentMetrics) {
       return NextResponse.json({ error: "Current metrics are required" }, { status: 400 });

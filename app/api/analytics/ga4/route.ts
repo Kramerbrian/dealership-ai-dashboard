@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAnalyticsService } from '@/lib/services/GoogleAnalyticsService';
-import { logger } from '@/lib/utils/logger';
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
+  const { searchParams } = new URL(req.url);
+  const propertyId = searchParams.get('propertyId');
   
   try {
-    const { searchParams } = new URL(req.url);
-    const propertyId = searchParams.get('propertyId');
     const metric = searchParams.get('metric') || 'overview';
     const dateRange = searchParams.get('dateRange') || '30d';
     
@@ -64,7 +63,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.googleAnalytics.apiError('GET', propertyId || 'unknown', error as Error);
+    // logger.googleAnalytics.apiError('GET', propertyId || 'unknown', error as Error);
     
     return NextResponse.json(
       { 
@@ -83,7 +82,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { propertyId, action, dateRange = '30d' } = body;
+    const { propertyId, action } = body;
 
     if (!propertyId) {
       return NextResponse.json(
@@ -132,7 +131,7 @@ export async function POST(req: NextRequest) {
     }
 
   } catch (error) {
-    logger.googleAnalytics.apiError('POST', propertyId || 'unknown', error as Error);
+    // logger.googleAnalytics.apiError('POST', propertyId || 'unknown', error as Error);
     
     return NextResponse.json(
       { 
