@@ -18,6 +18,7 @@ interface TrustScore {
 }
 
 const handler = async (request: NextRequest, user: any) => {
+  console.log('Processing trust optimization for user:', user?.id);
   try {
     const { dealership, city, state } = await request.json();
 

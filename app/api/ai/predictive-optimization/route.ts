@@ -281,6 +281,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const analysisType = searchParams.get('type') || 'full';
     const dealerId = searchParams.get('dealerId') || 'demo-dealer';
+    console.log('Processing predictive optimization for dealer:', dealerId);
     
     // Demo metrics
     const currentMetrics = {
@@ -361,6 +362,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const { currentMetrics, marketData, preferences } = await req.json();
+    console.log('Processing optimization with preferences:', preferences);
     
     if (!currentMetrics) {
       return NextResponse.json({ error: "Current metrics are required" }, { status: 400 });

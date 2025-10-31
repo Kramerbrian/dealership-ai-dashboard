@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  console.log('Running compliance audit for:', req.url);
   try {
     // Return mock audit results for demo
     const mockResults = [

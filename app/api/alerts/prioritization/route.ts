@@ -81,6 +81,7 @@ function calculateAlertPriority(alert: Alert, context: AlertContext): number {
 
 function isWithinBusinessHours(date: Date, businessHours: string[], timezone: string): boolean {
   // Simplified business hours check
+  console.log('Checking business hours:', businessHours, 'in timezone:', timezone);
   const hour = date.getHours();
   return hour >= 9 && hour <= 17; // 9 AM to 5 PM
 }
