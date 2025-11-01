@@ -8,7 +8,10 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['@clerk/nextjs'],
+    instrumentationHook: true, // Enable Sentry instrumentation
   },
+  // Disable static export to allow Clerk to work
+  output: 'standalone',
   
   // Security headers
   async headers() {

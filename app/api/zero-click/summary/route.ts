@@ -1,65 +1,53 @@
-/**
- * Zero-Click Summary API
- * Returns Zero-Click series data for charts
- */
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-import { NextResponse } from 'next/server';
-
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-// Mock data - replace with actual database integration
-async function getPrisma() {
-  return {
-    zeroClickDaily: {
-      findMany: async () => {
-        // Return mock data
-        return [
-          {
-            id: '1',
-            tenantId: 'demo',
-            date: new Date(),
-            impressions: 10000,
-            clicks: 1500,
-            ctrActual: 0.15,
-            ctrBaseline: 0.18,
-            zcr: 0.85,
-            aiPresenceRate: 0.75,
-            airi: 0.22,
-            gbpImpressions: 6000,
-            gbpActions: 235,
-            zcco: 0.42,
-            adjustedZeroClick: 0.43
-          }
-        ];
-      }
-    }
-  };
-}
-
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const tenantId = searchParams.get('tenantId');
-    const days = Number(searchParams.get('days') || 30);
-    
+
     if (!tenantId) {
-      return NextResponse.json({ error: 'tenantId required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'tenantId is required' },
+        { status: 400 }
+      );
     }
 
-    const since = new Date(Date.now() - days * 864e5);
+    const days = Number(searchParams.get('days') || 30);
+    const since = new Date(Date.now() - days * 86400000);
 
-    const prisma = await getPrisma();
     const series = await prisma.zeroClickDaily.findMany({
-      where: { 
-        tenantId, 
-        date: { gte: since } 
+      where: {
+        tenantId,
+        date: { gte: since }
       },
       orderBy: { date: 'asc' }
     });
 
-    return NextResponse.json({ series });
+    return NextResponse.json({
+      series: series.map(item => ({
+        date: item.date.toISOString(),
+        impressions: item.impressions,
+        clicks: item.clicks,
+        ctrActual: item.ctrActual,
+        ctrBaseline: item.ctrBaseline,
+        zcr: item.zcr,
+        aiPresenceRate: item.aiPresenceRate,
+        airi: item.airi,
+        gbpImpressions: item.gbpImpressions,
+        gbpActions: item.gbpActions,
+        zcco: item.zcco,
+        adjustedZeroClick: item.adjustedZeroClick
+      }))
+    });
   } catch (error) {
-    console.error('Zero-Click summary error:', error);
-    return NextResponse.json({ error: 'Failed to fetch summary' }, { status: 500 });
+    console.error('Zero-click summary error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch zero-click summary', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }

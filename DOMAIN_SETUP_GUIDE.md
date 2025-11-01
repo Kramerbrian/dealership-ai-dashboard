@@ -1,179 +1,133 @@
-# 🌐 DealershipAI Domain Configuration Guide
+# 🌐 Domain Setup Guide for dashboard.dealershipai.com
 
-## Current Deployment Status
-- **Production URL**: https://dealershipai-dashboard-77fe0bcs5-brian-kramers-projects.vercel.app
-- **Project**: dealershipai-dashboard
-- **Team**: brian-kramers-projects
+## Current Status
 
-## Domain Configuration Steps
-
-### 1. Main Domain: main.dealershipai.com
-
-#### Option A: Through Vercel Dashboard (Recommended)
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Select your `dealershipai-dashboard` project
-3. Go to **Settings** → **Domains**
-4. Click **Add Domain**
-5. Enter `main.dealershipai.com`
-6. Follow the DNS configuration instructions
-
-#### Option B: Through CLI (Alternative)
-```bash
-vercel domains add main.dealershipai.com
-```
-
-### 2. Dashboard Subdomain: dash.dealershipai.com
-
-Since `dash.dealershipai.com` is already assigned to another project, you have two options:
-
-#### Option A: Transfer from Existing Project
-1. Go to the existing project that owns `dash.dealershipai.com`
-2. Remove the domain from that project
-3. Add it to `dealershipai-dashboard` project
-
-#### Option B: Use Different Subdomain
-```bash
-vercel domains add dashboard.dealershipai.com
-# or
-vercel domains add app.dealershipai.com
-# or
-vercel domains add analytics.dealershipai.com
-```
-
-### 3. DNS Configuration
-
-For each domain you add, Vercel will provide DNS records to add:
-
-#### Typical DNS Records:
-```
-Type: A
-Name: @
-Value: 76.76.19.61
-
-Type: CNAME
-Name: www
-Value: cname.vercel-dns.com
-
-Type: CNAME
-Name: dash (or your chosen subdomain)
-Value: cname.vercel-dns.com
-```
-
-### 4. Routing Configuration
-
-The current `vercel.json` already handles routing:
-
-```json
-{
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/dashboard",
-      "destination": "/intelligence"
-    }
-  ]
-}
-```
-
-### 5. SSL Certificate
-
-Vercel automatically provides SSL certificates for custom domains:
-- **Automatic**: SSL certificates are provisioned automatically
-- **Verification**: Domain ownership must be verified first
-- **Renewal**: Certificates auto-renew
-
-## Verification Steps
-
-### 1. Domain Ownership Verification
-1. Add the domain in Vercel dashboard
-2. Vercel will provide DNS records to add
-3. Add the records to your DNS provider
-4. Wait for verification (usually 5-10 minutes)
-
-### 2. Test the Configuration
-```bash
-# Test main domain
-curl -I https://main.dealershipai.com
-
-# Test dashboard subdomain
-curl -I https://dash.dealershipai.com
-```
-
-## Current Application Structure
-
-### Landing Page (main.dealershipai.com)
-- **Route**: `/`
-- **Component**: `app/(site)/landing/page.tsx`
-- **Features**: 
-  - Glass morphism design
-  - Theme toggle
-  - Interactive dashboard preview
-  - Pricing and features
-
-### Intelligence Dashboard (dash.dealershipai.com)
-- **Route**: `/intelligence`
-- **Component**: `app/(dashboard)/intelligence/page.tsx`
-- **Features**:
-  - Tabbed interface
-  - Export/share functionality
-  - Theme-aware design
-  - Analytics views
-
-## Troubleshooting
-
-### Common Issues:
-
-1. **403 Forbidden**: Domain ownership not verified
-   - Solution: Complete DNS verification process
-
-2. **Domain already assigned**: Subdomain in use by another project
-   - Solution: Transfer domain or use different subdomain
-
-3. **SSL Certificate Issues**: 
-   - Solution: Wait for automatic provisioning (up to 24 hours)
-
-### Support Commands:
-```bash
-# Check domain status
-vercel domains ls
-
-# Inspect deployment
-vercel inspect [deployment-url]
-
-# Check logs
-vercel logs [deployment-url]
-```
-
-## Next Steps After Domain Setup
-
-1. **Analytics Integration**
-   - Add Google Analytics
-   - Configure conversion tracking
-   - Set up custom events
-
-2. **Performance Monitoring**
-   - Enable Vercel Analytics
-   - Set up Core Web Vitals monitoring
-   - Configure error tracking
-
-3. **SEO Optimization**
-   - Add meta tags
-   - Configure sitemap
-   - Set up structured data
-
-4. **Security Headers**
-   - Already configured in `next.config.js`
-   - Consider adding CSP headers
-   - Enable HSTS
-
-## Contact Information
-
-For domain-related issues:
-- **Vercel Support**: https://vercel.com/help
-- **DNS Provider**: Contact your domain registrar
-- **Project Owner**: brian-kramers-projects
+Vercel requires DNS verification before adding domains. You need to configure DNS **first**, then add the domain to Vercel.
 
 ---
 
-**Last Updated**: $(date)
-**Deployment URL**: https://dealershipai-dashboard-77fe0bcs5-brian-kramers-projects.vercel.app
+## Step-by-Step DNS Configuration
+
+### Step 1: Configure DNS at Your Registrar (Squarespace)
+
+1. **Log into Squarespace**: https://account.squarespace.com
+2. **Navigate to**: Settings → Domains → `dealershipai.com` → DNS Settings
+3. **Remove existing A records** for `dashboard` (if any)
+4. **Add a CNAME record**:
+
+   ```
+   Type: CNAME
+   Host: dashboard
+   Alias data: cname.vercel-dns.com
+   TTL: 3600 (or default)
+   ```
+
+5. **Save the record**
+
+### Step 2: Wait for DNS Propagation & Verify
+
+After updating DNS:
+
+1. **Wait 5–30 minutes** for propagation
+2. **Verify with**:
+   ```bash
+   dig dashboard.dealershipai.com CNAME +short
+   # Should return: cname.vercel-dns.com
+   ```
+
+### Step 3: Add Domain to Vercel
+
+Once the DNS CNAME is in place and propagated:
+
+```bash
+npx vercel domains add dashboard.dealershipai.com
+
+# Verify it's added
+npx vercel domains ls
+```
+
+### Step 4: Update Clerk Allowed Origins
+
+After the domain is verified, add it to Clerk:
+
+```bash
+# Use the script to update Clerk
+./update-clerk-origins-direct.sh
+```
+
+Or manually in Clerk Dashboard:
+1. Go to: https://dashboard.clerk.com
+2. Select your application
+3. Navigate to: **Configure** → **Paths** → **Frontend API**
+4. Find **"Allowed Origins"** or **"CORS Origins"**
+5. Add: `https://dash.dealershipai.com`
+6. Click **Save**
+
+---
+
+## Alternative: Using A Record (if CNAME not available)
+
+If your DNS provider doesn't support CNAME for the root or subdomain, use A records:
+
+```
+Type: A
+Name: dash
+Value: 76.76.21.21
+TTL: 3600
+```
+
+Then follow the same steps above.
+
+---
+
+## Verification
+
+After setup, verify everything works:
+
+1. **DNS Check**:
+   ```bash
+   nslookup dash.dealershipai.com
+   # Should resolve to Vercel IPs
+   ```
+
+2. **SSL Certificate**:
+   - Vercel automatically provisions SSL (5-10 minutes after domain add)
+   - Check: `https://dash.dealershipai.com` should show a valid certificate
+
+3. **Clerk Test**:
+   - Visit: `https://dash.dealershipai.com`
+   - Should load without "Invalid host" errors
+
+---
+
+## Current Vercel Domains
+
+- **dealershipai-app.com** — Active ✅
+- **dash.dealershipai.com** — Waiting for DNS configuration ⏳
+
+Once the DNS CNAME is in place and propagated, Vercel should accept the domain. If you need help locating where to update DNS, share your registrar and I can guide you.
+
+---
+
+## Quick Reference
+
+### DNS Provider Examples:
+
+**GoDaddy**:
+- DNS Management → Records → Add → CNAME
+- Name: `dash`, Value: `cname.vercel-dns.com`
+
+**Namecheap**:
+- Advanced DNS → Add New Record → CNAME Record
+- Host: `dash`, Value: `cname.vercel-dns.com`
+
+**Cloudflare**:
+- DNS → Records → Add Record
+- Type: CNAME, Name: `dash`, Target: `cname.vercel-dns.com`, Proxy: Off
+
+---
+
+**Once DNS is configured, run:**
+```bash
+npx vercel domains add dash.dealershipai.com
+```

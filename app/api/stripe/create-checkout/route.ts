@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, PRICING_TIERS } from '@/lib/stripe';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
+  // Skip if Stripe not configured
+  if (!stripe || !process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 503 }
+    );
+  }
+
   try {
     const { email, name, company, phone, domain, plan } = await req.json();
 
@@ -26,7 +36,7 @@ export async function POST(req: NextRequest) {
     // Create or retrieve customer
     let customer;
     try {
-      const existingCustomers = await stripe.customers.list({
+      const existingCustomers = await stripe!.customers.list({
         email: email,
         limit: 1
       });

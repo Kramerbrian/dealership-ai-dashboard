@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0",
+  "name": "DAI Algorithm Engine v2",
+  "description": "Quantum Authority Index (QAI) and Five Pillar scoring formulas",
+  "qai_quantum_authority_index": {
+    "formula": "QAI = λ₁·AIV + λ₂·ZCS + λ₃·UGC + λ₄·GT + λ₅·SGP",
+    "weights": {
+      "λ₁": 0.30,
+      "λ₂": 0.25,
+      "λ₃": 0.20,
+      "λ₄": 0.15,
+      "λ₅": 0.10
+    },
+    "range": [0, 100],
+    "description": "Composite score aggregating all five pillars"
+  },
+  "pillar_formulas": {
+    "ai_visibility": {
+      "formula": "AIV = Σ(platform_score × platform_weight) × (1 + geographic_bonus)",
+      "platforms": {
+        "chatgpt": { "weight": 0.35, "max_score": 100 },
+        "claude": { "weight": 0.30, "max_score": 100 },
+        "perplexity": { "weight": 0.20, "max_score": 100 },
+        "gemini": { "weight": 0.15, "max_score": 100 }
+      },
+      "geographic_bonus": {
+        "formula": "min(0.15, local_presence_score × 0.01)",
+        "description": "City-level pooling boost"
+      }
+    },
+    "zero_click_shield": {
+      "formula": "ZCS = 100 × (1 - max(0, ZCR - ZCCO))",
+      "components": {
+        "ZCR": "Zero-Click Rate from GSC",
+        "ZCCO": "Zero-Click Conversion Offset from GBP"
+      },
+      "adjustment": "clamp(ZCR - ZCCO, 0, 1)"
+    },
+    "ugc_health": {
+      "formula": "UGC = (review_quality × 0.4) + (review_volume × 0.3) + (response_rate × 0.3)",
+      "components": {
+        "review_quality": "Average rating × (sentiment_score / 5)",
+        "review_volume": "min(100, review_count / 100)",
+        "response_rate": "responses / total_reviews"
+      }
+    },
+    "geo_trust": {
+      "formula": "GT = (citation_consistency × 0.5) + (NAP_uniformity × 0.5)",
+      "components": {
+        "citation_consistency": "matching_citations / total_citations",
+        "NAP_uniformity": "consistent_entries / total_entries"
+      }
+    },
+    "sgp_integrity": {
+      "formula": "SGP = (schema_completeness × 0.6) + (schema_validity × 0.4)",
+      "components": {
+        "schema_completeness": "required_properties_present / total_required",
+        "schema_validity": "valid_schemas / total_schemas"
+      }
+    }
+  },
+  "scoring_parameters": {
+    "confidence_threshold": 0.85,
+    "pooling_enabled": true,
+    "synthetic_ratio": 0.9,
+    "real_query_ratio": 0.1,
+    "variance_factor": 0.05
+  },
+  "optimization": {
+    "λ_adjustment": {
+      "trigger": "market_event_detected",
+      "method": "elasticity_based",
+      "update_frequency": "daily"
+    },
+    "geographic_pooling": {
+      "enabled": true,
+      "granularity": "city_level",
+      "variance_injection": true
+    }
+  }
+}

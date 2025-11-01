@@ -1,0 +1,76 @@
+================================================================================
+🚀 DEALERSHIPAI PLG LANDING - DEPLOYMENT INSTRUCTIONS
+================================================================================
+
+STEP-BY-STEP COMMANDS TO RUN IN YOUR TERMINAL:
+
+--------------------------------------------------------------------------------
+STEP 1: NAVIGATE TO PROJECT
+--------------------------------------------------------------------------------
+cd /Users/stephaniekramer/dealership-ai-dashboard
+
+--------------------------------------------------------------------------------
+STEP 2: INSTALL DEPENDENCY
+--------------------------------------------------------------------------------
+npm install @swc/helpers --save-dev
+
+Expected output:
+  + @swc/helpers@x.x.x
+  added 1 package in Xs
+
+--------------------------------------------------------------------------------
+STEP 3: BUILD FOR PRODUCTION
+--------------------------------------------------------------------------------
+npm run build
+
+Expected output:
+  ✓ Creating an optimized production build
+  ✓ Compiled successfully
+
+--------------------------------------------------------------------------------
+STEP 4: DEPLOY TO VERCEL
+--------------------------------------------------------------------------------
+vercel --prod
+
+Expected output:
+  ▲ Vercel CLI
+  ? Set up and deploy? [y/n]
+  > y
+  
+  Vercel dashboard: https://vercel.com/your-project
+  Production: https://dealership-ai-dashboard.vercel.app
+
+--------------------------------------------------------------------------------
+DEPLOYMENT SUCCESS!
+--------------------------------------------------------------------------------
+
+Your PLG landing page is now live at:
+  https://dealership-ai-dashboard.vercel.app/landing/plg
+
+Test the landing page:
+  https://dealership-ai-dashboard.vercel.app/landing/plg
+
+Dashboard:
+  https://dealership-ai-dashboard.vercel.app/dash
+
+Intelligence:
+  https://dealership-ai-dashboard.vercel.app/intelligence
+
+--------------------------------------------------------------------------------
+NEXT: CONFIGURE CUSTOM DOMAIN
+--------------------------------------------------------------------------------
+
+1. Visit: https://vercel.com/dashboard
+2. Select: dealership-ai-dashboard
+3. Go to: Settings → Domains
+4. Add: dealershipai.com
+5. Add: www.dealershipai.com
+6. Update DNS records
+
+Then visit:
+  https://dealershipai.com/landing/plg
+
+================================================================================
+READY TO DEPLOY? Copy and paste the commands above into your terminal!
+================================================================================
+
