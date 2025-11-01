@@ -37,7 +37,7 @@ export interface SiteInjectBody {
 
 export class DealershipAI {
   constructor(
-    private base = "https://api.dealershipai.com",
+    private base: string = "https://api.dealershipai.com",
     private apiKey?: string
   ) {}
 
@@ -53,8 +53,8 @@ export class DealershipAI {
     });
 
     if (!r.ok) {
-      const errorText = await r.text();
-      throw new Error(`${r.status} ${r.statusText}: ${errorText}`);
+      const text = await r.text();
+      throw new Error(`${r.status} ${r.statusText}: ${text}`);
     }
 
     return (await r.json()) as T;
@@ -77,9 +77,9 @@ export class DealershipAI {
 
   // 3) Origins
   getOrigins() {
-    return this.req<
-      { origin: string; dealerId: string; status: string }[]
-    >(`/api/origins`);
+    return this.req<Array<{ origin: string; dealerId: string; status: string }>>(
+      `/api/origins`
+    );
   }
 
   putOrigin(body: PutOriginBody) {

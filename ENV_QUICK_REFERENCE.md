@@ -41,10 +41,20 @@ RATE_LIMIT_WINDOW_MS="60000"
 
 ## 🔧 Optional Variables (Nice to Have)
 
-### Analytics
+### Monitoring & Analytics
 ```bash
-NEXT_PUBLIC_GA_ID="G-[MEASUREMENT-ID]"
-SENTRY_DSN="https://[DSN]@[ORG].ingest.sentry.io/[PROJECT]"
+# Sentry Error Tracking
+NEXT_PUBLIC_SENTRY_DSN="https://[DSN]@[ORG].ingest.sentry.io/[PROJECT]"
+
+# PostHog Product Analytics
+NEXT_PUBLIC_POSTHOG_KEY="phc_[YOUR-POSTHOG-KEY]"
+NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"  # Optional, defaults to app.posthog.com
+
+# Google Analytics 4
+NEXT_PUBLIC_GA="G-[MEASUREMENT-ID]"
+
+# Vercel Analytics & Speed Insights (automatically enabled when deployed to Vercel)
+# No environment variables needed
 ```
 
 ### Payments
@@ -92,7 +102,8 @@ vercel --prod
 - [ ] App URL set correctly
 - [ ] Feature flags enabled
 - [ ] Application redeployed
-- [ ] Health check passing
+- [ ] Health check passing (`/api/health`)
+- [ ] Monitoring configured (Sentry, PostHog, Vercel Analytics)
 - [ ] Dashboard accessible
 - [ ] API endpoints working
 
