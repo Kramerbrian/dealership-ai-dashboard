@@ -1,58 +1,27 @@
 {
+  "buildCommand": "NEXT_TELEMETRY_DISABLED=1 next build",
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "outputDirectory": ".next",
-  "regions": ["iad1"],
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    },
-    "app/api/ai/**/*.ts": {
-      "maxDuration": 60
-    },
-    "app/api/console/query/route.ts": {
-      "maxDuration": 45
-    },
-    "app/api/tenants/**/hrp/scan/route.ts": {
-      "maxDuration": 90
-    },
-    "app/api/health/route.ts": {
-      "maxDuration": 10
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     }
-  },
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
         },
         {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
+          "key": "X-Frame-Options",
+          "value": "DENY"
         },
         {
-          "key": "X-DNS-Prefetch-Control",
-          "value": "on"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains; preload"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.live https://vercel.live/_next-live/feedback/ https://*.vercel.live/_next-live/feedback/ https://js.stripe.com https://js.clerk.com https://js.clerk.dev https://clerk.dealershipai.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob: https://dealershipai.com; connect-src 'self' https://api.openai.com https://api.anthropic.com https://*.upstash.io https://*.supabase.co https://vercel.live https://*.vercel.live https://api.stripe.com https://clerk.dealershipai.com https://api.clerk.com wss: https:; frame-src 'self' https://vercel.live https://*.vercel.live https://js.stripe.com https://js.clerk.com https://js.clerk.dev https://clerk.dealershipai.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
         }
       ]
     },
@@ -62,111 +31,26 @@
         {
           "key": "Cache-Control",
           "value": "public, s-maxage=60, stale-while-revalidate=300"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "https://marketing.dealershipai.com, https://dash.dealershipai.com, https://main.dealershipai.com"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization, X-Signature, X-Timestamp"
-        },
-        {
-          "key": "Access-Control-Max-Age",
-          "value": "86400"
         }
       ]
-    },
-    {
-      "source": "/_next/static/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/_next/image(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/favicon.ico",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/main",
-      "destination": "/landing"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/intelligence"
-    },
-    {
-      "source": "/app",
-      "destination": "/intelligence"
-    },
-    {
-      "source": "/api/health",
-      "destination": "/api/health"
-    },
-    {
-      "source": "/api/quick-audit",
-      "destination": "/api/quick-audit"
-    },
-    {
-      "source": "/api/console/query",
-      "destination": "/api/console/query"
-    },
-    {
-      "source": "/api/econ/tsm",
-      "destination": "/api/econ/tsm"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/old-dashboard",
-      "destination": "/dashboard",
-      "permanent": true
-    },
-    {
-      "source": "/home",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/marketing.html",
-      "destination": "/",
-      "permanent": true
     }
   ],
   "crons": [
     {
       "path": "/api/zero-click/recompute",
       "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 16 * * *"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "NEXT_PUBLIC_APP_URL": "https://dealershipai.com",
-    "NEXT_PUBLIC_DASHBOARD_URL": "https://dealershipai.com",
-    "NEXT_PUBLIC_MARKETING_URL": "https://dealershipai.com",
-    "NEXTAUTH_URL": "https://dealershipai.com"
-  }
+  ]
 }
