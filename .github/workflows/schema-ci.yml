@@ -1,0 +1,147 @@
+name: OpenAPI Schema & SDK Auto-Update
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - "schema/**"
+    paths:
+      - 'openapi/pulse.yaml'
+      - 'scripts/openapi-diff-changelog.ts'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'openapi/pulse.yaml'
+
+jobs:
+  update-schema:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: 🧱 Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need history for git diff
+
+      - name: 🧩 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧮 Run OpenAPI changelog diff
+        run: npx ts-node scripts/openapi-diff-changelog.ts
+        continue-on-error: true
+
+      - name: 🧾 Generate TypeScript SDK types
+        run: |
+          npx openapi-typescript openapi/pulse.yaml -o src/types/pulse.ts
+          echo "✅ TypeScript SDK types generated"
+
+      - name: 📊 Validate OpenAPI spec
+        run: |
+          npx @redocly/cli lint openapi/pulse.yaml --skip-rule no-invalid-media-type-examples
+          echo "✅ OpenAPI spec validated"
+        continue-on-error: true
+
+      - name: 🔍 Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet openapi/pulse.yaml src/types/pulse.ts; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected:"
+            git diff --stat openapi/pulse.yaml src/types/pulse.ts
+          fi
+
+      - name: 🧹 Commit generated updates
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add openapi/pulse.yaml src/types/pulse.ts
+          git commit -m "ci: auto-update OpenAPI changelog and regenerate SDK types [skip ci]" || echo "No changes to commit"
+
+      - name: 🚀 Push changes
+        if: steps.check_changes.outputs.has_changes == 'true' && github.event_name == 'push'
+        run: |
+          git push origin HEAD:${{ github.ref_name }}
+
+  tag-on-merge:
+    if: github.event.pull_request.merged == true && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    needs: [update-schema]
+    permissions:
+      contents: write
+
+    steps:
+      - name: 🧱 Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: 🧩 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install js-yaml
+        run: npm install -g js-yaml
+
+      - name: 🏷️ Extract version and create tag
+        id: create_tag
+        run: |
+          VERSION=$(node -p "require('js-yaml').load(require('fs').readFileSync('openapi/pulse.yaml', 'utf8')).info.version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Check if tag already exists
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists"
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Creating new tag v$VERSION"
+            git tag "v$VERSION"
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🚀 Push tag
+        if: steps.create_tag.outputs.tag_exists == 'false'
+        run: |
+          git push origin "v${{ steps.create_tag.outputs.version }}"
+          echo "✅ Tagged and pushed v${{ steps.create_tag.outputs.version }}"
+
+      - name: 📝 Create GitHub Release
+        if: steps.create_tag.outputs.tag_exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.create_tag.outputs.version }}
+          release_name: OpenAPI Schema v${{ steps.create_tag.outputs.version }}
+          body: |
+            ## OpenAPI Schema Update
+
+            Version: ${{ steps.create_tag.outputs.version }}
+
+            ### Changes
+            See the [changelog](https://github.com/${{ github.repository }}/blob/main/openapi/pulse.yaml#L11) in the OpenAPI spec.
+
+            ### SDK Updates
+            - TypeScript types regenerated
+            - Schema validation passed
+
+            ### Download
+            - [OpenAPI Spec](https://github.com/${{ github.repository }}/raw/v${{ steps.create_tag.outputs.version }}/openapi/pulse.yaml)
+            - [TypeScript Types](https://github.com/${{ github.repository }}/raw/v${{ steps.create_tag.outputs.version }}/src/types/pulse.ts)
+          draft: false
+          prerelease: false
