@@ -1,109 +1,280 @@
-# DealershipAI North Star Design System
+# DealershipAI North Star
 
-**Canonical reference for all UI/UX, copy, and component patterns**
-
-## Core Principles
-
-### 1. Liquid-Glass Aesthetic
-- **Backdrop blur**: `backdrop-blur-xl` with `bg-white/80` or `bg-slate-900/60`
-- **Borders**: Subtle borders `border-gray-200` or `border-slate-800` with soft shadows
-- **Depth**: Layered cards with `shadow-sm` → `shadow-md` on hover
-- **Transparency**: Glass-like surfaces that show content beneath
-
-### 2. Morph + Orbit Animations
-- **Morph**: Smooth shape transitions using `transition-all duration-300`
-- **Orbit**: Circular/spiral motion for loading states, progress indicators
-- **Micro-interactions**: Button press feedback, card hover elevation
-- **Page transitions**: Fade-in with slight upward motion
-
-### 3. Audio Palette
-- **Boot**: Subtle startup sound (0.5s, gentle chime)
-- **Success**: Positive feedback (1s, ascending tone)
-- **Warn**: Alert notification (0.8s, moderate urgency)
-- **Autonomy**: AI action confirmation (1.2s, futuristic)
-- **Hover**: Optional micro-sound on interactive elements (0.1s, soft click)
-
-### 4. Mobile Timeline Flow
-- **Progressive disclosure**: 3-4 screens max per flow
-- **Swipe navigation**: Horizontal card stacks
-- **Thumb-friendly**: CTAs in bottom 1/3 of screen
-- **Quick wins first**: Show value before asking for commitment
-
-### 5. WOW Onboarding Sequence
-- **Preflight Bundle**: "Hands-free 2–4am" automated setup
-- **Instant results**: Show Trust Score within 30 seconds
-- **Delight moments**: Easter eggs, witty copy, smooth animations
-- **Autonomy**: User feels in control, not overwhelmed
-
-### 6. Tone & Voice
-- **Confident but approachable**: "Your AI visibility, mastered"
-- **Action-oriented**: "Fix now" not "Learn more"
-- **Specific over generic**: "87.3% Trust Score" not "Great score!"
-- **Human-first**: Acknowledge pain points, celebrate wins
-
-## Component Patterns
-
-### Cards
-- **Default**: `rounded-2xl border border-gray-200 bg-white/80 backdrop-blur ring-1 ring-gray-900/5 p-6 shadow-sm`
-- **Hover**: `hover:shadow-md transition-all duration-200`
-- **Dark mode**: `bg-slate-900/60 border-slate-800`
-
-### Buttons
-- **Primary**: `bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors`
-- **Secondary**: `bg-gray-100 hover:bg-gray-200 text-gray-900`
-- **Ghost**: `border border-gray-300 hover:bg-gray-50`
-
-### Typography
-- **Headings**: `text-2xl font-semibold text-gray-900` (h1), `text-xl font-semibold` (h2)
-- **Body**: `text-base text-gray-600`
-- **Mono numbers**: `font-mono tabular-nums` for scores/metrics
-
-### Animations
-- **Fade in**: `animate-fade-in` (0.4s ease-out)
-- **Slide up**: `animate-slide-up` (0.5s ease-out, 20px offset)
-- **Morph**: Transform scale + border-radius transitions
-- **Orbit**: Circular rotation for loading states
-
-## KPI Display Rules
-
-### Tier 1 (5–6 KPIs max)
-- Primary metrics only: Trust Score, AI Visibility, Zero-Click Rate
-- Large, prominent display
-- Immediate action items visible
-
-### Tier 2 (Diagnosis Drawer)
-- Detailed breakdowns, historical trends
-- Slide-up drawer from bottom
-- "View details" → opens drawer with full analysis
-
-## Onboarding Flow
-
-### Preflight Bundle Modal
-1. **Entry**: After first login/analysis
-2. **Message**: "Set up automated monitoring? Runs 2–4am, hands-free."
-3. **Actions**: 
-   - "Yes, automate it" → Enable preflight
-   - "Maybe later" → Dismiss (reappears after 3 days)
-4. **Success**: Confirmation with "Monitoring active" status
-
-## Accessibility
-
-- **Reduced motion**: Respect `prefers-reduced-motion` media query
-- **Focus states**: Clear outline on keyboard navigation
-- **Screen readers**: Semantic HTML, ARIA labels where needed
-- **Audio optional**: All audio can be disabled via user preference
-
-## Implementation Checklist
-
-- [x] North Star principles documented
-- [ ] Token map created (`ui/northStar.ts`)
-- [ ] `useReducedMotion()` hook implemented
-- [ ] Global CSS media queries added
-- [ ] Preflight Bundle modal component
-- [ ] Diagnosis Drawer component
-- [ ] Audio palette initialized (optional)
-- [ ] Component library updated to use tokens
+**Core Philosophy:**
+> **Stop designing pages. Design conversations.**
+> 
+> **Stop showing data. Show decisions.**
+> 
+> **Stop optimizing screens. Optimize cognition.**
 
 ---
 
-**Remember**: This is the North Star. Default to these patterns unless explicitly overridden for a specific use case.
+## Vision Statement
+
+DealershipAI is a **Cognitive Ops Platform** — each rooftop operates with an embedded **AI Chief Strategy Officer** that continuously audits, predicts, fixes, and explains its own decisions.
+
+This is not a dashboard. This is a **living cognitive environment** — a self-orchestrating operating system for dealership visibility and trust.
+
+---
+
+## Design Principles
+
+### 1. **Liquid-Glass Aesthetic**
+
+- **Glassmorphism** with backdrop blur (`backdrop-blur-xl`)
+- **Transparency layers** (`bg-white/5` or `bg-slate-800/80`)
+- **Subtle borders** (`border-white/10`)
+- **Depth through elevation** (shadow-sm → shadow-xl)
+- **Light refraction effects** (gradient overlays, subtle glows)
+
+**Implementation:**
+```css
+.glass-dark {
+  @apply dark:bg-white/5 dark:backdrop-blur-xl dark:border dark:border-white/10;
+}
+```
+
+---
+
+### 2. **Morph + Orbit Motion**
+
+- **Morph:** Smooth shape transitions (rectangles → circles, expand → contract)
+- **Orbit:** Elements orbit central hubs (Trust Score, AI CSO Core)
+- **Spring physics** (Framer Motion: `spring({ stiffness: 300, damping: 30 })`)
+- **Easing:** `cubic-bezier(0.4, 0, 0.2, 1)` for natural motion
+- **Duration:** 300ms base, 150ms for micro-interactions
+
+**Visual Hierarchy:**
+- Central core = Trust Score / AI CSO
+- Orbital layers = Pillars (SEO, AEO, GEO, QAI)
+- Peripheral = Actions, Insights, Predictions
+
+---
+
+### 3. **Audio Palette**
+
+| Sound | Trigger | Purpose |
+|-------|---------|---------|
+| **boot** | System initialization | Welcome, system ready |
+| **success** | Action completed | Positive feedback |
+| **warn** | Anomaly detected | Attention required |
+| **autonomy** | Auto-fix deployed | AI action taken |
+| **hover** | UI element hover | Tactile feedback (optional) |
+
+**Implementation Notes:**
+- Keep audio subtle and optional (volume slider)
+- Respect `prefers-reduced-motion` for accessibility
+- Use Web Audio API for dynamic pitch/volume based on score magnitude
+
+---
+
+### 4. **Mobile Timeline**
+
+- **Horizontal swipe** = time travel (past → present → future)
+- **Vertical scroll** = depth (surface → signals → raw data)
+- **Pinch to zoom** = scale (dealer → region → industry)
+- **Pull to refresh** = force re-orchestration
+
+**Gestures:**
+- Swipe right = next metric
+- Swipe left = previous metric
+- Long press = context menu
+- Double tap = expand detail
+
+---
+
+### 5. **WOW Onboarding**
+
+**"Plug & Think" — 5-minute cognitive integration:**
+
+1. **Domain Entry** (30s)
+   - Single input: dealership domain
+   - Auto-discovery: name, location, brands, competitors
+
+2. **Orchestration Run** (2min)
+   - AI CSO performs initial scan
+   - Shows live progress: "Scanning... → Diagnosing... → Prescribing..."
+
+3. **First ASR** (30s)
+   - Display top 3 recommendations
+   - "Click to deploy" for Enterprise
+
+4. **Trust Score Reveal** (1min)
+   - Animated reveal of Trust Score
+   - Contextual explanation of what drives it
+
+5. **Command Center Tour** (1min)
+   - Interactive walkthrough of HAL Chat
+   - "Try asking: 'What's my AI visibility?'"
+
+**Total Time:** 5 minutes to cognitive integration
+
+---
+
+## Technical Implementation
+
+### Theme Tokens (`lib/design-tokens.ts`)
+
+```typescript
+export const DTRI_THEME = {
+  light: { /* ... */ },
+  dark: { /* ... */ },
+  typography: { /* ... */ },
+  spacing: { /* ... */ },
+  borderRadius: { /* ... */ },
+  transitions: { /* ... */ }
+};
+```
+
+### Motion Tokens (`ui/northStar.ts`)
+
+```typescript
+export const northStarTokens = {
+  motion: {
+    fade: { duration: 300, ease: [0.4, 0, 0.2, 1] },
+    morph: { duration: 500, spring: { stiffness: 300, damping: 30 } },
+    orbit: { duration: 2000, ease: 'linear', repeat: Infinity }
+  },
+  audio: {
+    boot: { src: '/audio/boot.mp3', volume: 0.3 },
+    success: { src: '/audio/success.mp3', volume: 0.2 },
+    warn: { src: '/audio/warn.mp3', volume: 0.4 },
+    autonomy: { src: '/audio/autonomy.mp3', volume: 0.25 },
+    hover: { src: '/audio/hover.mp3', volume: 0.1 }
+  },
+  layout: {
+    cardRadii: { sm: '0.375rem', md: '0.5rem', lg: '0.75rem', xl: '1rem' },
+    shadows: {
+      sm: '0 1px 2px rgba(0,0,0,0.05)',
+      md: '0 4px 6px rgba(0,0,0,0.07)',
+      lg: '0 10px 15px rgba(0,0,0,0.1)',
+      xl: '0 20px 25px rgba(0,0,0,0.15)'
+    }
+  }
+};
+```
+
+### Reduced Motion Hook
+
+```typescript
+import { useEffect, useState } from 'react';
+
+export function useReducedMotion(): boolean {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+  
+  return prefersReducedMotion;
+}
+```
+
+**Usage:**
+```tsx
+const prefersReducedMotion = useReducedMotion();
+
+<motion.div
+  animate={prefersReducedMotion ? {} : { scale: [1, 1.05, 1] }}
+  transition={{ duration: 0.3 }}
+>
+  {/* Content */}
+</motion.div>
+```
+
+---
+
+## Marketing Copy
+
+### Hero Tagline
+
+> **DealershipAI — The Cognitive Ops Platform for Automotive Leaders.**
+> 
+> Every dealer now has an embedded **AI Chief Strategy Officer.**
+
+### Value Proposition
+
+> You already have a GM, GSM, and F&I Manager.
+> 
+> Now you have your **AI Chief Strategy Officer** — always on, never guessing.
+
+### Features
+
+1. **Perceives:** System constantly scans AI platforms, reviews, and signals
+2. **Predicts:** 30-60-90 day forecasts for trust, visibility, and revenue risk
+3. **Prescribes:** Autonomous Strategy Recommendations with ROI calculations
+4. **Executes:** Auto-Fix Engine deploys safe changes autonomously
+5. **Explains:** Every decision comes with rationale, evidence, and confidence scores
+
+---
+
+## Architecture Lock
+
+### Environment Variables
+
+```env
+PLATFORM_MODE=CognitiveOps
+ORCHESTRATOR_ROLE=AI_CSO
+AUTONOMY_INTERVAL_HOURS=6
+```
+
+### API Middleware
+
+Every API request includes:
+```ts
+response.headers.set('X-Orchestrator-Role', 'AI_CSO');
+```
+
+### Data Model
+
+```sql
+CREATE TABLE orchestrator_state (
+  dealer_id UUID REFERENCES dealers(id),
+  last_scan TIMESTAMPTZ,
+  confidence NUMERIC,
+  autonomy_enabled BOOLEAN DEFAULT true,
+  current_mode TEXT DEFAULT 'AI_CSO',
+  PRIMARY KEY (dealer_id)
+);
+```
+
+---
+
+## Future Enhancements
+
+### Phase 1: Explainability Mode
+- Click any metric → see model inputs, data sources, confidence intervals
+- Causal graphs showing why scores changed
+
+### Phase 2: Holo-Layer Visuals
+- WebGPU 3D data clusters
+- Rotation reveals causal paths
+
+### Phase 3: Neural Briefings
+- Auto-generated 90-second video summaries
+- Voice clone of dealer's tone
+
+### Phase 4: Trust Kernel
+- Cryptographic signing of all insights
+- Auditable provenance for every recommendation
+
+---
+
+## Canon
+
+This document is **immutable canon**. All features, designs, and implementations must align with these principles.
+
+**RFC Requirement:** Every PR must include:
+```
+# aligns-with: CognitiveOpsPlatform
+```
+
+---
+
+**Last Updated:** 2025-01-31  
+**Version:** 1.0.0

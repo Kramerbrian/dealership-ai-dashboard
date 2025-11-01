@@ -72,11 +72,12 @@ model Dealer {
   lastAnalyzedAt DateTime?
 
   // Relations
-  scores       Score[]
-  sessions     Session[]
-  competitors  Competitor[]
-  mysteryShops MysteryShop[]
-  eatScores    EATScore[]
+  scores           Score[]
+  sessions         Session[]
+  competitors      Competitor[]
+  mysteryShops     MysteryShop[]
+  eatScores        EATScore[]
+  orchestratorState OrchestratorState?
 
   @@index([userId])
   @@index([poolKey])
@@ -655,4 +656,32 @@ model PulseTrend {
   @@index([dealerId, metric])
   @@index([dealerId, metric, timestamp(sort: Desc)])
   @@map("pulse_trends")
+}
+
+// ==================== COGNITIVE OPS PLATFORM ====================
+
+model OrchestratorState {
+  id             String   @id @default(cuid())
+  dealerId       String
+  dealer         Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  // Orchestration state
+  lastScan       DateTime?
+  confidence     Float    @default(0.0) // 0-1 confidence level
+  autonomyEnabled Boolean @default(true)
+  currentMode    String   @default("AI_CSO") // AI_CSO mode
+
+  // Agent tracking
+  activeAgents   String[] @default([]) // List of active agent IDs
+  lastOrchestration DateTime?
+  orchestrationCount Int   @default(0)
+
+  // Timestamps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([dealerId])
+  @@index([dealerId])
+  @@index([autonomyEnabled])
+  @@map("orchestrator_state")
 }

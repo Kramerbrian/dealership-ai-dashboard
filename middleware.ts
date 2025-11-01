@@ -72,8 +72,17 @@ export default clerkMiddleware((auth, req) => {
     response.headers.set("x-tenant-id", tenantId);
     return response;
   }
+
+  // Cognitive Ops Platform: Attach Orchestrator Role header
+  // This identifies all API calls as part of the AI CSO system
+  const response = NextResponse.next();
   
-  return NextResponse.next();
+  // Set orchestrator role for all API routes (except public ones)
+  if (url.pathname.startsWith("/api/") && !url.pathname.startsWith("/api/analyze") && !url.pathname.startsWith("/api/health")) {
+    response.headers.set("X-Orchestrator-Role", "AI_CSO");
+  }
+  
+  return response;
 });
 
 export const config = {

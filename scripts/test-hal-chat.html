@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAL Chat Testing Interface</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #60a5fa;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .query-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .response {
+            margin-top: 15px;
+            padding: 15px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            font-family: 'Monaco', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .loading {
+            color: #60a5fa;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status.pending { background: #f59e0b; }
+        .status.success { background: #10b981; }
+        .status.error { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 HAL Chat Testing Interface</h1>
+        
+        <div class="test-section">
+            <h2>Quick Test Queries</h2>
+            <p style="color: #94a3b8; margin-bottom: 10px;">
+                Click a button to test HAL Chat with pre-configured queries
+            </p>
+            <div class="query-buttons">
+                <button onclick="testQuery('What\\'s my AI visibility?')">
+                    🔍 Visibility
+                </button>
+                <button onclick="testQuery('Compute my Quality Authority Index')">
+                    📊 QAI
+                </button>
+                <button onclick="testQuery('Calculate my opportunity cost')">
+                    💰 OCI
+                </button>
+                <button onclick="testQuery('Generate recommendations')">
+                    🎯 ASRs
+                </button>
+                <button onclick="testQuery('Analyze my reviews')">
+                    💬 UGC
+                </button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Custom Query</h2>
+            <input 
+                type="text" 
+                id="customQuery" 
+                placeholder="Enter your query here..."
+                onkeypress="if(event.key === 'Enter') testQuery(document.getElementById('customQuery').value)"
+            />
+            <button onclick="testQuery(document.getElementById('customQuery').value)" style="margin-top: 10px;">
+                Send Query
+            </button>
+            <div id="customResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Orchestrator Status</h2>
+            <button onclick="checkStatus()">Check Status</button>
+            <div id="statusResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Mystery Shop Test</h2>
+            <button onclick="runMysteryShop()">Run Full Mystery Shop</button>
+            <div id="mysteryShopResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+        const DEALER_ID = 'demo-dealer-123';
+
+        async function testQuery(query) {
+            const responseDiv = document.getElementById('customResponse');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '<span class="loading">Sending query to HAL Chat...</span>';
+
+            try {
+                // Parse intent
+                const lowerQuery = query.toLowerCase();
+                let action = 'generate_asr'; // default
+                
+                if (lowerQuery.includes('visibility') || lowerQuery.includes('visible')) {
+                    action = 'analyze_visibility';
+                } else if (lowerQuery.includes('qai') || lowerQuery.includes('quality authority') || lowerQuery.includes('trust index')) {
+                    action = 'compute_qai';
+                } else if (lowerQuery.includes('oci') || lowerQuery.includes('opportunity cost') || lowerQuery.includes('revenue at risk')) {
+                    action = 'calculate_oci';
+                } else if (lowerQuery.includes('recommend') || lowerQuery.includes('action') || lowerQuery.includes('fix') || lowerQuery.includes('asr')) {
+                    action = 'generate_asr';
+                } else if (lowerQuery.includes('ugc') || lowerQuery.includes('review') || lowerQuery.includes('sentiment')) {
+                    action = 'analyze_ugc';
+                }
+
+                const response = await fetch(`${BASE_URL}/api/orchestrator`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: action,
+                        dealerId: DEALER_ID,
+                        domain: 'terryreidhyundai.com',
+                        context: { query: query }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    responseDiv.innerHTML = `
+                        <span class="success">✓ Query successful</span><br><br>
+                        <strong>Action:</strong> ${action}<br>
+                        <strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%<br>
+                        <strong>Trace ID:</strong> ${data.traceId || 'N/A'}<br><br>
+                        <strong>Response:</strong><br>
+                        ${JSON.stringify(data.result, null, 2)}
+                    `;
+                } else {
+                    responseDiv.innerHTML = `
+                        <span class="error">✗ Error: ${data.error || 'Unknown error'}</span><br><br>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function checkStatus() {
+            const responseDiv = document.getElementById('statusResponse');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '<span class="loading">Checking orchestrator status...</span>';
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/orchestrator?dealerId=${DEALER_ID}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseDiv.innerHTML = `
+                        <span class="success">✓ Status: ${data.status}</span><br><br>
+                        <strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%<br>
+                        <strong>Active Agents:</strong> ${data.agentsRunning}<br>
+                        <strong>Platform Mode:</strong> ${data.platformMode}<br>
+                        <strong>Last Sync:</strong> ${new Date(data.lastSync).toLocaleString()}<br><br>
+                        <strong>Full Response:</strong><br>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    responseDiv.innerHTML = `<span class="error">✗ Error: ${data.error || 'Unknown error'}</span>`;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function runMysteryShop() {
+            const responseDiv = document.getElementById('mysteryShopResponse');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '<span class="loading">Running mystery shop...</span>';
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/mystery-shop`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        dealerId: DEALER_ID,
+                        scenario: 'full',
+                        modelCategory: 'luxury',
+                        storePersona: 'high-volume'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const result = data.data;
+                    responseDiv.innerHTML = `
+                        <span class="success">✓ Mystery Shop completed</span><br><br>
+                        <strong>Shop ID:</strong> ${result.shopId}<br>
+                        <strong>Overall Score:</strong> ${result.scores.overall}<br>
+                        <strong>Stage Scores:</strong><br>
+                        - Greeting: ${result.scores.greeting}<br>
+                        - Needs: ${result.scores.needs}<br>
+                        - Demo: ${result.scores.demo}<br>
+                        - Close: ${result.scores.close}<br>
+                        - Follow-up: ${result.scores.followUp}<br><br>
+                        <strong>Priority Issues:</strong> ${result.varianceAnalysis.priorityIssues.length}<br>
+                        <strong>Coaching Recommendations:</strong> ${result.coachingRecommendations.length}<br><br>
+                        <strong>Full Response:</strong><br>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    responseDiv.innerHTML = `
+                        <span class="error">✗ Error: ${data.error || 'Unknown error'}</span><br><br>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        // Auto-check status on load
+        window.addEventListener('load', () => {
+            checkStatus();
+        });
+    </script>
+</body>
+</html>
+

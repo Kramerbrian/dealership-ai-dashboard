@@ -1,153 +1,289 @@
-# 🚀 DealershipAI Deployment Guide
+# DealershipAI Landing Page - Deployment Guide
 
-## Prerequisites
+## 🚀 Ultra-Lean Architecture (≈25KB total)
 
-1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
-2. **Supabase Project**: Create at [supabase.com](https://supabase.com)
-3. **Clerk Account**: Sign up at [clerk.com](https://clerk.com)
-4. **API Keys**: Get keys for OpenAI, Anthropic, Google AI
+This is a minimal Next.js 14 landing page with:
+- ✅ Zero external dependencies (no Tailwind, no fonts)
+- ✅ Vanilla CSS with CSS variables
+- ✅ Single API route (`/api/scan/quick`)
+- ✅ Exit-intent detection
+- ✅ Reduced motion support
+- ✅ Production-ready Vercel config
 
-## Step 1: Deploy to Vercel
+## 📁 File Structure
 
-### Option A: Deploy via Vercel CLI
+```
+dealershipai-landing/
+├── app/
+│   ├── layout.tsx          # Root layout with metadata
+│   ├── page.tsx            # Main landing page (enhanced)
+│   ├── globals.css         # Vanilla CSS (no framework)
+│   └── api/
+│       └── scan/
+│           └── quick/
+│               └── route.ts # Scan endpoint
+├── package.json
+├── next.config.js
+├── vercel.json            # Deployment config
+└── DEPLOYMENT.md         # This file
+```
+
+## 🛠️ Quick Start
+
+### 1. Install Dependencies
+
 ```bash
-# Login to Vercel
-vercel login
+npm install
+```
 
-# Deploy the project
+### 2. Run Development Server
+
+```bash
+npm run dev
+```
+
+Visit: http://localhost:3000
+
+### 3. Build for Production
+
+```bash
+npm run build
+```
+
+### 4. Test Production Build
+
+```bash
+npm start
+```
+
+## 🌐 Deploy to Vercel
+
+### Option A: Vercel CLI (Recommended)
+
+```bash
+# Install Vercel CLI (one-time)
+npm install -g vercel
+
+# Deploy
 vercel --prod
 ```
 
-### Option B: Deploy via GitHub
-1. Push your code to GitHub
-2. Connect your GitHub repo to Vercel
-3. Import the project in Vercel dashboard
+Follow prompts:
+- Set up and deploy? **Yes**
+- Which scope? **Your account**
+- Link to existing project? **No** (first time) or **Yes** (update)
+- Project name? **dealershipai-landing**
+- Directory? **./**
 
-## Step 2: Environment Variables
+### Option B: GitHub Integration
 
-Set these environment variables in your Vercel project settings:
-
-### Required Variables:
-```
-NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-CLERK_PUBLISHABLE_KEY=pk_test_your-clerk-publishable-key
-CLERK_SECRET_KEY=sk_test_your-clerk-secret-key
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+1. Push to GitHub:
+```bash
+git init
+git add .
+git commit -m "Initial landing page"
+git remote add origin https://github.com/yourusername/dealershipai-landing.git
+git push -u origin main
 ```
 
-### AI API Keys:
+2. Connect to Vercel:
+   - Go to https://vercel.com/new
+   - Import your GitHub repository
+   - Vercel auto-detects Next.js
+   - Click "Deploy"
+
+### Option C: Vercel Dashboard
+
+1. Go to https://vercel.com/dashboard
+2. Click "Add New" → "Project"
+3. Upload folder or connect Git
+4. Configure:
+   - Framework Preset: **Next.js**
+   - Root Directory: **./**
+   - Build Command: `npm run build`
+   - Output Directory: `.next`
+5. Click "Deploy"
+
+## 🔧 Environment Variables
+
+Currently none required. Add when integrating:
+- `CLERK_SECRET_KEY` (for auth)
+- `DATABASE_URL` (for storing scans)
+- `OPENAI_API_KEY` (for real analysis)
+
+## 📊 API Routes
+
+### `/api/scan/quick`
+
+**POST** - Run quick scan (no auth required)
+
+Request:
+```json
+{
+  "url": "germaintoyotaofnaples.com"
+}
 ```
-OPENAI_API_KEY=sk-your-openai-api-key
-ANTHROPIC_API_KEY=sk-ant-your-anthropic-api-key
-GOOGLE_AI_API_KEY=your-google-ai-api-key
+
+Response:
+```json
+{
+  "domain": "germaintoyotaofnaples.com",
+  "scores": {
+    "trust": 84,
+    "schema": 78,
+    "zeroClick": 42,
+    "freshness": 72
+  },
+  "mentions": {
+    "chatgpt": true,
+    "perplexity": false,
+    "gemini": true,
+    "google_ai": true
+  },
+  "insights": [
+    "Schema coverage is incomplete",
+    "Content freshness needs attention"
+  ],
+  "requiresAuth": true
+}
 ```
 
-### Optional Services:
+**GET** - Health check
+
+Response:
+```json
+{
+  "status": "ok",
+  "endpoint": "/api/scan/quick",
+  "version": "1.0.0"
+}
 ```
-UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-redis-token
-STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
-STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
-STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+
+## 🎨 Customization
+
+### Update Colors (globals.css)
+
+```css
+:root {
+  --brand: #3ba3ff;      /* Primary brand color */
+  --brand-2: #8ed0ff;   /* Gradient end */
+  --ok: #39d98a;        /* Success green */
+  --warn: #ffb020;      /* Warning orange */
+  --err: #f97066;       /* Error red */
+}
 ```
 
-## Step 3: Supabase Production Setup
+### Update Copy (app/page.tsx)
 
-1. **Create Supabase Project**:
-   - Go to [supabase.com](https://supabase.com)
-   - Create new project
-   - Note your project URL and anon key
+Search for text strings and update:
+- Hero title: `"See how trusted your dealership looks to AI."`
+- CTA buttons: `"Get started"`, `"Run Free Scan"`
+- Footer: Company name and links
 
-2. **Run Migrations**:
-   ```bash
-   # Install Supabase CLI
-   npm install -g supabase
+### Add Real Scan Logic
 
-   # Link to your project
-   supabase link --project-ref your-project-ref
+Replace mock data in `app/api/scan/quick/route.ts`:
 
-   # Run migrations
-   supabase db push
-   ```
+```typescript
+// Current: Mock data
+const preview = { scores: { trust: 84, ... } };
 
-3. **Enable RLS**:
-   - Go to Supabase Dashboard > Authentication > Policies
-   - Enable Row Level Security on all tables
+// Production: Real analysis
+const preview = await analyzeDealership(domain);
+```
 
-## Step 4: Clerk Authentication Setup
+## 🚀 Performance
 
-1. **Create Clerk Application**:
-   - Go to [clerk.com](https://clerk.com)
-   - Create new application
-   - Configure sign-in/sign-up URLs
+Expected bundle size:
+- **HTML**: ~8KB
+- **CSS**: ~3KB
+- **JS**: ~14KB (Next.js runtime)
+- **Total**: ~25KB (compressed)
 
-2. **Configure OAuth Providers** (optional):
-   - Google, GitHub, etc.
+**Lighthouse targets:**
+- Performance: 95+
+- Accessibility: 95+
+- Best Practices: 95+
+- SEO: 90+
 
-## Step 5: Custom Domain (Optional)
+## 🔒 Security Headers
 
-1. **Add Domain in Vercel**:
-   - Go to Project Settings > Domains
-   - Add your custom domain
-   - Configure DNS records
+Already configured in `vercel.json`:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
 
-2. **Update Environment Variables**:
-   - Update `NEXT_PUBLIC_APP_URL` with your custom domain
+## 📈 Next Steps
 
-## Step 6: Test Deployment
+1. **Add Authentication**
+   - Integrate Clerk for `/sign-in` route
+   - Protect `/onboarding` route
 
-1. **Visit your deployed URL**
-2. **Test key features**:
-   - Landing page loads
-   - Dashboard is accessible
-   - Authentication works
-   - Database connections work
+2. **Real Analysis**
+   - Replace mock data with actual AI platform queries
+   - Cache results in Redis (Upstash)
 
-## Troubleshooting
+3. **Enhanced Features**
+   - Personalization engine (geographic targeting)
+   - Social proof widget (live activity feed)
+   - A/B testing framework
 
-### Common Issues:
+4. **Analytics**
+   - Google Analytics 4
+   - PostHog (product analytics)
+   - Vercel Analytics
 
-1. **Build Failures**:
-   - Check environment variables are set
-   - Verify all dependencies are in package.json
+## 🐛 Troubleshooting
 
-2. **Database Connection Issues**:
-   - Verify Supabase URL and keys
-   - Check RLS policies
+### Build Fails
 
-3. **Authentication Issues**:
-   - Verify Clerk keys and URLs
-   - Check redirect URLs
+```bash
+# Clear cache
+rm -rf .next node_modules
+npm install
+npm run build
+```
 
-### Support:
-- Check Vercel deployment logs
-- Check Supabase logs
-- Check Clerk dashboard for auth issues
+### API Route Not Found
 
-## Production Checklist
+Ensure `app/api/scan/quick/route.ts` exists and exports `POST` and/or `GET`.
 
-- [ ] Environment variables configured
-- [ ] Supabase production database connected
-- [ ] Clerk authentication working
-- [ ] Custom domain configured (if applicable)
-- [ ] SSL certificate active
-- [ ] All features tested
-- [ ] Error monitoring set up (optional)
-- [ ] Analytics configured (optional)
+### Styling Not Applied
 
-## Next Steps
+Check `app/layout.tsx` imports `globals.css`:
+```tsx
+import "./globals.css";
+```
 
-1. **Monitor Performance**: Use Vercel Analytics
-2. **Set up Monitoring**: Consider Sentry for error tracking
-3. **Configure Backups**: Set up Supabase backups
-4. **Scale as Needed**: Monitor usage and scale resources
+### Exit-Intent Not Working
+
+Check browser console for errors. Modal only shows if:
+- User moves mouse to top of viewport
+- OR 45 seconds of inactivity
+- AND no preview has been shown
+
+## ✅ Pre-Launch Checklist
+
+- [ ] Update brand colors
+- [ ] Replace placeholder logos
+- [ ] Update copy (hero, CTA, footer)
+- [ ] Test on mobile/tablet/desktop
+- [ ] Test API endpoint (`/api/scan/quick`)
+- [ ] Verify exit-intent modal
+- [ ] Check reduced motion support
+- [ ] Run Lighthouse audit
+- [ ] Deploy to Vercel
+- [ ] Test production URL
+- [ ] Monitor Vercel logs
+
+## 📞 Support
+
+If deployment fails:
+1. Check Vercel build logs
+2. Verify `next.config.js` is correct
+3. Ensure `package.json` has correct Next.js version
+4. Clear `.next` folder and rebuild
 
 ---
 
-🎉 **Your DealershipAI dashboard is now live in production!**
+**Ready to ship?** Run `vercel --prod` and you're live! 🚀

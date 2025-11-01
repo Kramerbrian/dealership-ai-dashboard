@@ -13,9 +13,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'DealershipAI - AI Visibility Intelligence for Automotive Dealerships',
-  description: 'Discover your AI visibility score across ChatGPT, Claude, Gemini, and Perplexity. Track Zero-Click rates, UGC health, and competitive intelligence.',
-  keywords: ['dealership', 'AI', 'visibility', 'ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'zero-click', 'automotive', 'marketing'],
+  title: 'DealershipAI - Cognitive Ops Platform | AI Chief Strategy Officer for Automotive Dealerships',
+  description: 'The Cognitive Ops Platform for Automotive Leaders. Every dealer has an embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains decisions. When ChatGPT doesn't know you exist, you might as well be selling horse carriages.',
+  keywords: ['dealership', 'AI', 'visibility', 'ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'zero-click', 'automotive', 'marketing', 'cognitive ops', 'AI CSO', 'orchestrator'],
   authors: [{ name: 'DealershipAI Team' }],
   creator: 'DealershipAI',
   publisher: 'DealershipAI',
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: 'DealershipAI - AI Visibility Intelligence',
-    description: 'Discover your AI visibility score across ChatGPT, Claude, Gemini, and Perplexity.',
+    title: 'DealershipAI - Cognitive Ops Platform | AI Chief Strategy Officer',
+    description: 'The Cognitive Ops Platform for Automotive Leaders. Every dealer has an embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains decisions.',
     type: 'website',
     locale: 'en_US',
     url: 'https://dealershipai.com',
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DealershipAI - AI Visibility Intelligence',
-    description: 'Discover your AI visibility score across ChatGPT, Claude, Gemini, and Perplexity.',
+    title: 'DealershipAI - Cognitive Ops Platform | AI Chief Strategy Officer',
+    description: 'The Cognitive Ops Platform for Automotive Leaders. Every dealer has an embedded AI Chief Strategy Officer.',
   },
 }
 

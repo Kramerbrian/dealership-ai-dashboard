@@ -1,6 +1,7 @@
 /**
  * DealershipAI Design Tokens
  * Canonical design system based on brand book specifications
+ * Extended with Cognitive Ops Platform enhancements
  */
 
 export const designTokens = {
@@ -22,6 +23,29 @@ export const designTokens = {
     text: {
       primaryDark: '#FFFFFF',
       primaryLight: '#111111',
+    },
+    // Cognitive Ops Extensions
+    cognitive: {
+      // Core brand - Intelligence gradient
+      primary: '#8B5CF6',      // Vivid purple (violet-500)
+      secondary: '#3B82F6',    // Cobalt blue (blue-500)
+      tertiary: '#06B6D4',     // Cyan (cyan-500)
+
+      // Confidence levels
+      highConfidence: '#10B981',   // Emerald green
+      mediumConfidence: '#F59E0B', // Amber
+      lowConfidence: '#EF4444',    // Red
+
+      // Status indicators
+      active: '#10B981',           // Green - running
+      queued: '#F59E0B',           // Amber - waiting
+      completed: '#06B6D4',        // Cyan - done
+      failed: '#EF4444',           // Red - error
+
+      // Atmosphere (for 3D core)
+      nucleusCore: '#8B5CF6',
+      nucleusGlow: '#A78BFA',
+      nucleusPulse: '#C4B5FD',
     },
   },
   typography: {
@@ -81,8 +105,8 @@ export function generateCSSVariables(mode: 'light' | 'dark' = 'dark') {
   return {
     '--color-base': isDark ? designTokens.colors.base.dark : designTokens.colors.base.light,
     '--color-glass': isDark ? designTokens.colors.glass.dark : designTokens.colors.glass.light,
-    '--color-text-primary': isDark 
-      ? designTokens.colors.text.primaryDark 
+    '--color-text-primary': isDark
+      ? designTokens.colors.text.primaryDark
       : designTokens.colors.text.primaryLight,
     '--color-accent-insight': designTokens.colors.accent.insight,
     '--color-accent-trust': designTokens.colors.accent.trust,
@@ -100,5 +124,32 @@ export function generateCSSVariables(mode: 'light' | 'dark' = 'dark') {
     '--motion-default': `${designTokens.motion.duration.default}ms`,
     '--motion-slow': `${designTokens.motion.duration.slow}ms`,
   };
+}
+
+/**
+ * Get confidence color based on score (0-1)
+ */
+export function getConfidenceColor(confidence: number): string {
+  if (confidence >= 0.85) return designTokens.colors.cognitive.highConfidence;
+  if (confidence >= 0.65) return designTokens.colors.cognitive.mediumConfidence;
+  return designTokens.colors.cognitive.lowConfidence;
+}
+
+/**
+ * Get mission status color
+ */
+export function getMissionStatusColor(status: 'active' | 'queued' | 'completed' | 'failed'): string {
+  return designTokens.colors.cognitive[status];
+}
+
+/**
+ * Hex to RGBA helper
+ */
+export function withOpacity(color: string, opacity: number): string {
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
