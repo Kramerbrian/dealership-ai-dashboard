@@ -1,283 +1,192 @@
 'use client';
 
-import { useState } from 'react';
-import APIUsageChart from '@/components/APIUsageChart';
-import SLOPanel from '@/components/SLOPanel';
-import PermissionsInspector from '@/components/PermissionsInspector';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { 
+  Users, Activity, AlertTriangle, Database, 
+  TrendingUp, DollarSign, Search, Settings 
+} from 'lucide-react';
 
-export default function AdminDashboard() {
-  const [dealershipId, setDealershipId] = useState('11111111-1111-1111-1111-111111111111');
-  const [website, setWebsite] = useState('https://louglutz.com');
-  const [results, setResults] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'audit' | 'appraisal' | 'competitor' | 'market'>('audit');
+/**
+ * Admin Panel - Main Dashboard
+ * Role-based access (admin + super_admin only)
+ */
+export default function AdminPage() {
+  const router = useRouter();
+  const { user, isLoaded } = useUser();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const runAudit = async () => {
-    setLoading(true);
-    setResults(null);
+  useEffect(() => {
+    if (isLoaded) {
+      checkAuthorization();
+    }
+  }, [user, isLoaded]);
+
+  const checkAuthorization = async () => {
     try {
-      const response = await fetch('/api/trpc/audit.generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dealershipId,
-          website,
-          detailed: true
-        })
-      });
+      const response = await fetch('/api/admin/check-access');
       const data = await response.json();
-      setResults(data);
+
+      if (data.authorized) {
+        setIsAuthorized(true);
+        fetchStats();
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error) {
-      console.error('Audit failed:', error);
-      setResults({ error: String(error) });
+      console.error('Authorization check error:', error);
+      router.push('/dashboard');
     } finally {
       setLoading(false);
     }
   };
 
-  const runAppraisal = async () => {
-    setLoading(true);
-    setResults(null);
+  const fetchStats = async () => {
     try {
-      const response = await fetch('/api/trpc/appraisal.analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dealershipId,
-          dealershipUrl: website,
-          dealershipName: 'Lou Glutz Motors',
-          location: 'Chicago, IL'
-        })
-      });
+      const response = await fetch('/api/admin/stats');
       const data = await response.json();
-      setResults(data);
+      setStats(data);
     } catch (error) {
-      console.error('Appraisal analysis failed:', error);
-      setResults({ error: String(error) });
-    } finally {
-      setLoading(false);
+      console.error('Stats fetch error:', error);
     }
   };
 
-  const getMarketAnalysis = async () => {
-    setLoading(true);
-    setResults(null);
-    try {
-      const response = await fetch('/api/trpc/market.getAnalysis?location=Naples,FL', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const data = await response.json();
-      setResults(data);
-    } catch (error) {
-      console.error('Market analysis failed:', error);
-      setResults({ error: String(error) });
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+        <div className="text-white">Checking authorization...</div>
+      </div>
+    );
+  }
 
-  const getCompetitors = async () => {
-    setLoading(true);
-    setResults(null);
-    try {
-      const response = await fetch(`/api/trpc/competitor.list?dealershipId=${dealershipId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const data = await response.json();
-      setResults(data);
-    } catch (error) {
-      console.error('Competitor fetch failed:', error);
-      setResults({ error: String(error) });
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-zinc-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2">Backend admin features for AI analysis</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+          <p className="text-zinc-400">System overview and management</p>
         </div>
 
-        {/* Input Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Configuration</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Dealership ID
-              </label>
-              <input
-                type="text"
-                value={dealershipId}
-                onChange={(e) => setDealershipId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="UUID"
-              />
+        {/* Stats Grid */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-2">
+                <Users className="w-5 h-5 text-purple-400" />
+                <span className="text-xs text-zinc-500">Total Dealers</span>
+              </div>
+              <div className="text-3xl font-bold text-white">{stats.totalDealers || 0}</div>
+              <div className="text-xs text-zinc-400 mt-1">
+                {stats.newDealersThisWeek || 0} this week
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Website URL
-              </label>
-              <input
-                type="text"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="https://..."
-              />
+
+            <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-2">
+                <DollarSign className="w-5 h-5 text-green-400" />
+                <span className="text-xs text-zinc-500">MRR</span>
+              </div>
+              <div className="text-3xl font-bold text-white">
+                ${(stats.mrr || 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-zinc-400 mt-1">
+                ARR: ${((stats.mrr || 0) * 12).toLocaleString()}
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
-              {['audit', 'appraisal', 'competitor', 'market'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as any)}
-                  className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                    activeTab === tab
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-6">
-            {activeTab === 'audit' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Full AI Audit</h3>
-                <p className="text-gray-600 mb-4">
-                  Runs complete 5-module scoring analysis: AI Visibility, SGP Integrity,
-                  Zero-Click, UGC Health, and Geo Trust.
-                </p>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={runAudit}
-                    disabled={loading}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-                  >
-                    {loading ? 'Running Audit...' : 'Run Full Audit'}
-                  </button>
-                  <PermissionsInspector 
-                    resource="audit.advanced" 
-                    action="run" 
-                    role="admin" 
-                    plan="professional" 
-                    features={['audit', 'advanced']} 
-                  />
-                </div>
+            <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-2">
+                <Activity className="w-5 h-5 text-cyan-400" />
+                <span className="text-xs text-zinc-500">API Latency</span>
               </div>
-            )}
-
-            {activeTab === 'appraisal' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Appraisal Penetration Analysis</h3>
-                <p className="text-gray-600 mb-4">
-                  Analyzes appraisal forms, tests AI platform visibility, and generates
-                  recommendations for lead conversion optimization.
-                </p>
-                <button
-                  onClick={runAppraisal}
-                  disabled={loading}
-                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-                >
-                  {loading ? 'Analyzing...' : 'Analyze Appraisal Forms'}
-                </button>
+              <div className="text-3xl font-bold text-white">
+                {(stats.avgLatency || 0).toFixed(0)}ms
               </div>
-            )}
-
-            {activeTab === 'competitor' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Competitor Analysis</h3>
-                <p className="text-gray-600 mb-4">
-                  View and manage competitors, compare scores, and get competitive insights.
-                </p>
-                <button
-                  onClick={getCompetitors}
-                  disabled={loading}
-                  className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-                >
-                  {loading ? 'Loading...' : 'Get Competitors'}
-                </button>
+              <div className="text-xs text-zinc-400 mt-1">
+                P95: {(stats.p95Latency || 0).toFixed(0)}ms
               </div>
-            )}
+            </div>
 
-            {activeTab === 'market' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Market Analysis</h3>
-                <p className="text-gray-600 mb-4">
-                  Get market-wide insights, benchmarks, and trends for the Naples, FL area.
-                </p>
-                <button
-                  onClick={getMarketAnalysis}
-                  disabled={loading}
-                  className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-                >
-                  {loading ? 'Loading...' : 'Get Market Analysis'}
-                </button>
+            <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-2">
+                <Database className="w-5 h-5 text-amber-400" />
+                <span className="text-xs text-zinc-500">Cache Hit Rate</span>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results */}
-        {results && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Results</h2>
-            <div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-96">
-              <pre className="text-sm text-gray-800">
-                {JSON.stringify(results, null, 2)}
-              </pre>
+              <div className="text-3xl font-bold text-white">
+                {(stats.cacheHitRate || 0).toFixed(0)}%
+              </div>
+              <div className="text-xs text-zinc-400 mt-1">
+                Target: &gt; 90%
+              </div>
             </div>
           </div>
         )}
 
-        {/* API Usage Chart */}
-        <div className="mt-8">
-          <APIUsageChart points={[
-            {t:'08:00',calls:12},{t:'09:00',calls:18},{t:'10:00',calls:9},{t:'11:00',calls:22},
-            {t:'12:00',calls:15},{t:'13:00',calls:28},{t:'14:00',calls:19},{t:'15:00',calls:31}
-          ]}/>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <button
+            onClick={() => router.push('/admin/dealers')}
+            className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 hover:border-purple-500/30 transition-all text-left group"
+          >
+            <Users className="w-6 h-6 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
+            <h3 className="text-lg font-semibold text-white mb-1">Dealer Management</h3>
+            <p className="text-sm text-zinc-400">
+              View all dealers, search, filter, and manage accounts
+            </p>
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/system')}
+            className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 hover:border-purple-500/30 transition-all text-left group"
+          >
+            <Activity className="w-6 h-6 text-cyan-400 mb-3 group-hover:scale-110 transition-transform" />
+            <h3 className="text-lg font-semibold text-white mb-1">System Health</h3>
+            <p className="text-sm text-zinc-400">
+              API performance, cache rates, error logs, cron status
+            </p>
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/support')}
+            className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 hover:border-purple-500/30 transition-all text-left group"
+          >
+            <Settings className="w-6 h-6 text-amber-400 mb-3 group-hover:scale-110 transition-transform" />
+            <h3 className="text-lg font-semibold text-white mb-1">Support Tools</h3>
+            <p className="text-sm text-zinc-400">
+              User lookup, agent conversations, failed payments
+            </p>
+          </button>
         </div>
 
-        {/* SLO Monitoring Panel */}
-        <div className="mt-8">
-          <SLOPanel />
-        </div>
-
-        {/* Quick Links */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-3">📚 Documentation</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <strong>Setup Guides:</strong>
-              <ul className="mt-2 space-y-1 text-blue-700">
-                <li>• ADMIN_FEATURES_ACTIVATION.md</li>
-                <li>• AUDIT_WORKFLOW_SETUP.md</li>
-                <li>• APPRAISAL_PENETRATION_GUIDE.md</li>
-              </ul>
-            </div>
-            <div>
-              <strong>Test Pages:</strong>
-              <ul className="mt-2 space-y-1 text-blue-700">
-                <li>• <a href="/test-audit" className="underline">/test-audit</a></li>
-                <li>• <a href="/admin" className="underline">/admin</a> (this page)</li>
-              </ul>
-            </div>
+        {/* Recent Activity */}
+        <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
+          <div className="space-y-3">
+            {[
+              { type: 'signup', message: 'New dealer signup: Terry Reid Hyundai', time: '2 min ago' },
+              { type: 'upgrade', message: 'Upgrade: Free → Pro', time: '15 min ago' },
+              { type: 'error', message: 'API error rate spike detected', time: '1 hour ago' },
+            ].map((activity, idx) => (
+              <div key={idx} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-lg">
+                <div className={`w-2 h-2 rounded-full ${
+                  activity.type === 'error' ? 'bg-red-500' :
+                  activity.type === 'upgrade' ? 'bg-green-500' :
+                  'bg-purple-500'
+                }`} />
+                <div className="flex-1">
+                  <p className="text-sm text-white">{activity.message}</p>
+                  <p className="text-xs text-zinc-500">{activity.time}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

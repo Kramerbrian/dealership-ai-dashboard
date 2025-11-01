@@ -148,6 +148,12 @@
       "permanent": true
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron/rar-nightly",
+      "schedule": "0 3 * * *"
+    }
+  ],
   "env": {
     "NODE_ENV": "production",
     "NEXT_PUBLIC_APP_URL": "https://dealershipai.com",

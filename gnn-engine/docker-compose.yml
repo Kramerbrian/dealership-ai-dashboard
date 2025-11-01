@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  gnn-engine:
+    build: .
+    container_name: dealershipai-gnn-engine
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - MODEL_PATH=${MODEL_PATH:-/app/models/visibility_gnn.pt}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - dealershipai-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dealershipai-redis-gnn
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - dealershipai-network
+    command: redis-server --appendonly yes
+
+volumes:
+  redis-data:
+
+networks:
+  dealershipai-network:
+    driver: bridge
+

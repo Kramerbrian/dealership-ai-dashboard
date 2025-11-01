@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import RaRModal from "@/app/(dashboard)/intelligence/widgets/RaRModal";
 
 // Types for modal content
 interface ModalContent {
@@ -50,6 +51,7 @@ const DealershipAIDashboardLA: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<ModalContent>({ title: "", body: null });
+  const [rarModalOpen, setRarModalOpen] = useState<boolean>(false);
   const [profile, setProfile] = useState({ name: "Lou Grubbs Motors", location: "Chicago, IL" });
 
   // Keep setProfile for future profile editing functionality
@@ -298,7 +300,42 @@ const DealershipAIDashboardLA: React.FC = () => {
           {/* Overview Tab */}
           <div className={`tab-content ${activeTab === 'overview' ? 'active' : ''}`} id="overview">
             {/* Executive Dashboard (summary cards) */}
-            <div className="grid grid-3 mb-20">
+            <div className="grid grid-4 mb-20">
+              {/* RaR Card */}
+              <div
+                className="card danger"
+                onClick={() => setRarModalOpen(true)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="flex-between mb-10">
+                  <h3 style={{ color: '#f44336', fontSize: 16, fontWeight: 600 }}>⚠️ Revenue at Risk</h3>
+                  <span
+                    style={{
+                      background: '#ffebee',
+                      color: '#c62828',
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      fontSize: 10,
+                      fontWeight: 600
+                    }}
+                  >
+                    LIVE
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 15 }}>
+                  <div style={{ fontSize: 42, fontWeight: 300, color: '#f44336', lineHeight: 1 }}>$24.8K</div>
+                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>45% recov.</span>
+                </div>
+                <div className="metric-progress">
+                  <div
+                    className="metric-progress-bar"
+                    style={{ width: '62%', background: 'linear-gradient(90deg, #f44336, #ef5350)' }}
+                  />
+                </div>
+                <div className="text-sm" style={{ color: '#666', marginTop: 10 }}>
+                  Click to view details
+                </div>
+              </div>
               {/* SEO Card */}
               <div
                 className="card primary"
@@ -1427,6 +1464,13 @@ const DealershipAIDashboardLA: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* RaR Modal */}
+      <RaRModal
+        isOpen={rarModalOpen}
+        onClose={() => setRarModalOpen(false)}
+        dealerId={profile.name.toLowerCase().replace(/\s+/g, '-')}
+      />
     </>
   );
 };

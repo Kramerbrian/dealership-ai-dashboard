@@ -1,0 +1,185 @@
+{
+  "name": "DealershipAI - Revenue at Risk Dashboard",
+  "description": "Real-time RaR visualization with recovery opportunities",
+  "dataSources": [
+    {
+      "name": "RaR Monthly Summary",
+      "type": "REST_API",
+      "endpoint": "https://dash.dealershipai.com/api/rar/summary",
+      "method": "GET",
+      "parameters": [
+        {
+          "name": "dealerId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "month",
+          "type": "string",
+          "required": false,
+          "default": "latest"
+        }
+      ],
+      "auth": {
+        "type": "BEARER_TOKEN",
+        "token": "${CLERK_SESSION_TOKEN}"
+      }
+    },
+    {
+      "name": "RaR Events (Detail)",
+      "type": "POSTGRES",
+      "connection": "Supabase",
+      "query": "SELECT dealerId, month, channel, intentCluster, impressions, shareAISnippet, ctrDropWhenAI, avgGross FROM \"RaREvent\" WHERE dealerId = @dealerId AND month >= @startDate"
+    }
+  ],
+  "charts": [
+    {
+      "type": "scorecard",
+      "title": "Total Revenue at Risk",
+      "metric": "rar",
+      "format": "currency",
+      "comparison": "previous_period"
+    },
+    {
+      "type": "scorecard",
+      "title": "Recoverable Revenue",
+      "metric": "recoverable",
+      "format": "currency",
+      "comparison": "previous_period"
+    },
+    {
+      "type": "bar_chart",
+      "title": "Top 10 Losing Intents",
+      "dimension": "intent",
+      "metric": "rar",
+      "sort": "desc",
+      "limit": 10
+    },
+    {
+      "type": "time_series",
+      "title": "RaR Trend (Last 12 Months)",
+      "dimension": "month",
+      "metrics": ["rar", "recoverable"],
+      "format": "currency"
+    },
+    {
+      "type": "table",
+      "title": "Channel Breakdown",
+      "dimensions": ["channel", "intentCluster"],
+      "metrics": ["impressions", "lostSessions", "lostLeads", "lostSales", "rar"],
+      "format": {
+        "impressions": "number",
+        "lostSessions": "number",
+        "lostLeads": "number",
+        "lostSales": "number",
+        "rar": "currency"
+      }
+    },
+    {
+      "type": "pie_chart",
+      "title": "RaR by Intent Cluster",
+      "dimension": "intentCluster",
+      "metric": "rar",
+      "format": "currency"
+    },
+    {
+      "type": "funnel",
+      "title": "Zero-Click Conversion Funnel",
+      "steps": [
+        {
+          "label": "Impressions",
+          "metric": "impressions"
+        },
+        {
+          "label": "AI Snippet Sessions",
+          "metric": "sessAI"
+        },
+        {
+          "label": "Zero-Click Lost",
+          "metric": "lostSessions"
+        },
+        {
+          "label": "Lost Leads",
+          "metric": "lostLeads"
+        },
+        {
+          "label": "Lost Sales",
+          "metric": "lostSales"
+        },
+        {
+          "label": "Revenue at Risk",
+          "metric": "rar"
+        }
+      ]
+    },
+    {
+      "type": "geo_chart",
+      "title": "RaR by Dealer Location",
+      "dimension": "dealer_location",
+      "metric": "rar",
+      "format": "currency"
+    }
+  ],
+  "filters": [
+    {
+      "name": "Dealer",
+      "type": "dropdown",
+      "source": "dealerId",
+      "default": "all"
+    },
+    {
+      "name": "Month Range",
+      "type": "date_range",
+      "source": "month",
+      "default": "last_12_months"
+    },
+    {
+      "name": "Channel",
+      "type": "multi_select",
+      "source": "channel",
+      "default": ["google_organic", "google_paid", "chatgpt", "bing"]
+    },
+    {
+      "name": "Intent Cluster",
+      "type": "multi_select",
+      "source": "intentCluster"
+    }
+  ],
+  "calculatedFields": [
+    {
+      "name": "Recovery Rate",
+      "formula": "recoverable / rar * 100",
+      "format": "percent"
+    },
+    {
+      "name": "Zero-Click Rate",
+      "formula": "lostSessions / impressions * 100",
+      "format": "percent"
+    },
+    {
+      "name": "Lead Loss Rate",
+      "formula": "lostLeads / impressions * 100",
+      "format": "percent"
+    },
+    {
+      "name": "Sales Loss Rate",
+      "formula": "lostSales / impressions * 100",
+      "format": "percent"
+    },
+    {
+      "name": "RaR per Impression",
+      "formula": "rar / impressions",
+      "format": "currency"
+    }
+  ],
+  "style": {
+    "theme": "modern",
+    "colors": {
+      "primary": "#1e40af",
+      "warning": "#f59e0b",
+      "danger": "#dc2626",
+      "success": "#10b981"
+    }
+  }
+}
+

@@ -11,21 +11,22 @@ datasource db {
 }
 
 model Subscription {
-  id                    String   @id @default(cuid())
-  userId                String
-  plan                  String   // FREE, PROFESSIONAL, ENTERPRISE
-  status                String   // ACTIVE, TRIAL, CANCELLED, PAST_DUE
-  currentPeriodStart    DateTime
-  currentPeriodEnd      DateTime
-  trialEnd              DateTime?
-  cancelAtPeriodEnd     Boolean  @default(false)
-  stripeCustomerId      String?
-  stripeSubscriptionId  String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  plan                 String // FREE, PROFESSIONAL, ENTERPRISE
+  status               String // ACTIVE, TRIAL, CANCELLED, PAST_DUE
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  trialEnd             DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([stripeSubscriptionId])
   @@map("subscriptions")
 }
 
@@ -37,44 +38,54 @@ model Dealership {
   state     String
   email     String?
   phone     String?
+  address   String?
+  zipCode   String?
   plan      String   @default("STARTER") // STARTER, PROFESSIONAL, ENTERPRISE
   status    String   @default("ACTIVE") // ACTIVE, SUSPENDED, CANCELLED
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
+  // Google Business Profile Integration
+  gbpLocationId       String? // GBP location ID
+  napValidation       String? // JSON string for validation results
+  napConsistencyScore Float? // 0-1 score
+  lastNAPCheck        DateTime?
+  isActive            Boolean   @default(true)
+  userId              String?
+
   // Relations
-  scores    Score[]
-  audits    Audit[]
-  users     User[]
-  
+  scores Score[]
+  audits Audit[]
+  users  User[]
+
   @@map("dealerships")
 }
 
 model Score {
-  id            String   @id @default(cuid())
-  dealershipId  String
-  aiVisibility  Float
-  zeroClick     Float
-  ugcHealth     Float
-  createdAt     DateTime @default(now())
-  
+  id           String   @id @default(cuid())
+  dealershipId String
+  aiVisibility Float
+  zeroClick    Float
+  ugcHealth    Float
+  createdAt    DateTime @default(now())
+
   // Relations
-  dealership    Dealership @relation(fields: [dealershipId], references: [id])
-  
+  dealership Dealership @relation(fields: [dealershipId], references: [id])
+
   @@map("scores")
 }
 
 model Audit {
-  id            String   @id @default(cuid())
-  dealershipId  String
-  domain        String
-  scores        String   // Store as JSON string for SQLite
-  status        String   @default("completed") // pending, completed, failed
-  createdAt     DateTime @default(now())
-  
+  id           String   @id @default(cuid())
+  dealershipId String
+  domain       String
+  scores       String // Store as JSON string for SQLite
+  status       String   @default("completed") // pending, completed, failed
+  createdAt    DateTime @default(now())
+
   // Relations
-  dealership    Dealership @relation(fields: [dealershipId], references: [id])
-  
+  dealership Dealership @relation(fields: [dealershipId], references: [id])
+
   @@map("audits")
 }
 
@@ -87,17 +98,18 @@ model User {
   role          String    @default("user") // user, admin, dealer, viewer
   dealershipId  String?
   lastLoginAt   DateTime?
-  metadata      String?   // Store custom user data as JSON string
+  metadata      String? // Store custom user data as JSON string
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+
   // Relations
-  dealership    Dealership? @relation(fields: [dealershipId], references: [id])
+  dealership    Dealership?    @relation(fields: [dealershipId], references: [id])
   accounts      Account[]
   sessions      Session[]
   auditLogs     AuditLog[]
   subscriptions Subscription[]
-  
+  orders        Order[]
+
   @@map("users")
 }
 
@@ -154,7 +166,7 @@ model Lead {
   userAgent   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   @@map("leads")
 }
 
@@ -162,11 +174,66 @@ model AuditLog {
   id        String   @id @default(cuid())
   action    String
   userId    String
-  details   String   // Store as JSON string for SQLite
+  details   String // Store as JSON string for SQLite
   timestamp DateTime @default(now())
-  
+
   // Relations
-  user      User     @relation(fields: [userId], references: [id])
-  
+  user User @relation(fields: [userId], references: [id])
+
   @@map("audit_logs")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  userId        String
+  stripeOrderId String   @unique
+  acpTokenId    String? // ACP delegate token ID
+  plan          String // FREE, PROFESSIONAL, ENTERPRISE
+  amount        Int // Amount in cents
+  currency      String   @default("usd")
+  status        String   @default("pending") // pending, completed, cancelled, failed
+  metadata      String? // Store as JSON string for SQLite
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripeOrderId])
+  @@index([status])
+  @@map("orders")
+}
+
+model Price {
+  id        String   @id @default(cuid())
+  vin       String   @unique
+  msrp      Float
+  dealerId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  priceChanges PriceChange[]
+
+  @@index([vin])
+  @@index([dealerId])
+  @@map("prices")
+}
+
+model PriceChange {
+  id        String   @id @default(cuid())
+  priceId   String
+  vin       String
+  oldPrice  Float?
+  newPrice  Float
+  deltaPct  Float?
+  dealerId  String?
+  createdAt DateTime @default(now())
+
+  price Price @relation(fields: [priceId], references: [id], onDelete: Cascade)
+
+  @@index([vin])
+  @@index([dealerId])
+  @@index([createdAt])
+  @@map("price_changes")
 }

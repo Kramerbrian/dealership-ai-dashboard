@@ -1,0 +1,156 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { sendEmail } from '@/lib/email/resend';
+import { render } from '@react-email/render';
+import WelcomeEmail from '@/emails/welcome';
+
+/**
+ * POST /api/emails/send
+ * Internal endpoint for sending transactional emails
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const { type, to, data } = await req.json();
+
+    if (!type || !to) {
+      return NextResponse.json(
+        { error: 'Type and recipient are required' },
+        { status: 400 }
+      );
+    }
+
+    let html: string;
+    let subject: string;
+
+    switch (type) {
+      case 'welcome':
+        html = render(
+          WelcomeEmail({
+            userName: data.userName,
+            dealershipName: data.dealershipName,
+            trustScore: data.trustScore,
+            topIssue: data.topIssue,
+            topIssueImpact: data.topIssueImpact,
+          })
+        );
+        subject = `Your Trust Score: ${data.trustScore || 72} - Here's what it means`;
+        break;
+
+      case 'daily_digest':
+        subject = `Your Trust Score: ${data.trustScore || 72} (${data.delta >= 0 ? '+' : ''}${data.delta?.toFixed(1) || 0})`;
+        html = renderDailyDigest(data);
+        break;
+
+      case 'weekly_report':
+        subject = `Weekly Trust Score Report: ${data.startDate} - ${data.endDate}`;
+        html = renderWeeklyReport(data);
+        break;
+
+      case 'critical_alert':
+        subject = `🚨 Alert: Your Trust Score dropped to ${data.newScore}`;
+        html = renderCriticalAlert(data);
+        break;
+
+      default:
+        return NextResponse.json(
+          { error: 'Invalid email type' },
+          { status: 400 }
+        );
+    }
+
+    const result = await sendEmail({
+      to,
+      subject,
+      html,
+    });
+
+    return NextResponse.json({
+      success: true,
+      emailId: result.id,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error: any) {
+    console.error('Email send error:', error);
+    return NextResponse.json(
+      { error: 'Failed to send email' },
+      { status: 500 }
+    );
+  }
+}
+
+function renderDailyDigest(data: any): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head><meta charset="utf-8"></head>
+      <body style="background: #0a0a0a; color: #fff; font-family: system-ui; padding: 40px;">
+        <div style="max-width: 600px; margin: 0 auto; background: #18181b; padding: 40px; border-radius: 12px;">
+          <h1 style="color: #fff; margin: 0 0 24px;">Daily Trust Score Update</h1>
+          <div style="background: #27272a; padding: 24px; border-radius: 8px; text-align: center; margin: 24px 0;">
+            <div style="font-size: 48px; font-weight: bold; color: #8b5cf6; margin: 0;">${data.trustScore || 72}</div>
+            <div style="color: #a1a1aa; margin-top: 8px;">Trust Score</div>
+            <div style="color: ${data.delta >= 0 ? '#10b981' : '#ef4444'}; margin-top: 12px;">
+              ${data.delta >= 0 ? '+' : ''}${data.delta?.toFixed(1) || 0} vs yesterday
+            </div>
+          </div>
+          <p style="color: #a1a1aa; line-height: 1.6;">${data.topIssue || 'No critical issues detected'}</p>
+          <p style="color: #a1a1aa; line-height: 1.6;">${data.recommendedAction || 'Continue monitoring your score'}</p>
+          <a href="https://dealershipai.com/dashboard" style="display: inline-block; background: #8b5cf6; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin-top: 24px;">View Dashboard →</a>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function renderWeeklyReport(data: any): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head><meta charset="utf-8"></head>
+      <body style="background: #0a0a0a; color: #fff; font-family: system-ui; padding: 40px;">
+        <div style="max-width: 600px; margin: 0 auto; background: #18181b; padding: 40px; border-radius: 12px;">
+          <h1 style="color: #fff; margin: 0 0 24px;">Weekly Trust Score Report</h1>
+          <p style="color: #a1a1aa; margin: 0 0 24px;">${data.startDate} - ${data.endDate}</p>
+          <div style="background: #27272a; padding: 24px; border-radius: 8px; margin: 24px 0;">
+            <div style="font-size: 32px; font-weight: bold; color: #8b5cf6; margin: 0;">${data.trustScore || 72}</div>
+            <div style="color: #a1a1aa; margin-top: 8px;">7-day trend: ${data.trend || 'Stable'}</div>
+          </div>
+          <h2 style="color: #fff; margin: 24px 0 12px;">Pillar Changes</h2>
+          ${data.pillarChanges?.map((p: any) => `
+            <div style="margin: 12px 0;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #a1a1aa;">${p.name}</span>
+                <span style="color: ${p.delta >= 0 ? '#10b981' : '#ef4444'};">${p.delta >= 0 ? '+' : ''}${p.delta?.toFixed(1) || 0}</span>
+              </div>
+            </div>
+          `).join('') || ''}
+          <a href="https://dealershipai.com/dashboard" style="display: inline-block; background: #8b5cf6; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin-top: 24px;">View Full Report →</a>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function renderCriticalAlert(data: any): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head><meta charset="utf-8"></head>
+      <body style="background: #0a0a0a; color: #fff; font-family: system-ui; padding: 40px;">
+        <div style="max-width: 600px; margin: 0 auto; background: #18181b; padding: 40px; border-radius: 12px;">
+          <div style="background: #7f1d1d; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+            <h1 style="color: #fff; margin: 0 0 12px;">🚨 Critical Alert</h1>
+            <div style="font-size: 32px; font-weight: bold; color: #fca5a5; margin: 0;">
+              Trust Score: ${data.oldScore || 75} → ${data.newScore || 65}
+            </div>
+          </div>
+          <h2 style="color: #fff; margin: 24px 0 12px;">What Happened</h2>
+          <p style="color: #a1a1aa; line-height: 1.6;">${data.rootCause || 'Schema markup broken or removed'}</p>
+          <h2 style="color: #fff; margin: 24px 0 12px;">Impact</h2>
+          <p style="color: #fca5a5; font-weight: 600;">Estimated revenue at risk: $${(data.impact || 15000).toLocaleString()}/month</p>
+          <a href="https://dealershipai.com/dashboard?action=fix" style="display: inline-block; background: #ef4444; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin-top: 24px;">Fix Now →</a>
+        </div>
+      </body>
+    </html>
+  `;
+}

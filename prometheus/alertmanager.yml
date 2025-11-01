@@ -1,0 +1,229 @@
+# Alertmanager Configuration for DealershipAI
+# Routes alerts to Slack, PagerDuty, and email
+# Enhanced with multi-channel routing and severity-based escalation
+
+global:
+  # Slack webhook URL (set via environment variable or replace directly)
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  
+  # Default notification settings
+  resolve_timeout: 5m
+  group_by: ['alertname', 'cluster', 'service']
+
+# Route configuration with smart escalation
+route:
+  # Default receiver (fallback)
+  receiver: 'slack_ai_ops'
+  
+  # Group alerts by alertname and severity
+  group_by: ['alertname', 'severity']
+  group_wait: 15s
+  group_interval: 2m
+  repeat_interval: 2h
+  
+  # Smart routing: Critical → Executive, Warning → AI Ops
+  routes:
+    # Critical ARR/ROI alerts → Executive Board channel
+    - match:
+        severity: critical
+      match_re:
+        alertname: '.*ARR.*|.*ROI.*|.*Revenue.*'
+      receiver: 'slack_exec_board'
+      continue: false
+      group_wait: 0s  # Immediate
+    
+    # Critical GNN alerts → PagerDuty + AI Ops
+    - match:
+        severity: critical
+        component: gnn
+      receiver: 'pagerduty-critical'
+      continue: true  # Also send to Slack
+      group_wait: 0s
+    
+    # Critical (any) → Executive Board
+    - match:
+        severity: critical
+      receiver: 'slack_exec_board'
+      continue: false
+      group_wait: 0s
+    
+    # Warning GNN alerts → AI Ops
+    - match:
+        severity: warning
+        component: gnn
+      receiver: 'slack_ai_ops'
+      group_wait: 30s
+    
+    # Revenue team alerts → Revenue Ops channel
+    - match:
+        team: revenue-ops
+      receiver: 'slack_revenue_ops'
+      group_wait: 1m
+    
+    # ML Ops alerts → ML Ops channel
+    - match:
+        team: ml-ops
+      receiver: 'slack_ml_ops'
+      group_wait: 1m
+
+# Receivers
+receivers:
+  # AI Ops (default) - Main alerting channel
+  - name: 'slack_ai_ops'
+    slack_configs:
+      - channel: '#ai-ops'
+        username: 'DealershipAI_AlertBot'
+        icon_emoji: ':robot_face:'
+        send_resolved: true
+        title: '{{ .CommonAnnotations.summary }}'
+        text: |
+          *Status:* {{ .Status | title }}
+          {{ if eq .Status "firing" }}:warning:{{ else }}:white_check_mark:{{ end }}
+          
+          *Alert:* {{ .CommonLabels.alertname }}
+          *Severity:* {{ .CommonLabels.severity | title }}
+          {{ if .CommonLabels.dealer }}*Dealer:* {{ .CommonLabels.dealer }}{{ end }}
+          {{ if .CommonLabels.component }}*Component:* {{ .CommonLabels.component }}{{ end }}
+          
+          *Details:*
+          {{ range .Alerts }}
+          • *Expr:* {{ .Annotations.description | default .Annotations.summary }}
+          • *Starts:* {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+          {{ if .Labels.dealer }}• *Dealer:* {{ .Labels.dealer }}{{ end }}
+          {{ end }}
+          
+          {{ if .CommonAnnotations.runbook_url }}*Runbook:* {{ .CommonAnnotations.runbook_url }}{{ end }}
+        color: '{{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "critical" }}danger{{ else }}warning{{ end }}{{ else }}good{{ end }}'
+        footer: 'DealershipAI Monitoring'
+        footer_icon: 'https://grafana.dealershipai.com/public/img/fav32.png'
+
+  # Executive Board - Critical business-impact alerts
+  - name: 'slack_exec_board'
+    slack_configs:
+      - channel: '#exec-board'
+        username: 'DealershipAI_ExecutiveAlerts'
+        icon_emoji: ':chart_with_upwards_trend:'
+        send_resolved: true
+        title: ':fire: {{ .CommonAnnotations.summary }}'
+        text: |
+          *CRITICAL ALERT - Executive Summary*
+          
+          *Alert:* {{ .CommonLabels.alertname }}
+          *Impact:* {{ .CommonAnnotations.summary }}
+          {{ if .CommonLabels.dealer }}*Dealer:* {{ .CommonLabels.dealer }}{{ end }}
+          
+          *Business Impact:*
+          {{ range .Alerts }}
+          • {{ .Annotations.description | default .Annotations.summary }}
+          • *Detected:* {{ .StartsAt.Format "Jan 2, 3:04 PM MST" }}
+          {{ end }}
+          
+          *Actions Required:*
+          {{ if .CommonAnnotations.runbook_url }}• Review runbook: {{ .CommonAnnotations.runbook_url }}{{ end }}
+          • Dashboard: https://grafana.dealershipai.com/d/gnn-analytics
+          • Contact: #ai-ops for technical details
+        color: 'danger'
+        footer: 'DealershipAI Executive Alerting'
+
+  # Critical alerts → PagerDuty (for on-call escalation)
+  - name: 'pagerduty-critical'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        severity: 'critical'
+        description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+        links:
+          - href: 'https://grafana.dealershipai.com/d/gnn-analytics'
+            text: 'View Dashboard'
+        details:
+          component: '{{ .Labels.component }}'
+          severity: '{{ .Labels.severity }}'
+          dealer: '{{ .Labels.dealer }}'
+          runbook: '{{ .CommonAnnotations.runbook_url }}'
+    
+    # Also send to Slack AI Ops (dual notification)
+    slack_configs:
+      - channel: '#ai-ops'
+        title: ':rotating_light: CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          *PagerDuty Alert Fired*
+          
+          {{ .CommonAnnotations.summary }}
+          
+          *Details:*
+          {{ range .Alerts }}{{ .Annotations.description }}{{ end }}
+          
+          *Dealer:* {{ .CommonLabels.dealer | default "All" }}
+          *Component:* {{ .CommonLabels.component }}
+          
+          PagerDuty incident created. Review dashboard for details.
+        color: 'danger'
+
+  # Revenue Ops channel
+  - name: 'slack_revenue_ops'
+    slack_configs:
+      - channel: '#revenue-ops'
+        username: 'DealershipAI_RevenueBot'
+        icon_emoji: ':moneybag:'
+        send_resolved: true
+        title: '💰 Revenue Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          *{{ .CommonAnnotations.summary }}*
+          
+          {{ range .Alerts }}
+          {{ .Annotations.description }}
+          
+          *Metrics:*
+          • Dealer: {{ .Labels.dealer | default "All" }}
+          • Detected: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+        send_resolved: true
+        color: 'warning'
+
+  # ML Ops channel
+  - name: 'slack_ml_ops'
+    slack_configs:
+      - channel: '#ml-ops'
+        username: 'DealershipAI_MLBot'
+        icon_emoji: ':brain:'
+        send_resolved: true
+        title: '🤖 ML Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          *{{ .CommonAnnotations.summary }}*
+          
+          {{ range .Alerts }}
+          {{ .Annotations.description }}
+          
+          *Model Details:*
+          • Component: {{ .Labels.component }}
+          • Severity: {{ .Labels.severity }}
+          • Detected: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+          
+          {{ if .CommonAnnotations.runbook_url }}*Runbook:* {{ .CommonAnnotations.runbook_url }}{{ end }}
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  # Email notifications (optional)
+  - name: 'email-alerts'
+    email_configs:
+      - to: 'alerts@dealershipai.com'
+        from: 'prometheus@dealershipai.com'
+        smarthost: 'smtp.gmail.com:587'
+        auth_username: '${SMTP_USERNAME}'
+        auth_password: '${SMTP_PASSWORD}'
+        headers:
+          Subject: 'DealershipAI Alert: {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Alert: {{ .GroupLabels.alertname }}</h2>
+          <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <p><a href="https://grafana.dealershipai.com/d/gnn-analytics">View Dashboard</a></p>
+
+# Inhibition rules (suppress lower-priority alerts when critical ones fire)
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']
+

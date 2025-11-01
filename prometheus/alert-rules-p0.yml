@@ -1,0 +1,32 @@
+groups:
+  - name: rar_p0_alerts
+    interval: 30s
+    rules:
+      # P0: High RaR pressure + Zero-Click Coverage + Low Schema
+      - alert: RaRPressureCritical
+        expr: |
+          (secondary_metrics{key="rar_pressure", valueNum > 0.6}) and
+          (zero_click_coverage{coverage > 0.45}) and
+          (schema_coverage{coverage < 0.70})
+        for: 5m
+        labels:
+          severity: critical
+          component: rar
+          team: ml-ops
+          priority: p0
+          auto_fix: true
+        annotations:
+          summary: "P0: High RaR pressure with low schema coverage - Agentic Fix Pack required"
+          description: |
+            RaR pressure is > 60% (${valueNum}), Zero-Click Coverage is > 45% (${zero_click_coverage}), 
+            but Schema Coverage is < 70% (${schema_coverage}).
+            
+            **Agentic Fix Pack Required:**
+            1. Generate intent FAQs (AEO)
+            2. Inject JSON-LD (Schema)
+            3. GBP parity sync (NAP/hours/services)
+            
+            Dealer: {{ $labels.dealerId }}
+          runbook_url: "https://wiki.dealershipai.com/runbooks/rar-p0-agentic-fix"
+          auto_mitigation: "https://api.dealershipai.com/api/orchestrate/agentic-fix-pack"
+

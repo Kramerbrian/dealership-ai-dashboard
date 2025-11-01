@@ -1,0 +1,54 @@
+groups:
+  - name: gnn_alerts
+    interval: 30s
+    rules:
+      - alert: GNNPrecisionLow
+        expr: gnn_precision_rolling_1h < 0.8
+        for: 10m
+        labels:
+          severity: warning
+          component: gnn-engine
+        annotations:
+          summary: "GNN precision dropped below 80%"
+          description: "GNN model precision has been below 80% for 10 minutes. Current: {{ $value | humanizePercentage }}"
+
+      - alert: GNNLossSpike
+        expr: gnn_training_loss_rate > 0
+        for: 15m
+        labels:
+          severity: critical
+          component: gnn-engine
+        annotations:
+          summary: "GNN training loss increasing"
+          description: "GNN training loss has been increasing for 15 minutes. Rate: {{ $value }}"
+
+      - alert: GNNROIUnderperform
+        expr: gnn_roi_estimate < 1
+        for: 1h
+        labels:
+          severity: warning
+          component: gnn-engine
+        annotations:
+          summary: "GNN ROI < 1 — model cost exceeds ARR gain"
+          description: "GNN model ROI is below 1.0, indicating costs exceed revenue gains. Current ROI: {{ $value }}"
+
+      - alert: GNNEngineDown
+        expr: up{job="gnn-engine"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: gnn-engine
+        annotations:
+          summary: "GNN Engine is down"
+          description: "GNN Engine has been unreachable for 1 minute"
+
+      - alert: GNNHighLatency
+        expr: histogram_quantile(0.95, gnn_prediction_latency_seconds_bucket) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: gnn-engine
+        annotations:
+          summary: "GNN prediction latency is high"
+          description: "95th percentile prediction latency exceeds 1 second. Current: {{ $value }}s"
+

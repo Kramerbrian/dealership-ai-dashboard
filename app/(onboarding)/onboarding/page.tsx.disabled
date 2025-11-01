@@ -1,0 +1,186 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { CheckCircle, ArrowRight, Building, Globe, Target } from 'lucide-react';
+
+const steps = [
+  {
+    id: 1,
+    title: 'Dealership Profile',
+    description: 'Tell us about your dealership',
+    icon: Building,
+    fields: [
+      { name: 'dealershipName', label: 'Dealership Name', type: 'text', required: true },
+      { name: 'domain', label: 'Website Domain', type: 'text', placeholder: 'yourdealership.com', required: true },
+      { name: 'location', label: 'Location', type: 'text', placeholder: 'City, State', required: true },
+    ],
+  },
+  {
+    id: 2,
+    title: 'Integrations',
+    description: 'Connect your tools',
+    icon: Globe,
+    fields: [
+      { name: 'googleBusinessProfile', label: 'Google Business Profile', type: 'checkbox' },
+      { name: 'website', label: 'Website URL', type: 'text' },
+    ],
+  },
+  {
+    id: 3,
+    title: 'Goals',
+    description: 'What do you want to achieve?',
+    icon: Target,
+    fields: [
+      { name: 'primaryGoal', label: 'Primary Goal', type: 'select', options: ['Increase Visibility', 'Beat Competitors', 'Generate More Leads'] },
+      { name: 'targetAI', label: 'Target AI Platform', type: 'select', options: ['ChatGPT', 'Google AI', 'All Platforms'] },
+    ],
+  },
+];
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<any>({});
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Submit final form
+      try {
+        const response = await fetch('/api/onboarding/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        
+        if (response.ok) {
+          router.push('/zeropoint');
+        }
+      } catch (error) {
+        console.error('Onboarding error:', error);
+      }
+    }
+  };
+
+  const currentStepData = steps[currentStep];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-2xl">
+        {/* Progress */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            {steps.map((step, idx) => {
+              const Icon = step.icon;
+              const isActive = idx === currentStep;
+              const isCompleted = idx < currentStep;
+              
+              return (
+                <div key={step.id} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-colors ${
+                      isActive ? 'bg-blue-600 border-blue-600 text-white' :
+                      isCompleted ? 'bg-green-600 border-green-600 text-white' :
+                      'bg-gray-800 border-gray-700 text-gray-400'
+                    }`}>
+                      {isCompleted ? <CheckCircle className="w-6 h-6" /> : <Icon className="w-6 h-6" />}
+                    </div>
+                    <div className={`mt-2 text-xs font-medium text-center ${
+                      isActive ? 'text-white' : 'text-gray-400'
+                    }`}>
+                      {step.title}
+                    </div>
+                  </div>
+                  {idx < steps.length - 1 && (
+                    <div className={`h-1 flex-1 mx-2 rounded ${
+                      idx < currentStep ? 'bg-green-600' : 'bg-gray-700'
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-white mb-2">{currentStepData.title}</h2>
+            <p className="text-gray-300">{currentStepData.description}</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {currentStepData.fields.map((field) => (
+              <div key={field.name}>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {field.label}
+                  {field.required && <span className="text-red-400 ml-1">*</span>}
+                </label>
+                {field.type === 'text' && (
+                  <input
+                    type="text"
+                    value={formData[field.name] || ''}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
+                {field.type === 'select' && (
+                  <select
+                    value={formData[field.name] || ''}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                    required={field.required}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select...</option>
+                    {field.options?.map((opt) => (
+                      <option key={opt} value={opt} className="bg-gray-800">
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {field.type === 'checkbox' && (
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData[field.name] || false}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.checked })}
+                      className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-gray-300">Connect {field.label}</span>
+                  </label>
+                )}
+              </div>
+            ))}
+
+            <div className="flex items-center justify-between pt-6">
+              {currentStep > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(currentStep - 1)}
+                  className="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  Previous
+                </button>
+              )}
+              <button
+                type="submit"
+                className="ml-auto flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                <span>{currentStep === steps.length - 1 ? 'Complete' : 'Next'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+

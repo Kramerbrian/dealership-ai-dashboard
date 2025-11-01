@@ -38,12 +38,12 @@ export class AlgorithmicFrameworkEngine {
   };
 
   // Calculate complete algorithmic framework
-  calculateFramework(pillarData: any, modifierData: any): AlgorithmicFramework {
+  async calculateFramework(pillarData: any, modifierData: any): Promise<AlgorithmicFramework> {
     // Calculate individual pillars
     const pillars = this.calculatePillars(pillarData);
     
-    // Calculate composite metrics
-    const metrics = this.calculateMetrics(pillars, pillarData);
+    // Calculate composite metrics (now async due to RaR integration)
+    const metrics = await this.calculateMetrics(pillars, pillarData);
     
     // Apply modifiers
     const modifiers = this.calculateModifiers(modifierData);
@@ -200,9 +200,9 @@ export class AlgorithmicFrameworkEngine {
   }
 
   // Calculate composite metrics
-  private calculateMetrics(pillars: AlgorithmicPillars, data: any): AlgorithmicMetrics {
-    // AIV - Algorithmic Visibility Index
-    const aiv = (
+  private async calculateMetrics(pillars: AlgorithmicPillars, data: any): Promise<AlgorithmicMetrics> {
+    // AIV - Algorithmic Visibility Index (base calculation)
+    const baseAIV = (
       pillars.seo * this.weights.seo +
       pillars.aeo * this.weights.aeo +
       pillars.geo * this.weights.geo +
@@ -210,8 +210,8 @@ export class AlgorithmicFrameworkEngine {
       pillars.geoLocal * this.weights.geoLocal
     );
 
-    // ATI - Algorithmic Trust Index
-    const ati = this.calculateATI(data);
+    // ATI - Algorithmic Trust Index (base calculation)
+    const baseATI = this.calculateATI(data);
 
     // CRS - Content Reliability Score
     const crs = this.calculateCRS(data);
@@ -221,6 +221,24 @@ export class AlgorithmicFrameworkEngine {
 
     // CIS - Clarity Intelligence Score
     const cis = this.calculateCIS(data);
+
+    // Apply RaR pressure adjustments if dealerId is available
+    let aiv = baseAIV;
+    let ati = baseATI;
+    
+    if (data.dealerId) {
+      try {
+        const { getRaRPressure, applyRaRToAIV, applyRaRToATI } = await import('@/lib/scoring/rar-integration');
+        const rarData = await getRaRPressure(data.dealerId);
+        
+        // Apply RaR pressure to AIV and ATI
+        aiv = applyRaRToAIV(baseAIV, rarData.pressure);
+        ati = applyRaRToATI(baseATI, rarData.pressure);
+      } catch (error) {
+        // If RaR integration fails, use base scores
+        console.warn('RaR integration error, using base scores:', error);
+      }
+    }
 
     return {
       aiv: Math.round(aiv * 100) / 100,

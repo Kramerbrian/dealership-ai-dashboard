@@ -1,0 +1,72 @@
+{
+  "text": "🚀 DealershipAI Orchestrator Update",
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "🚀 Schema Change Detected"
+      }
+    },
+    {
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*Repository:*\n<{{repo_url}}|{{repo_name}}>"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Branch:*\n{{branch_name}}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*PR:*\n<{{pr_url}}|#{{pr_number}}>"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Author:*\n{{author}}"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Schema Diff:*\n```\n{{schema_diff}}\n```"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "View PR"
+          },
+          "url": "{{pr_url}}",
+          "style": "primary"
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "View Changes"
+          },
+          "url": "{{changes_url}}"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "📅 {{timestamp}} | Maintained by DealershipAI Core"
+        }
+      ]
+    }
+  ]
+}
+

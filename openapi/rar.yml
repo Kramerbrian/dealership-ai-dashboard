@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: DealershipAI RaR API
+  version: 1.0.0
+  description: Revenue at Risk (RaR) API for tracking and calculating lost revenue from AI snippet visibility issues
+
+paths:
+  /api/rar/ingest:
+    post:
+      summary: Ingest a RaR event row
+      description: |
+        Accepts a single RaR event with channel-level metrics.
+        Automatically enqueues a monthly computation job.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RaREvent'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+
+  /api/rar/summary:
+    get:
+      summary: Get latest RaR monthly summary
+      description: Returns the most recent RaR calculation for a dealer
+      parameters:
+        - in: query
+          name: dealerId
+          required: true
+          schema:
+            type: string
+          description: Dealer identifier
+        - in: query
+          name: month
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Specific month to retrieve (YYYY-MM-DD)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaRMonthly'
+        '401':
+          description: Unauthorized
+        '400':
+          description: Bad request
+
+  /api/rar/compute:
+    post:
+      summary: Manually trigger RaR computation
+      description: Computes monthly RaR for a given dealer and month
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dealerId
+                - month
+              properties:
+                dealerId:
+                  type: string
+                month:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+
+  /api/ai-scores/rar-pressure:
+    get:
+      summary: Get RaR pressure score
+      description: Returns the rar_pressure value (0-1) used in AI score weighting
+      parameters:
+        - in: query
+          name: dealerId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pressure:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+
+components:
+  schemas:
+    RaREvent:
+      type: object
+      required:
+        - dealerId
+        - month
+        - channel
+        - impressions
+        - shareAISnippet
+        - ctrBaseline
+        - ctrDropWhenAI
+        - leadCR
+        - closeRate
+        - avgGross
+        - recoverableShare
+      properties:
+        dealerId:
+          type: string
+          example: 'dealer123'
+        month:
+          type: string
+          format: date
+          example: '2025-11-01'
+        channel:
+          type: string
+          example: 'google_search'
+        impressions:
+          type: integer
+          minimum: 0
+          example: 50000
+        shareAISnippet:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.35
+          description: Fraction of impressions where AI snippet was present
+        ctrBaseline:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.08
+          description: Baseline click-through rate without AI snippet
+        ctrDropWhenAI:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.15
+          description: Relative CTR drop when AI snippet is present
+        leadCR:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.12
+          description: Lead conversion rate
+        closeRate:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.25
+          description: Sales close rate
+        avgGross:
+          type: number
+          minimum: 0
+          example: 2500
+          description: Average gross profit per sale
+        recoverableShare:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.4
+          description: Fraction of RaR that is recoverable through interventions
+        intentCluster:
+          type: string
+          example: 'ev_inventory_search'
+          description: Intent category for this event
+
+    RaRMonthly:
+      type: object
+      properties:
+        id:
+          type: string
+        dealerId:
+          type: string
+        month:
+          type: string
+          format: date
+        lostSessions:
+          type: integer
+        lostLeads:
+          type: integer
+        lostSales:
+          type: number
+        rar:
+          type: number
+          description: Total Revenue at Risk in dollars
+        recoverable:
+          type: number
+          description: Recoverable revenue in dollars
+        topLosingIntents:
+          type: array
+          items:
+            type: object
+            properties:
+              intent:
+                type: string
+              rar:
+                type: number
+        computedAt:
+          type: string
+          format: date-time
+

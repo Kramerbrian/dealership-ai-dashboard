@@ -1,200 +1,284 @@
-# DealershipAI Visibility Engine - Complete Setup Instructions
+# 🚀 DealershipAI Complete Setup Instructions
 
-## 🎯 Quick Start Guide
+## Step 1: Install Dependencies
 
-You now have a **complete, production-ready closed-loop AIV system** with all components restored and operational. Here's how to get it running:
-
----
-
-## 📋 What You Have
-
-### ✅ **Complete System Components**
-- **6 Restored API Endpoints** - All functional and tested
-- **Database Functions** - Complete SQL script ready to deploy
-- **Deployment Scripts** - Automated verification and setup
-- **Production Checklist** - Comprehensive readiness guide
-- **Monitoring System** - Health checks and observability
-- **Documentation** - Complete deployment and operational guides
-
-### ✅ **API Endpoints Ready**
-1. `/api/kpis/latest` - Real-time AIV metrics
-2. `/api/train/evaluate` - Model evaluation
-3. `/api/anomaly/reviews` - FraudGuard detection
-4. `/api/predict/forecast` - Predictive forecasting
-5. `/api/history` - Historical trend data
-6. `/api/prompts/latest` - Benchmark results
-7. `/api/health` - System health monitoring
-
----
-
-## 🚀 **Next Steps to Go Live**
-
-### **Step 1: Set Up Supabase (5 minutes)**
-1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Create new project: `dealershipai-visibility-engine`
-3. Copy your project URL and service role key
-4. Update `.env.local`:
+**Note:** If you encounter npm permission errors, run:
 ```bash
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+sudo chown -R $(whoami) ~/.npm
 ```
 
-### **Step 2: Deploy Database (2 minutes)**
+Then install:
 ```bash
-# Run the database migration
-psql "$SUPABASE_URL" -f supabase/migrations/20241220000001_aiv_closed_loop_system.sql
-
-# Set up all database functions
-psql "$SUPABASE_URL" -f scripts/setup-database-functions.sql
+npm install @react-email/components @react-email/render mixpanel-browser
 ```
 
-### **Step 3: Deploy Application (3 minutes)**
+### Optional (for PDF/Excel reports):
 ```bash
-# Deploy to Vercel
-vercel --prod
-
-# Set environment variables in Vercel dashboard
-vercel env add SUPABASE_URL
-vercel env add SUPABASE_SERVICE_ROLE_KEY
-vercel env add NEXT_PUBLIC_SUPABASE_URL
-vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
-```
-
-### **Step 4: Verify Everything Works (2 minutes)**
-```bash
-# Run comprehensive verification
-./scripts/deploy-visibility-engine.sh --verbose
-
-# Test health endpoint
-curl https://your-domain.vercel.app/api/health
+npm install react-pdf puppeteer exceljs
 ```
 
 ---
 
-## 🎯 **What Happens Next**
+## Step 2: Set Environment Variables
 
-Once deployed, your system will:
-
-### **🔄 Automated Operations**
-- **Nightly Processing**: AOER computation, elasticity updates, model evaluation
-- **Real-time Monitoring**: Health checks, performance tracking, error detection
-- **Self-Improvement**: Model weights adjust based on new data
-- **Anomaly Detection**: FraudGuard identifies suspicious patterns
-
-### **📊 Live Dashboard**
-- **Real-time AIV Metrics**: Current scores with confidence intervals
-- **Predictive Forecasting**: 4-week AIV predictions with Kalman filtering
-- **Trend Analysis**: Historical data with smoothing and pattern detection
-- **Performance Monitoring**: Model accuracy, R² scores, RMSE tracking
-
-### **🧠 AI-Powered Insights**
-- **HyperAIV Optimization**: Monthly prompt sets for accuracy improvement
-- **Causal Analysis**: Understanding what drives AIV changes
-- **ROI Simulation**: Elasticity-based revenue impact modeling
-- **Regional Calibration**: Location-specific weight optimization
-
----
-
-## 📈 **Expected Performance**
-
-### **System Metrics**
-- **API Response Time**: < 200ms average
-- **Model Accuracy**: R² > 0.85
-- **Uptime**: > 99.9%
-- **Data Freshness**: < 1 hour lag
-
-### **Business Impact**
-- **AIV Prediction Accuracy**: ±5% of actual performance
-- **4-Week Forecast Accuracy**: > 80%
-- **Anomaly Detection**: > 95% precision
-- **ROI Attribution**: Measurable business value
-
----
-
-## 🔧 **Advanced Configuration**
-
-### **Customization Options**
-- **Model Weights**: Adjust pillar weights (SEO, AEO, GEO, UGC, GeoLocal)
-- **Thresholds**: Modify anomaly detection sensitivity
-- **Scheduling**: Customize cron job timing
-- **Monitoring**: Add custom metrics and alerts
-
-### **Integration Points**
-- **Clerk Authentication**: Multi-tenant user management
-- **External APIs**: Connect to Google Search Console, GBP, etc.
-- **Data Sources**: Ingest from CRM, analytics platforms
-- **Notification Systems**: Slack, email alerts for anomalies
-
----
-
-## 📚 **Documentation Available**
-
-### **Operational Guides**
-- `DEPLOYMENT_GUIDE.md` - Complete deployment instructions
-- `PRODUCTION_READINESS_CHECKLIST.md` - Pre-launch validation
-- `AUTONOMOUS_ANALYTICS_LAB_GUIDE.md` - Advanced AI optimization
-- `CLOSED_LOOP_AIV_DEPLOYMENT_GUIDE.md` - System architecture
-
-### **API Documentation**
-- All endpoints documented with examples
-- Health check endpoints for monitoring
-- Error handling and response formats
-- Authentication and authorization
-
----
-
-## 🚨 **Support & Troubleshooting**
-
-### **Common Issues**
-1. **Database Connection**: Verify Supabase credentials
-2. **API Errors**: Check environment variables
-3. **Performance**: Monitor database query performance
-4. **Data Quality**: Validate input data format
-
-### **Emergency Procedures**
-- **Rollback**: `vercel rollback` to previous version
-- **Database Recovery**: Restore from Supabase backups
-- **Health Checks**: Monitor `/api/health` endpoint
-- **Incident Response**: Follow production checklist procedures
-
----
-
-## 🎉 **You're Ready to Launch!**
-
-Your DealershipAI Visibility Engine is **production-ready** with:
-
-✅ **Complete API Layer** - All endpoints functional  
-✅ **Database Schema** - Optimized for performance  
-✅ **Automated Processing** - Self-improving system  
-✅ **Monitoring & Alerts** - Full observability  
-✅ **Security** - RLS and authentication ready  
-✅ **Documentation** - Comprehensive guides  
-✅ **Deployment Scripts** - Automated setup  
-
-**Total Setup Time**: ~15 minutes  
-**System Capability**: Enterprise-grade closed-loop AI analytics  
-
----
-
-## 🚀 **Launch Command**
-
-When you're ready to go live:
+Create `.env.local` from `.env.example.complete`:
 
 ```bash
-# 1. Set up Supabase credentials in .env.local
-# 2. Deploy database
-psql "$SUPABASE_URL" -f scripts/setup-database-functions.sql
-
-# 3. Deploy application
-vercel --prod
-
-# 4. Verify deployment
-./scripts/deploy-visibility-engine.sh --verbose
-
-# 5. Test system
-curl https://your-domain.vercel.app/api/health
+cp .env.example.complete .env.local
 ```
 
-**Your self-improving Algorithmic Visibility Index is ready to transform dealership analytics!** 🎯
+**Required variables to fill in:**
+
+### Critical (must have):
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - From Clerk dashboard
+- `CLERK_SECRET_KEY` - From Clerk dashboard
+- `DATABASE_URL` - Your PostgreSQL connection string
+- `RESEND_API_KEY` - From Resend.com
+- `STRIPE_SECRET_KEY` - From Stripe dashboard
+- `STRIPE_WEBHOOK_SECRET` - From Stripe webhook settings
+
+### Important (for full functionality):
+- `NEXT_PUBLIC_MIXPANEL_TOKEN` - For analytics
+- `ANTHROPIC_API_KEY` - For agent chat
+- `REDIS_URL` - For caching and queues
+- `WEBHOOK_SECRET` - Random secret for webhook signatures
+- `INTERNAL_API_SECRET` - Random secret for internal API calls
+
+### Optional:
+- `SENTRY_DSN` - Error tracking
+- `GMB_API_KEY` - Google My Business API
+- `GSC_API_KEY` - Google Search Console API
+
+---
+
+## Step 3: Database Setup
+
+### Create Required Tables
+
+Run these SQL migrations or add to Prisma schema:
+
+```sql
+-- Onboarding sessions
+CREATE TABLE IF NOT EXISTS onboarding_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  url TEXT NOT NULL,
+  results JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
+-- Usage logs (for billing)
+CREATE TABLE IF NOT EXISTS usage_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Webhooks
+CREATE TABLE IF NOT EXISTS webhooks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  url TEXT NOT NULL,
+  events JSONB NOT NULL,
+  secret TEXT NOT NULL,
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Data exports (GDPR)
+CREATE TABLE IF NOT EXISTS data_exports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  export_id TEXT UNIQUE NOT NULL,
+  data JSONB,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**Or use Prisma migrations:**
+```bash
+npx prisma migrate dev --name add_complete_systems
+```
+
+---
+
+## Step 4: Update Prisma Schema (if needed)
+
+Add to `prisma/schema.prisma`:
+
+```prisma
+model OnboardingSession {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  url       String
+  results   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("onboarding_sessions")
+}
+
+model UsageLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("usage_logs")
+}
+
+model Webhook {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  url       String
+  events    Json
+  secret    String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("webhooks")
+}
+
+model DataExport {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  exportId  String   @unique @map("export_id")
+  data      Json?
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("data_exports")
+}
+```
+
+Then run:
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+---
+
+## Step 5: Update API Routes with Database
+
+The following files need database integration:
+
+1. **`app/api/billing/portal/route.ts`**
+   - Replace `getOrCreateStripeCustomer` with function from `lib/db/integrations.ts`
+
+2. **`app/dashboard/billing/page.tsx`**
+   - Use `getUserSubscription` and `getUserUsage` from integrations
+
+3. **`app/api/admin/stats/route.ts`**
+   - Use `getAdminStats` from integrations
+
+4. **`app/api/admin/check-access/route.ts`**
+   - Use `checkAdminRole` from integrations
+
+5. **`app/api/gdpr/export/route.ts`**
+   - Use `exportUserData` from integrations
+
+6. **`app/api/gdpr/delete/route.ts`**
+   - Use `scheduleAccountDeletion` from integrations
+
+---
+
+## Step 6: Test Systems
+
+Run the test script:
+```bash
+./scripts/test-systems.sh
+```
+
+Or test manually:
+```bash
+# Start dev server
+npm run dev
+
+# In another terminal, test endpoints:
+curl http://localhost:3000/onboard/step-1
+curl http://localhost:3000/legal/terms
+curl http://localhost:3000/help
+```
+
+---
+
+## Step 7: Verify Environment
+
+Check all services are configured:
+
+```bash
+# Check if variables are set
+node -e "
+  console.log('Clerk:', !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  console.log('Database:', !!process.env.DATABASE_URL);
+  console.log('Resend:', !!process.env.RESEND_API_KEY);
+  console.log('Stripe:', !!process.env.STRIPE_SECRET_KEY);
+  console.log('Mixpanel:', !!process.env.NEXT_PUBLIC_MIXPANEL_TOKEN);
+"
+```
+
+---
+
+## Step 8: Production Deployment Checklist
+
+- [ ] All environment variables set in Vercel
+- [ ] Database migrations run
+- [ ] Stripe webhook endpoints configured
+- [ ] Resend domain verified
+- [ ] Mixpanel project created and token set
+- [ ] Clerk application configured with redirect URLs
+- [ ] Test onboarding flow end-to-end
+- [ ] Test email sending (use Resend test mode)
+- [ ] Test billing portal (Stripe test mode)
+- [ ] Verify analytics tracking
+- [ ] Test webhook delivery
+- [ ] Verify GDPR endpoints work
+
+---
+
+## Troubleshooting
+
+### npm permission errors
+```bash
+sudo chown -R $(whoami) ~/.npm
+```
+
+### Database connection errors
+- Verify `DATABASE_URL` format: `postgresql://user:pass@host:port/db`
+- Check SSL requirements (add `?sslmode=require` if needed)
+
+### Missing packages
+If imports fail, verify installation:
+```bash
+npm list @react-email/components @react-email/render mixpanel-browser
+```
+
+### TypeScript errors
+Run:
+```bash
+npm run type-check
+```
+
+---
+
+## Next Steps
+
+1. **Complete Email Templates**: Finish daily digest, weekly report, critical alerts
+2. **Add PDF/Excel Libraries**: For full report generation
+3. **Create Help Articles**: Add MDX content for knowledge base
+4. **Set Up Monitoring**: Configure Sentry and analytics dashboards
+5. **Load Testing**: Test all endpoints under load
+
+**You're ready to deploy! 🚀**

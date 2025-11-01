@@ -1,0 +1,52 @@
+{
+  "project": "AppraiseYourVehicle-Orchestrator",
+  "components": {
+    "api": [
+      "app/api/jobs/msrp-sync/route.ts",
+      "app/api/ai-scores/recompute/route.ts",
+      "app/api/ai-scores/route.ts",
+      "app/api/ai-scores/stream/route.ts",
+      "app/api/diagnostics/msrp-sync/route.ts",
+      "app/api/price-changes/route.ts",
+      "app/api/docs/orchestrator/route.ts"
+    ],
+    "lib": [
+      "lib/jobs/msrpSync.ts",
+      "lib/intel/score-engine.ts",
+      "lib/intel/scores.ts",
+      "lib/feeds/ga4.ts",
+      "lib/pulse/client.ts",
+      "lib/pulse/oemFeed.ts",
+      "lib/orchestrator/diagnostics.ts",
+      "lib/events/bus.ts",
+      "lib/client/useAiScoreStream.ts"
+    ],
+    "schema": [
+      "openapi/pulse.yaml",
+      "prisma/schema.prisma"
+    ],
+    "workflows": [
+      ".github/workflows/schema-ci.yml",
+      ".github/workflows/schema-preview.yml",
+      ".github/workflows/schema-release-notify.yml"
+    ],
+    "scripts": [
+      "scripts/openapi-diff-changelog.ts",
+      "scripts/scheduler.ts",
+      ".github/slack-message-template.json"
+    ],
+    "ui": [
+      "app/components/AppraiseOrchestratorCard.tsx",
+      "app/(docs)/orchestrator/page.tsx"
+    ]
+  },
+  "setup": {
+    "node": "20",
+    "commands": ["npm ci", "npm run diff:changelog"]
+  },
+  "metadata": {
+    "maintainer": "DealershipAI Core",
+    "lastUpdated": "2025-11-01"
+  }
+}
+

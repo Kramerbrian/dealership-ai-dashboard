@@ -1,0 +1,85 @@
+{
+  "clerk": {
+    "user.created": {
+      "type": "user.created",
+      "data": {
+        "id": "user_2abc123xyz",
+        "email_addresses": [
+          {
+            "id": "idn_2abc123xyz",
+            "email_address": "test@dealershipai.com"
+          }
+        ],
+        "first_name": "Test",
+        "last_name": "User",
+        "created_at": 1699123456789,
+        "updated_at": 1699123456789
+      }
+    },
+    "user.updated": {
+      "type": "user.updated",
+      "data": {
+        "id": "user_2abc123xyz",
+        "email_addresses": [
+          {
+            "id": "idn_2abc123xyz",
+            "email_address": "test@dealershipai.com"
+          }
+        ],
+        "first_name": "Test",
+        "last_name": "User Updated"
+      }
+    }
+  },
+  "stripe": {
+    "checkout.session.completed": {
+      "id": "cs_test_1234567890",
+      "object": "checkout.session",
+      "customer": "cus_test_1234567890",
+      "customer_email": "test@dealershipai.com",
+      "subscription": "sub_test_1234567890",
+      "client_reference_id": "user_2abc123xyz",
+      "metadata": {
+        "userId": "user_2abc123xyz",
+        "plan": "professional",
+        "domain": "test-dealership.com",
+        "company": "Test Dealership",
+        "acp_token": "acp_token_test_1234567890"
+      },
+      "amount_total": 49900,
+      "currency": "usd",
+      "payment_status": "paid",
+      "status": "complete"
+    },
+    "customer.subscription.updated": {
+      "id": "sub_test_1234567890",
+      "object": "subscription",
+      "customer": "cus_test_1234567890",
+      "status": "active",
+      "current_period_start": 1699123456,
+      "current_period_end": 1701715456,
+      "cancel_at_period_end": false,
+      "metadata": {
+        "userId": "user_2abc123xyz",
+        "plan": "professional"
+      }
+    }
+  },
+  "acp": {
+    "agentic.order.completed": {
+      "id": "order_test_1234567890",
+      "object": "agentic.commerce.order",
+      "customer": "cus_test_1234567890",
+      "subscription": "sub_test_1234567890",
+      "amount": 49900,
+      "currency": "usd",
+      "status": "completed",
+      "metadata": {
+        "userId": "user_2abc123xyz",
+        "plan": "professional",
+        "acp_token": "acp_token_test_1234567890"
+      }
+    }
+  }
+}
+

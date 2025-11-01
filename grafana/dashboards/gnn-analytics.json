@@ -1,0 +1,348 @@
+{
+  "id": null,
+  "uid": "gnn-analytics",
+  "title": "DealershipAI GNN Analytics",
+  "tags": ["gnn", "ml", "ai-scores", "arr"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "15s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Predictions",
+      "targets": [
+        {
+          "expr": "gnn_predictions_total",
+          "refId": "A",
+          "legendFormat": "Total"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "continuous-BlYlRd" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      },
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Verified Predictions",
+      "targets": [
+        {
+          "expr": "gnn_predictions_verified",
+          "refId": "A",
+          "legendFormat": "Verified"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 1000 },
+              { "color": "green", "value": 5000 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 3,
+      "type": "gauge",
+      "title": "Precision (Verified / Total)",
+      "targets": [
+        {
+          "expr": "100 * (gnn_predictions_verified / max(1, gnn_predictions_total))",
+          "refId": "A",
+          "legendFormat": "Precision %"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Training Loss Trend",
+      "targets": [
+        {
+          "expr": "gnn_training_loss",
+          "legendFormat": "Loss",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Prediction Precision Over Time",
+      "targets": [
+        {
+          "expr": "100 * (gnn_predictions_verified / gnn_predictions_total)",
+          "legendFormat": "Precision %",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Predicted ARR Gain (USD)",
+      "targets": [
+        {
+          "expr": "increase(gnn_arr_gain_usd[1h])",
+          "legendFormat": "ΔARR (hour)",
+          "refId": "A"
+        },
+        {
+          "expr": "gnn_arr_gain_usd",
+          "legendFormat": "Total ARR Gain",
+          "refId": "B"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 10, "w": 24, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Top 10 Suggested Fixes",
+      "targets": [
+        {
+          "expr": "topk(10, gnn_fix_confidence{fix!=\"\"})",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "color-background"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "gradient-gauge"
+              },
+              {
+                "id": "thresholds.mode",
+                "value": "absolute"
+              },
+              {
+                "id": "thresholds.steps",
+                "value": [
+                  { "color": "red", "value": 0 },
+                  { "color": "orange", "value": 0.7 },
+                  { "color": "green", "value": 0.9 }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "fix" },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fix Type"
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "intent" },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Intent"
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "dealer" },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Dealer"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Value"
+          }
+        ]
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "dealer",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "query": {
+          "query": "label_values(gnn_fix_confidence, dealer)",
+          "refId": "StandardVariableQuery"
+        },
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "multi": true,
+        "allValue": null
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "Model Retrain",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "blue",
+        "query": "gnn_model_version_info",
+        "tagKeys": "version",
+        "textFormat": "Model {{version}} deployed"
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Prometheus Query",
+      "url": "/prometheus/graph?g0.expr=gnn_predictions_total",
+      "type": "link",
+      "targetBlank": true
+    }
+  ]
+}
+

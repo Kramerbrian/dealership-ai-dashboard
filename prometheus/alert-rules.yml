@@ -1,0 +1,84 @@
+groups:
+  - name: gnn_alerts
+    interval: 30s
+    rules:
+      # Alert when precision drops below threshold
+      - alert: GNNPrecisionDrop
+        expr: |
+          (rate(gnn_predictions_verified[10m]) / max(1, rate(gnn_predictions_total[10m]))) < 0.75
+        for: 10m
+        labels:
+          severity: warning
+          component: gnn
+          team: ml-ops
+        annotations:
+          summary: "GNN precision below 75%"
+          description: "GNN model precision has dropped to {{ $value | humanizePercentage }} for the last 10 minutes. Expected threshold: 75%"
+          runbook_url: "https://wiki.dealershipai.com/runbooks/gnn-precision-drop"
+      
+      # Alert when precision drops critically low
+      - alert: GNNPrecisionCritical
+        expr: |
+          (rate(gnn_predictions_verified[5m]) / max(1, rate(gnn_predictions_total[5m]))) < 0.60
+        for: 5m
+        labels:
+          severity: critical
+          component: gnn
+          team: ml-ops
+        annotations:
+          summary: "GNN precision critically low (< 60%)"
+          description: "GNN model precision is critically low at {{ $value | humanizePercentage }}. Immediate investigation required."
+          runbook_url: "https://wiki.dealershipai.com/runbooks/gnn-precision-critical"
+      
+      # Alert when training loss spikes
+      - alert: GNNTrainingLossSpike
+        expr: |
+          gnn_training_loss > (avg_over_time(gnn_training_loss[1h]) * 2)
+        for: 5m
+        labels:
+          severity: warning
+          component: gnn
+          team: ml-ops
+        annotations:
+          summary: "GNN training loss spike detected"
+          description: "GNN training loss ({{ $value }}) is 2x higher than 1-hour average. Possible overfitting or data drift."
+      
+      # Alert when prediction rate drops significantly
+      - alert: GNNPredictionRateDrop
+        expr: |
+          rate(gnn_predictions_total[10m]) < (avg_over_time(rate(gnn_predictions_total[1h])[10m]) * 0.5)
+        for: 10m
+        labels:
+          severity: warning
+          component: gnn
+          team: ml-ops
+        annotations:
+          summary: "GNN prediction rate dropped significantly"
+          description: "GNN prediction rate is 50% lower than normal. Check if the model is still processing requests."
+      
+      # Alert when ARR gain stagnates
+      - alert: GNNARRGainStagnant
+        expr: |
+          increase(gnn_arr_gain_usd[24h]) < 1000
+        for: 2h
+        labels:
+          severity: warning
+          component: gnn
+          team: revenue-ops
+        annotations:
+          summary: "GNN ARR gain stagnating"
+          description: "ARR gain from GNN predictions is less than $1,000 in the last 24 hours. Expected higher impact."
+      
+      # Alert when verification rate is zero (model not working)
+      - alert: GNNNoVerifications
+        expr: |
+          rate(gnn_predictions_verified[15m]) == 0 and rate(gnn_predictions_total[15m]) > 0
+        for: 15m
+        labels:
+          severity: critical
+          component: gnn
+          team: ml-ops
+        annotations:
+          summary: "GNN producing predictions but no verifications"
+          description: "GNN is generating predictions but none are being verified. Possible model quality issue or verification pipeline failure."
+

@@ -1,0 +1,254 @@
+{
+  "name": "DealershipAI RaR Data Schema",
+  "version": "1.0.0",
+  "description": "Schema dictionary for RaR metrics in Looker Studio",
+  "dataSource": {
+    "type": "PostgreSQL",
+    "connection": "Supabase",
+    "tables": {
+      "RaREvent": {
+        "description": "Individual RaR events by channel and intent cluster",
+        "fields": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "description": "Unique event identifier"
+          },
+          {
+            "name": "dealerId",
+            "type": "TEXT",
+            "description": "Dealer identifier (e.g., 'germain-toyota-naples')"
+          },
+          {
+            "name": "month",
+            "type": "DATE",
+            "description": "Month of the event (YYYY-MM-01 format)"
+          },
+          {
+            "name": "channel",
+            "type": "TEXT",
+            "description": "Traffic channel (e.g., 'google_organic', 'chatgpt', 'bing')"
+          },
+          {
+            "name": "impressions",
+            "type": "INTEGER",
+            "description": "Total impressions for this channel/intent"
+          },
+          {
+            "name": "shareAISnippet",
+            "type": "FLOAT",
+            "description": "Share of impressions showing AI snippets (0-1)"
+          },
+          {
+            "name": "ctrBaseline",
+            "type": "FLOAT",
+            "description": "Baseline click-through rate without AI (0-1)"
+          },
+          {
+            "name": "ctrDropWhenAI",
+            "type": "FLOAT",
+            "description": "CTR drop when AI snippet is present (0-1)"
+          },
+          {
+            "name": "leadCR",
+            "type": "FLOAT",
+            "description": "Lead conversion rate from sessions (0-1)"
+          },
+          {
+            "name": "closeRate",
+            "type": "FLOAT",
+            "description": "Close rate from leads to sales (0-1)"
+          },
+          {
+            "name": "avgGross",
+            "type": "FLOAT",
+            "description": "Average gross profit per sale (USD)"
+          },
+          {
+            "name": "recoverableShare",
+            "type": "FLOAT",
+            "description": "Share of RaR that is recoverable with fixes (0-1)"
+          },
+          {
+            "name": "intentCluster",
+            "type": "TEXT",
+            "description": "Intent cluster (e.g., 'service_price', 'hours', 'oil_change')"
+          },
+          {
+            "name": "createdAt",
+            "type": "TIMESTAMP",
+            "description": "Event creation timestamp"
+          }
+        ],
+        "calculatedFields": [
+          {
+            "name": "sessAI",
+            "formula": "impressions * shareAISnippet * ctrBaseline",
+            "description": "Estimated sessions with AI present"
+          },
+          {
+            "name": "zcs",
+            "formula": "sessAI * ctrDropWhenAI",
+            "description": "Zero-click lost sessions"
+          },
+          {
+            "name": "lostLeadsCh",
+            "formula": "zcs * leadCR",
+            "description": "Lost leads for this channel"
+          },
+          {
+            "name": "lostSalesCh",
+            "formula": "lostLeadsCh * closeRate",
+            "description": "Lost sales for this channel"
+          },
+          {
+            "name": "rarCh",
+            "formula": "lostSalesCh * avgGross",
+            "description": "Revenue at risk for this channel"
+          },
+          {
+            "name": "recoverableCh",
+            "formula": "rarCh * recoverableShare",
+            "description": "Recoverable revenue for this channel"
+          }
+        ]
+      },
+      "RaRMonthly": {
+        "description": "Monthly aggregated RaR summaries by dealer",
+        "fields": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "description": "Unique monthly summary identifier"
+          },
+          {
+            "name": "dealerId",
+            "type": "TEXT",
+            "description": "Dealer identifier"
+          },
+          {
+            "name": "month",
+            "type": "DATE",
+            "description": "Month of the summary (YYYY-MM-01)"
+          },
+          {
+            "name": "lostSessions",
+            "type": "INTEGER",
+            "description": "Total zero-click lost sessions"
+          },
+          {
+            "name": "lostLeads",
+            "type": "INTEGER",
+            "description": "Total lost leads"
+          },
+          {
+            "name": "lostSales",
+            "type": "FLOAT",
+            "description": "Total lost sales (count)"
+          },
+          {
+            "name": "rar",
+            "type": "FLOAT",
+            "description": "Total revenue at risk (USD)"
+          },
+          {
+            "name": "recoverable",
+            "type": "FLOAT",
+            "description": "Recoverable revenue (USD)"
+          },
+          {
+            "name": "topLosingIntents",
+            "type": "JSON",
+            "description": "Array of top 5 losing intents with RaR amounts"
+          },
+          {
+            "name": "computedAt",
+            "type": "TIMESTAMP",
+            "description": "When the summary was computed"
+          }
+        ],
+        "calculatedFields": [
+          {
+            "name": "zeroClickCoverage",
+            "formula": "(lostSessions / (lostSessions + 10000)) * 100",
+            "description": "Estimated zero-click coverage percentage"
+          },
+          {
+            "name": "recoveryRate",
+            "formula": "(recoverable / rar) * 100",
+            "description": "Recovery rate percentage"
+          },
+          {
+            "name": "rarPerLostSession",
+            "formula": "rar / lostSessions",
+            "description": "RaR per lost session"
+          }
+        ]
+      },
+      "secondaryMetrics": {
+        "description": "RaR pressure stored as secondary metric",
+        "fields": [
+          {
+            "name": "dealerId",
+            "type": "TEXT",
+            "description": "Dealer identifier"
+          },
+          {
+            "name": "key",
+            "type": "TEXT",
+            "description": "Metric key (e.g., 'rar_pressure')"
+          },
+          {
+            "name": "valueNum",
+            "type": "FLOAT",
+            "description": "RaR pressure value (0-1)"
+          },
+          {
+            "name": "updatedAt",
+            "type": "TIMESTAMP",
+            "description": "Last update timestamp"
+          }
+        ],
+        "filter": "key = 'rar_pressure'"
+      }
+    }
+  },
+  "commonMetrics": {
+    "TotalRaR": {
+      "formula": "SUM(rar)",
+      "description": "Sum of all RaR across dealers/periods"
+    },
+    "AvgRaR": {
+      "formula": "AVG(rar)",
+      "description": "Average RaR per dealer/month"
+    },
+    "TotalRecoverable": {
+      "formula": "SUM(recoverable)",
+      "description": "Sum of all recoverable revenue"
+    },
+    "RecoveryRate": {
+      "formula": "SUM(recoverable) / SUM(rar) * 100",
+      "description": "Overall recovery rate percentage"
+    },
+    "TopIntentRaR": {
+      "formula": "Extract from topLosingIntents JSON",
+      "description": "RaR for top losing intent"
+    }
+  },
+  "dimensions": {
+    "Dealer": "dealerId",
+    "Month": "month",
+    "Channel": "channel",
+    "IntentCluster": "intentCluster",
+    "MonthYear": "FORMAT_DATE(month, 'YYYY-MM')",
+    "Quarter": "QUARTER(month)",
+    "Year": "YEAR(month)"
+  },
+  "sampleQueries": {
+    "MonthlyRaRByDealer": "SELECT dealerId, month, rar, recoverable FROM RaRMonthly ORDER BY month DESC, rar DESC",
+    "TopLosingIntents": "SELECT dealerId, JSON_EXTRACT(topLosingIntents, '$[*].intent') as intent, JSON_EXTRACT(topLosingIntents, '$[*].rar') as rar FROM RaRMonthly",
+    "ChannelBreakdown": "SELECT channel, intentCluster, SUM(rarCh) as totalRaR FROM RaREvent GROUP BY channel, intentCluster",
+    "RecoveryOpportunity": "SELECT dealerId, rar, recoverable, (recoverable / rar) * 100 as recoveryRate FROM RaRMonthly WHERE rar > 0"
+  }
+}
+

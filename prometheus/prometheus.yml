@@ -1,0 +1,83 @@
+# Prometheus Configuration for DealershipAI GNN Analytics
+# Production-ready configuration with recording rules and alerts
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+  external_labels:
+    cluster: 'dealershipai-production'
+    environment: 'production'
+    service: 'gnn-analytics'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - 'alertmanager:9093'
+          # - 'localhost:9093'  # For local development
+      timeout: 10s
+      api_version: v2
+
+# Scrape configurations
+scrape_configs:
+  # Scrape GNN metrics from Next.js API
+  - job_name: 'dealershipai-gnn'
+    static_configs:
+      - targets:
+          - 'localhost:3000'  # Local development
+          # - 'api.dealershipai.com:443'  # Production
+        labels:
+          service: 'dealershipai-api'
+          component: 'gnn-orchestrator'
+          environment: 'production'
+    metrics_path: '/api/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: 'http'  # Use 'https' in production
+    # Optional: Add authentication
+    # basic_auth:
+    #   username: 'prometheus'
+    #   password: 'your-secret-password'
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+        labels:
+          service: 'prometheus'
+          component: 'monitoring'
+
+  # Scrape Grafana (optional)
+  - job_name: 'grafana'
+    static_configs:
+      - targets:
+          - 'localhost:3001'  # Grafana default port
+        labels:
+          service: 'grafana'
+          component: 'visualization'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+# Load recording and alert rules
+rule_files:
+  - 'prometheus/recording-rules.yml'
+  - 'prometheus/alert-rules.yml'
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus/data
+    retention.time: 30d
+    retention.size: 50GB
+
+# Remote write (optional - for long-term storage)
+# Uncomment and configure your remote storage
+# remote_write:
+#   - url: 'https://your-remote-storage.com/api/v1/write'
+#     queue_config:
+#       max_samples_per_send: 1000
+#       batch_send_deadline: 5s
+#       max_retries: 3
+

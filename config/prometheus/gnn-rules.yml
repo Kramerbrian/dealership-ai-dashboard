@@ -1,0 +1,47 @@
+groups:
+  - name: dealershipai_gnn_recording_rules
+    interval: 30s
+    rules:
+      # ---- Core Totals ----
+      - record: gnn_predictions_rate_5m
+        expr: rate(gnn_predictions_total[5m])
+
+      - record: gnn_verified_rate_5m
+        expr: rate(gnn_predictions_verified[5m])
+
+      # ---- Precision & Recall ----
+      - record: gnn_precision_ratio
+        expr: gnn_predictions_verified / clamp_min(gnn_predictions_total, 1)
+
+      - record: gnn_precision_rolling_1h
+        expr: avg_over_time(gnn_precision_ratio[1h])
+
+      - record: gnn_recall_ratio
+        expr: clamp_min(gnn_predictions_verified / gnn_ground_truth_edges, 0)
+        labels:
+          note: "requires gnn_ground_truth_edges gauge to be exported by orchestrator"
+
+      # ---- Model Health ----
+      - record: gnn_training_loss_smooth
+        expr: avg_over_time(gnn_training_loss[10m])
+
+      - record: gnn_training_loss_rate
+        expr: rate(gnn_training_loss[5m])
+
+      # ---- Economic Impact ----
+      - record: gnn_arr_gain_rate
+        expr: rate(gnn_arr_gain_usd[10m])
+
+      - record: gnn_arr_gain_rolling_1h
+        expr: increase(gnn_arr_gain_usd[1h])
+
+      - record: gnn_roi_estimate
+        expr: (increase(gnn_arr_gain_usd[24h]) / clamp_min(increase(gnn_training_cost_usd[24h]), 1))
+
+      # ---- Dealer Segmentation ----
+      - record: gnn_precision_by_dealer
+        expr: sum(gnn_predictions_verified) by (dealer_id) / clamp_min(sum(gnn_predictions_total) by (dealer_id), 1)
+
+      - record: gnn_arr_gain_by_dealer
+        expr: increase(gnn_arr_gain_usd[1h]) by (dealer_id)
+

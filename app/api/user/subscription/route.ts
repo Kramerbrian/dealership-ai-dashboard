@@ -1,68 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { userManager } from '@/lib/user-management';
-import { billingManager } from '@/lib/stripe-billing';
+import { getAuth } from '@clerk/nextjs/server';
+import { getUserSubscription } from '@/lib/db/integrations';
 
+/**
+ * GET /api/user/subscription
+ * Get user's current subscription information
+ */
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { userId } = await getAuth(req as any);
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const subscription = await userManager.getUserSubscription(session.user.id);
-    
-    if (!subscription.success) {
-      return NextResponse.json({ error: subscription.error }, { status: 500 });
-    }
+    const subscription = await getUserSubscription(userId);
 
-    return NextResponse.json({
-      success: true,
-      data: subscription.data
-    });
-  } catch (error) {
-    console.error('Error getting user subscription:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { plan } = await req.json();
-    
-    if (!plan || !['professional', 'enterprise'].includes(plan)) {
-      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
-    }
-
-    // Create checkout session
-    const checkoutResult = await billingManager.createCheckoutSession(
-      session.user.id,
-      plan
-    );
-
-    if (!checkoutResult.success) {
-      return NextResponse.json({ error: checkoutResult.error }, { status: 500 });
+    if (!subscription) {
+      return NextResponse.json({
+        tier: 'free',
+        status: 'active',
+        nextBillingDate: null,
+        paymentMethod: null,
+      });
     }
 
     return NextResponse.json({
-      success: true,
-      checkoutUrl: checkoutResult.url
+      tier: subscription.tier || 'free',
+      status: subscription.subscriptionStatus || 'active',
+      nextBillingDate: subscription.subscriptionEndDate?.toISOString() || null,
+      paymentMethod: subscription.stripeCustomerId ? {
+        // Would fetch last4 from Stripe in production
+        last4: '****',
+      } : null,
     });
+
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('Get subscription error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch subscription' },
       { status: 500 }
     );
   }

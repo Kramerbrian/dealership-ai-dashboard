@@ -1,0 +1,54 @@
+groups:
+  - name: gnn_analytics
+    interval: 30s
+    rules:
+      # Rolling precision over last hour
+      - record: gnn:precision:1h
+        expr: |
+          rate(gnn_predictions_verified[1h]) / max(1, rate(gnn_predictions_total[1h]))
+      
+      # Rolling precision over last 24 hours
+      - record: gnn:precision:24h
+        expr: |
+          rate(gnn_predictions_verified[24h]) / max(1, rate(gnn_predictions_total[24h]))
+      
+      # Hourly ARR delta
+      - record: gnn:arr_gain:delta:1h
+        expr: |
+          increase(gnn_arr_gain_usd[1h])
+      
+      # Daily ARR delta
+      - record: gnn:arr_gain:delta:24h
+        expr: |
+          increase(gnn_arr_gain_usd[24h])
+      
+      # Moving average of training loss (last 10 samples)
+      - record: gnn:training_loss:avg:10
+        expr: |
+          avg_over_time(gnn_training_loss[5m])
+      
+      # Prediction rate per minute
+      - record: gnn:predictions:rate:1m
+        expr: |
+          rate(gnn_predictions_total[1m])
+      
+      # Verification rate per minute
+      - record: gnn:verifications:rate:1m
+        expr: |
+          rate(gnn_predictions_verified[1m])
+      
+      # Top fixes by confidence (for table panel)
+      - record: gnn:fix_confidence:top10
+        expr: |
+          topk(10, gnn_fix_confidence{fix!=""})
+      
+      # Precision by dealer (for filtering)
+      - record: gnn:precision:by_dealer
+        expr: |
+          (rate(gnn_predictions_verified{dealer=~"$dealer"}[1h]) / max(1, rate(gnn_predictions_total{dealer=~"$dealer"}[1h]))) * 100
+      
+      # ARR gain by dealer
+      - record: gnn:arr_gain:by_dealer:1h
+        expr: |
+          increase(gnn_arr_gain_usd{dealer=~"$dealer"}[1h])
+

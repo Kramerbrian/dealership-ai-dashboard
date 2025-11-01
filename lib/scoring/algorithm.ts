@@ -97,21 +97,59 @@ const DEFAULT_WEIGHTS: ScoringWeights = {
 
 /**
  * Calculate the overall DealershipAI score
+ * @param metrics - KPI metrics
+ * @param weights - Scoring weights (optional)
+ * @param dealerId - Dealer ID for RaR pressure lookup (optional, async RaR integration)
  */
-export function calculateDealershipAIScore(
+export async function calculateDealershipAIScore(
   metrics: KPIMetrics,
-  weights: ScoringWeights = DEFAULT_WEIGHTS
-): ScoringResult {
+  weights: ScoringWeights = DEFAULT_WEIGHTS,
+  dealerId?: string
+): Promise<ScoringResult> {
   // Validate weights sum to 1.0
   const weightSum = Object.values(weights).slice(0, 9).reduce((sum, w) => sum + w, 0);
   if (Math.abs(weightSum - 1.0) > 0.01) {
     throw new Error(`Weights must sum to 1.0, got ${weightSum}`);
   }
 
-  // Calculate weighted pillar score
+  // Apply RaR pressure adjustments if dealerId provided
+  let adjustedAIV = metrics.aiv;
+  let adjustedATI = metrics.ati;
+  let rarDeltas: {
+    aivDelta: number;
+    atiDelta: number;
+    qaiDelta: number;
+  } | null = null;
+
+  if (dealerId) {
+    try {
+      const { getRaRPressure, calculateRaRScoreDeltas } = await import('@/lib/scoring/rar-integration');
+      const rarData = await getRaRPressure(dealerId);
+      
+      const deltas = calculateRaRScoreDeltas(
+        metrics.aiv,
+        metrics.ati,
+        metrics.cis, // Using CIS as QAI proxy
+        rarData.pressure,
+        rarData.trend
+      );
+      
+      adjustedAIV = deltas.aivAdjusted;
+      adjustedATI = deltas.atiAdjusted;
+      rarDeltas = {
+        aivDelta: deltas.aivDelta,
+        atiDelta: deltas.atiDelta,
+        qaiDelta: deltas.qaiDelta,
+      };
+    } catch (error) {
+      console.warn('RaR integration error, using base scores:', error);
+    }
+  }
+
+  // Calculate weighted pillar score with RaR-adjusted metrics
   const pillarScore = 
-    (metrics.ati * weights.ati) +
-    (metrics.aiv * weights.aiv) +
+    (adjustedATI * weights.ati) +
+    (adjustedAIV * weights.aiv) +
     (metrics.vli * weights.vli) +
     (metrics.oi * weights.oi) +
     (metrics.gbp * weights.gbp) +
@@ -139,7 +177,11 @@ export function calculateDealershipAIScore(
 
   return {
     overallScore: Math.round(finalScore * 100) / 100,
-    pillarScores: metrics,
+    pillarScores: {
+      ...metrics,
+      aiv: adjustedAIV, // Include RaR-adjusted values
+      ati: adjustedATI,
+    },
     weights,
     penalties: {
       policy: policyPenalty,
@@ -152,6 +194,7 @@ export function calculateDealershipAIScore(
       dataQuality,
       lastUpdated: new Date(),
       version: '2.0.0',
+      ...(rarDeltas && { rarDeltas }), // Include RaR deltas in diagnostics
     },
     recommendations,
   };

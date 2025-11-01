@@ -54,7 +54,10 @@
     "diff:changelog": "ts-node scripts/openapi-diff-changelog.ts",
     "build:sdk": "openapi-typescript openapi/pulse.yaml -o src/types/pulse.ts",
     "schema:validate": "redocly lint openapi/pulse.yaml",
-    "schema:bundle": "redocly bundle openapi/pulse.yaml -o dist/openapi-bundle.yaml"
+    "schema:bundle": "redocly bundle openapi/pulse.yaml -o dist/openapi-bundle.yaml",
+    "test:plg": "tsx scripts/test-plg-flow.ts",
+    "test:webhooks": "./scripts/test-webhook-local.sh",
+    "start:scheduler": "tsx scripts/scheduler.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.66.0",
@@ -125,6 +128,7 @@
     "socket.io-client": "^4.8.1",
     "stripe": "^19.1.0",
     "swr": "^2.2.0",
+    "node-cron": "^3.0.3",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.3.0",
     "three": "^0.180.0",

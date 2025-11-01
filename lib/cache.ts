@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv';
-import { Redis } from 'redis';
+import Redis from 'ioredis';
 
 // Vercel KV (Recommended for Vercel deployments)
 export class VercelKVCache {

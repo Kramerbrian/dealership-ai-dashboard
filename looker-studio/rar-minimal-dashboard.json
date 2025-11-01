@@ -1,0 +1,214 @@
+{
+  "dashboardTitle": "RaR Quick Demo - DealershipAI",
+  "description": "Minimal dashboard for 60-second RaR/Recovery demo during sales pitches",
+  "version": "1.0.0",
+  "dataSources": [
+    {
+      "name": "RaR Monthly Summary",
+      "type": "REST_API",
+      "endpoint": "https://dash.dealershipai.com/api/rar/summary",
+      "method": "GET",
+      "auth": {
+        "type": "BEARER_TOKEN"
+      }
+    }
+  ],
+  "widgets": [
+    {
+      "id": "rar-scorecard",
+      "type": "scorecard",
+      "title": "Revenue at Risk",
+      "position": { "x": 0, "y": 0, "width": 4, "height": 2 },
+      "config": {
+        "metric": "rar",
+        "format": "currency",
+        "comparison": "previous_period",
+        "color": {
+          "low": "#10b981",
+          "medium": "#f59e0b",
+          "high": "#dc2626"
+        },
+        "thresholds": {
+          "low": 0,
+          "medium": 10000,
+          "high": 50000
+        }
+      }
+    },
+    {
+      "id": "recoverable-scorecard",
+      "type": "scorecard",
+      "title": "Recoverable Now",
+      "position": { "x": 4, "y": 0, "width": 4, "height": 2 },
+      "config": {
+        "metric": "recoverable",
+        "format": "currency",
+        "comparison": "previous_period",
+        "color": "#10b981",
+        "subtitle": "With AEO/SEO fixes"
+      }
+    },
+    {
+      "id": "top-intents-chart",
+      "type": "bar_chart",
+      "title": "Top 5 Losing Intents by RaR",
+      "position": { "x": 0, "y": 2, "width": 8, "height": 4 },
+      "config": {
+        "dimension": "intent",
+        "metric": "rar",
+        "sort": "desc",
+        "limit": 5,
+        "format": "currency",
+        "colors": ["#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fecaca"]
+      },
+      "dataSource": {
+        "type": "computed",
+        "formula": "Extract from topLosingIntents JSON array"
+      }
+    },
+    {
+      "id": "recovery-funnel",
+      "type": "funnel",
+      "title": "Zero-Click Conversion Funnel",
+      "position": { "x": 0, "y": 6, "width": 8, "height": 4 },
+      "config": {
+        "steps": [
+          {
+            "label": "Impressions",
+            "source": "RaREvent.impressions",
+            "aggregation": "SUM"
+          },
+          {
+            "label": "AI Snippet Sessions",
+            "source": "RaREvent.sessAI",
+            "aggregation": "SUM"
+          },
+          {
+            "label": "Zero-Click Lost",
+            "source": "RaRMonthly.lostSessions",
+            "aggregation": "SUM"
+          },
+          {
+            "label": "Lost Leads",
+            "source": "RaRMonthly.lostLeads",
+            "aggregation": "SUM"
+          },
+          {
+            "label": "Lost Sales",
+            "source": "RaRMonthly.lostSales",
+            "aggregation": "SUM"
+          },
+          {
+            "label": "Revenue at Risk",
+            "source": "RaRMonthly.rar",
+            "aggregation": "SUM",
+            "format": "currency"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rar-trend",
+      "type": "time_series",
+      "title": "RaR Trend (Last 12 Months)",
+      "position": { "x": 0, "y": 10, "width": 12, "height": 4 },
+      "config": {
+        "dimension": "month",
+        "metrics": [
+          {
+            "name": "RaR",
+            "source": "rar",
+            "format": "currency",
+            "color": "#dc2626"
+          },
+          {
+            "name": "Recoverable",
+            "source": "recoverable",
+            "format": "currency",
+            "color": "#10b981"
+          }
+        ],
+        "dateRange": "last_12_months",
+        "showPoints": true,
+        "smoothLine": true
+      }
+    },
+    {
+      "id": "quick-stats",
+      "type": "table",
+      "title": "Quick Stats by Dealer",
+      "position": { "x": 8, "y": 2, "width": 4, "height": 4 },
+      "config": {
+        "dimensions": ["dealerId"],
+        "metrics": [
+          {
+            "name": "RaR",
+            "source": "rar",
+            "format": "currency"
+          },
+          {
+            "name": "Recoverable",
+            "source": "recoverable",
+            "format": "currency"
+          },
+          {
+            "name": "Lost Sessions",
+            "source": "lostSessions",
+            "format": "number"
+          },
+          {
+            "name": "Recovery Rate",
+            "source": "recoveryRate",
+            "format": "percent",
+            "formula": "(recoverable / rar) * 100"
+          }
+        ],
+        "sortBy": "rar",
+        "sortOrder": "desc",
+        "limit": 10
+      }
+    }
+  ],
+  "filters": [
+    {
+      "name": "Dealer",
+      "type": "dropdown",
+      "source": "dealerId",
+      "default": "all",
+      "position": { "x": 0, "y": 14, "width": 4, "height": 1 }
+    },
+    {
+      "name": "Month Range",
+      "type": "date_range",
+      "source": "month",
+      "default": "last_12_months",
+      "position": { "x": 4, "y": 14, "width": 4, "height": 1 }
+    }
+  ],
+  "theme": {
+    "colors": {
+      "primary": "#1e40af",
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "danger": "#dc2626"
+    },
+    "font": "Inter, system-ui, sans-serif"
+  },
+  "demoInstructions": {
+    "60SecondPitch": [
+      "1. Show 'Revenue at Risk' scorecard - highlight monthly loss",
+      "2. Point to 'Recoverable Now' - show recovery opportunity",
+      "3. Click 'Top 5 Losing Intents' - explain specific intents losing revenue",
+      "4. Show 'Recovery Rate' in Quick Stats - demonstrate ROI potential",
+      "5. Mention 'Agentic Fix Pack' - one-click deployment for top intents"
+    ],
+    "keyTalkingPoints": [
+      "Zero-click searches are stealing revenue before shoppers visit your site",
+      "RaR shows exactly how much gross is leaking monthly",
+      "Recoverable shows what you can claw back with AEO fixes",
+      "Top losing intents show where to focus optimization",
+      "DealershipAI Orchestrator 3.0 automatically adjusts AI scores based on RaR"
+    ]
+  }
+}
+

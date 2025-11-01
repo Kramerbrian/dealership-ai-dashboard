@@ -32,9 +32,30 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
     volumes:
       - grafana-data:/var/lib/grafana
       - ./gnn-engine/grafana-dashboard.json:/etc/grafana/provisioning/dashboards/gnn-dashboard.json
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - dealershipai-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: dealershipai-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
     networks:
       - dealershipai-network
     restart: unless-stopped
@@ -48,5 +69,4 @@ volumes:
 
 networks:
   dealershipai-network:
-    external: true
-
+    driver: bridge

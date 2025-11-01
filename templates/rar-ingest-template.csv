@@ -1,0 +1,12 @@
+dealerId,month,channel,impressions,shareAISnippet,ctrBaseline,ctrDropWhenAI,leadCR,closeRate,avgGross,recoverableShare,intentCluster
+germain-toyota-naples,2025-11-01,google_organic,300000,0.35,0.055,0.35,0.04,0.18,2100,0.45,service_price
+germain-toyota-naples,2025-11-01,google_organic,250000,0.32,0.055,0.30,0.04,0.18,2100,0.45,hours
+germain-toyota-naples,2025-11-01,google_organic,180000,0.38,0.055,0.33,0.04,0.18,2100,0.45,oil_change
+germain-toyota-naples,2025-11-01,google_organic,120000,0.31,0.055,0.29,0.04,0.18,2100,0.45,tire_rotation
+germain-toyota-naples,2025-11-01,google_organic,95000,0.40,0.055,0.37,0.04,0.18,2100,0.45,dealer_near_me
+lou-grubbs-motors,2025-11-01,google_organic,280000,0.33,0.052,0.32,0.038,0.17,1950,0.42,service_price
+lou-grubbs-motors,2025-11-01,google_organic,220000,0.30,0.052,0.28,0.038,0.17,1950,0.42,hours
+lou-grubbs-motors,2025-11-01,google_organic,160000,0.36,0.052,0.31,0.038,0.17,1950,0.42,oil_change
+demo-rooftop,2025-11-01,google_organic,200000,0.37,0.053,0.34,0.039,0.175,2050,0.44,service_price
+demo-rooftop,2025-11-01,google_organic,150000,0.34,0.053,0.31,0.039,0.175,2050,0.44,hours
+

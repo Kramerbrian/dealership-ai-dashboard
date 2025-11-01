@@ -20,19 +20,19 @@ export async function POST(req: Request) {
       );
     }
 
-    await verifyPrediction(dealerId, intent, fix, verified ?? true, confidence ?? 0.85);
+    const verifiedStatus = verified ?? true;
+    await verifyPrediction(dealerId, intent, fix, verifiedStatus, confidence ?? 0.85);
 
     // Record metrics if verified
-    if (verified ?? true) {
-      const body = await req.json();
-      const arrGain = body.arrGainUsd || 0; // Default to 0 if not provided
+    if (verifiedStatus) {
+      const { arrGainUsd = 0 } = body; // Get arrGainUsd from already-parsed body
       
       await recordGNNVerification({
         dealerId,
         intent,
         fix,
         confidence: confidence ?? 0.85,
-        arrGainUsd: arrGain,
+        arrGainUsd,
       });
     }
 
