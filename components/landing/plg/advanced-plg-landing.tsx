@@ -2,11 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Lock, Zap,
   Users, Share2, Gift, Clock, DollarSign, ArrowRight, Eye, EyeOff,
   Sparkles, Target, Shield, MessageSquare, Star, BarChart3, Brain, Search
 } from 'lucide-react';
+
+// Import new PLG components (Parts 6-10)
+import ROICalculator from '@/components/landing/ROICalculator';
+import SessionCounter from '@/components/landing/SessionCounter';
+import ShareToUnlock from '@/components/landing/ShareToUnlock';
+import CompetitiveRageBait from '@/components/landing/CompetitiveRageBait';
+import OnboardingBridge from '@/components/landing/OnboardingBridge';
 
 // ============================================================================
 // CORE TYPES
@@ -23,6 +30,9 @@ interface InstantScore {
   totalCompetitors: number;
   revenueAtRisk: number;
   sessionsRemaining?: number;
+  dealerName?: string;
+  domain?: string;
+  topIssues?: string[];
 }
 
 interface CompetitorPreview {
@@ -145,6 +155,11 @@ const InstantAnalyzer = ({ onAnalyzed }: { onAnalyzed: (score: InstantScore) => 
         <p className="text-2xl text-gray-300 mb-4">
           When ChatGPT doesn't know you exist, you might as well be selling horse carriages.
         </p>
+        <div className="mb-4 p-4 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 rounded-lg border border-blue-500/30 backdrop-blur-sm">
+          <p className="text-lg text-blue-200 font-medium">
+            🧠 <strong>Cognitive Ops Platform:</strong> Every dealer has an embedded <strong>AI Chief Strategy Officer</strong> — always on, never guessing.
+          </p>
+        </div>
         <p className="text-lg text-gray-400">
           Get your free AI Visibility Score in 60 seconds →
         </p>
@@ -231,6 +246,7 @@ const InstantResults = ({ score, onUnlock }: { score: InstantScore; onUnlock: (f
     fullReport: true
   });
   const [unlockedFeatures, setUnlockedFeatures] = useState<Set<string>>(new Set());
+  const [isFullReportUnlocked, setIsFullReportUnlocked] = useState(false);
 
   // Check unlock status on mount
   useEffect(() => {
@@ -370,6 +386,46 @@ const InstantResults = ({ score, onUnlock }: { score: InstantScore; onUnlock: (f
           description="Structured data richness"
         />
       </div>
+
+      {/* Part 7: Session Counter */}
+      <SessionCounter />
+
+      {/* Part 6: ROI Calculator */}
+      <ROICalculator />
+
+      {/* Part 9: Competitive Rage Bait */}
+      <CompetitiveRageBait
+        dealerName={score.dealerName || 'Your Dealership'}
+        dealerScore={score.overall}
+        marketLeaderScore={87}
+        onCtaClick={() => setIsFullReportUnlocked(true)}
+      />
+
+      {/* Part 8: Share-to-Unlock */}
+      <ShareToUnlock
+        dealerName={score.dealerName || 'Your Dealership'}
+        revenueAtRisk={score.revenueAtRisk}
+        onUnlock={() => setIsFullReportUnlocked(true)}
+        isUnlocked={isFullReportUnlocked}
+      />
+
+      {/* Part 10: Onboarding Bridge (only after unlock) */}
+      {isFullReportUnlocked && (
+        <OnboardingBridge
+          scanResults={{
+            dealerName: score.dealerName || 'Your Dealership',
+            aiVisibilityScore: score.overall,
+            revenueAtRisk: score.revenueAtRisk,
+            topIssues: score.topIssues || ['Missing LocalBusiness schema', 'Low review velocity', 'Weak GBP optimization'],
+            competitorData: {
+              marketLeaderScore: 87,
+              yourRank: score.competitorRank,
+              totalDealers: score.totalCompetitors,
+            },
+          }}
+          isUnlocked={isFullReportUnlocked}
+        />
+      )}
     </div>
   );
 };
