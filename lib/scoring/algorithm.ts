@@ -246,7 +246,7 @@ export function learnWeights(
   const regularization = 0.1;
   
   // Calculate gradients based on correlation with outcomes
-  const gradients = calculateGradients(historicalData, currentWeights);
+  const gradients = calculateGradients(historicalData);
   
   // Update weights with regularization
   const newWeights = { ...currentWeights };
@@ -254,10 +254,12 @@ export function learnWeights(
   Object.keys(gradients).forEach(key => {
     if (key in newWeights) {
       const gradient = gradients[key as keyof ScoringWeights];
-      const currentWeight = newWeights[key as keyof ScoringWeights] as number;
-      newWeights[key as keyof ScoringWeights] = Math.max(0, 
-        currentWeight - learningRate * (gradient + regularization * currentWeight)
-      ) as any;
+      if (gradient !== undefined) {
+        const currentWeight = newWeights[key as keyof ScoringWeights] as number;
+        newWeights[key as keyof ScoringWeights] = Math.max(0, 
+          currentWeight - learningRate * (gradient + regularization * currentWeight)
+        ) as any;
+      }
     }
   });
   
@@ -269,8 +271,7 @@ export function learnWeights(
  * Calculate gradients for weight learning
  */
 function calculateGradients(
-  data: Array<{ metrics: KPIMetrics; outcomes: { leads: number; revenue: number } }>,
-  weights: ScoringWeights
+  data: Array<{ metrics: KPIMetrics; outcomes: { leads: number; revenue: number } }>
 ): Partial<ScoringWeights> {
   const gradients: Partial<ScoringWeights> = {};
   
@@ -297,7 +298,7 @@ function calculateCorrelation(x: number[], y: number[]): number {
   
   const sumX = x.reduce((a, b) => a + b, 0);
   const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+  const sumXY = x.reduce((sum, xi, i) => sum + xi * (y[i] ?? 0), 0);
   const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
   const sumYY = y.reduce((sum, yi) => sum + yi * yi, 0);
   

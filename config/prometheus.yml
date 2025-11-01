@@ -1,0 +1,41 @@
+# Prometheus configuration for DealershipAI GNN Engine
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'dealershipai'
+    environment: 'production'
+
+# Recording and alerting rules
+rule_files:
+  - /etc/prometheus/rules/gnn-rules.yml
+  - /etc/prometheus/rules/alerting-rules.yml
+
+# Scrape configurations
+scrape_configs:
+  # GNN Engine metrics
+  - job_name: 'gnn-engine'
+    static_configs:
+      - targets: ['gnn-engine:8080']
+        labels:
+          service: 'gnn-engine'
+          component: 'ml'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Next.js API metrics (if you add Prometheus to your Next.js app)
+  - job_name: 'dealershipai-api'
+    static_configs:
+      - targets: ['localhost:3000']
+        labels:
+          service: 'api'
+          component: 'orchestrator'
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
