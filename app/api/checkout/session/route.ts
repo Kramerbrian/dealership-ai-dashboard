@@ -3,17 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-12-18.acacia",
+  apiVersion: "2024-04-10",
 });
 
 /**
  * POST /api/checkout/session
- * 
- * Creates a Stripe Checkout Session with ACP delegate token for agentic commerce.
- * Supports both user-initiated upgrades and agent-driven purchases.
- * 
- * Phase 2 (Try): Trial data unlocks → Stripe ACP
- * Phase 3 (Buy): Agent/user clicks Upgrade → ACP checkout
+ *
+ * Creates a Stripe Checkout Session for subscription management.
+ * Supports both user-initiated upgrades and future ACP integration.
+ *
+ * Phase 2 (Try): Trial data unlocks → Stripe checkout
+ * Phase 3 (Buy): User clicks Upgrade → Standard checkout
+ *
+ * Note: ACP delegate tokens require Stripe SDK v15+ with beta API access
  */
 export async function POST(req: NextRequest) {
   try {
@@ -27,27 +29,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { plan = "professional", domain, company } = body;
+    const { plan = "professional", domain, company, acpToken } = body;
 
-    // Phase 2/3: Create ACP Delegated Payment token
-    let delegateToken: Stripe.AgenticCommerce.Token | null = null;
-    
-    try {
-      delegateToken = await stripe.agenticCommerce.tokens.create({
-        type: "delegate_payment",
-        amount: 49900, // $499/month
-        currency: "usd",
-        merchant: "dealershipAI",
-        metadata: {
-          userId,
-          plan,
-          source: "web_checkout",
-        },
-      });
-    } catch (error) {
-      console.error("ACP delegate token creation failed:", error);
-      // Continue without ACP if token creation fails (fallback to standard checkout)
-    }
+    // ACP token can be passed from external agent
+    // Stored in metadata for webhook processing
+    const delegateToken = acpToken || null;
 
     // Determine price ID based on plan
     const priceId = plan === "enterprise" 
@@ -94,10 +80,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       url: session.url,
       sessionId: session.id,
-      acpTokenId: delegateToken?.id,
+      acpTokenId: delegateToken,
     });
 
   } catch (error) {

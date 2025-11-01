@@ -114,13 +114,13 @@ export async function GET(req: NextRequest) {
     const arr = mrr * 12;
 
     // Calculate average revenue per account
-    const { data: tenantCount } = await supabase
+    const { count: tenantCount } = await supabase
       .from('tenants')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('status', 'active')
       .neq('plan', 'FREE');
 
-    const activeAccounts = tenantCount || 0;
+    const activeAccounts = typeof tenantCount === 'number' ? tenantCount : 0;
     const arpa = activeAccounts > 0 ? mrr / activeAccounts : 0;
 
     // Calculate churn rate
