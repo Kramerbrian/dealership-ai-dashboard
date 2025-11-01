@@ -156,6 +156,12 @@
       "permanent": true
     }
   ],
+  "crons": [
+    {
+      "path": "/api/zero-click/recompute",
+      "schedule": "0 */4 * * *"
+    }
+  ],
   "env": {
     "NODE_ENV": "production",
     "NEXT_PUBLIC_APP_URL": "https://dealershipai.com",

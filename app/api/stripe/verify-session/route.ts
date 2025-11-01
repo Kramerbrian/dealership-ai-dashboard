@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
+  // Skip if Stripe not configured (for local builds)
+  if (!stripe || !process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 503 }
+    );
+  }
   try {
     const sessionId = req.nextUrl.searchParams.get('session_id');
 

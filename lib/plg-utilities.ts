@@ -1,38 +1,38 @@
-/**
- * PLG Utilities for DealershipAI
- * Session tracking, decay tax, and growth mechanics
- */
+// PLG (Product-Led Growth) utility functions
 
-import { useState, useEffect } from 'react';
+export function trackEvent(eventName: string, properties?: Record<string, any>) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", eventName, properties);
+  }
+}
 
-export function useSessionTracking() {
-  const [sessions, setSessions] = useState(0);
-  const [decayTax, setDecayTax] = useState(0);
+export function trackShareUnlock(domain: string, platform: string) {
+  trackEvent("share_unlock", { domain, platform });
+}
 
-  useEffect(() => {
-    // Get session count from localStorage
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('dai_sessions') : null;
-    const count = stored ? parseInt(stored, 10) : 0;
-    
-    // Calculate decay tax based on time since last audit
-    const lastAudit = typeof window !== 'undefined' ? localStorage.getItem('dai_last_audit') : null;
-    if (lastAudit) {
-      const daysSince = Math.floor((Date.now() - parseInt(lastAudit, 10)) / (1000 * 60 * 60 * 24));
-      const tax = Math.min(daysSince * 0.5, 10); // Max 10 points decay
-      setDecayTax(tax);
-    }
+export function trackUpgradeClick(tier: "pro" | "enterprise") {
+  trackEvent("upgrade_click", { tier });
+}
 
-    setSessions(count);
-  }, []);
+export function trackAnalyzeStart(domain: string) {
+  trackEvent("analyze_start", { domain });
+}
 
-  const incrementSession = () => {
-    const newCount = sessions + 1;
-    setSessions(newCount);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('dai_sessions', newCount.toString());
-      localStorage.setItem('dai_last_audit', Date.now().toString());
-    }
-  };
+export function getRemainingAnalyses(): number {
+  if (typeof window === "undefined") return 3;
+  const stored = localStorage.getItem("remaining_analyses");
+  const count = stored ? parseInt(stored, 10) : 3;
+  if (count <= 0) return 0;
+  return count;
+}
 
-  return { sessions, decayTax, incrementSession };
+export function decrementAnalyses(): number {
+  const current = getRemainingAnalyses();
+  const next = Math.max(0, current - 1);
+  localStorage.setItem("remaining_analyses", String(next));
+  return next;
+}
+
+export function resetAnalyses() {
+  localStorage.setItem("remaining_analyses", "3");
 }

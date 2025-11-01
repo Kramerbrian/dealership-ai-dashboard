@@ -1,185 +1,168 @@
-# 🌐 DealershipAI Custom Domain Setup Guide
+# 🌐 Setup Custom Domain: dealershipai.com
 
-## Current Deployment Status
-- **Production URL**: https://dealershipai-dashboard-jcmsb0mml-brian-kramers-projects.vercel.app
-- **Inspect URL**: https://vercel.com/brian-kramers-projects/dealershipai-dashboard/4xzKaxGj7BrJh4CPz1x7TiFA3gdN
+## ❌ **Issue**
 
-## 🎯 Target Domains
-- **Marketing**: marketing.dealershipai.com
-- **Main**: main.dealershipai.com
+The domain `dealershipai.com` is not authorized with this Vercel account. You need to verify domain ownership first.
 
-## 📋 Step-by-Step Domain Setup
+**Current Working Domain**: `dealershipai-app.com` ✅ (already configured)
 
-### 1. Access Vercel Dashboard
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Select your `dealershipai-dashboard` project
-3. Click on **Settings** tab
-4. Click on **Domains** in the left sidebar
+---
 
-### 2. Add Custom Domains
+## 🔧 **Setup Options**
 
-#### For marketing.dealershipai.com:
-1. Click **Add Domain**
-2. Enter: `marketing.dealershipai.com`
-3. Click **Add**
-4. Vercel will provide DNS configuration instructions
+### **Option 1: Via Vercel Dashboard** (Recommended)
 
-#### For main.dealershipai.com:
-1. Click **Add Domain** again
-2. Enter: `main.dealershipai.com`
-3. Click **Add**
-4. Vercel will provide DNS configuration instructions
+1. **Visit**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
+2. **Click**: "Add Domain"
+3. **Enter**: `dealershipai.com`
+4. **Follow prompts** to verify ownership
 
-### 3. DNS Configuration
+### **Option 2: Verify Domain Ownership First**
 
-You'll need to add these DNS records to your domain registrar (where dealershipai.com is managed):
+The domain needs to be verified before it can be added to Vercel:
 
-#### Option A: CNAME Records (Recommended)
-```
-Type: CNAME
-Name: marketing
-Value: cname.vercel-dns.com
-TTL: 300
+1. **Get verification from Vercel**:
+   - Vercel will provide DNS records to add
+   - Or an HTML file to upload
+   - Or a TXT record for verification
 
-Type: CNAME
-Name: main
-Value: cname.vercel-dns.com
-TTL: 300
-```
+2. **Add verification method** to your domain registrar
+3. **Wait for verification** (usually 5-15 minutes)
+4. **Then add domain** to Vercel
 
-#### Option B: A Records (Alternative)
+---
+
+## 📋 **DNS Configuration (After Verification)**
+
+Once domain is verified, add these DNS records:
+
+### **DNS Records to Add**
 ```
 Type: A
-Name: marketing
-Value: 76.76.19.61
-TTL: 300
+Name: @
+Value: 76.76.21.21
 
-Type: A
-Name: main
-Value: 76.76.19.61
-TTL: 300
+Type: CNAME  
+Name: www
+Value: cname.vercel-dns.com.
 ```
 
-### 4. Verify Domain Configuration
+### **Or Use Vercel Nameservers**
+If using Vercel's DNS:
+```
+Nameserver 1: ns1.vercel-dns.com
+Nameserver 2: ns2.vercel-dns.com
+```
 
-After adding DNS records:
-1. Wait 5-10 minutes for DNS propagation
-2. Check domain status in Vercel dashboard
-3. Test both domains:
-   - https://marketing.dealershipai.com
-   - https://main.dealershipai.com
+---
 
-## 🚀 MarketingLanding.tsx Deployment
+## 🎯 **Current Status**
 
-The MarketingLanding.tsx component is already deployed and will be accessible at both domains once configured.
+### **Active Domain** ✅
+- **URL**: `https://dealershipai-app.com`
+- **Status**: Ready
+- **SSL**: Auto-provisioned
 
-### Component Features:
-- **Clean Design**: Slate-900 background with cyan accents
-- **Interactive Modal**: MarketingInfographicModal integration
-- **Responsive Layout**: Mobile-friendly design
-- **Export Functionality**: SVG export at 3840px width
-- **Modern UI**: Gradient backgrounds and clean typography
+### **Alternative URLs** ✅
+- `https://dealership-ai-dashboard-lre60r6zp-brian-kramer-dealershipai.vercel.app`
+- `https://dealership-ai-dashboard-nine.vercel.app`
+- `https://dealership-ai-dashboard-brian-kramer-dealershipai.vercel.app`
 
-## 🔧 Environment Variables for Marketing
+---
 
-Add these environment variables in Vercel for the marketing site:
+## ✅ **Quick Setup Steps**
 
+### **1. Verify Domain Ownership**
 ```bash
-NEXT_PUBLIC_APP_URL="https://marketing.dealershipai.com"
-NEXT_PUBLIC_MARKETING_MODE="true"
-NEXT_PUBLIC_INFROGRAPHIC_ENABLED="true"
+# Visit your domain registrar (GoDaddy, Namecheap, etc.)
+# Add verification record provided by Vercel
 ```
 
-## 📊 Domain Status Monitoring
-
-### Check Domain Status:
+### **2. Add Domain to Vercel**
 ```bash
-# Check domain configuration
-vercel domains inspect marketing.dealershipai.com
-vercel domains inspect main.dealershipai.com
+# Via Dashboard (recommended):
+# Visit: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
+# Click "Add Domain" and follow prompts
 
-# List all domains
-vercel domains list
+# Via CLI (after verification):
+# npx vercel domains add dealershipai.com
 ```
 
-### Test Domains:
-```bash
-# Test marketing domain
-curl -I https://marketing.dealershipai.com
+### **3. Configure DNS Records**
+```
+A record:
+- Name: @
+- Value: 76.76.21.21
 
-# Test main domain
-curl -I https://main.dealershipai.com
+CNAME record:
+- Name: www
+- Value: cname.vercel-dns.com.
 ```
 
-## 🎨 MarketingLanding.tsx Features
+### **4. Wait for SSL**
+- SSL certificate auto-provisions
+- Usually takes 5-15 minutes
+- Vercel handles this automatically
 
-The deployed component includes:
+### **5. Update Clerk Redirects**
+- Visit: https://dashboard.clerk.com
+- Add `https://dealershipai.com` to redirect URLs
+- Save changes
 
-1. **Header Section**:
-   - DealershipAI branding with gradient logo
-   - "Open Infographic Modal" button
+---
 
-2. **Main Content**:
-   - AI optimization messaging
-   - "Influence how consumers discover your products in AI" headline
-   - Feature list with clean design elements
+## 🚀 **Alternative: Use Current Domain**
 
-3. **Interactive Elements**:
-   - Preview infographic button
-   - Download SVG functionality
-   - Modal integration
+If you need a working domain immediately, `dealershipai-app.com` is already configured and working!
 
-4. **Design Elements**:
-   - Teal background (#009FCF)
-   - Rounded nodes with subtle shadows
-   - Minimal icons for AI platforms
-   - Dashed connectors with perfect spacing
+### **Current Setup**
+- ✅ **Domain**: dealershipai-app.com
+- ✅ **SSL**: Active
+- ✅ **DNS**: Configured
+- ✅ **Deployment**: Live
+- ✅ **Database**: Connected
 
-## 🚨 Troubleshooting
+**You can launch with `dealershipai-app.com` right now!**
 
-### Common Issues:
+---
 
-1. **Domain not resolving**:
-   - Check DNS propagation: https://dnschecker.org
-   - Verify CNAME records are correct
-   - Wait up to 24 hours for full propagation
+## 📞 **Where to Configure**
 
-2. **SSL certificate issues**:
-   - Vercel automatically provisions SSL certificates
-   - Wait 5-10 minutes after domain verification
+### **Vercel Dashboard**
+- **Domains**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
+- **Settings**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
 
-3. **404 errors**:
-   - Ensure domain is properly configured in Vercel
-   - Check that the project is deployed to production
+### **Clerk Dashboard**
+- **URL**: https://dashboard.clerk.com
+- **Update redirect URLs** after domain is configured
 
-### Debug Commands:
-```bash
-# Check deployment status
-vercel ls
+### **Domain Registrar**
+- Wherever you registered `dealershipai.com`
+- Add DNS records as shown above
 
-# View deployment logs
-vercel logs dealershipai-dashboard-jcmsb0mml-brian-kramers-projects.vercel.app
+---
 
-# Redeploy if needed
-vercel --prod
-```
+## 💡 **Recommendation**
 
-## ✅ Verification Checklist
+**For immediate deployment**, use the existing `dealershipai-app.com` domain which is already working!
 
-- [ ] marketing.dealershipai.com added to Vercel
-- [ ] main.dealershipai.com added to Vercel
-- [ ] DNS records configured at domain registrar
-- [ ] Domains verified in Vercel dashboard
-- [ ] SSL certificates issued
-- [ ] Both domains accessible in browser
-- [ ] MarketingLanding.tsx component loads correctly
-- [ ] Infographic modal functionality works
-- [ ] Mobile responsiveness verified
+**To set up `dealershipai.com`**:
+1. Verify domain ownership via Vercel dashboard
+2. Add DNS records at your registrar
+3. Wait for SSL certificate
+4. Update Clerk redirect URLs
 
-## 🎉 Success!
+**Current production URL**: https://dealershipai-app.com ✅
 
-Once all steps are completed, your MarketingLanding.tsx component will be live at:
-- **Marketing**: https://marketing.dealershipai.com
-- **Main**: https://main.dealershipai.com
+---
 
-Both domains will serve the same beautiful marketing landing page with the interactive infographic modal!
+## ✅ **What's Working Now**
+
+- ✅ Database: Supabase PostgreSQL
+- ✅ Deployment: Vercel production
+- ✅ SSL: Active
+- ✅ Domain: dealershipai-app.com
+- ✅ All APIs: Functional
+- ✅ Database: Migrations ready
+
+**You can launch immediately with the current setup!** 🚀

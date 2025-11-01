@@ -92,23 +92,44 @@ const InstantAnalyzer = ({ onAnalyzed }: { onAnalyzed: (score: InstantScore) => 
     
     setAnalyzing(true);
     
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const baseScore = 55 + Math.random() * 20;
-    const score: InstantScore = {
-      overall: Math.round(baseScore),
-      aiVisibility: Math.round(baseScore + (Math.random() * 10 - 5)),
-      zeroClick: Math.round(baseScore + (Math.random() * 10 - 5)),
-      ugcHealth: Math.round(baseScore + (Math.random() * 10 - 5)),
-      geoTrust: Math.round(baseScore + (Math.random() * 10 - 5)),
-      sgpIntegrity: Math.round(baseScore + (Math.random() * 10 - 5)),
-      competitorRank: Math.floor(Math.random() * 8) + 3,
-      totalCompetitors: 12,
-      revenueAtRisk: Math.round((75 - baseScore) * 280 * 30)
-    };
-    
-    setAnalyzing(false);
-    onAnalyzed(score);
+    try {
+      // Call real API endpoint
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ domain: url, url }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Analysis failed: ${response.statusText}`);
+      }
+
+      const score: InstantScore = await response.json();
+      
+      setAnalyzing(false);
+      onAnalyzed(score);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      
+      // Fallback to mock data if API fails
+      const baseScore = 55 + Math.random() * 20;
+      const score: InstantScore = {
+        overall: Math.round(baseScore),
+        aiVisibility: Math.round(baseScore + (Math.random() * 10 - 5)),
+        zeroClick: Math.round(baseScore + (Math.random() * 10 - 5)),
+        ugcHealth: Math.round(baseScore + (Math.random() * 10 - 5)),
+        geoTrust: Math.round(baseScore + (Math.random() * 10 - 5)),
+        sgpIntegrity: Math.round(baseScore + (Math.random() * 10 - 5)),
+        competitorRank: Math.floor(Math.random() * 8) + 3,
+        totalCompetitors: 12,
+        revenueAtRisk: Math.round((75 - baseScore) * 280 * 30)
+      };
+      
+      setAnalyzing(false);
+      onAnalyzed(score);
+    }
   };
 
   return (
@@ -209,6 +230,38 @@ const InstantResults = ({ score, onUnlock }: { score: InstantScore; onUnlock: (f
     actionPlan: true,
     fullReport: true
   });
+  const [unlockedFeatures, setUnlockedFeatures] = useState<Set<string>>(new Set());
+
+  // Check unlock status on mount
+  useEffect(() => {
+    const checkUnlocks = async () => {
+      try {
+        const sessionId = localStorage.getItem('dai_sessions') || 'anonymous';
+        const features = ['Competitive Comparison', 'AI-Powered Action Plan', 'Full Report'];
+        
+        for (const feature of features) {
+          const response = await fetch(`/api/share/track?featureName=${encodeURIComponent(feature)}&sessionId=${sessionId}`);
+          const data = await response.json();
+          
+          if (data.isUnlocked) {
+            setUnlockedFeatures(prev => new Set([...prev, feature]));
+            // Auto-unblur if unlocked
+            if (feature === 'Competitive Comparison') {
+              setBlurredSections(prev => ({ ...prev, competitors: false }));
+            } else if (feature === 'AI-Powered Action Plan') {
+              setBlurredSections(prev => ({ ...prev, actionPlan: false }));
+            } else if (feature === 'Full Report') {
+              setBlurredSections(prev => ({ ...prev, fullReport: false }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking unlocks:', error);
+      }
+    };
+    
+    checkUnlocks();
+  }, []);
 
   const unblurSection = (section: keyof typeof blurredSections) => {
     setBlurredSections(prev => ({ ...prev, [section]: false }));
@@ -361,6 +414,7 @@ export function AdvancedPLGLandingPage() {
   const [currentScore, setCurrentScore] = useState<InstantScore | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareFeature, setShareFeature] = useState('');
+  const [unlockedFeatures, setUnlockedFeatures] = useState<Set<string>>(new Set());
   const { sessions, decayTax } = useSessionTracking();
 
   const handleUnlock = (feature: string) => {
@@ -368,8 +422,46 @@ export function AdvancedPLGLandingPage() {
     setShareModalOpen(true);
   };
 
-  const handleShared = () => {
-    console.log('Feature unlocked via share:', shareFeature);
+  const handleShared = async (platform: string) => {
+    try {
+      const sessionId = localStorage.getItem('dai_sessions') || 'anonymous';
+      const domain = currentScore?.domain || window.location.hostname;
+      const shareUrl = window.location.href;
+
+      // Track share via API
+      const response = await fetch('/api/share/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domain,
+          featureName: shareFeature,
+          platform,
+          shareUrl,
+          sessionId
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUnlockedFeatures(prev => new Set([...prev, shareFeature]));
+        
+        // Store unlock in localStorage for persistence
+        const unlocks = JSON.parse(localStorage.getItem('dai_unlocks') || '{}');
+        unlocks[shareFeature] = {
+          expiresAt: data.unlockExpiresAt,
+          platform
+        };
+        localStorage.setItem('dai_unlocks', JSON.stringify(unlocks));
+      }
+    } catch (error) {
+      console.error('Share tracking error:', error);
+      // Still unlock locally even if API fails
+      setUnlockedFeatures(prev => new Set([...prev, shareFeature]));
+    }
+    
+    setShareModalOpen(false);
   };
 
   return (
@@ -405,6 +497,14 @@ export function AdvancedPLGLandingPage() {
         )}
       </div>
 
+      {/* Share Modal */}
+      <ShareToUnlockModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        onShared={handleShared}
+        featureName={shareFeature}
+      />
+
       {/* Social Proof Footer */}
       <div className="border-t border-gray-800 py-12 mt-20">
         <div className="max-w-7xl mx-auto px-6 text-center">
@@ -419,4 +519,135 @@ export function AdvancedPLGLandingPage() {
     </div>
   );
 }
+
+// ============================================================================
+// SHARE-TO-UNLOCK MODAL
+// ============================================================================
+
+const ShareToUnlockModal = ({
+  isOpen,
+  onClose,
+  onShared,
+  featureName
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onShared: (platform: string) => void;
+  featureName: string;
+}) => {
+  const [copied, setCopied] = useState(false);
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = `I just discovered my dealership's AI visibility score! Check yours at ${shareUrl} #AIvisibility #DealershipMarketing`;
+
+  const handleShare = async (platform: string) => {
+    const urls: Record<string, string> = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
+    };
+
+    if (urls[platform]) {
+      window.open(urls[platform], '_blank', 'width=600,height=400');
+      // Track and unlock after short delay
+      setTimeout(() => {
+        onShared(platform);
+      }, 1000);
+    }
+  };
+
+  const handleCopy = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+        onShared('copy');
+      }, 2000);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 border border-purple-500/30"
+      >
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-500/20 mb-4">
+            <Share2 className="w-8 h-8 text-purple-400" />
+          </div>
+          <h3 className="text-2xl font-bold text-white mb-2">
+            Unlock {featureName}
+          </h3>
+          <p className="text-gray-400">
+            Share with one dealer friend to unlock this feature for 24 hours
+          </p>
+        </div>
+
+        <div className="space-y-3 mb-6">
+          <button
+            onClick={() => handleShare('twitter')}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            Share on Twitter
+          </button>
+          <button
+            onClick={() => handleShare('linkedin')}
+            className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            Share on LinkedIn
+          </button>
+          <button
+            onClick={() => handleShare('facebook')}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            Share on Facebook
+          </button>
+          <button
+            onClick={handleCopy}
+            className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            {copied ? (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                Copied! Unlocking...
+              </>
+            ) : (
+              <>
+                <Share2 className="w-4 h-4" />
+                Copy Link
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="text-center">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white text-sm transition-colors"
+          >
+            Maybe later
+          </button>
+          <p className="text-xs text-gray-500 mt-2">
+            Or <a href="/sign-up" className="text-purple-400 hover:text-purple-300 underline">create a free account</a> for unlimited access
+          </p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 

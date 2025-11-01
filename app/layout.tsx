@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { ClerkProvider } from '@clerk/nextjs'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+import { ClerkProviderWrapper } from '@/components/providers/ClerkProviderWrapper'
+import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -11,53 +13,32 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'DealershipAI - Transform Your Dealership with AI-Powered Analytics',
-  description: 'Get comprehensive AI-powered analytics for your dealership. Track SEO, social media, customer engagement, and boost your online presence with DealershipAI. Join 500+ dealerships already winning with AI.',
-  keywords: ['dealership', 'AI', 'analytics', 'automotive', 'marketing', 'visibility', 'SEO', 'Google SGE', 'ChatGPT', 'Perplexity', 'AI search', 'local marketing', 'dealership marketing'],
+  title: 'DealershipAI - AI Visibility Intelligence for Automotive Dealerships',
+  description: 'Discover your AI visibility score across ChatGPT, Claude, Gemini, and Perplexity. Track Zero-Click rates, UGC health, and competitive intelligence.',
+  keywords: ['dealership', 'AI', 'visibility', 'ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'zero-click', 'automotive', 'marketing'],
   authors: [{ name: 'DealershipAI Team' }],
   creator: 'DealershipAI',
   publisher: 'DealershipAI',
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
   },
   openGraph: {
-    title: 'DealershipAI - Transform Your Dealership with AI-Powered Analytics',
-    description: 'Get comprehensive AI-powered analytics for your dealership. Track SEO, social media, customer engagement, and boost your online presence with DealershipAI.',
+    title: 'DealershipAI - AI Visibility Intelligence',
+    description: 'Discover your AI visibility score across ChatGPT, Claude, Gemini, and Perplexity.',
     type: 'website',
     locale: 'en_US',
     url: 'https://dealershipai.com',
     siteName: 'DealershipAI',
-    images: [
-      {
-        url: 'https://dealershipai.com/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'DealershipAI - AI-Powered Analytics for Dealerships',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DealershipAI - Transform Your Dealership with AI-Powered Analytics',
-    description: 'Get comprehensive AI-powered analytics for your dealership. Track SEO, social media, customer engagement, and boost your online presence.',
-    images: ['https://dealershipai.com/twitter-image.jpg'],
-    creator: '@dealershipai',
-  },
-  alternates: {
-    canonical: 'https://dealershipai.com',
-  },
-  verification: {
-    google: 'your-google-verification-code',
+    title: 'DealershipAI - AI Visibility Intelligence',
+    description: 'Discover your AI visibility score across ChatGPT, Claude, Gemini, and Perplexity.',
   },
 }
+
+export const dynamic = 'force-dynamic';
 
 export default function RootLayout({
   children,
@@ -78,10 +59,13 @@ export default function RootLayout({
         )}
       </head>
       <body className={inter.className}>
-        <ClerkProvider>
-          {children}
-        </ClerkProvider>
-        <Analytics />
+        <ClerkProviderWrapper>
+          <MonitoringProvider>
+            {children}
+            <Analytics />
+            <SpeedInsights />
+          </MonitoringProvider>
+        </ClerkProviderWrapper>
       </body>
     </html>
   )

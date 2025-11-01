@@ -1,120 +1,132 @@
-// Google Analytics 4 integration
+/**
+ * Analytics Tracking
+ * Centralized analytics for Vercel Analytics, PostHog, and custom events
+ */
+
+import posthog from 'posthog-js';
+
+let posthogInitialized = false;
+
+// Vercel Analytics (already in layout.tsx)
+export function trackPageView(path: string) {
+  if (typeof window !== 'undefined') {
+    // Vercel Analytics tracks automatically
+    // Custom tracking if needed
+    console.log('[Analytics] Page view:', path);
+    
+    // Track in PostHog
+    if (posthogInitialized && posthog) {
+      posthog.capture('$pageview', { path });
+    }
+  }
+}
+
+// PostHog integration
+export function initPostHog() {
+  if (typeof window === 'undefined') return;
+  
+  if (posthogInitialized) return;
+  
+  const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
+  
+  if (!posthogKey) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[PostHog] NEXT_PUBLIC_POSTHOG_KEY not found. PostHog will not be initialized.');
+    }
+    return;
+  }
+
+  try {
+    posthog.init(posthogKey, {
+      api_host: posthogHost,
+      ui_host: posthogHost,
+      loaded: (ph) => {
+        posthogInitialized = true;
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[PostHog] ✅ Initialized successfully');
+        }
+      },
+      capture_pageview: false, // We'll capture manually for better control
+      capture_pageleave: true,
+      autocapture: true,
+      disable_session_recording: process.env.NODE_ENV === 'development',
+    });
+    
+    // Store reference globally
+    if (typeof window !== 'undefined') {
+      (window as any).posthog = posthog;
+    }
+  } catch (error) {
+    console.error('[PostHog] Failed to initialize:', error);
+  }
+}
+
+export function trackEvent(eventName: string, properties?: Record<string, any>) {
+  if (typeof window === 'undefined') return;
+  
+  // PostHog
+  if (posthogInitialized && posthog) {
+    posthog.capture(eventName, properties);
+  }
+  
+  // Vercel Analytics custom events
+  if ((window as any).va) {
+    (window as any).va('event', { name: eventName, ...properties });
+  }
+  
+  // Google Analytics 4
+  if ((window as any).gtag) {
+    (window as any).gtag('event', eventName, properties);
+  }
+}
+
+export function identifyUser(userId: string, traits?: Record<string, any>) {
+  if (typeof window === 'undefined') return;
+  
+  if (posthogInitialized && posthog) {
+    posthog.identify(userId, traits);
+  }
+}
+
+export function trackConversion(eventName: string, value?: number) {
+  trackEvent(eventName, {
+    value,
+    category: 'conversion',
+    timestamp: new Date().toISOString(),
+  });
+}
+
+// Custom business metrics
+export function trackPulseScore(score: number, dealerId: string) {
+  trackEvent('pulse_score_calculated', {
+    score,
+    dealerId,
+    category: 'pulse',
+  });
+}
+
+export function trackScenarioRun(dealerId: string, scenarioName: string) {
+  trackEvent('scenario_run', {
+    dealerId,
+    scenarioName,
+    category: 'scenario',
+  });
+}
+
+export function trackShareToUnlock(platform: string, featureName: string) {
+  trackEvent('share_to_unlock', {
+    platform,
+    featureName,
+    category: 'growth',
+  });
+}
+
+// Type augmentation for window
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void
+    posthog?: typeof posthog;
+    va?: (command: string, ...args: any[]) => void;
+    gtag?: (command: string, ...args: any[]) => void;
   }
-}
-
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID
-
-// Initialize Google Analytics
-export const initGA = () => {
-  if (typeof window !== 'undefined' && GA_TRACKING_ID) {
-    // Load Google Analytics script
-    const script = document.createElement('script')
-    script.async = true
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`
-    document.head.appendChild(script)
-
-    // Initialize gtag
-    window.gtag = function() {
-      // eslint-disable-next-line prefer-rest-params
-      ;(window as any).dataLayer = (window as any).dataLayer || []
-      // eslint-disable-next-line prefer-rest-params
-      ;(window as any).dataLayer.push(arguments)
-    }
-
-    window.gtag('js', new Date())
-    window.gtag('config', GA_TRACKING_ID, {
-      page_title: document.title,
-      page_location: window.location.href,
-    })
-  }
-}
-
-// Track page views
-export const trackPageView = (url: string, title?: string) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA_TRACKING_ID, {
-      page_title: title || document.title,
-      page_location: url,
-    })
-  }
-}
-
-// Track custom events
-export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-    })
-  }
-}
-
-// Business-specific tracking functions
-export const trackDealershipAudit = (dealershipId: string, score: number) => {
-  trackEvent('audit_completed', 'engagement', dealershipId, score)
-}
-
-export const trackTierUpgrade = (fromTier: string, toTier: string, revenue: number) => {
-  trackEvent('tier_upgrade', 'conversion', `${fromTier}_to_${toTier}`, revenue)
-}
-
-export const trackFeatureUsage = (feature: string, tier: string) => {
-  trackEvent('feature_used', 'engagement', feature, undefined)
-  trackEvent('feature_used_by_tier', 'engagement', `${feature}_${tier}`, undefined)
-}
-
-export const trackCompetitorAnalysis = (competitorCount: number, tier: string) => {
-  trackEvent('competitor_analysis', 'engagement', tier, competitorCount)
-}
-
-export const trackQuickWinImplementation = (winId: string, impact: number) => {
-  trackEvent('quick_win_implemented', 'engagement', winId, impact)
-}
-
-export const trackMysteryShop = (shopType: string, score: number) => {
-  trackEvent('mystery_shop_completed', 'engagement', shopType, score)
-}
-
-// User journey tracking
-export const trackUserJourney = (step: string, userId?: string) => {
-  trackEvent('user_journey', 'engagement', step, undefined)
-  
-  if (userId) {
-    trackEvent('user_journey_with_id', 'engagement', `${step}_${userId}`, undefined)
-  }
-}
-
-// Error tracking
-export const trackError = (error: string, context: string) => {
-  trackEvent('error_occurred', 'error', `${error}_${context}`, undefined)
-}
-
-// Performance tracking
-export const trackPerformance = (metric: string, value: number) => {
-  trackEvent('performance_metric', 'performance', metric, value)
-}
-
-// Conversion tracking
-export const trackConversion = (conversionType: string, value: number) => {
-  trackEvent('conversion', 'conversion', conversionType, value)
-}
-
-// A/B testing
-export const trackABTest = (testName: string, variant: string) => {
-  trackEvent('ab_test', 'experiment', `${testName}_${variant}`, undefined)
-}
-
-// User engagement metrics
-export const trackEngagement = (action: string, duration?: number) => {
-  trackEvent('user_engagement', 'engagement', action, duration)
-}
-
-// API usage tracking
-export const trackAPIUsage = (endpoint: string, responseTime: number, status: number) => {
-  trackEvent('api_usage', 'performance', endpoint, responseTime)
-  trackEvent('api_status', 'performance', `${endpoint}_${status}`, undefined)
 }

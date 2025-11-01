@@ -1,0 +1,746 @@
+.customer-journey-analytics {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.customer-journey-analytics h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.customer-journey-analytics p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.segment-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.segment-selector label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.segment-selector select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  color: #374151;
+  font-weight: 500;
+  min-width: 300px;
+}
+
+.journey-overview {
+  margin-bottom: 3rem;
+}
+
+.journey-overview h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.overview-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card h5 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.journey-funnel {
+  margin-bottom: 3rem;
+}
+
+.journey-funnel h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.journey-funnel .recharts-wrapper {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.touchpoint-analysis {
+  margin-bottom: 3rem;
+}
+
+.touchpoint-analysis h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.touchpoints-timeline {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.touchpoint-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.touchpoint-item:last-child {
+  margin-bottom: 0;
+}
+
+.touchpoint-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+}
+
+.connector-line {
+  width: 2px;
+  height: 60px;
+  background: linear-gradient(to bottom, #3b82f6, #e5e7eb);
+  margin-top: 1rem;
+}
+
+.touchpoint-content {
+  flex: 1;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.touchpoint-content:hover {
+  background: #f3f4f6;
+  transform: translateX(4px);
+}
+
+.touchpoint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.stage-indicator {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.channel-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.channel-icon {
+  font-size: 1.25rem;
+}
+
+.channel-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.duration-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.touchpoint-details h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.touchpoint-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.outcome {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.outcome.positive {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.outcome.neutral {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.outcome.negative {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.journey-insights {
+  margin-bottom: 3rem;
+}
+
+.journey-insights h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.insight-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+.insight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.insight-icon {
+  font-size: 1.5rem;
+}
+
+.insight-meta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.impact-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.improvement-badge {
+  padding: 0.25rem 0.75rem;
+  background: #10b981;
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.insight-content h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.insight-content p {
+  color: #6b7280;
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+}
+
+.insight-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.detail-item strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.recommendation {
+  background: #f0f9ff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #bae6fd;
+}
+
+.recommendation h6 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0369a1;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.recommendation p {
+  color: #0c4a6e;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.insight-chart {
+  height: 150px;
+  margin-top: 1rem;
+}
+
+.channel-performance {
+  margin-bottom: 3rem;
+}
+
+.channel-performance h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.channels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.channel-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.channel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+.channel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.channel-header .channel-icon {
+  font-size: 1.5rem;
+}
+
+.channel-header h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.channel-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.channel-metrics .metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.channel-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.channel-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.optimization-actions {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.optimization-actions h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.action-card {
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.action-card:hover {
+  background: #f3f4f6;
+  transform: translateY(-2px);
+}
+
+.action-card h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.action-card p {
+  color: #6b7280;
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.action-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.action-button:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-1px);
+}
+
+/* Dark mode styles */
+.dark .customer-journey-analytics {
+  background: #111827;
+  color: #f9fafb;
+}
+
+.dark .customer-journey-analytics h3 {
+  color: #f9fafb;
+}
+
+.dark .customer-journey-analytics p {
+  color: #d1d5db;
+}
+
+.dark .segment-selector,
+.dark .metric-card,
+.dark .touchpoints-timeline,
+.dark .insight-card,
+.dark .channel-card,
+.dark .optimization-actions {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.dark .segment-selector label {
+  color: #d1d5db;
+}
+
+.dark .segment-selector select {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.dark .journey-overview h4,
+.dark .journey-funnel h4,
+.dark .touchpoint-analysis h4,
+.dark .journey-insights h4,
+.dark .channel-performance h4,
+.dark .optimization-actions h4 {
+  color: #f9fafb;
+}
+
+.dark .metric-card h5 {
+  color: #9ca3af;
+}
+
+.dark .metric-value {
+  color: #f9fafb;
+}
+
+.dark .metric-label {
+  color: #9ca3af;
+}
+
+.dark .touchpoint-content {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .touchpoint-content:hover {
+  background: #4b5563;
+}
+
+.dark .channel-name {
+  color: #d1d5db;
+}
+
+.dark .duration-info {
+  color: #9ca3af;
+}
+
+.dark .touchpoint-details h6 {
+  color: #f9fafb;
+}
+
+.dark .insight-content h5 {
+  color: #f9fafb;
+}
+
+.dark .insight-content p {
+  color: #d1d5db;
+}
+
+.dark .detail-item {
+  color: #9ca3af;
+}
+
+.dark .detail-item strong {
+  color: #d1d5db;
+}
+
+.dark .recommendation {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+}
+
+.dark .recommendation h6 {
+  color: #60a5fa;
+}
+
+.dark .recommendation p {
+  color: #dbeafe;
+}
+
+.dark .channel-header h5 {
+  color: #f9fafb;
+}
+
+.dark .metric-label {
+  color: #9ca3af;
+}
+
+.dark .metric-value {
+  color: #f9fafb;
+}
+
+.dark .channel-bar {
+  background-color: #374151;
+}
+
+.dark .action-card {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .action-card:hover {
+  background: #4b5563;
+}
+
+.dark .action-card h5 {
+  color: #f9fafb;
+}
+
+.dark .action-card p {
+  color: #d1d5db;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .customer-journey-analytics {
+    padding: 1rem;
+  }
+  
+  .segment-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .segment-selector select {
+    min-width: auto;
+  }
+  
+  .overview-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .channels-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .touchpoint-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .touchpoint-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .insight-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .insight-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .insight-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .channel-metrics .metric {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

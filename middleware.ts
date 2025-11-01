@@ -2,9 +2,10 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Define protected routes
+// Define protected routes (exclude root path for public landing page)
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
+  '/dash(.*)',
   '/intelligence(.*)',
   '/api/ai(.*)',
   '/api/parity(.*)',
@@ -13,14 +14,47 @@ const isProtectedRoute = createRouteMatcher([
   '/api/audit(.*)'
 ]);
 
+// Define public routes that should never require authentication
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in',
+  '/sign-up',
+  '/signin',
+  '/signup',
+  '/pricing',
+  '/privacy',
+  '/terms'
+]);
+
 export default clerkMiddleware((auth, req) => {
+  const url = new URL(req.url);
+  const hostname = req.headers.get('host') || '';
+
+  // Domain-based routing: route dash.dealershipai.com to /dash
+  if (hostname.includes('dash.dealershipai.com') && url.pathname === '/') {
+    const rewriteUrl = url.clone();
+    rewriteUrl.pathname = '/dash';
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
+  // Domain-based routing: route dashboard.dealershipai.com to /dashboard
+  if (hostname.includes('dashboard.dealershipai.com') && url.pathname === '/') {
+    const rewriteUrl = url.clone();
+    rewriteUrl.pathname = '/dashboard';
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
+  // Skip authentication for public routes
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+  
   // Protect routes that require authentication
   if (isProtectedRoute(req)) {
     auth.protect();
   }
 
   // Example: read tenant from cookie or path; adjust to your auth
-  const url = new URL(req.url);
   const cookieTenant = req.cookies.get("tenant_id")?.value;
   const headerTenant = req.headers.get("x-tenant-id");
   const tenantId = headerTenant || cookieTenant || url.searchParams.get("tenant");

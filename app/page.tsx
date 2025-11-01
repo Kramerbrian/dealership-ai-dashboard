@@ -1,5 +1,7 @@
-import EnhancedLandingPage from '@/components/landing/EnhancedLandingPage';
+'use client';
 
-export default function HomePage() {
-  return <EnhancedLandingPage />;
+import { AdvancedPLGLandingPage } from '@/components/landing/plg/advanced-plg-landing';
+
+export default function LandingPage() {
+  return <AdvancedPLGLandingPage />;
 }

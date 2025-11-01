@@ -1,82 +1,102 @@
 openapi: 3.1.0
+
 info:
   title: DealershipAI Action API
   version: 1.0.0
   description: >
     Action endpoints for Schema King GPT to retrieve, analyze, and (optionally)
     auto-deploy structured data optimizations across dealer sites.
+
 servers:
   - url: https://api.dealershipai.com
     description: Production API
-  - url: https://dealership-ai-dashboard-lre60r6zp-brian-kramer-dealershipai.vercel.app
-    description: Vercel Deployment (Current)
+  - url: https://dealershipai-app.com
+    description: Current production deployment
+  - url: https://dealership-ai-dashboard-rolrhzgi0-brian-kramer-dealershipai.vercel.app
+    description: Latest Vercel deployment
 
 paths:
   /api/ai-scores:
     get:
       operationId: getAIScores
       summary: Retrieve AIV / ATI / CRS metrics for a dealer
-      description: >
-        Get AI Visibility (AIV), Algorithmic Trust Index (ATI), and Competitive Rank Score (CRS)
-        metrics for a specific dealership domain.
+      description: Returns comprehensive AI visibility metrics including AIV (AI Visibility), ATI (Algorithmic Trust Index),
+        and CRS (Composite Risk Score)
       parameters:
         - name: domain
           in: query
           required: true
           schema:
             type: string
-            example: "example-dealer.com"
-          description: The dealership domain to analyze
+            pattern: ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+          description: Dealership website URL
+        - name: force_refresh
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Force refresh of cached scores
       responses:
         "200":
-          description: Successfully retrieved AI scores
+          description: AI scores retrieved successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  vai:
-                    type: number
-                    description: AI Visibility Index score
-                  ati:
-                    type: number
-                    description: Algorithmic Trust Index score
-                  crs:
-                    type: number
-                    description: Competitive Rank Score
                   domain:
                     type: string
+                  overall_score:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  pillars:
+                    type: object
+                  revenue_impact:
+                    type: object
+                  action_items:
+                    type: array
+                    items:
+                      type: string
         "400":
-          description: Bad request - domain parameter missing or invalid
-        "500":
-          description: Internal server error
+          description: Invalid domain format
+        "401":
+          description: Unauthorized
+        "429":
+          description: Rate limit exceeded
 
   /api/opportunities:
     get:
       operationId: listOpportunities
       summary: Fetch ranked schema-fix tasks by impact
-      description: >
-        Get a prioritized list of schema optimization opportunities for a dealership,
-        ranked by potential impact on AI visibility and search performance.
+      description: Returns a prioritized list of schema optimization opportunities ranked by potential impact
       parameters:
         - name: domain
           in: query
           required: true
           schema:
             type: string
-            example: "example-dealer.com"
-          description: The dealership domain to analyze
+            pattern: ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+          description: Dealership website URL
         - name: limit
           in: query
           required: false
           schema:
             type: integer
-            default: 10
+            minimum: 1
             maximum: 50
+            default: 10
           description: Maximum number of opportunities to return
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Base64-encoded cursor for pagination (format: impact_score:id)
       responses:
         "200":
-          description: Successfully retrieved opportunities
+          description: Opportunities retrieved successfully
           content:
             application/json:
               schema:
@@ -91,226 +111,57 @@ paths:
                           type: string
                         title:
                           type: string
-                        impact:
+                        description:
                           type: string
-                          enum: [high, medium, low]
-                        priority:
-                          type: integer
-                        estimatedROI:
+                        impact_score:
                           type: number
-                        status:
+                        effort:
                           type: string
-                          enum: [pending, in_progress, completed]
+                          enum:
+                            - low
+                            - medium
+                            - high
+                        category:
+                          type: string
+                        estimated_aiv_gain:
+                          type: number
+                  nextCursor:
+                    type: string
+                    nullable: true
+                    description: Base64-encoded cursor for next page
         "400":
-          description: Bad request - domain parameter missing
-        "500":
-          description: Internal server error
+          description: Invalid domain format or cursor
+        "401":
+          description: Unauthorized
 
   /api/site-inject:
     post:
       operationId: runSchemaInject
       summary: Submit validated JSON-LD to dealer CMS
-      description: >
-        Deploy validated JSON-LD structured data to a dealership's website CMS.
-        This endpoint handles the injection of schema markup with validation.
+      description: Injects validated JSON-LD structured data into dealer website via CMS API or edge worker
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - dealerId
-                - jsonld
               properties:
                 dealerId:
                   type: string
-                  description: Unique identifier for the dealership
-                  example: "dealer_12345"
+                  description: Dealer identifier
                 jsonld:
                   type: string
-                  description: Valid JSON-LD structured data to inject
-                  example: '{"@context":"https://schema.org","@type":"AutoDealer"}'
+                  description: Validated JSON-LD structured data (stringified)
                 auto_fix:
                   type: boolean
                   default: false
-                  description: Whether to automatically fix validation errors
-                cms_type:
-                  type: string
-                  enum: [wordpress, shopify, custom]
-                  description: CMS platform type for injection
-      responses:
-        "200":
-          description: Schema successfully injected
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  message:
-                    type: string
-                  validation:
-                    type: object
-                    properties:
-                      valid:
-                        type: boolean
-                      errors:
-                        type: array
-                        items:
-                          type: string
-        "400":
-          description: Bad request - invalid JSON-LD or missing required fields
-        "401":
-          description: Unauthorized - authentication required
-        "500":
-          description: Internal server error
-
-  /api/refresh:
-    post:
-      operationId: refreshDealerCrawl
-      summary: Trigger a new scan and metric re-computation
-      description: >
-        Trigger a fresh crawl and analysis of a dealership website, updating
-        all metrics, scores, and opportunity rankings.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
+                  description: Automatically apply fixes without approval
               required:
-                - domain
-              properties:
-                domain:
-                  type: string
-                  example: "example-dealer.com"
-                  description: The dealership domain to refresh
-                force:
-                  type: boolean
-                  default: false
-                  description: Force refresh even if recently updated
+                - dealerId
+                - jsonld
       responses:
         "200":
-          description: Refresh job started successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  jobId:
-                    type: string
-                  message:
-                    type: string
-                  estimatedTime:
-                    type: integer
-                    description: Estimated completion time in minutes
-        "400":
-          description: Bad request - domain parameter missing
-        "429":
-          description: Too many requests - refresh rate limit exceeded
-        "500":
-          description: Internal server error
-
-  /api/zero-click:
-    get:
-      operationId: checkZeroClick
-      summary: Get AI Overview / Gemini inclusion rates per intent
-      description: >
-        Retrieve zero-click rate metrics, AI Overview appearance rates, and
-        Gemini inclusion statistics for specific search intents related to the dealership.
-      parameters:
-        - name: dealerId
-          in: query
-          required: true
-          schema:
-            type: string
-            example: "dealer_12345"
-          description: Unique identifier for the dealership
-        - name: q
-          in: query
-          required: false
-          schema:
-            type: string
-            example: "hyundai dealer near me"
-          description: Search query intent to analyze
-        - name: days
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 30
-            minimum: 1
-            maximum: 365
-          description: Number of days of data to retrieve
-      responses:
-        "200":
-          description: Successfully retrieved zero-click metrics
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  zcr:
-                    type: number
-                    description: Zero-Click Rate (0-1)
-                  zcco:
-                    type: number
-                    description: Zero-Click Conversion Opportunity
-                  airi:
-                    type: number
-                    description: AI Response Inclusion rate
-                  aiPresenceRate:
-                    type: number
-                    description: Rate of AI Overview appearances
-                  series:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        date:
-                          type: string
-                          format: date
-                        impressions:
-                          type: integer
-                        clicks:
-                          type: integer
-                        zcr:
-                          type: number
-        "400":
-          description: Bad request - dealerId parameter missing
-        "500":
-          description: Internal server error
-
-  /api/ai/health:
-    get:
-      operationId: fetchAIHealth
-      summary: Pull engine status and visibility trends for one dealer
-      description: >
-        Get comprehensive AI engine health status, visibility trends, and
-        system performance metrics for a specific dealership.
-      parameters:
-        - name: dealerId
-          in: query
-          required: true
-          schema:
-            type: string
-            example: "dealer_12345"
-          description: Unique identifier for the dealership
-        - name: intent
-          in: query
-          required: false
-          schema:
-            type: string
-            example: "sales"
-            enum: [sales, service, parts, finance]
-          description: Filter by business intent/segment
-      responses:
-        "200":
-          description: Successfully retrieved AI health data
+          description: Schema injected successfully
           content:
             application/json:
               schema:
@@ -318,61 +169,207 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [healthy, degraded, down]
-                  visibility:
-                    type: object
-                    properties:
-                      current:
-                        type: number
-                      trend:
-                        type: string
-                        enum: [up, down, stable]
-                      change:
-                        type: number
-                        description: Percentage change from previous period
-                  metrics:
-                    type: object
-                    properties:
-                      uptime:
-                        type: number
-                      responseTime:
-                        type: number
-                      accuracy:
-                        type: number
-                  alerts:
+                    enum:
+                      - ok
+                      - error
+                  applied:
+                    type: integer
+                    description: Number of pages/sections where schema was applied
+                  version_id:
+                    type: string
+                    description: Version ID for rollback capability
+                  warnings:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        severity:
-                          type: string
-                          enum: [critical, warning, info]
-                        message:
-                          type: string
-                        timestamp:
-                          type: string
-                          format: date-time
+                      type: string
         "400":
-          description: Bad request - dealerId parameter missing
+          description: Invalid request body
+        "401":
+          description: Unauthorized
+        "403":
+          description: Domain ownership not verified
         "500":
           description: Internal server error
 
-components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
-          type: string
-        code:
-          type: string
-    Success:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
+  /api/refresh:
+    post:
+      operationId: refreshDealerCrawl
+      summary: Trigger a new scan and metric re-computation
+      description: Forces a fresh crawl of the dealer website and recomputes all AI visibility metrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain:
+                  type: string
+                  pattern: ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+              required:
+                - domain
+      responses:
+        "200":
+          description: Refresh initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                  message:
+                    type: string
+                  job_id:
+                    type: string
+                    description: Background job ID for tracking
+        "400":
+          description: Invalid domain format
+        "401":
+          description: Unauthorized
+        "429":
+          description: Rate limit exceeded
 
+  /api/zero-click:
+    get:
+      operationId: checkZeroClick
+      summary: Get AI Overview / Gemini inclusion rates per intent
+      description: Returns zero-click inclusion rates across AI platforms (ChatGPT, Gemini, Perplexity) broken down by query intent
+      parameters:
+        - name: dealerId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Dealer identifier
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional query intent filter (buy, sell, service, trade)
+      responses:
+        "200":
+          description: Zero-click data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dealer_id:
+                    type: string
+                  overall_coverage:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                    description: Overall zero-click coverage percentage
+                  by_platform:
+                    type: object
+                    properties:
+                      chatgpt:
+                        type: number
+                      gemini:
+                        type: number
+                      perplexity:
+                        type: number
+                  by_intent:
+                    type: object
+                    properties:
+                      buy:
+                        type: number
+                      sell:
+                        type: number
+                      service:
+                        type: number
+                      trade:
+                        type: number
+        "400":
+          description: Invalid dealerId
+        "401":
+          description: Unauthorized
+
+  /api/ai/health:
+    get:
+      operationId: fetchAIHealth
+      summary: Pull engine status and visibility trends for one dealer
+      description: Returns comprehensive health metrics including engine status, visibility trends, and recent changes
+      parameters:
+        - name: dealerId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Dealer identifier
+        - name: intent
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - buy
+              - sell
+              - service
+              - trade
+              - all
+            default: all
+          description: Filter by query intent
+      responses:
+        "200":
+          description: Health data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dealer_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                      - healthy
+                      - degraded
+                      - critical
+                  visibility_score:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  trends:
+                    type: object
+                    properties:
+                      last_7_days:
+                        type: number
+                        description: Change in visibility over last 7 days
+                      last_30_days:
+                        type: number
+                        description: Change in visibility over last 30 days
+                  engine_status:
+                    type: object
+                    properties:
+                      crawler:
+                        type: string
+                        enum:
+                          - operational
+                          - degraded
+                          - down
+                      analyzer:
+                        type: string
+                        enum:
+                          - operational
+                          - degraded
+                          - down
+                      cache:
+                        type: string
+                        enum:
+                          - operational
+                          - degraded
+                          - down
+                  recent_alerts:
+                    type: array
+                    items:
+                      type: object
+        "400":
+          description: Invalid dealerId
+        "401":
+          description: Unauthorized
