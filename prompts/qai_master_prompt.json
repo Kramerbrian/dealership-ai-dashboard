@@ -1,0 +1,362 @@
+{
+  "version": "1.0",
+  "namespace": "dealershipAI.QAI.master",
+  "description": "QAI (Quality AI) Master Prompt Framework for DealershipAI - Comprehensive AI quality assurance, validation, and optimization system",
+  "created": "2024-10-12T00:00:00Z",
+  "author": "DealershipAI QAI Team",
+  "model_version": "qai-master-v1.0",
+  "framework_type": "Quality Assurance & AI Optimization",
+  "core_objectives": [
+    "Ensure AI model accuracy and reliability across all DealershipAI systems",
+    "Implement continuous quality monitoring and validation workflows",
+    "Optimize AI performance for multi-tenant dealership environments",
+    "Maintain data integrity and security compliance (SOC 2, GDPR)",
+    "Enable autonomous quality improvement through feedback loops"
+  ],
+  "qai_pillars": [
+    {
+      "pillar_id": "model_accuracy",
+      "priority": 1,
+      "description": "Continuous monitoring and optimization of AI model performance",
+      "metrics": {
+        "accuracy_threshold": 0.95,
+        "precision_threshold": 0.93,
+        "recall_threshold": 0.92,
+        "f1_score_threshold": 0.93
+      },
+      "validation_checks": [
+        "cross_validation_accuracy",
+        "prediction_confidence_analysis",
+        "model_drift_detection",
+        "performance_regression_testing"
+      ]
+    },
+    {
+      "pillar_id": "data_quality",
+      "priority": 2,
+      "description": "Ensure data integrity, completeness, and consistency across all systems",
+      "metrics": {
+        "completeness_threshold": 0.98,
+        "consistency_threshold": 0.96,
+        "validity_threshold": 0.99,
+        "uniqueness_threshold": 0.95
+      },
+      "validation_checks": [
+        "data_completeness_audit",
+        "schema_validation",
+        "duplicate_detection",
+        "outlier_analysis",
+        "tenant_isolation_verification"
+      ]
+    },
+    {
+      "pillar_id": "security_compliance",
+      "priority": 3,
+      "description": "Maintain security standards and regulatory compliance",
+      "metrics": {
+        "security_score_threshold": 0.99,
+        "compliance_score_threshold": 0.98,
+        "vulnerability_tolerance": 0
+      },
+      "validation_checks": [
+        "access_control_validation",
+        "data_encryption_verification",
+        "audit_log_integrity",
+        "rbac_permission_testing",
+        "tenant_data_isolation"
+      ]
+    },
+    {
+      "pillar_id": "performance_optimization",
+      "priority": 4,
+      "description": "Optimize system performance, latency, and resource utilization",
+      "metrics": {
+        "response_time_threshold_ms": 200,
+        "throughput_threshold_rps": 1000,
+        "resource_utilization_threshold": 0.85,
+        "cache_hit_ratio_threshold": 0.9
+      },
+      "validation_checks": [
+        "latency_monitoring",
+        "throughput_analysis",
+        "resource_utilization_tracking",
+        "cache_performance_optimization",
+        "database_query_optimization"
+      ]
+    },
+    {
+      "pillar_id": "user_experience",
+      "priority": 5,
+      "description": "Ensure optimal user experience across all touchpoints",
+      "metrics": {
+        "user_satisfaction_threshold": 0.9,
+        "task_completion_rate_threshold": 0.95,
+        "error_rate_threshold": 0.02,
+        "accessibility_score_threshold": 0.98
+      },
+      "validation_checks": [
+        "usability_testing",
+        "accessibility_compliance",
+        "error_handling_validation",
+        "responsive_design_verification",
+        "cross_browser_compatibility"
+      ]
+    }
+  ],
+  "prompt_categories": {
+    "validation_prompts": [
+      {
+        "id": "qai_model_validation",
+        "goal": "Validate AI model accuracy and performance",
+        "tasks": [
+          "Execute cross-validation tests on latest model versions",
+          "Analyze prediction confidence scores and identify low-confidence predictions",
+          "Monitor for model drift using statistical significance tests",
+          "Generate performance regression reports comparing current vs. previous versions",
+          "Validate model performance across different tenant segments"
+        ],
+        "execution_context": {
+          "input_format": "ModelPerformanceData[]",
+          "output_format": "ValidationReport[]",
+          "required_datasets": ["training_data", "validation_data", "production_logs"],
+          "frequency": "daily"
+        }
+      },
+      {
+        "id": "qai_data_integrity_check",
+        "goal": "Ensure comprehensive data quality across all systems",
+        "tasks": [
+          "Audit data completeness for all required fields by tenant",
+          "Validate data consistency across multiple data sources",
+          "Detect and flag data anomalies and outliers",
+          "Verify tenant data isolation and prevent data leakage",
+          "Generate data quality scorecards for stakeholders"
+        ],
+        "execution_context": {
+          "input_format": "RawDataSources[]",
+          "output_format": "DataQualityReport[]",
+          "required_datasets": ["postgres_tables", "redis_cache", "external_apis"],
+          "frequency": "hourly"
+        }
+      },
+      {
+        "id": "qai_security_audit",
+        "goal": "Maintain security standards and compliance",
+        "tasks": [
+          "Audit RBAC permissions and access controls",
+          "Validate data encryption at rest and in transit",
+          "Check for unauthorized access attempts and security violations",
+          "Verify compliance with SOC 2, GDPR, and automotive industry standards",
+          "Generate security compliance reports"
+        ],
+        "execution_context": {
+          "input_format": "SecurityLogs[]",
+          "output_format": "SecurityAuditReport[]",
+          "required_datasets": ["auth_logs", "access_logs", "error_logs"],
+          "frequency": "daily"
+        }
+      }
+    ],
+    "optimization_prompts": [
+      {
+        "id": "qai_performance_optimizer",
+        "goal": "Optimize system performance and resource utilization",
+        "tasks": [
+          "Analyze API response times and identify bottlenecks",
+          "Optimize database queries and suggest indexing improvements",
+          "Monitor cache performance and recommend cache strategy adjustments",
+          "Analyze resource utilization patterns and suggest scaling strategies",
+          "Generate performance optimization recommendations"
+        ],
+        "execution_context": {
+          "input_format": "PerformanceMetrics[]",
+          "output_format": "OptimizationRecommendations[]",
+          "required_datasets": ["api_logs", "database_metrics", "cache_metrics"],
+          "frequency": "daily"
+        }
+      },
+      {
+        "id": "qai_user_experience_optimizer",
+        "goal": "Enhance user experience and engagement",
+        "tasks": [
+          "Analyze user behavior patterns and identify pain points",
+          "Evaluate task completion rates and error frequencies",
+          "Assess accessibility compliance and suggest improvements",
+          "Monitor user satisfaction metrics and identify improvement areas",
+          "Generate UX optimization recommendations"
+        ],
+        "execution_context": {
+          "input_format": "UserAnalytics[]",
+          "output_format": "UXOptimizationReport[]",
+          "required_datasets": ["user_sessions", "error_logs", "feedback_data"],
+          "frequency": "weekly"
+        }
+      }
+    ],
+    "monitoring_prompts": [
+      {
+        "id": "qai_real_time_monitor",
+        "goal": "Provide real-time quality monitoring and alerting",
+        "tasks": [
+          "Monitor system health metrics in real-time",
+          "Detect anomalies and trigger appropriate alerts",
+          "Track SLA compliance and quality KPIs",
+          "Generate real-time quality dashboards",
+          "Provide automated incident response recommendations"
+        ],
+        "execution_context": {
+          "input_format": "RealTimeMetrics[]",
+          "output_format": "MonitoringAlerts[]",
+          "required_datasets": ["live_metrics", "historical_baselines"],
+          "frequency": "real_time"
+        }
+      }
+    ]
+  },
+  "quality_benchmarks": {
+    "overall_qai_score": {
+      "target": 0.95,
+      "weight": 1.0,
+      "components": [
+        {"metric": "model_accuracy", "weight": 0.25},
+        {"metric": "data_quality", "weight": 0.25},
+        {"metric": "security_compliance", "weight": 0.2},
+        {"metric": "performance_optimization", "weight": 0.15},
+        {"metric": "user_experience", "weight": 0.15}
+      ]
+    },
+    "sla_targets": {
+      "system_availability": 0.999,
+      "response_time_p95_ms": 300,
+      "error_rate": 0.001,
+      "data_accuracy": 0.99
+    },
+    "compliance_requirements": {
+      "soc2_compliance": true,
+      "gdpr_compliance": true,
+      "automotive_industry_standards": true,
+      "data_retention_policies": true
+    }
+  },
+  "automation_workflows": {
+    "continuous_quality_pipeline": {
+      "trigger": "on_deployment",
+      "steps": [
+        "qai_model_validation",
+        "qai_data_integrity_check",
+        "qai_security_audit",
+        "qai_performance_optimizer",
+        "quality_report_generation"
+      ]
+    },
+    "incident_response_pipeline": {
+      "trigger": "quality_threshold_breach",
+      "steps": [
+        "alert_stakeholders",
+        "automated_rollback_decision",
+        "root_cause_analysis",
+        "mitigation_recommendations",
+        "post_incident_review"
+      ]
+    },
+    "scheduled_quality_checks": {
+      "daily": ["model_validation", "security_audit", "performance_monitoring"],
+      "weekly": ["user_experience_analysis", "compliance_review"],
+      "monthly": ["comprehensive_qai_report", "trend_analysis"]
+    }
+  },
+  "integration_specifications": {
+    "cursor_ide": {
+      "import_instructions": [
+        "1. Place qai_master_prompt.json in /prompts/ directory",
+        "2. Open Cursor Command Palette (Cmd+Shift+P)",
+        "3. Select 'Prompt Library → Import QAI Framework'",
+        "4. Configure QAI workspace settings and data connections",
+        "5. Enable automated quality checks and monitoring"
+      ],
+      "required_extensions": [
+        "TypeScript",
+        "PostgreSQL",
+        "Redis",
+        "Docker",
+        "Jest Testing Framework"
+      ],
+      "workspace_setup": {
+        "directories": ["/prompts/qai/", "/benchmarks/qai/", "/reports/quality/"],
+        "config_files": ["qai.config.json", "quality-thresholds.json"],
+        "data_connections": ["postgres", "redis", "monitoring_apis"]
+      }
+    },
+    "dealership_ai_platform": {
+      "api_endpoints": [
+        "/api/qai/validate",
+        "/api/qai/monitor",
+        "/api/qai/optimize",
+        "/api/qai/report"
+      ],
+      "middleware_integration": [
+        "tenant_isolation_validator",
+        "rbac_permission_checker",
+        "quality_metrics_collector"
+      ],
+      "dashboard_widgets": [
+        "qai_score_widget",
+        "quality_trends_chart",
+        "compliance_status_indicator",
+        "performance_metrics_panel"
+      ]
+    }
+  },
+  "reporting_framework": {
+    "executive_dashboard": {
+      "metrics": ["overall_qai_score", "sla_compliance", "security_status"],
+      "frequency": "daily",
+      "format": "visual_dashboard"
+    },
+    "technical_reports": {
+      "metrics": ["detailed_performance_analysis", "security_audit_results", "optimization_recommendations"],
+      "frequency": "weekly",
+      "format": "detailed_json_report"
+    },
+    "compliance_reports": {
+      "metrics": ["regulatory_compliance_status", "audit_trail", "data_governance"],
+      "frequency": "monthly",
+      "format": "formal_compliance_document"
+    }
+  },
+  "success_criteria": {
+    "quality_improvements": {
+      "target": "15% improvement in overall quality metrics month-over-month",
+      "measurement": "composite QAI score trending analysis"
+    },
+    "incident_reduction": {
+      "target": "50% reduction in quality-related incidents",
+      "measurement": "incident frequency and severity tracking"
+    },
+    "automation_efficiency": {
+      "target": "80% of quality checks fully automated",
+      "measurement": "manual vs. automated quality check ratio"
+    },
+    "stakeholder_satisfaction": {
+      "target": "95% stakeholder satisfaction with quality processes",
+      "measurement": "quarterly stakeholder surveys and feedback"
+    }
+  },
+  "version_control": {
+    "prompt_versioning": "semantic_versioning",
+    "backward_compatibility": true,
+    "migration_scripts": "/scripts/qai-migration/",
+    "rollback_procedures": "/docs/qai-rollback-guide.md"
+  },
+  "deployment_checklist": [
+    "✅ QAI framework architecture designed",
+    "✅ All quality pillars defined with metrics",
+    "✅ Validation and optimization prompts created", 
+    "✅ Automation workflows specified",
+    "✅ Cursor IDE integration configured",
+    "✅ DealershipAI platform integration mapped",
+    "✅ Reporting framework established",
+    "✅ Success criteria and KPIs defined",
+    "✅ Version control and deployment procedures documented"
+  ]
+}
