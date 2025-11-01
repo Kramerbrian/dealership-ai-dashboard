@@ -54,28 +54,33 @@ export default function EnhancedDealershipAILanding() {
     
     setUserDomain(domain);
     setIsAnalyzing(true);
- const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: domain,
-        revenue: 100000,
-        marketSize: 'medium',
-        competition: 'moderate',
-         }),
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: domain,
+          revenue: 100000,
+          marketSize: 'medium',
+          competition: 'moderate',
+        }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Scan failed');
       }
-      
+
       const scanResult = await response.json();
-      
-   // Store the analysis result for the calculator
- 
- setIsAnalyzing(false);
+
+      // Store the analysis result for the calculator
+
+    } catch (error) {
+      console.error('Analysis failed:', error);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 

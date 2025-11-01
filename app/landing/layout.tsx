@@ -74,7 +74,7 @@ export default function LandingLayout({
             offers: {
               '@type': 'Offer',
               price: '0',
-              priceCurrency': 'USD',
+              priceCurrency: 'USD',
               description: 'Free AI Visibility Audit',
               availability: 'https://schema.org/InStock',
             },

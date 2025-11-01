@@ -782,7 +782,7 @@ function GoogleAnalyticsStep({ integrationData, updateIntegrationData, connectio
               className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             />
             <p className="text-xs text-white/60 mt-1">
-              Find this in your Google Analytics account under Admin > Property Settings
+              Find this in your Google Analytics account under Admin &gt; Property Settings
             </p>
           </div>
 
