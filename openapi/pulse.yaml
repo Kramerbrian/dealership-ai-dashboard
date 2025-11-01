@@ -1,0 +1,382 @@
+openapi: 3.1.0
+info:
+  title: DealershipAI Pulse & Diagnostics API
+  version: "2025.11.03"
+  description: |
+    Unified diagnostics API combining MSRP sync monitoring, AI score summaries,
+    and orchestrator health metrics.
+  contact:
+    name: DealershipAI Engineering
+    email: engineering@dealershipai.com
+  x-schema-changelog:
+    - version: "2025.11.03"
+      date: "2025-11-03"
+      changes:
+        - Added aiScoresSummary to MsrpSyncDiagnostics
+        - Added AiScoreSummary component schema
+        - Unified diagnostics and AI scores endpoints
+
+servers:
+  - url: https://api.dealershipai.com/v1
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+paths:
+  /diagnostics/msrp-sync:
+    get:
+      summary: Get MSRP sync diagnostics
+      operationId: getMsrpSyncDiagnostics
+      tags:
+        - Diagnostics
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+          description: Tenant/Dealer ID for filtering diagnostics
+        - name: includeAiScores
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Include detailed AI score summaries
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppraiseSDKResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Trigger manual MSRP sync
+      operationId: triggerMsrpSync
+      tags:
+        - Diagnostics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tenantId
+              properties:
+                tenantId:
+                  type: string
+      responses:
+        '200':
+          description: Sync triggered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  tenantId:
+                    type: string
+                  jobId:
+                    type: string
+                    format: uuid
+                  estimatedCompletionTime:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ai-scores:
+    get:
+      summary: Get AI scores summary
+      operationId: getAiScores
+      tags:
+        - AI Scores
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Dealer website domain
+        - name: force_refresh
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Force refresh of cached scores
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiScoresResponse'
+
+components:
+  schemas:
+    AppraiseSDKResponse:
+      type: object
+      required:
+        - freshnessScore
+        - businessIdentityMatch
+        - diagnostics
+        - meta
+      properties:
+        freshnessScore:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Data freshness score (0-100)
+        businessIdentityMatch:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Business identity match score
+        pulse:
+          $ref: '#/components/schemas/PulseData'
+        msrpSync:
+          $ref: '#/components/schemas/MsrpSyncData'
+        graph:
+          $ref: '#/components/schemas/GraphData'
+        scenario:
+          $ref: '#/components/schemas/ScenarioData'
+        diagnostics:
+          $ref: '#/components/schemas/MsrpSyncDiagnostics'
+        meta:
+          $ref: '#/components/schemas/MetaData'
+
+    MsrpSyncDiagnostics:
+      type: object
+      required:
+        - lastRun
+        - count
+        - status
+      properties:
+        lastRun:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last sync run
+        count:
+          type: integer
+          minimum: 0
+          description: Number of records synchronized
+        avgDeltaPct:
+          type: number
+          format: double
+          description: Average MSRP delta percentage
+        pulseLatencyMs:
+          type: number
+          format: double
+          description: Pulse integration latency in milliseconds
+        aiScores:
+          $ref: '#/components/schemas/AiScoreStats'
+        aiScoresSummary:
+          $ref: '#/components/schemas/AiScoreSummary'
+        status:
+          type: string
+          enum: [healthy, degraded, critical, unknown]
+          description: Overall diagnostic status
+        message:
+          type: string
+          description: Human-readable status message
+
+    AiScoreStats:
+      type: object
+      properties:
+        aivRefreshed:
+          type: integer
+          description: Number of AVI scores refreshed
+        atiRefreshed:
+          type: integer
+          description: Number of ATI scores refreshed
+        cisRefreshed:
+          type: integer
+          description: Number of CIS scores refreshed
+        refreshDurationMs:
+          type: number
+          format: double
+          description: Total refresh duration in milliseconds
+
+    AiScoreSummary:
+      type: object
+      required:
+        - avgAvi
+        - avgAti
+        - avgCis
+        - totalVins
+      properties:
+        avgAvi:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Average AI Visibility Index score
+        avgAti:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Average AI Trust Index score
+        avgCis:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Average Competitive Intelligence Score
+        totalVins:
+          type: integer
+          minimum: 0
+          description: Total number of VINs analyzed
+
+    AiScoresResponse:
+      type: object
+      properties:
+        analysis:
+          type: object
+          additionalProperties: true
+        presentation:
+          type: object
+          additionalProperties: true
+        agentic_conversion_rate:
+          type: number
+          nullable: true
+        zero_click_coverage:
+          type: number
+          nullable: true
+        trust_pass_rate:
+          type: number
+          nullable: true
+        vin_to_intent_latency_ms:
+          type: number
+          nullable: true
+        usage:
+          type: object
+          properties:
+            remaining:
+              type: integer
+            tier:
+              type: string
+
+    PulseData:
+      type: object
+      properties:
+        trends:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        signals:
+          type: object
+          additionalProperties: true
+
+    MsrpSyncData:
+      type: object
+      properties:
+        lastSync:
+          type: string
+          format: date-time
+        records:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    GraphData:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        edges:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    ScenarioData:
+      type: object
+      properties:
+        scenarios:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    MetaData:
+      type: object
+      required:
+        - timestamp
+        - version
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Response timestamp
+        version:
+          type: string
+          description: API version
+        requestId:
+          type: string
+          format: uuid
+          description: Unique request identifier
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Diagnostics
+    description: MSRP sync and system diagnostics
+  - name: AI Scores
+    description: AI scoring and analytics
