@@ -3,7 +3,6 @@
 // Force dynamic rendering to prevent SSG useContext errors
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const revalidate = 0;
 
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';

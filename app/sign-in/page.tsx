@@ -3,7 +3,6 @@
 // Force dynamic rendering to avoid SSR context issues
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const revalidate = 0;
 
 import { SignIn } from '@clerk/nextjs';
 import { Suspense } from 'react';

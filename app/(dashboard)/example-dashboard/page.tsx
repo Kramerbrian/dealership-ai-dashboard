@@ -10,6 +10,11 @@
 
 'use client';
 
+// Force dynamic rendering to avoid SSR context issues
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const revalidate = 0;
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { DynamicEasterEggEngine } from '@/app/components/dashboard/DynamicEasterEggEngine';
 import { AICopilot } from '@/app/components/dashboard/AICopilot';

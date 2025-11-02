@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ['@clerk/nextjs'],
@@ -7,7 +9,12 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  
+
+  // Enable instrumentation for Sentry
+  experimental: {
+    instrumentationHook: true,
+  },
+
   // Security headers
   async headers() {
     return [
@@ -49,11 +56,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://*.sentry.io",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://va.vercel-scripts.com https://*.supabase.co wss://*.supabase.co",
+              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://va.vercel-scripts.com https://*.supabase.co wss://*.supabase.co https://*.sentry.io",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com",
               "object-src 'none'",
               "base-uri 'self'",
@@ -158,4 +165,21 @@ const nextConfig = {
   }),
 };
 
-module.exports = nextConfig;
+// Sentry configuration
+module.exports = withSentryConfig(
+  nextConfig,
+  {
+    // Sentry Webpack Plugin options
+    silent: true,
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+  },
+  {
+    // Upload source maps for production builds
+    widenClientFileUpload: true,
+    transpileClientSDK: true,
+    tunnelRoute: "/monitoring",
+    hideSourceMaps: true,
+    disableLogger: true,
+  }
+);
