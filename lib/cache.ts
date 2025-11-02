@@ -1,250 +1,154 @@
-import { kv } from '@vercel/kv';
-import Redis from 'ioredis';
+/**
+ * Caching Utilities
+ * Provides in-memory caching with TTL for API responses
+ */
 
-// Vercel KV (Recommended for Vercel deployments)
-export class VercelKVCache {
-  private static instance: VercelKVCache;
-  private prefix = 'dealershipai:';
-
-  static getInstance(): VercelKVCache {
-    if (!VercelKVCache.instance) {
-      VercelKVCache.instance = new VercelKVCache();
-    }
-    return VercelKVCache.instance;
-  }
-
-  async get<T>(key: string): Promise<T | null> {
-    try {
-      const value = await kv.get(`${this.prefix}${key}`);
-      return value as T | null;
-    } catch (error) {
-      console.error('Vercel KV get error:', error);
-      return null;
-    }
-  }
-
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    try {
-      if (ttlSeconds) {
-        await kv.setex(`${this.prefix}${key}`, ttlSeconds, JSON.stringify(value));
-      } else {
-        await kv.set(`${this.prefix}${key}`, JSON.stringify(value));
-      }
-    } catch (error) {
-      console.error('Vercel KV set error:', error);
-    }
-  }
-
-  async del(key: string): Promise<void> {
-    try {
-      await kv.del(`${this.prefix}${key}`);
-    } catch (error) {
-      console.error('Vercel KV delete error:', error);
-    }
-  }
-
-  async exists(key: string): Promise<boolean> {
-    try {
-      const result = await kv.exists(`${this.prefix}${key}`);
-      return result === 1;
-    } catch (error) {
-      console.error('Vercel KV exists error:', error);
-      return false;
-    }
-  }
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
 }
 
-// Build-time guard
-const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
-                    process.env.NODE_ENV === 'test';
+class Cache {
+  private cache: Map<string, CacheEntry<any>> = new Map();
+  private maxSize = 1000; // Maximum cache entries
 
-// Redis (For self-hosted or other deployments)
-export class RedisCache {
-  private static instance: RedisCache;
-  private client: Redis;
-  private prefix = 'dealershipai:';
-
-  constructor() {
-    if (isBuildTime) {
-      // Create a dummy client during build time
-      this.client = {} as Redis;
-      return;
-    }
-
-    this.client = new Redis({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false,
-      maxRetriesPerRequest: null,
-    });
-
-    this.client.on('error', (error) => {
-      console.error('Redis connection error:', error);
-    });
-  }
-
-  static getInstance(): RedisCache {
-    if (!RedisCache.instance) {
-      RedisCache.instance = new RedisCache();
-    }
-    return RedisCache.instance;
-  }
-
-  async get<T>(key: string): Promise<T | null> {
-    try {
-      const value = await this.client.get(`${this.prefix}${key}`);
-      return value ? JSON.parse(value) : null;
-    } catch (error) {
-      console.error('Redis get error:', error);
-      return null;
-    }
-  }
-
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    try {
-      const serialized = JSON.stringify(value);
-      if (ttlSeconds) {
-        await this.client.setex(`${this.prefix}${key}`, ttlSeconds, serialized);
-      } else {
-        await this.client.set(`${this.prefix}${key}`, serialized);
-      }
-    } catch (error) {
-      console.error('Redis set error:', error);
-    }
-  }
-
-  async del(key: string): Promise<void> {
-    try {
-      await this.client.del(`${this.prefix}${key}`);
-    } catch (error) {
-      console.error('Redis delete error:', error);
-    }
-  }
-
-  async exists(key: string): Promise<boolean> {
-    try {
-      const result = await this.client.exists(`${this.prefix}${key}`);
-      return result === 1;
-    } catch (error) {
-      console.error('Redis exists error:', error);
-      return false;
-    }
-  }
-
-  async disconnect(): Promise<void> {
-    await this.client.quit();
-  }
-}
-
-// Cache Manager - Automatically chooses the best available cache
-export class CacheManager {
-  private static instance: CacheManager;
-  private cache: VercelKVCache | RedisCache;
-
-  constructor() {
-    // Prefer Vercel KV for Vercel deployments, fallback to Redis
-    if (process.env.KV_URL || process.env.VERCEL) {
-      this.cache = VercelKVCache.getInstance();
-    } else {
-      this.cache = RedisCache.getInstance();
-    }
-  }
-
-  static getInstance(): CacheManager {
-    if (!CacheManager.instance) {
-      CacheManager.instance = new CacheManager();
-    }
-    return CacheManager.instance;
-  }
-
-  async get<T>(key: string): Promise<T | null> {
-    return this.cache.get<T>(key);
-  }
-
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    return this.cache.set<T>(key, value, ttlSeconds);
-  }
-
-  async del(key: string): Promise<void> {
-    return this.cache.del(key);
-  }
-
-  async exists(key: string): Promise<boolean> {
-    return this.cache.exists(key);
-  }
-}
-
-// Cache decorator for API routes
-export function withCache<T extends any[], R>(
-  fn: (...args: T) => Promise<R>,
-  keyGenerator: (...args: T) => string,
-  ttlSeconds: number = 300 // 5 minutes default
-) {
-  return async (...args: T): Promise<R> => {
-    const cache = CacheManager.getInstance();
-    const cacheKey = keyGenerator(...args);
+  /**
+   * Get cached value
+   */
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
     
-    // Try to get from cache first
-    const cached = await cache.get<R>(cacheKey);
+    if (!entry) {
+      return null;
+    }
+
+    // Check if expired
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry.data as T;
+  }
+
+  /**
+   * Set cached value with TTL
+   */
+  set<T>(key: string, data: T, ttlSeconds: number = 60): void {
+    // Evict oldest entry if at capacity
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
+    }
+
+    this.cache.set(key, {
+      data,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
+  }
+
+  /**
+   * Delete cached value
+   */
+  delete(key: string): void {
+    this.cache.delete(key);
+  }
+
+  /**
+   * Clear all cache
+   */
+  clear(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Clean expired entries
+   */
+  clean(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.expiresAt) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+
+// Singleton instance
+export const cache = new Cache();
+
+// Clean expired entries every 5 minutes
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    cache.clean();
+  }, 5 * 60 * 1000);
+}
+
+/**
+ * Generate cache key from request
+ */
+export function getCacheKey(req: Request): string {
+  const url = new URL(req.url);
+  return `${url.pathname}?${url.searchParams.toString()}`;
+}
+
+/**
+ * Cache middleware for API routes
+ */
+export async function withCache<T>(
+  handler: (req: Request) => Promise<Response>,
+  options: {
+    ttl?: number;
+    keyGenerator?: (req: Request) => string;
+    skipCache?: (req: Request) => boolean;
+  } = {}
+): Promise<Response> {
+  return async (req: Request) => {
+    const { ttl = 60, keyGenerator = getCacheKey, skipCache } = options;
+
+    // Skip cache if condition met
+    if (skipCache && skipCache(req)) {
+      return handler(req);
+    }
+
+    const cacheKey = keyGenerator(req);
+    const cached = cache.get<Response>(cacheKey);
+
     if (cached) {
-      console.log(`Cache hit for key: ${cacheKey}`);
-      return cached;
+      // Return cached response with updated headers
+      const response = new Response(cached.body, {
+        status: cached.status,
+        statusText: cached.statusText,
+        headers: {
+          ...Object.fromEntries(cached.headers.entries()),
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      });
+      return response;
     }
 
-    // Execute function and cache result
-    console.log(`Cache miss for key: ${cacheKey}`);
-    const result = await fn(...args);
-    await cache.set(cacheKey, result, ttlSeconds);
-    
-    return result;
+    // Execute handler
+    const response = await handler(req);
+
+    // Clone response to cache body (Response body can only be read once)
+    const responseClone = response.clone();
+    const body = await response.text();
+    const responseToCache = new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+    });
+
+    // Cache successful responses only
+    if (response.status === 200) {
+      cache.set(cacheKey, responseToCache, ttl);
+    }
+
+    // Return original response with cache miss header
+    response.headers.set('X-Cache', 'MISS');
+    return response;
   };
 }
-
-// Cache keys for different data types
-export const CACHE_KEYS = {
-  SEO_DATA: (domain: string, timeRange: string) => `seo:${domain}:${timeRange}`,
-  AEO_DATA: (domain: string, timeRange: string) => `aeo:${domain}:${timeRange}`,
-  GEO_DATA: (domain: string, timeRange: string) => `geo:${domain}:${timeRange}`,
-  DASHBOARD_OVERVIEW: (timeRange: string) => `dashboard:overview:${timeRange}`,
-  AI_HEALTH_DATA: (timeRange: string) => `ai-health:${timeRange}`,
-  WEBSITE_DATA: (domain: string, timeRange: string) => `website:${domain}:${timeRange}`,
-  REVIEWS_DATA: (domain: string, timeRange: string) => `reviews:${domain}:${timeRange}`,
-  SCHEMA_DATA: (domain: string, timeRange: string) => `schema:${domain}:${timeRange}`,
-  MYSTERY_SHOP_DATA: (domain: string, timeRange: string) => `mystery-shop:${domain}:${timeRange}`,
-  PREDICTIVE_DATA: (domain: string, timeRange: string) => `predictive:${domain}:${timeRange}`,
-  GEO_SGE_DATA: (domain: string, timeRange: string) => `geo-sge:${domain}:${timeRange}`,
-  USER_SESSION: (userId: string) => `user:session:${userId}`,
-  USER_SUBSCRIPTION: (userId: string) => `user:subscription:${userId}`,
-  USAGE_STATS: (userId: string, feature?: string) => 
-    feature ? `usage:${userId}:${feature}` : `usage:${userId}`,
-  ANALYTICS_EVENTS: (userId: string, days: number) => `analytics:${userId}:${days}d`,
-  API_RESPONSE: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
-  ONBOARDING_ANALYSIS: (domain: string) => `onboarding:analysis:${domain}`,
-  ONBOARDING_PROFILE: (domain: string) => `onboarding:profile:${domain}`,
-  ONBOARDING_PROGRESS: (userId: string) => `onboarding:progress:${userId}`,
-  PERSONALIZED_MESSAGES: (userId: string, step: string) => `personalized:${userId}:${step}`,
-} as const;
-
-// Cache TTL constants (in seconds)
-export const CACHE_TTL = {
-  SEO_DATA: 300, // 5 minutes
-  AEO_DATA: 300, // 5 minutes
-  GEO_DATA: 300, // 5 minutes
-  DASHBOARD_OVERVIEW: 60, // 1 minute
-  AI_HEALTH_DATA: 120, // 2 minutes
-  WEBSITE_DATA: 300, // 5 minutes
-  REVIEWS_DATA: 600, // 10 minutes
-  SCHEMA_DATA: 1800, // 30 minutes
-  MYSTERY_SHOP_DATA: 3600, // 1 hour
-  PREDICTIVE_DATA: 1800, // 30 minutes
-  GEO_SGE_DATA: 300, // 5 minutes
-  USER_SESSION: 1800, // 30 minutes
-  USER_SUBSCRIPTION: 300, // 5 minutes
-  USAGE_STATS: 60, // 1 minute
-  ANALYTICS_EVENTS: 300, // 5 minutes
-  API_RESPONSE: 300, // 5 minutes
-  ONBOARDING_ANALYSIS: 1800, // 30 minutes
-  ONBOARDING_PROFILE: 3600, // 1 hour
-  ONBOARDING_PROGRESS: 300, // 5 minutes
-  PERSONALIZED_MESSAGES: 600, // 10 minutes
-} as const;

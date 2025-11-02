@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate AI insights using Claude
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -83,11 +83,11 @@ Be specific, actionable, and prioritize quick wins. Focus on the lowest pillar s
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.status}`);
+    if (!anthropicResponse.ok) {
+      throw new Error(`Anthropic API error: ${anthropicResponse.status}`);
     }
 
-    const data = await response.json();
+    const data = await anthropicResponse.json();
     const content = data.content?.[0]?.text || '';
     
     // Parse JSON from response
@@ -108,11 +108,22 @@ Be specific, actionable, and prioritize quick wins. Focus on the lowest pillar s
       }];
     }
 
-    return NextResponse.json({
+    const apiResponse = NextResponse.json({
       success: true,
       insights,
       source: 'ai-generated',
     });
+
+    // Add rate limit headers
+    if (rateLimitCheck.limit && rateLimitCheck.remaining !== undefined) {
+      apiResponse.headers.set('X-RateLimit-Limit', String(rateLimitCheck.limit));
+      apiResponse.headers.set('X-RateLimit-Remaining', String(rateLimitCheck.remaining));
+      if (rateLimitCheck.reset) {
+        apiResponse.headers.set('X-RateLimit-Reset', String(rateLimitCheck.reset));
+      }
+    }
+
+    return apiResponse;
 
   } catch (error) {
     console.error('[AI Copilot] Error:', error);

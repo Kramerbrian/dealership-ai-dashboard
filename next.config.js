@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Server external packages (moved from experimental in Next.js 15)
-  serverExternalPackages: ['@clerk/nextjs'],
+  experimental: {
+    serverComponentsExternalPackages: ['@clerk/nextjs'],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -83,6 +84,26 @@ const nextConfig = {
           },
         ],
       },
+      // Static assets get long cache
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Images get compression
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
   
@@ -117,6 +138,9 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  
+  // Compression
+  compress: true,
   
   // Bundle analyzer (enable with ANALYZE=true)
   ...(process.env.ANALYZE === 'true' && {

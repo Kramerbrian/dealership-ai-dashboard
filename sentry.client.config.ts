@@ -23,6 +23,9 @@ Sentry.init({
     if (event.request?.headers?.authorization) {
       delete event.request.headers.authorization;
     }
+    if (event.request?.headers?.['x-api-key']) {
+      delete event.request.headers['x-api-key'];
+    }
     return event;
   },
   
@@ -33,4 +36,7 @@ Sentry.init({
       version: process.env.npm_package_version || '1.0.0',
     },
   },
+  
+  // Only initialize if DSN is provided
+  enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
 });

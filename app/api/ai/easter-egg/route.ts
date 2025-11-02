@@ -88,11 +88,22 @@ Generate ONE witty line for this trigger. NO quotes, NO explanation, JUST the li
     const eggText = data.content?.[0]?.text?.trim().replace(/^["']|["']$/g, '') || 
                    `Trust Score of ${context.trustScore}? That's no moon...`;
     
-    return NextResponse.json({
+    const eggResponse = NextResponse.json({
       success: true,
       egg: eggText,
       source: 'ai-generated',
     });
+
+    // Add rate limit headers
+    if (rateLimitCheck.limit && rateLimitCheck.remaining !== undefined) {
+      eggResponse.headers.set('X-RateLimit-Limit', String(rateLimitCheck.limit));
+      eggResponse.headers.set('X-RateLimit-Remaining', String(rateLimitCheck.remaining));
+      if (rateLimitCheck.reset) {
+        eggResponse.headers.set('X-RateLimit-Reset', String(rateLimitCheck.reset));
+      }
+    }
+
+    return eggResponse;
 
   } catch (error) {
     console.error('[Easter Egg] Error:', error);
