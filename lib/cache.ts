@@ -79,6 +79,9 @@ class Cache {
 // Singleton instance
 export const cache = new Cache();
 
+// Export CacheManager as alias for backward compatibility
+export const CacheManager = cache;
+
 // Clean expired entries every 5 minutes
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
@@ -152,3 +155,27 @@ export async function withCache<T>(
     return response;
   };
 }
+
+/**
+ * Cache keys for different API endpoints
+ */
+export const CACHE_KEYS = {
+  PERFORMANCE_MONITOR: 'performance-monitor',
+  AI_HEALTH: 'ai-health',
+  REVIEWS: 'reviews',
+  WEBSITE: 'website',
+  ONBOARDING_ANALYZE: 'onboarding-analyze',
+  VISIBILITY_AEO: 'visibility-aeo',
+  VISIBILITY_GEO: 'visibility-geo',
+  VISIBILITY_SEO: 'visibility-seo',
+};
+
+/**
+ * Cache TTL values in seconds
+ */
+export const CACHE_TTL = {
+  SHORT: 60,        // 1 minute
+  MEDIUM: 300,      // 5 minutes
+  LONG: 3600,       // 1 hour
+  VERY_LONG: 86400, // 24 hours
+};
