@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { 
-  Users, Activity, AlertTriangle, Database, 
+  Users, Activity, Database, 
   TrendingUp, DollarSign, Search, Settings 
 } from 'lucide-react';
 
