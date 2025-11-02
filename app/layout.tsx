@@ -10,6 +10,11 @@ const inter = Inter({
   fallback: ['system-ui', 'arial']
 })
 
+// Force dynamic rendering for all pages
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 export const metadata: Metadata = {
   title: 'DealershipAI - Transform Your Dealership with AI-Powered Analytics',
   description: 'Get comprehensive AI-powered analytics for your dealership. Track SEO, social media, customer engagement, and boost your online presence with DealershipAI. Join 500+ dealerships already winning with AI.',

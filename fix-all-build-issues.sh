@@ -1,3 +1,25 @@
+#!/bin/bash
+
+###############################################################################
+# Comprehensive Build Fix Script
+# Resolves all client component route segment config conflicts
+###############################################################################
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}🔧 Comprehensive Build Fix${NC}"
+echo "============================="
+echo ""
+
+# Fix 1: Remove invalid exports from privacy page
+echo -e "${YELLOW}1. Fixing privacy page...${NC}"
+cat > app/privacy/page.tsx << 'EOF'
 'use client';
 
 import React from 'react';
@@ -116,3 +138,90 @@ export default function PrivacyPolicy() {
     </div>
   );
 }
+EOF
+echo -e "${GREEN}✓ Privacy page fixed${NC}"
+
+# Fix 2: Create privacy layout for dynamic rendering
+echo -e "${YELLOW}2. Creating privacy layout for dynamic rendering...${NC}"
+mkdir -p app/privacy
+cat > app/privacy/layout.tsx << 'EOF'
+/**
+ * Privacy Page Layout
+ * Enables dynamic rendering for the client component privacy page
+ */
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+export default function PrivacyLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}
+EOF
+echo -e "${GREEN}✓ Privacy layout created${NC}"
+
+# Fix 3: Create terms layout if terms page exists
+if [ -f "app/terms/page.tsx" ]; then
+  echo -e "${YELLOW}3. Creating terms layout...${NC}"
+  mkdir -p app/terms
+  cat > app/terms/layout.tsx << 'EOF'
+/**
+ * Terms Page Layout
+ * Enables dynamic rendering for the client component terms page
+ */
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+export default function TermsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}
+EOF
+  echo -e "${GREEN}✓ Terms layout created${NC}"
+fi
+
+# Fix 4: Remove dashboard page if it still exists
+if [ -f "app/dashboard/page.tsx" ]; then
+  echo -e "${YELLOW}4. Removing conflicting dashboard page...${NC}"
+  rm app/dashboard/page.tsx
+  echo -e "${GREEN}✓ Dashboard page removed${NC}"
+fi
+
+# Fix 5: Add dynamic config to root layout
+echo -e "${YELLOW}5. Adding dynamic config to root layout...${NC}"
+if ! grep -q "export const dynamic" app/layout.tsx; then
+  # Add after imports but before metadata
+  sed -i.bak '/^export const metadata/i\
+// Force dynamic rendering for all pages\
+export const dynamic = '\''force-dynamic'\'';\
+export const revalidate = 0;\
+\
+' app/layout.tsx
+  echo -e "${GREEN}✓ Root layout updated${NC}"
+else
+  echo -e "${BLUE}ℹ Root layout already has dynamic config${NC}"
+fi
+
+# Summary
+echo ""
+echo -e "${GREEN}✅ All fixes applied!${NC}"
+echo ""
+echo -e "${BLUE}Changes made:${NC}"
+echo "  1. ✓ Privacy page - removed invalid route segment configs"
+echo "  2. ✓ Privacy layout - created with dynamic rendering"
+echo "  3. ✓ Terms layout - created (if terms page exists)"
+echo "  4. ✓ Dashboard page - removed conflict"
+echo "  5. ✓ Root layout - added global dynamic config"
+echo ""
+echo -e "${YELLOW}Next steps:${NC}"
+echo "  1. Review changes with: git diff"
+echo "  2. Commit changes: git add . && git commit -m 'fix: comprehensive build fixes for client components'"
+echo "  3. Push to trigger deployment: git push origin HEAD"
+echo ""
