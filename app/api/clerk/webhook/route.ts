@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { Webhook } from "svix";
 import { prisma } from "@/lib/prisma";
+import { 
+  checkSignupAbuse, 
+  trackSuccessfulSignup,
+  getAbuseStats 
+} from "@/lib/abuse-prevention";
 
 /**
  * POST /api/clerk/webhook

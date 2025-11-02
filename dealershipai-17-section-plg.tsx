@@ -15,6 +15,19 @@ export default function DealershipAI17SectionPLG() {
   const [decayTax, setDecayTax] = useState(0);
   const [email, setEmail] = useState('');
   const [onboardingStep, setOnboardingStep] = useState(0);
+  const [trendValues, setTrendValues] = useState<Record<number, number>>({});
+
+  // Generate stable trend values on client-side only (fix hydration error)
+  useEffect(() => {
+    const values: Record<number, number> = {};
+    for (let i = 0; i < 5; i++) {
+      if (i % 2 === 0) {
+        // Use dealer index as seed for consistent values
+        values[i] = ((i * 7 + 3) % 5) + 1; // Deterministic: 4, 2, 5, 3, 1
+      }
+    }
+    setTrendValues(values);
+  }, []);
 
   // Decay tax counter (FOMO engine)
   useEffect(() => {
@@ -69,29 +82,39 @@ export default function DealershipAI17SectionPLG() {
             <span className="text-sm">Live: 847 dealerships being analyzed</span>
           </div>
           
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
-            Stop Being Invisible<br />to AI Car Shoppers
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(147,51,234,0.5)]">
+              Stop Being Invisible
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-purple-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(236,72,153,0.4)]">
+              to AI Car Shoppers
+            </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-200 mb-16 max-w-3xl mx-auto leading-relaxed">
             ChatGPT, Gemini, Perplexity, Google AI Overviews are recommending your competitors.<br />
-            <span className="text-purple-400 font-semibold">Find out why in 30 seconds</span> (no signup required)
+            <span className="text-purple-300 font-semibold inline-block mt-2 px-3 py-1 bg-purple-500/20 rounded-lg border border-purple-500/30">
+              Find out why in 30 seconds
+            </span>
+            <span className="text-gray-400 ml-2">(no signup required)</span>
           </p>
 
           {/* Instant Audit Form */}
-          <div className="max-w-2xl mx-auto mb-8">
+          <div className="max-w-2xl mx-auto mb-12">
             <div className="flex gap-3">
               <input
                 type="url"
                 placeholder="Enter your dealership website..."
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
-                className="flex-1 px-6 py-4 bg-white/10 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                className="flex-1 px-6 py-4 bg-white/10 backdrop-blur-sm border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition-all shadow-lg hover:bg-white/15"
+                onKeyDown={(e) => e.key === 'Enter' && !analyzing && urlInput && handleAnalyze()}
               />
               <button
                 onClick={handleAnalyze}
                 disabled={!urlInput || analyzing}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70 disabled:shadow-none"
               >
                 {analyzing ? (
                   <>
@@ -106,59 +129,82 @@ export default function DealershipAI17SectionPLG() {
                 )}
               </button>
             </div>
-            <p className="text-sm text-gray-400 mt-3">
-              ✓ No email required  ✓ Instant results  ✓ See your competitors
+            <p className="text-sm text-gray-300 mt-4 flex flex-wrap items-center justify-center gap-4">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span>No email required</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                <span>Instant results</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Trophy className="w-4 h-4 text-purple-400" />
+                <span>See your competitors</span>
+              </span>
             </p>
           </div>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center gap-6 items-center text-sm text-gray-400">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-400" />
-              <span>500+ Dealerships</span>
+          <div className="flex flex-wrap justify-center gap-8 items-center text-sm mt-16">
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-all group">
+              <CheckCircle className="w-5 h-5 text-green-400 group-hover:scale-110 transition-transform" />
+              <span className="text-gray-200 font-medium">500+ Dealerships</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-400" />
-              <span>5 AI Platforms Tracked</span>
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-all group">
+              <CheckCircle className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
+              <span className="text-gray-200 font-medium">5 AI Platforms Tracked</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-400" />
-              <span>99.9% Accuracy</span>
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-all group">
+              <CheckCircle className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
+              <span className="text-gray-200 font-medium">99.9% Accuracy</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* SECTION 2: DECAY TAX COUNTER (FOMO) */}
-      <section className="py-12 bg-gradient-to-r from-red-950/50 via-orange-950/50 to-red-950/50 border-y border-red-500/20">
+      <section className="py-16 bg-gradient-to-r from-red-950/60 via-orange-950/60 to-red-950/60 border-y-2 border-red-500/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <AlertTriangle className="w-12 h-12 text-red-400 animate-pulse" />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-5">
+              <div className="relative">
+                <AlertTriangle className="w-14 h-14 text-red-400 animate-pulse" />
+                <div className="absolute inset-0 text-red-400/20 animate-ping">
+                  <AlertTriangle className="w-14 h-14" />
+                </div>
+              </div>
               <div>
-                <h3 className="text-2xl font-bold text-red-400">Real-Time Revenue Loss</h3>
-                <p className="text-gray-300">Every second your dealership is invisible to AI...</p>
+                <h3 className="text-3xl font-bold text-red-300 mb-2">Real-Time Revenue Loss</h3>
+                <p className="text-gray-200 text-lg">Every second your dealership is invisible to AI...</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-5xl font-bold text-red-400 font-mono">
+              <div className="text-6xl font-bold text-red-300 font-mono tracking-tight drop-shadow-[0_0_20px_rgba(239,68,68,0.5)] animate-pulse">
                 ${decayTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <p className="text-sm text-gray-400 mt-1">Lost since you landed on this page</p>
+              <p className="text-sm text-gray-300 mt-2 font-medium">Lost since you landed on this page</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* SECTION 3: PROBLEM AMPLIFICATION */}
-      <section className="py-24 px-4">
+      <section className="py-32 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              The $45K/Month Problem<br />Nobody's Talking About
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
+              <span className="bg-gradient-to-r from-red-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+                The $45K/Month Problem
+              </span>
+              <br />
+              <span className="text-white">Nobody's Talking About</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              While you're optimizing for Google, 67% of car shoppers are asking ChatGPT, Gemini, Perplexity, and Google AI Overviews which dealer to visit. <span className="text-red-400 font-semibold">And they're not finding you.</span>
+            <p className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed">
+              While you're optimizing for Google, 67% of car shoppers are asking ChatGPT, Gemini, Perplexity, and Google AI Overviews which dealer to visit.{' '}
+              <span className="text-red-300 font-bold inline-block mt-2 px-3 py-1 bg-red-500/20 rounded-lg border border-red-500/30">
+                And they're not finding you.
+              </span>
             </p>
           </div>
 
@@ -186,13 +232,18 @@ export default function DealershipAI17SectionPLG() {
                 impact: "They're taking your customers"
               }
             ].map((problem, i) => (
-              <div key={i} className="p-6 bg-white/5 border border-red-500/20 rounded-xl backdrop-blur-sm">
-                <problem.icon className="w-12 h-12 text-red-400 mb-4" />
-                <div className="text-4xl font-bold text-red-400 mb-2">{problem.stat}</div>
-                <h3 className="text-xl font-semibold mb-2">{problem.title}</h3>
-                <p className="text-gray-400 text-sm mb-3">{problem.desc}</p>
-                <div className="pt-3 border-t border-red-500/20">
-                  <p className="text-sm font-semibold text-red-300">{problem.impact}</p>
+              <div 
+                key={i} 
+                className="p-8 bg-white/5 border-2 border-red-500/20 rounded-2xl backdrop-blur-sm hover:bg-white/10 hover:border-red-500/40 transition-all duration-300 group cursor-pointer transform hover:-translate-y-2 hover:shadow-xl hover:shadow-red-500/20"
+              >
+                <problem.icon className="w-14 h-14 text-red-400 mb-6 group-hover:scale-110 transition-transform" />
+                <div className="text-5xl font-bold text-red-300 mb-3 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">
+                  {problem.stat}
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-white">{problem.title}</h3>
+                <p className="text-gray-300 text-base mb-4 leading-relaxed">{problem.desc}</p>
+                <div className="pt-4 border-t border-red-500/30">
+                  <p className="text-sm font-bold text-red-200">{problem.impact}</p>
                 </div>
               </div>
             ))}
@@ -357,10 +408,10 @@ export default function DealershipAI17SectionPLG() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1 text-sm">
-                          {i % 2 === 0 ? (
+                          {i % 2 === 0 && trendValues[i] ? (
                             <>
                               <TrendingUp className="w-4 h-4 text-green-400" />
-                              <span className="text-green-400">+{Math.floor(Math.random() * 5) + 1}</span>
+                              <span className="text-green-400">+{trendValues[i]}</span>
                             </>
                           ) : (
                             <>
