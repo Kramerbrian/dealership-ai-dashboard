@@ -1,6 +1,8 @@
 'use client';
 
 // Force dynamic rendering to avoid SSR context issues
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';

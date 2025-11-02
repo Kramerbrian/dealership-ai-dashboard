@@ -7,7 +7,16 @@ CREATE TABLE IF NOT EXISTS idempotency_keys (
   seen_at timestamptz DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS ix_idem_tenant_route ON idempotency_keys(tenant_id, route, key);
+-- Only create index if route column exists
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'idempotency_keys' AND column_name = 'route'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS ix_idem_tenant_route ON idempotency_keys(tenant_id, route, key);
+  END IF;
+END $$;
 
 -- Add cleanup job to remove old entries (older than 24 hours)
 CREATE OR REPLACE FUNCTION cleanup_old_idempotency_keys()

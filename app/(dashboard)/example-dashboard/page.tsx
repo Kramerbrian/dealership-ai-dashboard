@@ -24,6 +24,7 @@ import { soundEngine } from '@/utils/soundEffects';
 import { haptics } from '@/utils/haptics';
 import { Shield, Bell } from 'lucide-react';
 import useSWR from 'swr';
+import { Suspense } from 'react';
 
 // Data fetcher for SWR
 const fetcher = async (url: string) => {
@@ -47,7 +48,8 @@ const defaultViewConfig = {
   refreshInterval: 5,
 };
 
-export default function ExampleDashboardPage() {
+// Ensure this is only rendered client-side
+function ExampleDashboardPageClient() {
   const [user, setUser] = useState({
     id: 'user123',
     email: 'test@example.com',
@@ -301,6 +303,15 @@ export default function ExampleDashboardPage() {
         userTier={user.plan}
       />
     </div>
+  );
+}
+
+// Export with Suspense to prevent SSR issues
+export default function ExampleDashboardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-950 text-white p-8">Loading...</div>}>
+      <ExampleDashboardPageClient />
+    </Suspense>
   );
 }
 
