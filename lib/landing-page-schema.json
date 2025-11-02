@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "landing_page": {
+    "title": "DealershipAI - AI-Powered Automotive Intelligence",
+    "description": "Transform your dealership's digital presence with AI-powered insights",
+    "hero": {
+      "headline": "Dominate Your Market with AI Intelligence",
+      "subheadline": "Get instant visibility into your dealership's AI presence across ChatGPT, Perplexity, and Google",
+      "cta_primary": "Analyze My Dealership",
+      "cta_secondary": "See How It Works"
+    },
+    "features": [
+      {
+        "id": "ai_visibility",
+        "name": "AI Visibility",
+        "description": "Track your presence in AI assistant responses"
+      },
+      {
+        "id": "zero_click",
+        "name": "Zero-Click Shield",
+        "description": "Monitor your featured snippet performance"
+      },
+      {
+        "id": "competitive_intel",
+        "name": "Competitive Intelligence",
+        "description": "See how you stack up against competitors"
+      }
+    ],
+    "social_proof": {
+      "enabled": true,
+      "testimonials_count": 50,
+      "average_rating": 4.8
+    }
+  }
+}

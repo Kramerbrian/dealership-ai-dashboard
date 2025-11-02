@@ -2,10 +2,18 @@ import { Redis } from 'ioredis';
 
 let redis: Redis | null = null;
 
+// Build-time guard: Skip Redis initialization during build
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
+                    process.env.NODE_ENV === 'test';
+
 export function getRedis(): Redis {
+  if (isBuildTime) {
+    throw new Error('Redis cannot be initialized during build time');
+  }
+
   if (!redis) {
     const redisUrl = process.env.REDIS_URL || process.env.KV_URL || 'redis://localhost:6379';
-    
+
     redis = new Redis(redisUrl, {
       retryDelayOnFailover: 100,
       maxRetriesPerRequest: 3,

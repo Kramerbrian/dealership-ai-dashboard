@@ -1,6 +1,6 @@
 /**
  * BullMQ Setup for DTRI System
- * 
+ *
  * Handles automated nightly ADA re-analysis jobs
  * Manages queue processing and job scheduling
  */
@@ -9,54 +9,114 @@ import { Queue, Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
 import { createClient } from '@supabase/supabase-js';
 
-// Redis connection
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// Build-time guard: Skip initialization during build
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
+                    process.env.NODE_ENV === 'test';
 
-// Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy initialization functions
+let redis: Redis | null = null;
+let supabase: ReturnType<typeof createClient> | null = null;
+let dtriAnalysisQueueInstance: Queue | null = null;
+let trustMetricsQueueInstance: Queue | null = null;
+let elasticityAnalysisQueueInstance: Queue | null = null;
 
-// Queue definitions
-export const dtriAnalysisQueue = new Queue('dtri-analysis', {
-  connection: redis,
-  defaultJobOptions: {
-    removeOnComplete: 10,
-    removeOnFail: 5,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
-  },
-});
+function getRedis(): Redis {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize Redis during build time');
+  }
+  if (!redis) {
+    redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+  }
+  return redis;
+}
 
-export const trustMetricsQueue = new Queue('trust-metrics', {
-  connection: redis,
-  defaultJobOptions: {
-    removeOnComplete: 10,
-    removeOnFail: 5,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
-  },
-});
+function getSupabase() {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize Supabase during build time');
+  }
+  if (!supabase) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+  }
+  return supabase;
+}
 
-export const elasticityAnalysisQueue = new Queue('elasticity-analysis', {
-  connection: redis,
-  defaultJobOptions: {
-    removeOnComplete: 10,
-    removeOnFail: 5,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
-  },
-});
+// Lazy queue getters
+export function getDtriAnalysisQueue(): Queue {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize queues during build time');
+  }
+  if (!dtriAnalysisQueueInstance) {
+    dtriAnalysisQueueInstance = new Queue('dtri-analysis', {
+      connection: getRedis(),
+      defaultJobOptions: {
+        removeOnComplete: 10,
+        removeOnFail: 5,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    });
+  }
+  return dtriAnalysisQueueInstance;
+}
+
+export function getTrustMetricsQueue(): Queue {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize queues during build time');
+  }
+  if (!trustMetricsQueueInstance) {
+    trustMetricsQueueInstance = new Queue('trust-metrics', {
+      connection: getRedis(),
+      defaultJobOptions: {
+        removeOnComplete: 10,
+        removeOnFail: 5,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    });
+  }
+  return trustMetricsQueueInstance;
+}
+
+export function getElasticityAnalysisQueue(): Queue {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize queues during build time');
+  }
+  if (!elasticityAnalysisQueueInstance) {
+    elasticityAnalysisQueueInstance = new Queue('elasticity-analysis', {
+      connection: getRedis(),
+      defaultJobOptions: {
+        removeOnComplete: 10,
+        removeOnFail: 5,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    });
+  }
+  return elasticityAnalysisQueueInstance;
+}
+
+// Export for backward compatibility (deprecated - use getters instead)
+export const dtriAnalysisQueue = {
+  get instance() { return getDtriAnalysisQueue(); }
+};
+export const trustMetricsQueue = {
+  get instance() { return getTrustMetricsQueue(); }
+};
+export const elasticityAnalysisQueue = {
+  get instance() { return getElasticityAnalysisQueue(); }
+};
 
 // Job types
 export interface DTRIAnalysisJob {
@@ -91,10 +151,11 @@ export class DTRIJobProcessor {
 
   async processDTRIAnalysis(job: Job<DTRIAnalysisJob>) {
     const { dealerId, tenantId, analysisType, priority } = job.data;
-    
+
     console.log(`🔄 Processing DTRI analysis for dealer ${dealerId} (${analysisType})`);
-    
+
     try {
+      const supabase = getSupabase();
       // Fetch dealer data from Supabase
       const { data: dealerData, error } = await supabase
         .from('dealers')
@@ -166,10 +227,11 @@ export class DTRIJobProcessor {
 
   async processTrustMetrics(job: Job<TrustMetricsJob>) {
     const { dealerId, tenantId, timeRange, includeBreakdown } = job.data;
-    
+
     console.log(`🔍 Processing trust metrics for dealer ${dealerId} (${timeRange})`);
-    
+
     try {
+      const supabase = getSupabase();
       // Fetch historical trust data
       const { data: trustData } = await supabase
         .from('scores')
@@ -231,10 +293,11 @@ export class DTRIJobProcessor {
 
   async processElasticityAnalysis(job: Job<ElasticityAnalysisJob>) {
     const { dealerId, tenantId, timePeriod, includeProjections } = job.data;
-    
+
     console.log(`📈 Processing elasticity analysis for dealer ${dealerId} (${timePeriod})`);
-    
+
     try {
+      const supabase = getSupabase();
       // Fetch revenue and trust data
       const { data: revenueData } = await supabase
         .from('scores')
@@ -293,6 +356,7 @@ export class DTRIJobProcessor {
   }
 
   private async getBenchmarks(tenantId: string) {
+    const supabase = getSupabase();
     // Fetch industry benchmarks for the tenant
     const { data: benchmarks } = await supabase
       .from('scores')
@@ -336,6 +400,7 @@ export class DTRIJobProcessor {
   }
 
   private async storeAnalysisResults(dealerId: string, tenantId: string, analysisType: string, results: any) {
+    const supabase = getSupabase();
     const { error } = await supabase
       .from('dtri_analysis_results')
       .insert({
@@ -354,6 +419,7 @@ export class DTRIJobProcessor {
   }
 
   private async storeTrustMetricsResults(dealerId: string, tenantId: string, results: any) {
+    const supabase = getSupabase();
     const { error } = await supabase
       .from('trust_metrics_results')
       .insert({
@@ -369,6 +435,7 @@ export class DTRIJobProcessor {
   }
 
   private async storeElasticityResults(dealerId: string, tenantId: string, results: any) {
+    const supabase = getSupabase();
     const { error } = await supabase
       .from('elasticity_results')
       .insert({
@@ -387,30 +454,70 @@ export class DTRIJobProcessor {
 // Initialize job processor
 const jobProcessor = new DTRIJobProcessor();
 
-// Create workers
-export const dtriAnalysisWorker = new Worker(
-  'dtri-analysis',
-  async (job) => jobProcessor.processDTRIAnalysis(job),
-  { connection: redis }
-);
+// Lazy worker getters
+let dtriAnalysisWorkerInstance: Worker | null = null;
+let trustMetricsWorkerInstance: Worker | null = null;
+let elasticityAnalysisWorkerInstance: Worker | null = null;
 
-export const trustMetricsWorker = new Worker(
-  'trust-metrics',
-  async (job) => jobProcessor.processTrustMetrics(job),
-  { connection: redis }
-);
+export function getDtriAnalysisWorker(): Worker {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize workers during build time');
+  }
+  if (!dtriAnalysisWorkerInstance) {
+    dtriAnalysisWorkerInstance = new Worker(
+      'dtri-analysis',
+      async (job) => jobProcessor.processDTRIAnalysis(job),
+      { connection: getRedis() }
+    );
+  }
+  return dtriAnalysisWorkerInstance;
+}
 
-export const elasticityAnalysisWorker = new Worker(
-  'elasticity-analysis',
-  async (job) => jobProcessor.processElasticityAnalysis(job),
-  { connection: redis }
-);
+export function getTrustMetricsWorker(): Worker {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize workers during build time');
+  }
+  if (!trustMetricsWorkerInstance) {
+    trustMetricsWorkerInstance = new Worker(
+      'trust-metrics',
+      async (job) => jobProcessor.processTrustMetrics(job),
+      { connection: getRedis() }
+    );
+  }
+  return trustMetricsWorkerInstance;
+}
+
+export function getElasticityAnalysisWorker(): Worker {
+  if (isBuildTime) {
+    throw new Error('Cannot initialize workers during build time');
+  }
+  if (!elasticityAnalysisWorkerInstance) {
+    elasticityAnalysisWorkerInstance = new Worker(
+      'elasticity-analysis',
+      async (job) => jobProcessor.processElasticityAnalysis(job),
+      { connection: getRedis() }
+    );
+  }
+  return elasticityAnalysisWorkerInstance;
+}
+
+// Export for backward compatibility
+export const dtriAnalysisWorker = {
+  get instance() { return getDtriAnalysisWorker(); }
+};
+export const trustMetricsWorker = {
+  get instance() { return getTrustMetricsWorker(); }
+};
+export const elasticityAnalysisWorker = {
+  get instance() { return getElasticityAnalysisWorker(); }
+};
 
 // Job scheduling functions
 export async function scheduleNightlyDTRIAnalysis() {
   console.log('🌙 Scheduling nightly DTRI analysis for all dealers');
-  
+
   try {
+    const supabase = getSupabase();
     // Fetch all active dealers
     const { data: dealers, error } = await supabase
       .from('dealers')
@@ -441,7 +548,7 @@ export async function scheduleNightlyDTRIAnalysis() {
       }
     }));
 
-    await dtriAnalysisQueue.addBulk(jobs);
+    await getDtriAnalysisQueue().addBulk(jobs);
     
     console.log(`✅ Scheduled ${jobs.length} nightly DTRI analysis jobs`);
     
@@ -474,7 +581,7 @@ export async function scheduleTrustMetricsUpdate(dealerIds: string[], timeRange:
       }
     }));
 
-    await trustMetricsQueue.addBulk(jobs);
+    await getTrustMetricsQueue().addBulk(jobs);
     
     console.log(`✅ Scheduled ${jobs.length} trust metrics jobs`);
     
@@ -508,7 +615,7 @@ export async function scheduleElasticityAnalysis(dealerIds: string[], timePeriod
       }
     }));
 
-    await elasticityAnalysisQueue.addBulk(jobs);
+    await getElasticityAnalysisQueue().addBulk(jobs);
     
     console.log(`✅ Scheduled ${jobs.length} elasticity analysis jobs`);
     
@@ -529,9 +636,9 @@ export async function scheduleElasticityAnalysis(dealerIds: string[], timePeriod
 export async function getQueueStats() {
   try {
     const [dtriStats, trustStats, elasticityStats] = await Promise.all([
-      dtriAnalysisQueue.getJobCounts(),
-      trustMetricsQueue.getJobCounts(),
-      elasticityAnalysisQueue.getJobCounts()
+      getDtriAnalysisQueue().getJobCounts(),
+      getTrustMetricsQueue().getJobCounts(),
+      getElasticityAnalysisQueue().getJobCounts()
     ]);
 
     return {
@@ -548,13 +655,15 @@ export async function getQueueStats() {
 
 // Cleanup function
 export async function cleanup() {
-  await Promise.all([
-    dtriAnalysisQueue.close(),
-    trustMetricsQueue.close(),
-    elasticityAnalysisQueue.close(),
-    dtriAnalysisWorker.close(),
-    trustMetricsWorker.close(),
-    elasticityAnalysisWorker.close(),
-    redis.disconnect()
-  ]);
+  const closePromises = [];
+
+  if (dtriAnalysisQueueInstance) closePromises.push(dtriAnalysisQueueInstance.close());
+  if (trustMetricsQueueInstance) closePromises.push(trustMetricsQueueInstance.close());
+  if (elasticityAnalysisQueueInstance) closePromises.push(elasticityAnalysisQueueInstance.close());
+  if (dtriAnalysisWorkerInstance) closePromises.push(dtriAnalysisWorkerInstance.close());
+  if (trustMetricsWorkerInstance) closePromises.push(trustMetricsWorkerInstance.close());
+  if (elasticityAnalysisWorkerInstance) closePromises.push(elasticityAnalysisWorkerInstance.close());
+  if (redis) closePromises.push(redis.disconnect());
+
+  await Promise.all(closePromises);
 }

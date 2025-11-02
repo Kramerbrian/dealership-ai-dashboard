@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv';
-import { Redis } from 'redis';
+import Redis from 'ioredis';
 
 // Vercel KV (Recommended for Vercel deployments)
 export class VercelKVCache {
@@ -54,6 +54,10 @@ export class VercelKVCache {
   }
 }
 
+// Build-time guard
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
+                    process.env.NODE_ENV === 'test';
+
 // Redis (For self-hosted or other deployments)
 export class RedisCache {
   private static instance: RedisCache;
@@ -61,6 +65,12 @@ export class RedisCache {
   private prefix = 'dealershipai:';
 
   constructor() {
+    if (isBuildTime) {
+      // Create a dummy client during build time
+      this.client = {} as Redis;
+      return;
+    }
+
     this.client = new Redis({
       url: process.env.REDIS_URL || 'redis://localhost:6379',
       retryDelayOnFailover: 100,

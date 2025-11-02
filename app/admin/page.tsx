@@ -5,6 +5,9 @@ import APIUsageChart from '@/components/APIUsageChart';
 import SLOPanel from '@/components/SLOPanel';
 import PermissionsInspector from '@/components/PermissionsInspector';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function AdminDashboard() {
   const [dealershipId, setDealershipId] = useState('11111111-1111-1111-1111-111111111111');
   const [website, setWebsite] = useState('https://louglutz.com');

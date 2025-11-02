@@ -154,6 +154,20 @@
     "NEXT_PUBLIC_DASHBOARD_URL": "https://dealershipai.com",
     "NEXT_PUBLIC_MARKETING_URL": "https://dealershipai.com",
     "NEXTAUTH_URL": "https://dealershipai.com"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 16 * * *"
+    }
+  ]
 }
 

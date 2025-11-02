@@ -1,0 +1,119 @@
+// Marketplace Models - Add to schema.prisma
+// Models for 3rd party developer marketplace
+
+model MarketplaceApp {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  icon        String?  // URL to app icon
+  banner      String?  // URL to banner image
+  
+  // Developer
+  developerId String
+  developer   User     @relation("DeveloperApps", fields: [developerId], references: [id])
+  
+  // Approval Workflow
+  status      MarketplaceAppStatus @default(DRAFT)
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  reviewedBy  String?  // Admin user ID
+  rejectionReason String?
+  
+  // App Details
+  category    String   // inventory, reviews, analytics, integration
+  tags        String   // Store as JSON array
+  pricing     String   // FREE, ONE_TIME, SUBSCRIPTION
+  price       Decimal? // If subscription, monthly price
+  webhookUrl  String?
+  
+  // Stats
+  installs    Int      @default(0)
+  rating      Float    @default(0)
+  reviews     Int      @default(0)
+  apiCalls    Int      @default(0)
+  
+  // API Keys
+  apiKey      String   @unique
+  apiSecret   String
+  
+  // Relations
+  installs_list MarketplaceAppInstall[]
+  revenues     MarketplaceRevenue[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("marketplace_apps")
+}
+
+model MarketplaceAppInstall {
+  id        String   @id @default(cuid())
+  appId     String
+  app       MarketplaceApp @relation(fields: [appId], references: [id])
+  
+  dealershipId String
+  dealership    Dealership @relation(fields: [dealershipId], references: [id])
+  
+  status    String   @default("active") // active, uninstalled, suspended
+  
+  installedAt DateTime @default(now())
+  uninstalledAt DateTime?
+  
+  @@unique([appId, dealershipId])
+  @@map("marketplace_app_installs")
+}
+
+model MarketplaceRevenue {
+  id        String   @id @default(cuid())
+  appId     String
+  app       MarketplaceApp @relation(fields: [appId], references: [id])
+  
+  // Period
+  period    String   // "2024-01"
+  year      Int
+  month     Int
+  
+  // Financials
+  grossRevenue Decimal
+  platformFee  Decimal  // 30%
+  developerShare Decimal // 70%
+  
+  // Status
+  paid      Boolean  @default(false)
+  paidAt    DateTime?
+  payoutId  String?  // Stripe payout ID
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([appId, year, month])
+  @@map("marketplace_revenue")
+}
+
+model MarketplaceReview {
+  id        String   @id @default(cuid())
+  appId     String
+  app       MarketplaceApp @relation(fields: [appId], references: [id])
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  rating    Int      // 1-5
+  comment   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([appId, userId]) // One review per user per app
+  @@map("marketplace_reviews")
+}
+
+enum MarketplaceAppStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  LIVE
+  SUSPENDED
+}
+

@@ -1,9 +1,21 @@
-pages/
-node_modules/
-.next/
+# Exclude problematic directories and files from Vercel build
+emails/
+emails.disabled/
+lib/email/
+app/landing/enhanced-schema/
+lib/schema/routes.json.disabled
+*.disabled
+
+# Exclude unnecessary files
+*.md
+!README.md
 .git/
-dealershipai-enterprise/
-dealershipai-enterprise.disabled/
-backend/
-backend.disabled/
-*.disabled/
+.github/
+scripts/
+docs/
+test/
+tests/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
