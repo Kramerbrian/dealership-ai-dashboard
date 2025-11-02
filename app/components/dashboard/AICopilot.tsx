@@ -65,19 +65,13 @@ export const AICopilot: React.FC<AICopilotProps> = ({
     setIsGenerating(true);
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY;
-      if (!apiKey) {
-        // Fallback to rule-based insights
-        throw new Error('API key not configured');
-      }
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      // Use API route instead of direct Anthropic call (keeps API key server-side)
+      const response = await fetch('/api/ai/copilot-insights', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
         },
+        body: JSON.stringify(dashboardState),
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 800,

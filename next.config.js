@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Force dynamic rendering to avoid static generation issues
   experimental: {
     serverComponentsExternalPackages: ['@clerk/nextjs'],
   },
+  // Disable static optimization globally
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
