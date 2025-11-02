@@ -1,6 +1,8 @@
 'use client';
 
-// Force dynamic rendering
+// Force dynamic rendering to avoid SSR context issues
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
