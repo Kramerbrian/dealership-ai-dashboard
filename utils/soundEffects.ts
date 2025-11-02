@@ -6,9 +6,11 @@
 export class SoundEngine {
   private sounds: Map<string, HTMLAudioElement> = new Map();
   private enabled: boolean = false;
+  private initialized: boolean = false;
   
-  constructor() {
-    if (typeof window === 'undefined') return;
+  private init() {
+    if (this.initialized || typeof window === 'undefined') return;
+    this.initialized = true;
 
     // Load sound effects (paths relative to public folder)
     this.loadSound('score-improve', '/sounds/chime-up.mp3');
@@ -18,7 +20,11 @@ export class SoundEngine {
     this.loadSound('click', '/sounds/click.mp3');
     
     // Check user preference
-    this.enabled = localStorage.getItem('sound-enabled') === 'true';
+    try {
+      this.enabled = localStorage.getItem('sound-enabled') === 'true';
+    } catch (e) {
+      // localStorage not available
+    }
   }
   
   private loadSound(id: string, path: string) {
@@ -29,6 +35,7 @@ export class SoundEngine {
   }
   
   play(id: string) {
+    this.init(); // Lazy initialization
     if (!this.enabled || typeof window === 'undefined') return;
     const sound = this.sounds.get(id);
     if (sound) {
@@ -38,9 +45,14 @@ export class SoundEngine {
   }
   
   toggle() {
+    this.init(); // Lazy initialization
     this.enabled = !this.enabled;
     if (typeof window !== 'undefined') {
-      localStorage.setItem('sound-enabled', String(this.enabled));
+      try {
+        localStorage.setItem('sound-enabled', String(this.enabled));
+      } catch (e) {
+        // localStorage not available
+      }
     }
   }
 

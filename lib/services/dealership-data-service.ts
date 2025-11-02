@@ -4,8 +4,8 @@
  * Fetches real dealership data from database for live dashboard
  */
 
-import { db, withTenant, pages, aivScores, eeatScores, revenueAtRisk, issues } from '@/lib/db';
-import { eq, desc, and, gte, sql } from 'drizzle-orm';
+import { db } from '@/lib/db';
+// Note: Non-existent exports removed - these should be Prisma models or removed
 
 export interface DealershipMetrics {
   dealershipId: string;

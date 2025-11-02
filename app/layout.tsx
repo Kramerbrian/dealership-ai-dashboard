@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { ClerkProvider } from '@clerk/nextjs'
+import { ClerkProviderWrapper } from '@/app/components/ClerkProviderWrapper'
 import { Analytics } from '@vercel/analytics/react'
 
 const inter = Inter({ 
@@ -78,9 +78,9 @@ export default function RootLayout({
         )}
       </head>
       <body className={inter.className}>
-        <ClerkProvider>
+        <ClerkProviderWrapper>
           {children}
-        </ClerkProvider>
+        </ClerkProviderWrapper>
         <Analytics />
       </body>
     </html>

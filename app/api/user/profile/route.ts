@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 
 export async function PUT(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -18,10 +17,8 @@ export async function PUT(req: NextRequest) {
 
     // Update user profile
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: userId },
       data: {
-        name: session.user.name,
-        email: session.user.email,
         // Add custom fields to user metadata or create a separate profile table
         // For now, we'll store in a JSON field
         metadata: {
@@ -37,14 +34,14 @@ export async function PUT(req: NextRequest) {
     // If user selected a paid plan, create a trial subscription
     if (plan && plan !== 'free') {
       await prisma.subscription.upsert({
-        where: { userId: session.user.id },
+        where: { userId: userId },
         update: {
           plan: plan.toUpperCase(),
           status: 'TRIAL',
           trialEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
         },
         create: {
-          userId: session.user.id,
+          userId: userId,
           plan: plan.toUpperCase(),
           status: 'TRIAL',
           currentPeriodStart: new Date(),
@@ -70,9 +67,9 @@ export async function PUT(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -80,7 +77,7 @@ export async function GET(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       include: {
         subscriptions: true
       }
