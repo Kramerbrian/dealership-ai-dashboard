@@ -4,7 +4,11 @@ import './globals.css'
 import { ClerkProviderWrapper } from '@/app/components/ClerkProviderWrapper'
 import { Analytics } from '@vercel/analytics/react'
 
-const inter = Inter({ 
+// Force dynamic rendering globally
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   fallback: ['system-ui', 'arial']
