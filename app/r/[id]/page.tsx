@@ -1,3 +1,8 @@
+// Force dynamic rendering for dynamic route
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const revalidate = 0;
+
 export default async function Report({ params: { id } }: { params: { id: string } }) {
   const snap = await fetch(process.env.KV_READ_URL + `?id=${id}`, { cache: 'no-store' }).then(r => r.json());
   const S = Object.entries(snap.snapshot?.scores || {});

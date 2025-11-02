@@ -1,5 +1,10 @@
 'use client';
 
+// Force dynamic rendering to avoid SSR context issues
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const revalidate = 0;
+
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, ArrowRight, Loader2, CreditCard, Shield, Zap, Building2, Facebook, Github } from 'lucide-react';

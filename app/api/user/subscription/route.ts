@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import { userManager } from '@/lib/user-management';
 import { billingManager } from '@/lib/stripe-billing';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const subscription = await userManager.getUserSubscription(session.user.id);
+    const subscription = await userManager.getUserSubscription(userId);
     
     if (!subscription.success) {
       return NextResponse.json({ error: subscription.error }, { status: 500 });
@@ -33,9 +32,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -47,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     // Create checkout session
     const checkoutResult = await billingManager.createCheckoutSession(
-      session.user.id,
+      userId,
       plan
     );
 

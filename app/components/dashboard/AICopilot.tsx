@@ -72,55 +72,21 @@ export const AICopilot: React.FC<AICopilotProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(dashboardState),
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 800,
-          messages: [{
-            role: 'user',
-            content: `You're an AI copilot for automotive dealership intelligence. Analyze this data and provide 2-3 actionable insights.
-
-Dashboard State:
-${JSON.stringify(dashboardState, null, 2)}
-
-Return ONLY valid JSON array (no markdown, no code blocks):
-[
-  {
-    "type": "opportunity|warning|tip|prediction",
-    "priority": "high|medium|low",
-    "message": "Brief insight (max 25 words)",
-    "context": "Why this matters (max 20 words)"
-  }
-]
-
-Focus on:
-- Quick wins with high ROI
-- Competitive threats
-- Revenue impact
-- Trending issues
-- Score predictions
-
-Be specific and actionable. Reference actual scores/metrics when relevant.`
-          }]
-        })
       });
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
 
-      const data = await response.json();
-      let insightsText = data.content?.[0]?.text?.trim() || '[]';
-      
-      // Strip any markdown formatting
-      insightsText = insightsText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      
-      const parsed = JSON.parse(insightsText);
+      const result = await response.json();
+      const insightsArray = result.insights || [];
       
       // Add IDs and timestamps
-      const enriched = parsed.map((insight: any, index: number) => ({
+      const enriched = insightsArray.map((insight: any, index: number) => ({
         ...insight,
         id: `${Date.now()}-${index}`,
-        timestamp: new Date()
+        timestamp: new Date(),
+        type: insight.type || (insight.priority === 'high' ? 'warning' : 'opportunity'),
       }));
       
       setInsights(enriched);

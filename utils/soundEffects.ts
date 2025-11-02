@@ -61,4 +61,20 @@ export class SoundEngine {
   }
 }
 
-export const soundEngine = new SoundEngine();
+// Lazy singleton - only instantiate when needed
+let _soundEngineInstance: SoundEngine | null = null;
+
+export const soundEngine = (() => {
+  if (typeof window === 'undefined') {
+    // Return a no-op instance for SSR
+    return {
+      play: () => {},
+      toggle: () => {},
+      isEnabled: () => false,
+    } as SoundEngine;
+  }
+  if (!_soundEngineInstance) {
+    _soundEngineInstance = new SoundEngine();
+  }
+  return _soundEngineInstance;
+})();

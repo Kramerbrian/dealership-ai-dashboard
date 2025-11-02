@@ -1,28 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(req: NextRequest) {
   try {
-    // Test basic auth configuration
-    const config = {
-      providers: authOptions.providers?.map(p => ({
-        id: p.id,
-        name: p.name,
-        type: p.type
-      })),
-      session: authOptions.session,
-      pages: authOptions.pages,
-      callbacks: Object.keys(authOptions.callbacks || {}),
-    };
+    const { userId } = await auth();
 
     return NextResponse.json({
-      status: 'Auth Configuration Test',
-      config,
+      status: 'Auth Configuration Test (Clerk)',
+      authenticated: !!userId,
+      userId: userId || null,
       environment: {
-        NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-        NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? 'Set' : 'Missing',
-        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Missing',
-        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Missing',
+        CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? 'Set' : 'Missing',
+        CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY ? 'Set' : 'Missing',
       },
       timestamp: new Date().toISOString()
     });

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import { userManager } from '@/lib/user-management';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -16,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     if (feature) {
       // Get usage for specific feature
-      const usage = await userManager.getUsageStats(session.user.id, feature);
+      const usage = await userManager.getUsageStats(userId, feature);
       
       if (!usage.success) {
         return NextResponse.json({ error: usage.error }, { status: 500 });
@@ -28,7 +27,7 @@ export async function GET(req: NextRequest) {
       });
     } else {
       // Get all usage stats
-      const usage = await userManager.getUsageStats(session.user.id);
+      const usage = await userManager.getUsageStats(userId);
       
       if (!usage.success) {
         return NextResponse.json({ error: usage.error }, { status: 500 });
