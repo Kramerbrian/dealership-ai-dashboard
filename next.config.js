@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['@clerk/nextjs'],
-  },
+  serverExternalPackages: ['@clerk/nextjs'],
   typescript: {
     ignoreBuildErrors: true,
   },
