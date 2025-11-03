@@ -1,12 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
-import { reportWebVitals } from '@/lib/web-vitals';
+/**
+ * Web Vitals Tracker Component
+ * 
+ * Client component that initializes Web Vitals tracking
+ * Must be 'use client' because web-vitals runs in the browser
+ */
 
-export default function WebVitalsTracker() {
+import { useEffect } from 'react';
+import { initWebVitals } from '@/lib/web-vitals';
+
+export function WebVitalsTracker() {
   useEffect(() => {
-    reportWebVitals();
+    // Initialize Web Vitals tracking on mount
+    initWebVitals();
   }, []);
 
+  // This component renders nothing
   return null;
 }

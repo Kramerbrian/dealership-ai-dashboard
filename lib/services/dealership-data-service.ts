@@ -111,10 +111,10 @@ export async function getLatestEEATScores(tenantId: string) {
  */
 export async function getRevenueMetrics(tenantId: string) {
   return {
-    currentRevenue: 0,
-    potentialRevenue: 0,
-    revenueAtRisk: 0,
-  };
+      currentRevenue: 0,
+      potentialRevenue: 0,
+      revenueAtRisk: 0,
+    };
 }
 
 /**
@@ -122,13 +122,13 @@ export async function getRevenueMetrics(tenantId: string) {
  * TODO: Replace with Prisma query
  */
 export async function getIssuesCount(tenantId: string) {
-  return {
+    return {
     critical: 0,
     high: 0,
     medium: 0,
     low: 0,
     total: 0,
-  };
+    };
 }
 
 /**
@@ -138,8 +138,8 @@ export async function getIssuesCount(tenantId: string) {
 export async function getPerformanceMetrics(tenantId: string) {
   return {
     avgLoadTime: 1.8,
-    totalPages: 0,
-  };
+      totalPages: 0,
+    };
 }
 
 /**

@@ -4,6 +4,7 @@ import Script from 'next/script'
 import './globals.css'
 import { WorkOSProvider } from '@/app/components/WorkOSProvider'
 import { Analytics } from '@vercel/analytics/react'
+import { WebVitalsTracker } from '@/components/WebVitalsTracker'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -97,6 +98,7 @@ export default function RootLayout({
           {children}
         </WorkOSProvider>
         <Analytics />
+        <WebVitalsTracker />
       </body>
     </html>
   )

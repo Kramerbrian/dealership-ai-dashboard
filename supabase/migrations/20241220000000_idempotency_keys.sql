@@ -14,7 +14,7 @@ BEGIN
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'idempotency_keys' AND column_name = 'route'
   ) THEN
-    CREATE INDEX IF NOT EXISTS ix_idem_tenant_route ON idempotency_keys(tenant_id, route, key);
+CREATE INDEX IF NOT EXISTS ix_idem_tenant_route ON idempotency_keys(tenant_id, route, key);
   END IF;
 END $$;
 

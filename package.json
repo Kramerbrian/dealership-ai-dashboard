@@ -50,7 +50,11 @@
     "db:indexes": "psql $DATABASE_URL -f db/migrations/0019_performance_indexes.sql",
     "cache:stats": "curl -X GET http://localhost:3000/api/cache/stats",
     "test:analytics": "tsx scripts/test-google-analytics.ts",
-    "analytics:test-api": "curl -X GET http://localhost:3000/api/test-analytics"
+    "analytics:test-api": "curl -X GET http://localhost:3000/api/test-analytics",
+    "verify:env": "tsx scripts/verify-env-vars.ts",
+    "export:vercel-env": "bash scripts/export-vercel-env.sh",
+    "check:sentry": "bash scripts/check-sentry-dsn.sh",
+    "verify:deployment": "bash scripts/verify-deployment.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.66.0",

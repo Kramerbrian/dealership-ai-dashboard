@@ -10,10 +10,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Enable instrumentation for Sentry
-  experimental: {
-    instrumentationHook: true,
-  },
+  // Instrumentation is now available by default in Next.js 15
+  // experimental: {
+  //   instrumentationHook: true, // No longer needed
+  // },
 
   // Security headers
   async headers() {
@@ -128,15 +128,37 @@ const nextConfig = {
     ];
   },
   
-  // Image optimization
+  // Image optimization (using remotePatterns instead of deprecated domains)
   images: {
-    domains: [
-      'images.unsplash.com',
-      'via.placeholder.com',
-      'clerk.accounts.dev',
-      'img.clerk.com',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'clerk.accounts.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.clerk.accounts.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.clerk.dealershipai.com',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   
   // Performance optimizations

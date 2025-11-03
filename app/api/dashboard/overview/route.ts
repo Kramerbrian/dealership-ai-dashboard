@@ -1,16 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { trackSLO } from '@/lib/slo';
+import { logger } from '@/lib/logger';
+import { cachedResponse, errorResponse, withRequestId } from '@/lib/api-response';
+// Note: getRequestId will be implemented for server-side request tracking
+// For now, we'll generate a unique ID per request
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+/**
+ * Dashboard Overview API Endpoint
+ * 
+ * Example usage of new production utilities:
+ * - Structured logging with logger
+ * - Cached response with stale-while-revalidate
+ * - Request ID tracking
+ * - Error handling with errorResponse
+ */
+
 export async function GET(req: NextRequest) {
+  const requestId = req.headers.get('x-request-id') || `dashboard-${Date.now()}-${Math.random().toString(36).substring(7)}`;
   const startTime = Date.now();
   
   try {
     const { searchParams } = new URL(req.url);
     const timeRange = searchParams.get('timeRange') || '30d';
     const dealerId = searchParams.get('dealerId') || 'default';
+    
+    // Log request with structured logging
+    await logger.info('Dashboard overview requested', {
+      requestId,
+      timeRange,
+      dealerId
+    });
 
     // Simulate database query time
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -132,26 +154,39 @@ export async function GET(req: NextRequest) {
     const duration = Date.now() - startTime;
     trackSLO('api.dashboard.overview', duration);
 
-    const response = NextResponse.json(dashboardData);
+    // Use cachedResponse utility (60s cache, 300s stale-while-revalidate)
+    let response = cachedResponse(dashboardData, 60, 300);
     
-    // Add caching headers
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    // Add request ID and server timing
+    response = withRequestId(response, requestId);
     response.headers.set('Server-Timing', `dashboard-overview;dur=${duration}`);
+    
+    await logger.info('Dashboard overview completed', {
+      requestId,
+      duration,
+      timeRange,
+      dealerId
+    });
     
     return response;
 
   } catch (error) {
-    console.error('Dashboard overview API error:', error);
-    
     const duration = Date.now() - startTime;
     trackSLO('api.dashboard.overview', duration);
     
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch dashboard data',
-        timestamp: new Date().toISOString()
-      },
-      { status: 500 }
+    // Use structured error logging
+    await logger.error('Dashboard overview API error', {
+      requestId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      duration
+    });
+    
+    // Use errorResponse utility
+    return errorResponse(
+      'Failed to fetch dashboard data',
+      500,
+      { requestId, timestamp: new Date().toISOString() }
     );
   }
 }

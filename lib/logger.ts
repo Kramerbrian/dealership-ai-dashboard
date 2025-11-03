@@ -1,302 +1,169 @@
-import { Logtail } from "@logtail/node";
+/**
+ * Structured Logging Utility
+ * 
+ * Provides centralized logging with:
+ * - JSON structured output
+ * - Log levels (error, warn, info, debug)
+ * - Request ID tracking
+ * - Contextual metadata
+ * - Integration with LogTail (when configured)
+ */
 
-// Initialize Logtail logger
-const logtail = process.env.LOGTAIL_SOURCE_TOKEN 
-  ? new Logtail(process.env.LOGTAIL_SOURCE_TOKEN)
-  : null;
+// Dynamically import Logtail only in Node.js runtime (not Edge)
+let Logtail: any = null;
+let logtail: any = null;
 
-// Log levels
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-}
-
-// Logger interface
-interface Logger {
-  debug(message: string, meta?: any): void;
-  info(message: string, meta?: any): void;
-  warn(message: string, meta?: any): void;
-  error(message: string, meta?: any): void;
-}
-
-// Console logger fallback
-class ConsoleLogger implements Logger {
-  private formatMessage(level: string, message: string, meta?: any): string {
-    const timestamp = new Date().toISOString();
-    const metaStr = meta ? ` ${JSON.stringify(meta)}` : '';
-    return `[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}`;
-  }
-
-  debug(message: string, meta?: any): void {
-    console.debug(this.formatMessage('debug', message, meta));
-  }
-
-  info(message: string, meta?: any): void {
-    console.info(this.formatMessage('info', message, meta));
-  }
-
-  warn(message: string, meta?: any): void {
-    console.warn(this.formatMessage('warn', message, meta));
-  }
-
-  error(message: string, meta?: any): void {
-    console.error(this.formatMessage('error', message, meta));
+// Only initialize Logtail in Node.js runtime
+if (typeof process !== 'undefined' && process.env.LOGTAIL_TOKEN) {
+  try {
+    // Dynamic import to avoid Edge runtime issues
+    if (typeof require !== 'undefined') {
+      const LogtailModule = require('@logtail/node');
+      Logtail = LogtailModule.Logtail || LogtailModule.default;
+      if (Logtail) {
+        logtail = new Logtail(process.env.LOGTAIL_TOKEN);
+      }
+    }
+  } catch (error) {
+    // Logtail not available (e.g., in Edge runtime)
+    console.debug('Logtail not available in this runtime');
   }
 }
 
-// Logtail logger
-class LogtailLogger implements Logger {
-  debug(message: string, meta?: any): void {
-    logtail?.debug(message, meta);
-  }
+type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
-  info(message: string, meta?: any): void {
-    logtail?.info(message, meta);
-  }
-
-  warn(message: string, meta?: any): void {
-    logtail?.warn(message, meta);
-  }
-
-  error(message: string, meta?: any): void {
-    logtail?.error(message, meta);
-  }
+interface LogContext {
+  [key: string]: any;
 }
 
-// Create logger instance
-export const logger: Logger = logtail ? new LogtailLogger() : new ConsoleLogger();
+class Logger {
+  private formatMessage(level: LogLevel, message: string, context?: LogContext) {
+    const baseLog = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+      environment: process.env.NODE_ENV || 'development',
+      ...context,
+    };
 
-// Specialized loggers for different components
-export const dtriLogger = {
-  refresh: (dealer: string, score: number, meta?: any) => {
-    logger.info(`DTRI refresh completed for ${dealer}`, {
-      dealer,
-      score,
-      component: 'dtri',
-      action: 'refresh',
-      ...meta
-    });
-  },
+    // Add request ID if available
+    if (typeof window !== 'undefined' && (window as any).requestId) {
+      baseLog.requestId = (window as any).requestId;
+    }
 
-  error: (dealer: string, error: Error, meta?: any) => {
-    logger.error(`DTRI refresh failed for ${dealer}`, {
-      dealer,
-      error: error.message,
-      stack: error.stack,
-      component: 'dtri',
-      action: 'refresh',
-      ...meta
-    });
-  },
-
-  queue: (jobType: string, status: string, meta?: any) => {
-    logger.info(`DTRI queue job ${status}`, {
-      jobType,
-      status,
-      component: 'dtri',
-      action: 'queue',
-      ...meta
-    });
+    return baseLog;
   }
-};
 
-export const apiLogger = {
-  request: (method: string, path: string, status: number, duration: number, meta?: any) => {
-    logger.info(`API ${method} ${path}`, {
-      method,
-      path,
-      status,
-      duration,
-      component: 'api',
-      action: 'request',
-      ...meta
-    });
-  },
+  private async sendToLogtail(level: LogLevel, message: string, context?: LogContext) {
+    if (!logtail) return;
 
-  error: (method: string, path: string, error: Error, meta?: any) => {
-    logger.error(`API ${method} ${path} failed`, {
-      method,
-      path,
-      error: error.message,
-      stack: error.stack,
-      component: 'api',
-      action: 'error',
-      ...meta
-    });
+    try {
+      const formatted = this.formatMessage(level, message, context);
+      
+      switch (level) {
+        case 'error':
+          await logtail.error(message, formatted);
+          break;
+        case 'warn':
+          await logtail.warn(message, formatted);
+          break;
+        case 'info':
+          await logtail.info(message, formatted);
+          break;
+        case 'debug':
+          await logtail.debug(message, formatted);
+          break;
+      }
+    } catch (error) {
+      // Fallback to console if Logtail fails
+      console.error('Logtail error:', error);
+      this.logToConsole(level, message, context);
+    }
   }
-};
 
-export const queueLogger = {
-  jobStarted: (jobId: string, jobType: string, meta?: any) => {
-    logger.info(`Queue job started`, {
-      jobId,
-      jobType,
-      component: 'queue',
-      action: 'started',
-      ...meta
-    });
-  },
-
-  jobCompleted: (jobId: string, jobType: string, duration: number, meta?: any) => {
-    logger.info(`Queue job completed`, {
-      jobId,
-      jobType,
-      duration,
-      component: 'queue',
-      action: 'completed',
-      ...meta
-    });
-  },
-
-  jobFailed: (jobId: string, jobType: string, error: Error, meta?: any) => {
-    logger.error(`Queue job failed`, {
-      jobId,
-      jobType,
-      error: error.message,
-      stack: error.stack,
-      component: 'queue',
-      action: 'failed',
-      ...meta
-    });
-  }
-};
-
-// Performance logger
-export const perfLogger = {
-  timing: (operation: string, duration: number, meta?: any) => {
-    logger.info(`Performance timing`, {
-      operation,
-      duration,
-      component: 'performance',
-      action: 'timing',
-      ...meta
-    });
-  },
-
-  memory: (operation: string, memoryUsage: NodeJS.MemoryUsage, meta?: any) => {
-    logger.info(`Memory usage`, {
-      operation,
-      memory: {
-        used: Math.round(memoryUsage.heapUsed / 1024 / 1024),
-        total: Math.round(memoryUsage.heapTotal / 1024 / 1024),
-        external: Math.round(memoryUsage.external / 1024 / 1024),
-      },
-      component: 'performance',
-      action: 'memory',
-      ...meta
-    });
-  }
-};
-
-// Business metrics logger
-export const metricsLogger = {
-  dtriScore: (dealer: string, score: number, trend: string, meta?: any) => {
-    logger.info(`DTRI score recorded`, {
-      dealer,
-      score,
-      trend,
-      component: 'metrics',
-      action: 'dtri_score',
-      ...meta
-    });
-  },
-
-  revenueRisk: (dealer: string, risk: number, meta?: any) => {
-    logger.info(`Revenue risk calculated`, {
-      dealer,
-      risk,
-      component: 'metrics',
-      action: 'revenue_risk',
-      ...meta
-    });
-  },
-
-  elasticity: (dealer: string, elasticity: number, meta?: any) => {
-    logger.info(`Elasticity calculated`, {
-      dealer,
-      elasticity,
-      component: 'metrics',
-      action: 'elasticity',
-      ...meta
-    });
-  }
-};
-
-// Error tracking with context
-export const errorLogger = {
-  database: (operation: string, error: Error, meta?: any) => {
-    logger.error(`Database error`, {
-      operation,
-      error: error.message,
-      stack: error.stack,
-      component: 'database',
-      action: 'error',
-      ...meta
-    });
-  },
-
-  external: (service: string, operation: string, error: Error, meta?: any) => {
-    logger.error(`External service error`, {
-      service,
-      operation,
-      error: error.message,
-      stack: error.stack,
-      component: 'external',
-      action: 'error',
-      ...meta
-    });
-  },
-
-  validation: (field: string, value: any, error: Error, meta?: any) => {
-    logger.error(`Validation error`, {
-      field,
-      value,
-      error: error.message,
-      component: 'validation',
-      action: 'error',
-      ...meta
-    });
-  }
-};
-
-// Utility function to create structured log context
-export function createLogContext(
-  component: string,
-  action: string,
-  userId?: string,
-  dealerId?: string,
-  requestId?: string
-) {
-  return {
-    component,
-    action,
-    userId,
-    dealerId,
-    requestId,
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-  };
-}
-
-// Middleware for API request logging
-export function logApiRequest(req: Request, res: Response, next: Function) {
-  const start = Date.now();
-  const method = req.method;
-  const path = new URL(req.url).pathname;
-
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    const status = res.status;
+  private logToConsole(level: LogLevel, message: string, context?: LogContext) {
+    const formatted = this.formatMessage(level, message, context);
     
-    apiLogger.request(method, path, status, duration, {
-      userAgent: req.headers.get('user-agent'),
-      ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
-    });
-  });
+    // Format for console readability
+    const prefix = `[${formatted.timestamp}] ${formatted.level.toUpperCase()}`;
+    
+    if (process.env.NODE_ENV === 'production') {
+      // In production, log as JSON for log aggregation
+      console.log(JSON.stringify(formatted));
+    } else {
+      // In development, log with better readability
+      console[level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'](
+        prefix,
+        message,
+        context ? context : ''
+      );
+    }
+  }
 
-  next();
+  async error(message: string, context?: LogContext | Error) {
+    const logContext: LogContext = context instanceof Error 
+      ? { 
+          error: context.message,
+          stack: context.stack,
+          name: context.name,
+        }
+      : context || {};
+
+    await this.sendToLogtail('error', message, logContext);
+    this.logToConsole('error', message, logContext);
+  }
+
+  async warn(message: string, context?: LogContext) {
+    await this.sendToLogtail('warn', message, context);
+    this.logToConsole('warn', message, context);
+  }
+
+  async info(message: string, context?: LogContext) {
+    await this.sendToLogtail('info', message, context);
+    this.logToConsole('info', message, context);
+  }
+
+  async debug(message: string, context?: LogContext) {
+    // Only log debug in development or when explicitly enabled
+    if (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEBUG_LOGS === 'true') {
+      await this.sendToLogtail('debug', message, context);
+      this.logToConsole('debug', message, context);
+    }
+  }
+}
+
+// Export singleton instance
+export const logger = new Logger();
+
+// Convenience functions
+export function logError(error: Error, context?: LogContext) {
+  return logger.error(error.message, { ...context, error: error.stack });
+}
+
+export function logInfo(message: string, context?: LogContext) {
+  return logger.info(message, context);
+}
+
+export function logWarn(message: string, context?: LogContext) {
+  return logger.warn(message, context);
+}
+
+export function logDebug(message: string, context?: LogContext) {
+  return logger.debug(message, context);
+}
+
+// Request ID helper
+export function setRequestId(id: string) {
+  if (typeof window !== 'undefined') {
+    (window as any).requestId = id;
+  }
+}
+
+export function getRequestId(): string | undefined {
+  if (typeof window !== 'undefined') {
+    return (window as any).requestId;
+  }
+  return undefined;
 }
 
 export default logger;
