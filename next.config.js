@@ -165,21 +165,27 @@ const nextConfig = {
   }),
 };
 
-// Sentry configuration
-module.exports = withSentryConfig(
-  nextConfig,
-  {
-    // Sentry Webpack Plugin options
-    silent: true,
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-  },
-  {
-    // Upload source maps for production builds
-    widenClientFileUpload: true,
-    transpileClientSDK: true,
-    tunnelRoute: "/monitoring",
-    hideSourceMaps: true,
-    disableLogger: true,
-  }
-);
+// Sentry configuration - only enable if SENTRY_DSN is set
+const sentryEnabled = process.env.SENTRY_DSN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
+
+if (sentryEnabled) {
+  module.exports = withSentryConfig(
+    nextConfig,
+    {
+      // Sentry Webpack Plugin options
+      silent: true,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+    },
+    {
+      // Upload source maps for production builds
+      widenClientFileUpload: true,
+      transpileClientSDK: true,
+      tunnelRoute: "/monitoring",
+      hideSourceMaps: true,
+      disableLogger: true,
+    }
+  );
+} else {
+  module.exports = nextConfig;
+}

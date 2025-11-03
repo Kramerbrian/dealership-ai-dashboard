@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthenticatedUser } from '@/lib/api-protection';
 import { userManager } from '@/lib/user-management';
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const authResult = await getAuthenticatedUser(req);
     
-    if (!userId) {
+    if (!authResult.isAuthenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const userId = authResult.userId;
 
     const { searchParams } = new URL(req.url);
     const feature = searchParams.get('feature');

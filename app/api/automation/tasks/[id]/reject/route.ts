@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthenticatedUser } from '@/lib/api-protection';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,10 +13,12 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = auth();
-    if (!userId) {
+    const authResult = await getAuthenticatedUser(req);
+    if (!authResult.isAuthenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    const userId = authResult.userId;
     
     const { id } = params;
     

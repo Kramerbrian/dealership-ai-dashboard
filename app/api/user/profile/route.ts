@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthenticatedUser } from '@/lib/api-protection';
 import { prisma } from '@/lib/prisma';
 
 export async function PUT(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const authResult = await getAuthenticatedUser(req);
     
-    if (!userId) {
+    if (!authResult.isAuthenticated || !authResult.userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    const userId = authResult.userId;
 
     const { company, phone, domain, role, plan } = await req.json();
 
@@ -67,14 +69,16 @@ export async function PUT(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const authResult = await getAuthenticatedUser(req);
     
-    if (!userId) {
+    if (!authResult.isAuthenticated || !authResult.userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    const userId = authResult.userId;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },

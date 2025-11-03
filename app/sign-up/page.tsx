@@ -4,10 +4,43 @@
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-import { SignUp } from '@clerk/nextjs';
 import { Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const [clientId, setClientId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Get WorkOS client ID from environment
+    const id = process.env.NEXT_PUBLIC_WORKOS_CLIENT_ID || '';
+    setClientId(id);
+    setIsLoading(false);
+  }, []);
+
+  const handleSignUp = () => {
+    if (!clientId) {
+      console.error('WorkOS Client ID not configured');
+      return;
+    }
+
+    // Redirect to WorkOS sign-up
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    const signUpUrl = `https://api.workos.com/sso/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&action=signup`;
+    
+    window.location.href = signUpUrl;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -20,22 +53,20 @@ export default function SignUpPage() {
           </p>
         </div>
         <Suspense fallback={<div className="flex justify-center">Loading...</div>}>
-          <SignUp 
-            appearance={{
-              elements: {
-                formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white',
-                card: 'bg-white shadow-lg border border-gray-200',
-                headerTitle: 'text-gray-900',
-                headerSubtitle: 'text-gray-600',
-                socialButtonsBlockButton: 'border border-gray-300 hover:bg-gray-50',
-                socialButtonsBlockButtonText: 'text-gray-700',
-                formFieldInput: 'border border-gray-300 rounded-md px-3 py-2',
-                footerActionLink: 'text-blue-600 hover:text-blue-700',
-              },
-            }}
-            redirectUrl="/onboarding"
-            signInUrl="/sign-in"
-          />
+          <div className="bg-white shadow-lg border border-gray-200 rounded-lg p-8">
+            <button
+              onClick={handleSignUp}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              Sign up with WorkOS
+            </button>
+            <p className="mt-4 text-center text-sm text-gray-600">
+              Already have an account?{' '}
+              <a href="/sign-in" className="font-medium text-blue-600 hover:text-blue-700">
+                Sign in
+              </a>
+            </p>
+          </div>
         </Suspense>
       </div>
     </div>

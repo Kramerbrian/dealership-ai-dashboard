@@ -55,7 +55,6 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.66.0",
     "@auth/prisma-adapter": "^2.11.0",
-    "@clerk/nextjs": "^6.33.7",
     "@google-analytics/data": "^5.2.1",
     "@heroicons/react": "^2.2.0",
     "@logtail/node": "^0.4.0",
@@ -80,6 +79,7 @@
     "@vercel/analytics": "^1.5.0",
     "@vercel/kv": "^3.0.0",
     "@vercel/postgres": "^0.10.0",
+    "@workos-inc/node": "^7.72.1",
     "ajv": "^8.17.1",
     "autoprefixer": "^10.4.0",
     "bcryptjs": "^3.0.2",

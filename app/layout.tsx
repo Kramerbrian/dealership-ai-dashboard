@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
-import { ClerkProviderWrapper } from '@/app/components/ClerkProviderWrapper'
+import { WorkOSProvider } from '@/app/components/WorkOSProvider'
 import { Analytics } from '@vercel/analytics/react'
 
 const inter = Inter({ 
@@ -69,23 +70,32 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-JYQ9MZLCQW';
+
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {process.env.NEXT_PUBLIC_GA && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA}`} />
-            <script dangerouslySetInnerHTML={{__html:`
-              window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
-              gtag('js', new Date()); gtag('config','${process.env.NEXT_PUBLIC_GA}');
-            `}} />
-          </>
-        )}
-      </head>
+      <head />
       <body className={inter.className}>
-        <ClerkProviderWrapper>
+        {/* Google Analytics */}
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaId}');
+            `,
+          }}
+        />
+        <WorkOSProvider>
           {children}
-        </ClerkProviderWrapper>
+        </WorkOSProvider>
         <Analytics />
       </body>
     </html>
