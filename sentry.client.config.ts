@@ -16,6 +16,18 @@ Sentry.init({
   // Release tracking
   release: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
 
+  // Integrations
+  integrations: [
+    // Send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.replayIntegration(),
+    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
+  ],
+
+  // Experimental features
+  _experiments: {
+    enableLogs: true,
+  },
+
   // Ignore common errors
   ignoreErrors: [
     'ResizeObserver loop limit exceeded',
