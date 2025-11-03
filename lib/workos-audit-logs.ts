@@ -117,8 +117,6 @@ export async function getAuditLogSchemas(action: string): Promise<any> {
   }
 
   try {
-    // Note: WorkOS SDK might not have a direct method for this
-    // This would need to be implemented via direct API call if needed
     const response = await fetch(
       `https://api.workos.com/audit_logs/actions/${action}/schemas`,
       {
@@ -135,6 +133,153 @@ export async function getAuditLogSchemas(action: string): Promise<any> {
     return await response.json();
   } catch (error) {
     console.error('[WorkOS Audit Logs] Error fetching schemas:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all audit log actions
+ */
+export async function getAuditLogActions(): Promise<any> {
+  if (!workos) {
+    throw new Error('WorkOS not configured. WORKOS_API_KEY is required.');
+  }
+
+  try {
+    const response = await fetch('https://api.workos.com/audit_logs/actions', {
+      headers: {
+        Authorization: `Bearer ${process.env.WORKOS_API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch actions: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('[WorkOS Audit Logs] Error fetching actions:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create an audit log export
+ */
+export interface CreateAuditLogExportOptions {
+  organizationId: string;
+  rangeStart: Date;
+  rangeEnd: Date;
+  actions?: string[];
+  actors?: string[];
+  targets?: string[];
+}
+
+export async function createAuditLogExport(
+  options: CreateAuditLogExportOptions
+): Promise<any> {
+  if (!workos) {
+    throw new Error('WorkOS not configured. WORKOS_API_KEY is required.');
+  }
+
+  try {
+    const export_ = await workos.auditLogs.createExport({
+      organizationId: options.organizationId,
+      rangeStart: options.rangeStart,
+      rangeEnd: options.rangeEnd,
+      actions: options.actions,
+      actors: options.actors,
+      targets: options.targets,
+    });
+
+    return export_;
+  } catch (error) {
+    console.error('[WorkOS Audit Logs] Error creating export:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get an audit log export by ID
+ */
+export async function getAuditLogExport(exportId: string): Promise<any> {
+  if (!workos) {
+    throw new Error('WorkOS not configured. WORKOS_API_KEY is required.');
+  }
+
+  try {
+    const export_ = await workos.auditLogs.getExport(exportId);
+    return export_;
+  } catch (error) {
+    console.error('[WorkOS Audit Logs] Error getting export:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get audit log retention for an organization
+ */
+export async function getAuditLogRetention(
+  organizationId: string
+): Promise<{ retention_period_in_days: number }> {
+  if (!workos) {
+    throw new Error('WorkOS not configured. WORKOS_API_KEY is required.');
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.workos.com/organizations/${organizationId}/audit_logs_retention`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.WORKOS_API_KEY}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch retention: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('[WorkOS Audit Logs] Error fetching retention:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update audit log retention for an organization
+ */
+export async function updateAuditLogRetention(
+  organizationId: string,
+  retentionPeriodInDays: number
+): Promise<{ retention_period_in_days: number }> {
+  if (!workos) {
+    throw new Error('WorkOS not configured. WORKOS_API_KEY is required.');
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.workos.com/organizations/${organizationId}/audit_logs_retention`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${process.env.WORKOS_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          retention_period_in_days: retentionPeriodInDays,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to update retention: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('[WorkOS Audit Logs] Error updating retention:', error);
     throw error;
   }
 }
