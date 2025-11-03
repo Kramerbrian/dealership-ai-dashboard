@@ -14,14 +14,13 @@ Sentry.init({
 
   // Integrations
   integrations: [
-    // Send console.log, console.warn, and console.error calls as logs to Sentry
-    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
+    // Console logging integration (stable, no experimental features)
+    Sentry.consoleLoggingIntegration({ levels: ['warn', 'error'] }),
   ],
 
-  // Experimental features
-  _experiments: {
-    enableLogs: true,
-  },
+  // NOTE: _experiments.enableLogs is incompatible with Edge Runtime
+  // and caused a 4-hour production outage on 2025-11-03
+  // Do NOT re-enable experimental features without Edge Runtime testing
 
   // Enhanced error context
   beforeSend(event, hint) {
