@@ -3,7 +3,10 @@ export async function register() {
     await import('./sentry.server.config');
   }
 
-  if (process.env.NEXT_RUNTIME === 'edge') {
-    await import('./sentry.edge.config');
-  }
+  // Edge Runtime instrumentation temporarily disabled
+  // Was causing MIDDLEWARE_INVOCATION_FAILED errors
+  // TODO: Re-enable when Sentry Edge Runtime is properly configured
+  // if (process.env.NEXT_RUNTIME === 'edge') {
+  //   await import('./sentry.edge.config');
+  // }
 }
