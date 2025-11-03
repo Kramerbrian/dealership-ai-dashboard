@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
     const redirectUri = searchParams.get('redirect_uri') || 
       `${req.nextUrl.origin}/auth/callback`;
     const state = searchParams.get('state') || undefined;
+    const providerScopes = searchParams.get('provider_scopes');
 
     const clientId = getWorkOSClientId();
 
@@ -61,12 +62,25 @@ export async function GET(req: NextRequest) {
     }
     // Use provider (for OAuth connections)
     else if (provider) {
-      authorizationUrl = workos.sso.getAuthorizationUrl({
+      const authOptions: any = {
         provider,
         redirectUri,
         clientId,
         state,
-      });
+      };
+
+      // Add provider scopes if specified (for requesting additional Google OAuth scopes)
+      if (providerScopes) {
+        // Split by space or comma and filter out empty strings
+        const scopes = providerScopes
+          .split(/[\s,]+/)
+          .filter(s => s.trim().length > 0);
+        if (scopes.length > 0) {
+          authOptions.providerScopes = scopes;
+        }
+      }
+
+      authorizationUrl = workos.sso.getAuthorizationUrl(authOptions);
     }
     // Fallback to test organization (for development)
     else {

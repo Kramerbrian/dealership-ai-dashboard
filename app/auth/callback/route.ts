@@ -23,17 +23,31 @@ export async function GET(req: NextRequest) {
       
       // Handle IdP-initiated SSO disabled error
       if (error === 'idp_initiated_sso_disabled') {
-        const connectionId = searchParams.get('connection');
+        const connectionId = searchParams.get('connection') || searchParams.get('connection_id');
         const organizationId = searchParams.get('organization');
         
-        // Redirect to SP-initiated flow
-        if (connectionId || organizationId) {
-          const ssoUrl = new URL('/api/auth/sso', req.url);
-          if (organizationId) ssoUrl.searchParams.set('organization', organizationId);
-          if (connectionId) ssoUrl.searchParams.set('connection', connectionId);
-          if (state) ssoUrl.searchParams.set('state', state);
-          return NextResponse.redirect(ssoUrl);
+        if (!workos) {
+          return NextResponse.redirect(new URL('/sign-in?error=workos_not_configured', req.url));
         }
+
+        const clientId = getWorkOSClientId();
+        if (!clientId) {
+          return NextResponse.redirect(new URL('/sign-in?error=client_id_missing', req.url));
+        }
+
+        // The callback URI WorkOS should redirect to after the authentication
+        const redirectUri = `${req.nextUrl.origin}/auth/callback`;
+        
+        // Create authorization URL for SP-initiated flow
+        const authorizationUrl = workos.sso.getAuthorizationUrl({
+          clientId,
+          redirectUri,
+          state: state || undefined,
+          ...(connectionId ? { connection: connectionId } : {}),
+          ...(organizationId ? { organization: organizationId } : {}),
+        });
+
+        return NextResponse.redirect(authorizationUrl);
       }
       
       return NextResponse.redirect(new URL(`/sign-in?error=${error}`, req.url));
@@ -54,8 +68,8 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-      // Exchange code for SSO profile
-      const { profile } = await workos.sso.getProfileAndToken({
+      // Exchange code for SSO profile and access token
+      const { profile, accessToken } = await workos.sso.getProfileAndToken({
         code,
         clientId,
       });
@@ -113,14 +127,48 @@ export async function GET(req: NextRequest) {
         });
       }
 
+      // Store JWT access token if available (contains custom claims from JWT template)
+      if (accessToken) {
+        response.cookies.set('wos-access-token', accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          path: '/',
+        });
+      }
+
       return response;
     } catch (authError: any) {
       console.error('[WorkOS Callback] Auth exchange failed:', authError);
       
       // Handle specific error cases
       if (authError.code === 'idp_initiated_sso_disabled') {
-        // Fallback to SP-initiated flow
-        return NextResponse.redirect(new URL('/api/auth/sso', req.url));
+        const connectionId = searchParams.get('connection') || searchParams.get('connection_id');
+        const organizationId = searchParams.get('organization');
+        
+        if (!workos) {
+          return NextResponse.redirect(new URL('/sign-in?error=workos_not_configured', req.url));
+        }
+
+        const clientId = getWorkOSClientId();
+        if (!clientId) {
+          return NextResponse.redirect(new URL('/sign-in?error=client_id_missing', req.url));
+        }
+
+        // The callback URI WorkOS should redirect to after the authentication
+        const redirectUri = `${req.nextUrl.origin}/auth/callback`;
+        
+        // Create authorization URL for SP-initiated flow
+        const authorizationUrl = workos.sso.getAuthorizationUrl({
+          clientId,
+          redirectUri,
+          state: state || undefined,
+          ...(connectionId ? { connection: connectionId } : {}),
+          ...(organizationId ? { organization: organizationId } : {}),
+        });
+
+        return NextResponse.redirect(authorizationUrl);
       }
       
       return NextResponse.redirect(new URL('/sign-in?error=auth_exchange_failed', req.url));
