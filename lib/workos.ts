@@ -6,20 +6,28 @@
 import { WorkOS } from '@workos-inc/node';
 
 // Initialize WorkOS client
-export const workos = new WorkOS(process.env.WORKOS_API_KEY || process.env.WORKOS_CLIENT_ID);
+// WORKOS_API_KEY is required for server-side operations
+// WORKOS_CLIENT_ID is for OAuth redirects (use NEXT_PUBLIC_WORKOS_CLIENT_ID on client)
+const apiKey = process.env.WORKOS_API_KEY;
+if (!apiKey) {
+  console.warn('[WorkOS] WORKOS_API_KEY is not set. WorkOS features will be limited.');
+}
+export const workos = apiKey ? new WorkOS(apiKey) : null as any;
 
 /**
  * Get WorkOS Client ID
+ * For OAuth redirects - use NEXT_PUBLIC_WORKOS_CLIENT_ID on client-side
  */
 export function getWorkOSClientId(): string {
-  return process.env.WORKOS_CLIENT_ID || process.env.WORKOS_API_KEY || '';
+  return process.env.WORKOS_CLIENT_ID || process.env.NEXT_PUBLIC_WORKOS_CLIENT_ID || '';
 }
 
 /**
  * Get WorkOS API Key
+ * Server-side only - never expose to client
  */
 export function getWorkOSApiKey(): string {
-  return process.env.WORKOS_API_KEY || process.env.WORKOS_CLIENT_ID || '';
+  return process.env.WORKOS_API_KEY || '';
 }
 
 /**
@@ -57,6 +65,15 @@ export async function getWorkOSUser(req: Request): Promise<WorkOSAuthResult> {
     const sessionToken = sessionCookie.split('=')[1];
 
     // Verify session with WorkOS
+    if (!workos) {
+      return {
+        userId: null,
+        user: null,
+        isAuthenticated: false,
+        error: 'WorkOS not configured',
+      };
+    }
+
     try {
       const { user } = await workos.userManagement.getUser(sessionToken);
       
