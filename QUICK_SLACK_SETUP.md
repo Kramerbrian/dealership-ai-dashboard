@@ -6,7 +6,7 @@
 1. Go to [api.slack.com/apps](https://api.slack.com/apps)
 2. Select your app (or create new)
 3. **OAuth & Permissions** → Copy **Bot User OAuth Token**
-   - Looks like: `xoxb-1234567890-1234567890123-AbCdEfGhIjKlMnOpQrStUvWx`
+   - Looks like: `xoxb-your-slack-bot-token-here`
 
 ### Get Signing Secret
 1. Same app → **Basic Information**
