@@ -1,6 +1,10 @@
 'use client';
-import DealershipAI17SectionPLG from '../dealershipai-17-section-plg';
+import SimplifiedLandingPage from '@/components/landing/SimplifiedLandingPage';
 
+/**
+ * Main homepage (dealershipai.com)
+ * Shows the marketing/landing page
+ */
 export default function Home() {
-  return <DealershipAI17SectionPLG />;
+  return <SimplifiedLandingPage />;
 }

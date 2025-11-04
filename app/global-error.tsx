@@ -6,7 +6,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import * as Sentry from '@sentry/nextjs';
 
 export default function GlobalError({
   error,
@@ -16,13 +15,29 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log error to Sentry
-    Sentry.captureException(error, {
-      tags: {
-        component: 'global-error-boundary',
-        digest: error.digest,
-      },
-    });
+    // Log error to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Global error:', error);
+    }
+    
+    // Log error to Sentry if available
+    if (typeof window !== 'undefined') {
+      try {
+        // Dynamically import Sentry to avoid SSR issues
+        import('@sentry/nextjs').then((Sentry) => {
+          Sentry.captureException(error, {
+            tags: {
+              component: 'global-error-boundary',
+              digest: error.digest,
+            },
+          });
+        }).catch(() => {
+          // Silently fail if Sentry is not available
+        });
+      } catch (err) {
+        // Silently fail if Sentry is not available
+      }
+    }
   }, [error]);
 
   return (

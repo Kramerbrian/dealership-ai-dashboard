@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, 
@@ -68,77 +69,83 @@ interface DashboardData {
   sessionsResetAt: string;
 }
 
+// Fetch functions for React Query
+async function checkAuth(): Promise<User | null> {
+  const response = await fetch('/api/auth/login', {
+    method: 'GET',
+    credentials: 'include'
+  });
+  
+  const result = await response.json();
+  
+  if (result.authenticated && result.user) {
+    return result.user;
+  } else {
+    window.location.href = '/login';
+    return null;
+  }
+}
+
+async function fetchDashboardData(): Promise<DashboardData> {
+  const response = await fetch('/api/analyze?dealerId=default&dealerName=Demo Dealership&city=Los Angeles&state=CA', {
+    method: 'GET',
+    credentials: 'include'
+  });
+
+  const result = await response.json();
+
+  if (result.error) {
+    if (result.error === 'Session limit reached') {
+      throw new Error('Session limit reached');
+    }
+    throw new Error(result.error);
+  }
+
+  return result;
+}
+
 export default function Dashboard() {
-  const [user, setUser] = useState<User | null>(null);
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'ai-health' | 'eeat' | 'mystery-shop'>('overview');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
-  // Check authentication on mount
+  // React Query for auth check
+  const { data: user } = useQuery({
+    queryKey: ['auth', 'user'],
+    queryFn: checkAuth,
+    retry: false,
+  });
+
+  // React Query for dashboard data
+  const { 
+    data, 
+    isLoading: loading, 
+    error: queryError,
+    isRefetching: refreshing,
+    refetch
+  } = useQuery({
+    queryKey: ['dashboard', 'analyze'],
+    queryFn: fetchDashboardData,
+    enabled: !!user, // Only fetch when user is authenticated
+    staleTime: 60 * 1000, // 1 minute
+    retry: (failureCount, error: any) => {
+      if (error?.message === 'Session limit reached') {
+        return false; // Don't retry on session limit
+      }
+      return failureCount < 2;
+    },
+  });
+
+  const error = queryError instanceof Error ? queryError.message : queryError ? String(queryError) : null;
+
+  // Show upgrade modal if session limit error
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'GET',
-        credentials: 'include'
-      });
-      
-      const result = await response.json();
-      
-      if (result.authenticated && result.user) {
-        setUser(result.user);
-        await loadDashboardData();
-      } else {
-        // Redirect to login
-        window.location.href = '/login';
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      setError('Authentication failed');
-    } finally {
-      setLoading(false);
+    if (error === 'Session limit reached') {
+      setShowUpgradeModal(true);
     }
-  };
+  }, [error]);
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch('/api/analyze?dealerId=default&dealerName=Demo Dealership&city=Los Angeles&state=CA', {
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      const result = await response.json();
-
-      if (result.error) {
-        if (result.error === 'Session limit reached') {
-          setShowUpgradeModal(true);
-        }
-        setError(result.error);
-        return;
-      }
-
-      setData(result);
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-      setError('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadDashboardData();
-    setRefreshing(false);
+  const handleRefresh = () => {
+    refetch();
   };
 
   const handleLogout = async () => {

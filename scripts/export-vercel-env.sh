@@ -63,9 +63,15 @@ if [ ! -z "$ANTHROPIC_API_KEY" ]; then
 fi
 
 echo ""
-echo "UPSTASH_REDIS_REST_URL=YOUR_UPSTASH_URL_HERE  # Get from https://console.upstash.com"
-echo "UPSTASH_REDIS_REST_TOKEN=YOUR_UPSTASH_TOKEN_HERE"
-echo ""
+if [ ! -z "$UPSTASH_REDIS_REST_URL" ]; then
+  echo "UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}"
+  echo "UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}"
+  echo ""
+else
+  echo "UPSTASH_REDIS_REST_URL=YOUR_UPSTASH_URL_HERE  # Get from https://console.upstash.com"
+  echo "UPSTASH_REDIS_REST_TOKEN=YOUR_UPSTASH_TOKEN_HERE"
+  echo ""
+fi
 echo "LOGTAIL_TOKEN=YOUR_LOGTAIL_TOKEN_HERE  # Get from https://logtail.com"
 echo ""
 

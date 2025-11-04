@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -40,52 +41,57 @@ interface TrafficAnalyticsProps {
   className?: string;
 }
 
+// Fetch function for React Query
+async function fetchTrafficData(
+  propertyId: string,
+  dateRange: string
+): Promise<TrafficData> {
+  const response = await fetch(
+    `/api/analytics/ga4?propertyId=${propertyId}&metric=traffic&dateRange=${dateRange}`
+  );
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to fetch traffic data');
+  }
+  
+  return result.data as TrafficData;
+}
+
 export function TrafficAnalytics({ 
   propertyId, 
   dateRange = '30d', 
   className = '' 
 }: TrafficAnalyticsProps) {
-  const [data, setData] = useState<TrafficData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(
-        `/api/analytics/ga4?propertyId=${propertyId}&metric=traffic&dateRange=${dateRange}`
-      );
-      const result = await response.json();
-      
-      if (result.success) {
-        setData(result.data);
-        setLastUpdated(new Date());
-        setIsConnected(true);
-      } else {
-        setError(result.error || 'Failed to fetch data');
-        setIsConnected(false);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Network error');
-      setIsConnected(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hook - replaces fetch/useState/useEffect
+  const {
+    data,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+    isSuccess
+  } = useQuery({
+    queryKey: ['traffic-analytics', propertyId, dateRange],
+    queryFn: () => fetchTrafficData(propertyId, dateRange),
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    onSuccess: () => {
+      setLastUpdated(new Date());
+    },
+  });
 
-  useEffect(() => {
-    if (!propertyId) return;
-    
-    fetchData();
-  }, [propertyId, dateRange]);
+  const error = queryError instanceof Error ? queryError.message : queryError ? String(queryError) : null;
+  const isConnected = isSuccess;
 
+  // Manual refetch handler (for refresh button)
   const handleRefresh = () => {
-    fetchData();
+    refetch();
   };
+
+  // Auto-refresh is handled by React Query (optional refetchInterval)
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);

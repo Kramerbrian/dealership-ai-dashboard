@@ -1,9 +1,27 @@
 import Stripe from 'stripe';
 import { userManager, SUBSCRIPTION_PLANS, SubscriptionPlan } from './user-management';
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
+// Initialize Stripe - lazy initialization to avoid build errors
+let stripeInstance: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error('STRIPE_SECRET_KEY is not configured');
+    }
+    stripeInstance = new Stripe(secretKey, {
+      apiVersion: '2024-12-18.acacia',
+    });
+  }
+  return stripeInstance;
+}
+
+// Export stripe with lazy initialization
+const stripe = new Proxy({} as Stripe, {
+  get(target, prop) {
+    return getStripe()[prop as keyof Stripe];
+  }
 });
 
 // Stripe configuration
@@ -14,15 +32,19 @@ export const STRIPE_CONFIG = {
   cancelUrl: process.env.NEXT_PUBLIC_APP_URL + '/pricing?payment=cancelled',
 };
 
-// Stripe product and price IDs (you'll need to create these in Stripe Dashboard)
+// Stripe product and price IDs (configured via environment variables)
 export const STRIPE_PRODUCTS = {
+  free: {
+    productId: null,
+    priceId: null, // Free tier has no Stripe price
+  },
   professional: {
-    productId: 'prod_professional', // Replace with actual Stripe product ID
-    priceId: 'price_professional_monthly', // Replace with actual Stripe price ID
+    productId: process.env.STRIPE_TIER_2_PRODUCT_ID || 'prod_professional',
+    priceId: process.env.STRIPE_TIER_2_PRICE_ID || 'price_professional_monthly',
   },
   enterprise: {
-    productId: 'prod_enterprise', // Replace with actual Stripe product ID
-    priceId: 'price_enterprise_monthly', // Replace with actual Stripe price ID
+    productId: process.env.STRIPE_TIER_3_PRODUCT_ID || 'prod_enterprise',
+    priceId: process.env.STRIPE_TIER_3_PRICE_ID || 'price_enterprise_monthly',
   },
 };
 

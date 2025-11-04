@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createApiRoute } from '@/lib/api-wrapper';
+import { dashboardTimeRangeSchema, validateQueryParams } from '@/lib/validation/schemas';
+import { cachedResponse, errorResponse } from '@/lib/api-response';
+import { CACHE_TAGS } from '@/lib/cache-tags';
+import { logger } from '@/lib/logger';
 import { CacheManager, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 import { PerformanceMonitor } from '@/lib/monitoring';
 
@@ -86,88 +91,114 @@ function generateAIHealthData(): AIHealthData {
   };
 }
 
-export async function GET(req: NextRequest) {
-  const startTime = Date.now();
-  const monitor = PerformanceMonitor.getInstance();
+/**
+ * Dashboard AI Health API Endpoint
+ * 
+ * ✅ Migrated to new security middleware:
+ * - Authentication required
+ * - Query parameter validation
+ * - Rate limiting
+ * - Performance monitoring
+ * - Standardized error handling
+ */
+export const GET = createApiRoute(
+  {
+    endpoint: '/api/dashboard/ai-health',
+    requireAuth: true,
+    validateQuery: dashboardTimeRangeSchema,
+    rateLimit: true,
+    performanceMonitoring: true,
+  },
+  async (req, auth) => {
+    const requestId = req.headers.get('x-request-id') || 'unknown';
+    const monitor = PerformanceMonitor.getInstance();
 
-  try {
-    const { searchParams } = new URL(req.url);
-    const timeRange = searchParams.get('timeRange') || '30d';
+    try {
+      // Query validation handled by wrapper
+      const queryValidation = validateQueryParams(req, dashboardTimeRangeSchema);
+      if (!queryValidation.success) {
+        return queryValidation.response;
+      }
 
-    // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.AI_HEALTH_DATA(timeRange);
+      const timeRange = queryValidation.data.timeRange || '30d';
 
-    const cachedData = await cache.get(cacheKey);
-    if (cachedData) {
-      const duration = Date.now() - startTime;
-
-      const response = NextResponse.json({
-        success: true,
-        data: cachedData,
-        meta: {
-          timeRange,
-          timestamp: new Date().toISOString(),
-          responseTime: `${duration}ms`,
-          source: 'cache'
-        }
+      await logger.info('AI Health analysis requested', {
+        requestId,
+        timeRange,
+        userId: auth.userId,
       });
 
-      response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
-      response.headers.set('Server-Timing', `ai-health;dur=${duration}`);
+      // Check cache first
+      const cache = CacheManager.getInstance();
+      const cacheKey = CACHE_KEYS.AI_HEALTH_DATA(timeRange);
 
-      return response;
-    }
+      const cachedData = await cache.get(cacheKey);
+      if (cachedData) {
+        await logger.info('AI Health cache hit', {
+          requestId,
+          timeRange,
+        });
 
-    // Generate AI Health data with performance tracking
-    const aiHealthData = await monitor.trackApiCall(
-      'ai_health_analysis',
-      () => generateAIHealthData(),
-      { timeRange }
-    );
+        return cachedResponse(
+          {
+            success: true,
+            data: cachedData,
+            meta: {
+              timeRange,
+              timestamp: new Date().toISOString(),
+              source: 'cache'
+            }
+          },
+          60, // 1 minute cache
+          120, // 2 minutes stale
+          [CACHE_TAGS.DASHBOARD_AI_HEALTH, CACHE_TAGS.DASHBOARD]
+        );
+      }
 
-    // Cache the result
-    await cache.set(cacheKey, aiHealthData, CACHE_TTL.AI_HEALTH_DATA);
+      // Generate AI Health data with performance tracking
+      const aiHealthData = await monitor.trackApiCall(
+        'ai_health_analysis',
+        () => generateAIHealthData(),
+        { timeRange }
+      );
 
-    const duration = Date.now() - startTime;
+      // Cache the result
+      await cache.set(cacheKey, aiHealthData, CACHE_TTL.AI_HEALTH_DATA);
 
-    const response = NextResponse.json({
-      success: true,
-      data: aiHealthData,
-      meta: {
+      await logger.info('AI Health analysis completed', {
+        requestId,
         timeRange,
-        timestamp: new Date().toISOString(),
-        responseTime: `${duration}ms`,
-        source: 'ai_health_engine'
-      }
-    });
+        userId: auth.userId,
+      });
 
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
-    response.headers.set('Server-Timing', `ai-health;dur=${duration}`);
+      return cachedResponse(
+        {
+          success: true,
+          data: aiHealthData,
+          meta: {
+            timeRange,
+            timestamp: new Date().toISOString(),
+            source: 'ai_health_engine'
+          }
+        },
+        60,
+        120,
+        [CACHE_TAGS.DASHBOARD_AI_HEALTH, CACHE_TAGS.DASHBOARD]
+      );
 
-    return response;
+    } catch (error) {
+      await logger.error('AI Health analysis error', {
+        requestId,
+        userId: auth.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
 
-  } catch (error: any) {
-    console.error('AI Health API Error:', error);
-    monitor.trackError(error, { api: 'ai_health', timeRange: req.url });
-
-    // Return fallback data
-    const fallbackData = generateAIHealthData();
-    const duration = Date.now() - startTime;
-
-    const response = NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to fetch AI health data',
-      data: fallbackData,
-      meta: {
-        timeRange: req.nextUrl.searchParams.get('timeRange') || '30d',
-        timestamp: new Date().toISOString(),
-        responseTime: `${duration}ms`,
-        source: 'fallback_mock_data'
-      }
-    }, { status: 500 });
-
-    response.headers.set('Server-Timing', `ai-health;dur=${duration}`);
-    return response;
+      return errorResponse(error, 500, {
+        requestId,
+        endpoint: '/api/dashboard/ai-health',
+        userId: auth.userId,
+      });
+    }
   }
-}
+);

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -50,6 +51,7 @@ import {
   Tablet
 } from 'lucide-react';
 import InteractiveChart from '../charts/InteractiveChart';
+import AdvancedChartWithExport from '../charts/AdvancedChartWithExport';
 import { trackSLO } from '@/lib/slo';
 import SEOModal from '../modals/SEOModal';
 import AEOModal from '../modals/AEOModal';
@@ -107,12 +109,49 @@ interface Alert {
   read: boolean;
 }
 
+// Fetch function for React Query
+async function fetchDashboardData(timeRange: string): Promise<DashboardMetrics> {
+  const response = await fetch(`/api/dashboard/overview?timeRange=${timeRange}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch dashboard data');
+  }
+  const data = await response.json();
+  
+  // Extract data from response
+  const responseData = data.data || data;
+  
+  // Enhance with fallback data
+  return {
+    aiVisibility: {
+      score: responseData.aiVisibility?.score || 87.3,
+      trend: responseData.aiVisibility?.trend || 2.1,
+      breakdown: {
+        seo: responseData.aiVisibility?.breakdown?.seo || 89.1,
+        aeo: responseData.aiVisibility?.breakdown?.aeo || 73.8,
+        geo: responseData.aiVisibility?.breakdown?.geo || 65.2
+      }
+    },
+    revenue: {
+      atRisk: responseData.revenue?.atRisk || 367000,
+      potential: responseData.revenue?.potential || 1250000,
+      trend: responseData.revenue?.trend || 5.2
+    },
+    performance: {
+      loadTime: responseData.performance?.loadTime || 1.2,
+      uptime: responseData.performance?.uptime || 99.9,
+      score: responseData.performance?.score || 92
+    },
+    leads: {
+      monthly: responseData.leads?.monthly || 245,
+      trend: responseData.leads?.trend || 12.3,
+      conversion: responseData.leads?.conversion || 3.2
+    }
+  };
+}
+
 export default function TabbedDashboard() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [selectedTimeRange, setSelectedTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
@@ -121,62 +160,51 @@ export default function TabbedDashboard() {
   const [openModal, setOpenModal] = useState<'seo' | 'aeo' | 'geo' | null>(null);
   const [userSubscription, setUserSubscription] = useState<any>(null);
 
-  // Fetch dashboard data
-  const fetchDashboardData = useCallback(async () => {
-    try {
-      const startTime = Date.now();
-      setRefreshing(true);
-      setError(null);
+  // Real-time updates via SSE
+  const { events, isConnected: realtimeConnected, latestEvent } = useRealtimeEvents('/api/realtime/events');
 
-      const response = await fetch(`/api/dashboard/overview?timeRange=${selectedTimeRange}`);
-      if (!response.ok) throw new Error('Failed to fetch dashboard data');
-      
-      const data = await response.json();
-      
-      // Enhance with mock real-time data
-      const enhancedData: DashboardMetrics = {
-        aiVisibility: {
-          score: data.aiVisibility?.score || 87.3,
-          trend: data.aiVisibility?.trend || 2.1,
-          breakdown: {
-            seo: data.aiVisibility?.breakdown?.seo || 89.1,
-            aeo: data.aiVisibility?.breakdown?.aeo || 73.8,
-            geo: data.aiVisibility?.breakdown?.geo || 65.2
-          }
-        },
-        revenue: {
-          atRisk: data.revenue?.atRisk || 367000,
-          potential: data.revenue?.potential || 1250000,
-          trend: data.revenue?.trend || 5.2
-        },
-        performance: {
-          loadTime: data.performance?.loadTime || 1.2,
-          uptime: data.performance?.uptime || 99.9,
-          score: data.performance?.score || 92
-        },
-        leads: {
-          monthly: data.leads?.monthly || 245,
-          trend: data.leads?.trend || 12.3,
-          conversion: data.leads?.conversion || 3.2
-        }
-      };
+  // React Query hook - replaces fetch/useState/useEffect
+  const { 
+    data: metrics, 
+    isLoading: loading,
+    error: queryError,
+    isRefetching: refreshing,
+    refetch
+  } = useQuery({
+    queryKey: ['dashboard', 'overview', selectedTimeRange],
+    queryFn: () => fetchDashboardData(selectedTimeRange),
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchInterval: autoRefresh ? 30000 : false, // Auto-refresh every 30s if enabled
+    retry: 2,
+  });
 
-      setMetrics(enhancedData);
-      
-      // Track SLO
-      const duration = Date.now() - startTime;
-      trackSLO('dashboard.overview', duration);
-
-      // Generate mock alerts
-      generateMockAlerts();
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  // Update metrics when real-time events arrive
+  useEffect(() => {
+    if (latestEvent && latestEvent.type === 'metrics' && latestEvent.data && metrics) {
+      // Merge real-time updates into existing metrics
+      queryClient.setQueryData(['dashboard', 'overview', selectedTimeRange], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          ...latestEvent.data,
+          // Update timestamp to show it's live
+          _lastUpdated: new Date().toISOString(),
+        };
+      });
     }
-  }, [selectedTimeRange]);
+  }, [latestEvent, queryClient, selectedTimeRange, metrics]);
+
+  // Track SLO when data is fetched
+  useEffect(() => {
+    if (metrics) {
+      trackSLO('dashboard.overview', 0); // Duration tracked in API
+      generateMockAlerts();
+    }
+  }, [metrics]);
+
+  const error = queryError instanceof Error ? queryError.message : queryError ? String(queryError) : null;
 
   // Generate mock alerts
   const generateMockAlerts = () => {
@@ -228,15 +256,8 @@ export default function TabbedDashboard() {
     return data;
   };
 
-  // Auto-refresh effect
-  useEffect(() => {
-    fetchDashboardData();
-    
-    if (autoRefresh) {
-      const interval = setInterval(fetchDashboardData, 30000); // 30 seconds
-      return () => clearInterval(interval);
-    }
-  }, [fetchDashboardData, autoRefresh]);
+  // Auto-refresh is now handled by React Query refetchInterval
+  // No need for manual useEffect/interval
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -378,18 +399,29 @@ export default function TabbedDashboard() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* AI Visibility Trend */}
-        <InteractiveChart
+        {/* AI Visibility Trend - Enhanced with Export */}
+        <AdvancedChartWithExport
           data={generateTimeSeriesData(30)}
           type="line"
           title="AI Visibility Trend"
           description="30-day performance across all AI platforms"
           height={300}
           color="#3b82f6"
+          xAxisKey="name"
+          yAxisKey="value"
+          showBrush={true}
+          interactive={true}
+          exportFormats={['pdf', 'png', 'csv', 'xlsx']}
+          metadata={{
+            title: 'AI Visibility Trend',
+            description: '30-day performance tracking',
+            author: 'DealershipAI Dashboard',
+            date: new Date().toISOString().split('T')[0],
+          }}
         />
 
-        {/* Revenue Breakdown */}
-        <InteractiveChart
+        {/* Revenue Breakdown - Enhanced with Export */}
+        <AdvancedChartWithExport
           data={[
             { name: 'SEO', value: metrics?.aiVisibility.breakdown.seo || 0 },
             { name: 'AEO', value: metrics?.aiVisibility.breakdown.aeo || 0 },
@@ -400,6 +432,16 @@ export default function TabbedDashboard() {
           description="Performance across different search types"
           height={300}
           color="#8b5cf6"
+          xAxisKey="name"
+          yAxisKey="value"
+          interactive={true}
+          exportFormats={['pdf', 'png', 'csv', 'xlsx']}
+          metadata={{
+            title: 'Visibility Breakdown',
+            description: 'Performance by search type',
+            author: 'DealershipAI Dashboard',
+            date: new Date().toISOString().split('T')[0],
+          }}
         />
       </div>
     </div>
@@ -1206,7 +1248,15 @@ export default function TabbedDashboard() {
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">DealershipAI Dashboard</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-white">DealershipAI Dashboard</h1>
+                  {realtimeConnected && (
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                      <span className="text-xs text-green-300 font-medium">Live</span>
+                    </div>
+                  )}
+                </div>
                 <p className="text-sm text-white/60">AI Visibility Analytics & Optimization</p>
               </div>
             </div>

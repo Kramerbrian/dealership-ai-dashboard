@@ -2,7 +2,6 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['@clerk/nextjs'],
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -59,7 +58,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://*.sentry.io",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
-              "font-src 'self' https://fonts.gstatic.com",
+              "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai",
               "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://va.vercel-scripts.com https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://api.workos.com",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com",
               "object-src 'none'",
@@ -115,14 +114,15 @@ const nextConfig = {
   // Redirects
   async redirects() {
     return [
+      // Redirect /dash to /dashboard (backwards compatibility)
       {
-        source: '/dashboard',
-        destination: '/dash',
-        permanent: true,
+        source: '/dash',
+        destination: '/dashboard',
+        permanent: false,
       },
       {
         source: '/admin',
-        destination: '/dash?tab=admin',
+        destination: '/dashboard?tab=admin',
         permanent: false,
       },
     ];
@@ -169,10 +169,38 @@ const nextConfig = {
   // Compression
   compress: true,
   
-  // Bundle analyzer (enable with ANALYZE=true)
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config, { isServer }) => {
-      if (!isServer) {
+  // Webpack configuration
+  webpack: (config, { isServer }) => {
+    // Ensure React is resolved correctly
+    // Note: jsx-runtime should be automatically resolved by Next.js,
+    // but we add explicit aliases to help with module resolution
+    try {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'react': require.resolve('react'),
+        'react-dom': require.resolve('react-dom'),
+      };
+      
+      // Only add jsx-runtime alias if it exists
+      try {
+        config.resolve.alias['react/jsx-runtime'] = require.resolve('react/jsx-runtime');
+      } catch (e) {
+        // jsx-runtime might not exist in older React versions, skip
+      }
+      
+      try {
+        config.resolve.alias['react/jsx-dev-runtime'] = require.resolve('react/jsx-dev-runtime');
+      } catch (e) {
+        // jsx-dev-runtime might not exist, skip
+      }
+    } catch (error) {
+      // If require.resolve fails, use default resolution
+      console.warn('Could not resolve React modules, using default resolution:', error);
+    }
+
+    // Bundle analyzer (enable with ANALYZE=true)
+    if (process.env.ANALYZE === 'true' && !isServer) {
+      try {
         const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
         config.plugins.push(
           new BundleAnalyzerPlugin({
@@ -181,10 +209,13 @@ const nextConfig = {
             reportFilename: './bundle-analysis.html',
           })
         );
+      } catch (error) {
+        console.warn('Bundle analyzer not available:', error);
       }
-      return config;
-    },
-  }),
+    }
+
+    return config;
+  },
 };
 
 // Sentry configuration - only enable if SENTRY_DSN is set

@@ -1,31 +1,27 @@
 'use client';
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
-  showRetry?: boolean;
-  retryText?: string;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
-  retryCount: number;
 }
 
-export default class ErrorBoundary extends Component<Props, State> {
-  private maxRetries = 3;
-
+export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null,
-      retryCount: 0
+      errorInfo: null
     };
   }
 
@@ -33,105 +29,108 @@ export default class ErrorBoundary extends Component<Props, State> {
     return {
       hasError: true,
       error,
-      errorInfo: null,
-      retryCount: 0
+      errorInfo: null
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
     this.setState({
       error,
       errorInfo
     });
 
-    // Log error to monitoring service
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
 
-    // Send to error reporting service
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'exception', {
-        description: error.message,
-        fatal: false
+    // Log to error tracking service (e.g., Sentry)
+    if (typeof window !== 'undefined' && (window as any).Sentry) {
+      (window as any).Sentry.captureException(error, {
+        contexts: {
+          react: {
+            componentStack: errorInfo.componentStack
+          }
+        }
       });
     }
   }
 
-  handleRetry = () => {
-    if (this.state.retryCount < this.maxRetries) {
-      this.setState(prevState => ({
-        hasError: false,
-        error: null,
-        errorInfo: null,
-        retryCount: prevState.retryCount + 1
-      }));
-    }
+  handleReset = () => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null
+    });
   };
 
   handleReload = () => {
     window.location.reload();
   };
 
+  handleHome = () => {
+    window.location.href = '/';
+  };
+
   render() {
     if (this.state.hasError) {
-      // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default error UI
       return (
-        <div className="min-h-[200px] flex items-center justify-center p-6">
-          <div className="text-center max-w-md bg-gray-900/50 border border-red-500/30 rounded-2xl p-8">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-4xl">⚠️</span>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Something went wrong</h2>
+                <p className="text-sm text-gray-500">An unexpected error occurred</p>
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Something went wrong
-            </h2>
-            <p className="text-gray-400 mb-6">
-              We encountered an unexpected error. Please try again or contact support if the problem persists.
-            </p>
-            
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mb-4 text-left">
-                <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
-                  Error Details (Development)
-                </summary>
-                <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto">
+
+            {this.state.error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm font-mono text-red-800 break-all">
                   {this.state.error.message}
-                  {this.state.errorInfo?.componentStack}
-                </pre>
-              </details>
+                </p>
+                {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
+                  <details className="mt-2">
+                    <summary className="text-xs text-red-600 cursor-pointer">Stack trace</summary>
+                    <pre className="mt-2 text-xs text-red-700 overflow-auto max-h-40">
+                      {this.state.errorInfo.componentStack}
+                    </pre>
+                  </details>
+                )}
+              </div>
             )}
 
-            <div className="flex gap-3 justify-center">
-              {this.props.showRetry !== false && this.state.retryCount < this.maxRetries && (
-                <button
-                  onClick={this.handleRetry}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-xl transition-all font-semibold"
-                >
-                  {this.props.retryText || 'Try Again'}
-                </button>
-              )}
-
+            <div className="flex gap-2">
+              <button
+                onClick={this.handleReset}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Try Again
+              </button>
               <button
                 onClick={this.handleReload}
-                className="px-6 py-3 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-all font-medium"
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Reload Page
               </button>
+              <button
+                onClick={this.handleHome}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Home
+              </button>
             </div>
-
-            {this.state.retryCount >= this.maxRetries && (
-              <p className="text-sm text-gray-500 mt-2">
-                Maximum retry attempts reached. Please reload the page.
-              </p>
-            )}
           </div>
         </div>
       );
@@ -139,35 +138,4 @@ export default class ErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
-}
-
-// Hook for functional components
-export function useErrorHandler() {
-  return (error: Error, errorInfo?: string) => {
-    console.error('Error caught by useErrorHandler:', error, errorInfo);
-    
-    // Send to error reporting service
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'exception', {
-        description: error.message,
-        fatal: false
-      });
-    }
-  };
-}
-
-// Higher-order component for easy wrapping
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<Props, 'children'>
-) {
-  const WrappedComponent = (props: P) => (
-    <ErrorBoundary {...errorBoundaryProps}>
-      <Component {...props} />
-    </ErrorBoundary>
-  );
-
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
-  return WrappedComponent;
 }

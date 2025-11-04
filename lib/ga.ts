@@ -1,4 +1,13 @@
-export const ga = (name: string, params: Record<string, any> = {}) => window.gtag?.('event', name, params);
+export const ga = (name: string, params: Record<string, any> = {}) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    try {
+      window.gtag('event', name, params);
+    } catch (error) {
+      // Silently fail if gtag is not available
+      console.debug('GA tracking failed:', error);
+    }
+  }
+};
 
 // Common event tracking functions
 export const trackPageView = (url: string) => {

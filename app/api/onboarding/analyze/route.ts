@@ -1,61 +1,115 @@
 /**
  * Onboarding Analysis API Route
  * Analyzes dealership domain and returns personalized insights
+ * 
+ * ✅ Migrated to new security middleware:
+ * - Input validation
+ * - Rate limiting
+ * - Performance monitoring
+ * - Standardized error handling
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createApiRoute } from '@/lib/api-wrapper'
+import { analyzeDomainSchema, validateRequestBody } from '@/lib/validation/schemas'
 import { personalizationEngine } from '@/lib/onboarding/personalization-engine'
 import { CacheManager } from '@/lib/cache'
 import { CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
+import { errorResponse, cachedResponse } from '@/lib/api-response'
+import { logger } from '@/lib/logger'
+import { CACHE_TAGS } from '@/lib/cache-tags'
 
-export async function POST(req: NextRequest) {
-  try {
-    const { domain } = await req.json()
+export const POST = createApiRoute(
+  {
+    endpoint: '/api/onboarding/analyze',
+    requireAuth: false, // Public endpoint for onboarding flow
+    validateBody: analyzeDomainSchema,
+    rateLimit: true,
+    performanceMonitoring: true,
+  },
+  async (req, auth) => {
+    const requestId = req.headers.get('x-request-id') || 'unknown'
     
-    if (!domain) {
-      return NextResponse.json(
-        { error: 'Domain is required' },
-        { status: 400 }
+    try {
+      // Body validation handled by wrapper
+      const bodyValidation = await validateRequestBody(req, analyzeDomainSchema)
+      if (!bodyValidation.success) {
+        return bodyValidation.response
+      }
+
+      const { domain } = bodyValidation.data
+
+      await logger.info('Onboarding analysis requested', {
+        requestId,
+        domain,
+        userId: auth?.userId,
+      })
+
+      // Normalize domain
+      const normalizedDomain = domain.replace(/^https?:\/\//, '').replace(/^www\./, '')
+      const cleanDomain = `www.${normalizedDomain}`
+
+      // Check cache first
+      const cache = new CacheManager()
+      const cacheKey = `${CACHE_KEYS.ONBOARDING_ANALYSIS}:${cleanDomain}`
+      const cached = await cache.get(cacheKey)
+      
+      if (cached) {
+        await logger.info('Onboarding analysis cache hit', {
+          requestId,
+          domain: cleanDomain,
+        })
+        
+        return cachedResponse(
+          cached,
+          60, // 1 min cache
+          300, // 5 min stale
+          [CACHE_TAGS.ONBOARDING_ANALYSIS]
+        )
+      }
+
+      // Initialize profile with personalization engine
+      const profile = await personalizationEngine.initializeProfile(cleanDomain)
+      
+      // Generate additional insights
+      const insights = {
+        profile,
+        recommendations: generateRecommendations(profile),
+        competitiveAnalysis: generateCompetitiveAnalysis(profile),
+        marketOpportunity: calculateMarketOpportunity(profile),
+        nextSteps: generateNextSteps(profile),
+      }
+
+      // Cache the results
+      await cache.set(cacheKey, insights, CACHE_TTL.ONBOARDING_ANALYSIS)
+
+      await logger.info('Onboarding analysis completed', {
+        requestId,
+        domain: cleanDomain,
+      })
+
+      return cachedResponse(
+        insights,
+        60, // 1 min cache
+        300, // 5 min stale
+        [CACHE_TAGS.ONBOARDING_ANALYSIS]
       )
+    } catch (error) {
+      await logger.error('Error analyzing domain', {
+        requestId,
+        domain,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      })
+      
+      return errorResponse(error, 500, {
+        requestId,
+        endpoint: '/api/onboarding/analyze',
+        userId: auth?.userId,
+      })
     }
-
-    // Normalize domain
-    const normalizedDomain = domain.replace(/^https?:\/\//, '').replace(/^www\./, '')
-    const cleanDomain = `www.${normalizedDomain}`
-
-    // Check cache first
-    const cache = new CacheManager()
-    const cacheKey = `${CACHE_KEYS.ONBOARDING_ANALYSIS}:${cleanDomain}`
-    const cached = await cache.get(cacheKey)
-    
-    if (cached) {
-      return NextResponse.json(cached)
-    }
-
-    // Initialize profile with personalization engine
-    const profile = await personalizationEngine.initializeProfile(cleanDomain)
-    
-    // Generate additional insights
-    const insights = {
-      profile,
-      recommendations: generateRecommendations(profile),
-      competitiveAnalysis: generateCompetitiveAnalysis(profile),
-      marketOpportunity: calculateMarketOpportunity(profile),
-      nextSteps: generateNextSteps(profile),
-    }
-
-    // Cache the results
-    await cache.set(cacheKey, insights, CACHE_TTL.ONBOARDING_ANALYSIS)
-
-    return NextResponse.json(insights)
-  } catch (error) {
-    console.error('Error analyzing domain:', error)
-    return NextResponse.json(
-      { error: 'Failed to analyze domain' },
-      { status: 500 }
-    )
   }
-}
+)
 
 function generateRecommendations(profile: any): string[] {
   const recommendations = []

@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building, Clock, CheckCircle, AlertTriangle, Play } from 'lucide-react';
+import { Building, Clock, CheckCircle, AlertTriangle, Play, BarChart3 } from 'lucide-react';
+import { ABTestDashboard } from '@/components/ab-testing/ABTestDashboard';
 
 const MysteryShopPanel: React.FC = () => {
   const tests = [
@@ -53,11 +54,25 @@ const MysteryShopPanel: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Mystery Shop Testing</h2>
-        <p className="text-slate-600">Enterprise-grade customer experience monitoring</p>
+    <div className="space-y-6">
+      {/* A/B Testing Dashboard */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+            <h2 className="text-xl font-bold text-slate-900">A/B Test Results</h2>
+          </div>
+          <p className="text-slate-600">Data-driven optimization for landing page conversion</p>
+        </div>
+        <ABTestDashboard showAllTests={true} />
       </div>
+
+      {/* Mystery Shop Testing */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Mystery Shop Testing</h2>
+          <p className="text-slate-600">Enterprise-grade customer experience monitoring</p>
+        </div>
 
       {/* Schedule New Test Button */}
       <div className="mb-6">
@@ -117,6 +132,7 @@ const MysteryShopPanel: React.FC = () => {
           <div className="text-2xl font-bold text-purple-600">91%</div>
           <div className="text-xs text-slate-600">Best Score</div>
         </div>
+      </div>
       </div>
     </div>
   );

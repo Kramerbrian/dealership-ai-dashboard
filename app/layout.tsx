@@ -2,9 +2,13 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
-import { WorkOSProvider } from '@/app/components/WorkOSProvider'
+// import { WorkOSProvider } from '@/app/components/WorkOSProvider' // Temporarily disabled for debugging
 import { Analytics } from '@vercel/analytics/react'
 import { WebVitalsTracker } from '@/components/WebVitalsTracker'
+import { QueryProvider } from '@/components/QueryProvider'
+import { PWAProvider } from '@/components/pwa/PWAProvider'
+import { ClerkProvider } from '@clerk/nextjs'
+import { ToastProvider } from '@/components/ui/Toast'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -75,7 +79,13 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2563eb" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="DealershipAI" />
+      </head>
       <body className={inter.className}>
         {/* Google Analytics */}
         <Script
@@ -93,10 +103,18 @@ export default function RootLayout({
               gtag('config', '${gaId}');
             `,
           }}
+          // Add nonce to help with CSP if needed
+          nonce={typeof window !== 'undefined' ? undefined : 'google-analytics'}
         />
-        <WorkOSProvider>
-          {children}
-        </WorkOSProvider>
+        <ClerkProvider>
+          <QueryProvider>
+            <PWAProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </PWAProvider>
+          </QueryProvider>
+        </ClerkProvider>
         <Analytics />
         <WebVitalsTracker />
       </body>

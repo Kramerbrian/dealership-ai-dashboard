@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createApiRoute } from '@/lib/api-wrapper';
+import { dashboardReviewsQuerySchema, validateQueryParams } from '@/lib/validation/schemas';
 import { CacheManager, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 import { PerformanceMonitor } from '@/lib/monitoring';
+import { cachedResponse, errorResponse } from '@/lib/api-response';
+import { CACHE_TAGS } from '@/lib/cache-tags';
+import { logger } from '@/lib/logger';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -176,92 +181,119 @@ function generateReviewData(): ReviewData {
   };
 }
 
-export async function GET(req: NextRequest) {
-  const startTime = Date.now();
-  const monitor = PerformanceMonitor.getInstance();
+/**
+ * Dashboard Reviews API Endpoint
+ * 
+ * ✅ Migrated to new security middleware:
+ * - Authentication required
+ * - Query parameter validation
+ * - Rate limiting
+ * - Performance monitoring
+ * - Standardized error handling
+ */
+export const GET = createApiRoute(
+  {
+    endpoint: '/api/dashboard/reviews',
+    requireAuth: true,
+    validateQuery: dashboardReviewsQuerySchema,
+    rateLimit: true,
+    performanceMonitoring: true,
+  },
+  async (req, auth) => {
+    const requestId = req.headers.get('x-request-id') || 'unknown';
+    const monitor = PerformanceMonitor.getInstance();
 
-  try {
-    const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain') || 'dealershipai.com';
-    const timeRange = searchParams.get('timeRange') || '30d';
+    try {
+      // Query validation handled by wrapper
+      const queryValidation = validateQueryParams(req, dashboardReviewsQuerySchema);
+      if (!queryValidation.success) {
+        return queryValidation.response;
+      }
 
-    // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.REVIEWS_DATA(domain, timeRange);
+      const timeRange = queryValidation.data.timeRange || '30d';
+      const source = queryValidation.data.source;
 
-    const cachedData = await cache.get(cacheKey);
-    if (cachedData) {
-      const duration = Date.now() - startTime;
-
-      const response = NextResponse.json({
-        success: true,
-        data: cachedData,
-        meta: {
-          domain,
-          timeRange,
-          timestamp: new Date().toISOString(),
-          responseTime: `${duration}ms`,
-          source: 'cache'
-        }
+      await logger.info('Reviews analysis requested', {
+        requestId,
+        timeRange,
+        source,
+        userId: auth.userId,
       });
 
-      response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-      response.headers.set('Server-Timing', `reviews-analysis;dur=${duration}`);
+      // Check cache first
+      const cache = CacheManager.getInstance();
+      const domain = 'dealershipai.com'; // Default domain - can be enhanced later
+      const cacheKey = CACHE_KEYS.REVIEWS_DATA(domain, timeRange);
 
-      return response;
-    }
+      const cachedData = await cache.get(cacheKey);
+      if (cachedData) {
+        await logger.info('Reviews cache hit', {
+          requestId,
+          timeRange,
+        });
 
-    // Generate Review data with performance tracking
-    const reviewData = await monitor.trackApiCall(
-      'reviews_analysis',
-      () => generateReviewData(),
-      { domain, timeRange }
-    );
+        return cachedResponse(
+          {
+            success: true,
+            data: cachedData,
+            meta: {
+              domain,
+              timeRange,
+              timestamp: new Date().toISOString(),
+              source: 'cache'
+            }
+          },
+          300, // 5 minutes cache
+          600, // 10 minutes stale-while-revalidate
+          [CACHE_TAGS.DASHBOARD_REVIEWS, CACHE_TAGS.DASHBOARD]
+        );
+      }
 
-    // Cache the result
-    await cache.set(cacheKey, reviewData, CACHE_TTL.REVIEWS_DATA);
+      // Generate Review data with performance tracking
+      const reviewData = await monitor.trackApiCall(
+        'reviews_analysis',
+        () => generateReviewData(),
+        { domain, timeRange }
+      );
 
-    const duration = Date.now() - startTime;
+      // Cache the result
+      await cache.set(cacheKey, reviewData, CACHE_TTL.REVIEWS_DATA);
 
-    const response = NextResponse.json({
-      success: true,
-      data: reviewData,
-      meta: {
-        domain,
+      await logger.info('Reviews analysis completed', {
+        requestId,
         timeRange,
-        timestamp: new Date().toISOString(),
-        responseTime: `${duration}ms`,
-        source: 'reviews_analysis_engine'
-      }
-    });
+        userId: auth.userId,
+      });
 
-    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    response.headers.set('Server-Timing', `reviews-analysis;dur=${duration}`);
+      return cachedResponse(
+        {
+          success: true,
+          data: reviewData,
+          meta: {
+            domain,
+            timeRange,
+            timestamp: new Date().toISOString(),
+            source: 'reviews_analysis_engine'
+          }
+        },
+        300,
+        600,
+        [CACHE_TAGS.DASHBOARD_REVIEWS, CACHE_TAGS.DASHBOARD]
+      );
 
-    return response;
+    } catch (error) {
+      await logger.error('Reviews analysis error', {
+        requestId,
+        userId: auth.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
 
-  } catch (error: any) {
-    console.error('Reviews Analysis API Error:', error);
-    monitor.trackError(error, { api: 'reviews_analysis', domain: req.url });
-
-    // Return fallback data
-    const fallbackData = generateReviewData();
-    const duration = Date.now() - startTime;
-
-    const response = NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to fetch reviews data',
-      data: fallbackData,
-      meta: {
-        domain: req.nextUrl.searchParams.get('domain') || 'dealershipai.com',
-        timeRange: req.nextUrl.searchParams.get('timeRange') || '30d',
-        timestamp: new Date().toISOString(),
-        responseTime: `${duration}ms`,
-        source: 'fallback_mock_data'
-      }
-    }, { status: 500 });
-
-    response.headers.set('Server-Timing', `reviews-analysis;dur=${duration}`);
-    return response;
+      return errorResponse(error, 500, {
+        requestId,
+        endpoint: '/api/dashboard/reviews',
+        userId: auth.userId,
+      });
+    }
   }
-}
+);

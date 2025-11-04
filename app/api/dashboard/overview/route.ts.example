@@ -1,0 +1,42 @@
+/**
+ * Example: Dashboard Overview API with all security middleware
+ * This shows how to use the new API wrapper
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createApiRoute } from '@/lib/api-wrapper';
+import { dashboardQuerySchema } from '@/lib/validation/schemas';
+import { cachedResponse } from '@/lib/api-response';
+import { CACHE_TAGS } from '@/lib/cache-tags';
+
+// Example of the new pattern
+export const GET = createApiRoute(
+  {
+    endpoint: '/api/dashboard/overview',
+    requireAuth: true, // Requires authentication
+    validateQuery: dashboardQuerySchema, // Validates query params
+    rateLimit: true, // Rate limiting enabled
+    performanceMonitoring: true, // Performance tracking enabled
+  },
+  async (req, auth) => {
+    // auth is guaranteed to be non-null here
+    const { dealerId, timeRange } = validateQueryParams(req, dashboardQuerySchema).data!;
+    
+    // Fetch data (simplified)
+    const data = {
+      timestamp: new Date().toISOString(),
+      dealerId,
+      timeRange,
+      // ... fetch actual data
+    };
+    
+    // Return cached response
+    return cachedResponse(
+      data,
+      300, // 5 min cache
+      600, // 10 min stale
+      [CACHE_TAGS.DASHBOARD_OVERVIEW, CACHE_TAGS.DASHBOARD]
+    );
+  }
+);
+

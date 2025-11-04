@@ -1,0 +1,57 @@
+name: A/B Test Deploy & Audit
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Audit Report
+        run: node scripts/generate-report.js
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://dealershipai.com' }}
+          GOOGLE_PAGESPEED_API_KEY: ${{ secrets.GOOGLE_PAGESPEED_API_KEY }}
+
+      - name: Slack Performance Alert
+        run: node scripts/slack-performance-alert.js
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://dealershipai.com' }}
+        continue-on-error: true
+
+      - name: Upload Audit Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-reports
+          path: public/audit-reports/*.csv
+          retention-days: 30
+
+      - name: Slack Anomaly Summary
+        if: always()
+        run: node scripts/slack-anomaly-summary.js
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://dealershipai.com' }}
+        continue-on-error: true
+

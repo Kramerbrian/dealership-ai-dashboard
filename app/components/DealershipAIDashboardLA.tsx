@@ -15,6 +15,39 @@
  */
 
 import React, { useState, useEffect } from "react";
+// Lazy load heavy components for better performance
+const CompetitiveComparisonWidget = dynamic(() => import("./demo/CompetitiveComparisonWidget"), {
+  loading: () => <div className="skeleton" style={{ height: 300, borderRadius: 8 }} />,
+  ssr: false
+});
+
+const WhatIfRevenueCalculator = dynamic(() => import("./demo/WhatIfRevenueCalculator"), {
+  loading: () => <div className="skeleton" style={{ height: 300, borderRadius: 8 }} />,
+  ssr: false
+});
+
+const QuickWinsWidget = dynamic(() => import("./demo/QuickWinsWidget"), {
+  loading: () => <div className="skeleton" style={{ height: 300, borderRadius: 8 }} />,
+  ssr: false
+});
+
+const DAICognitiveDashboardModal = dynamic(() => import("./DAICognitiveDashboardModal"), {
+  ssr: false
+});
+
+const HAL9000Chatbot = dynamic(() => import("./HAL9000Chatbot"), {
+  ssr: false
+});
+import { useDashboardDataReactQuery } from "@/lib/hooks/useDashboardDataReactQuery";
+import { useAuthContext } from "@/lib/hooks/useAuthContext";
+import { useUserProfile } from "@/lib/hooks/useUserProfile";
+import { useUser } from "@clerk/nextjs";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { useToast } from "@/components/ui/Toast";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import PIQRDashboardWidget from "@/components/dashboard/PIQRDashboardWidget";
+import AIVModal from "@/components/dashboard/AIVModal";
+import dynamic from "next/dynamic";
 
 // Types for modal content
 interface ModalContent {
@@ -69,6 +102,37 @@ const DealershipAIDashboardLA: React.FC = () => {
   const [formName, setFormName] = useState<string>("");
   const [formLocation, setFormLocation] = useState<string>("");
   const [inputMethod, setInputMethod] = useState<string>("manual");
+  const [cognitiveModalOpen, setCognitiveModalOpen] = useState<boolean>(false);
+  const [halChatbotOpen, setHalChatbotOpen] = useState<boolean>(false);
+  
+  // Get authentication context
+  const { dealerId, tenantId, userId, email, isAuthenticated, isLoading: authLoading } = useAuthContext();
+  const { user } = useUser();
+  
+  // Get user profile, subscription, and usage data
+  const { profile: userProfile, subscription, usage, isLoading: profileLoading } = useUserProfile();
+  
+  // Get dealer domain from user profile, metadata, or fallback
+  const dealerDomain = userProfile?.domain || 
+                       user?.publicMetadata?.domain as string || 
+                       profile.name.toLowerCase().replace(/\s+/g, '-') + '.com';
+  
+  // Use authenticated dealerId (priority: dealerId > tenantId > userId > fallback)
+  const effectiveDealerId = dealerId || tenantId || userId || userProfile?.dealerId || "default-dealer";
+  
+  // Connect to dAI engines using React Query (better caching)
+  const { 
+    data: dashboardData, 
+    isLoading: dataLoading, 
+    isRefetching: dataRefreshing,
+    error: dataError, 
+    refetch: refreshData 
+  } = useDashboardDataReactQuery({
+    dealerId: effectiveDealerId,
+    timeRange: "30d",
+    domain: dealerDomain,
+    enabled: isAuthenticated || !!effectiveDealerId // Enable if authenticated or has dealerId
+  });
 
   // Update the clock once per minute
   useEffect(() => {
@@ -194,9 +258,59 @@ const DealershipAIDashboardLA: React.FC = () => {
     window.alert('Profile updated successfully!');
   };
 
+  // Toast notifications
+  const { showToast } = useToast();
+
+  // Show error toast when data fails to load
+  useEffect(() => {
+    if (dataError) {
+      showToast('error', `Failed to load dashboard data: ${dataError.message}`, {
+        duration: 10000, // Show for 10 seconds
+        action: {
+          label: 'Retry',
+          onClick: () => {
+            refreshData();
+            showToast('info', 'Retrying...', { duration: 2000 });
+          }
+        }
+      });
+    }
+  }, [dataError, showToast, refreshData]);
+
+  // Show success toast when data refreshes successfully (manual refresh only)
+  useEffect(() => {
+    if (dataRefreshing === false && dashboardData && !dataError) {
+      // Only show if it was a manual refresh, not initial load
+      const wasRefreshing = typeof window !== 'undefined' ? sessionStorage.getItem('wasRefreshing') === 'true' : false;
+      if (wasRefreshing) {
+        showToast('success', 'Dashboard data updated', { duration: 3000 });
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('wasRefreshing');
+        }
+      }
+    }
+  }, [dataRefreshing, dashboardData, dataError, showToast]);
+
+  // Track manual refresh
+  const handleManualRefresh = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('wasRefreshing', 'true');
+    }
+    refreshData();
+  };
+
+  // Show loading skeleton while auth, profile, or data is loading
+  if (authLoading || profileLoading || (dataLoading && !dashboardData)) {
+    return (
+      <ErrorBoundary>
+        <DashboardSkeleton />
+      </ErrorBoundary>
+    );
+  }
+
   // Render function
   return (
-    <>
+    <ErrorBoundary>
       {/* Global styles scoped to this component.  */}
       <style jsx>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -284,22 +398,55 @@ const DealershipAIDashboardLA: React.FC = () => {
               <h1 style={{ fontSize: 24 }}>DealershipAI</h1>
               <p className="text-sm" style={{ color: "#666" }}>Algorithmic Trust Dashboard</p>
             </div>
-            <div
-              style={{
-                padding: '8px 16px',
-                background: '#f9f9f9',
-                border: '1px dashed #999',
-                borderRadius: '4px',
-                fontSize: 14
-              }}
-            >
-              {profile.name} | {profile.location}
+            <div className="flex gap-10 items-center">
+              <button
+                onClick={() => setCognitiveModalOpen(true)}
+                className="btn primary"
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                🧠 Cognitive Dashboard
+              </button>
+              <div
+                style={{
+                  padding: '8px 16px',
+                  background: '#f9f9f9',
+                  border: '1px dashed #999',
+                  borderRadius: '4px',
+                  fontSize: 14
+                }}
+              >
+                {userProfile?.dealerName || profile.name} | {profile.location}
+              </div>
+              {subscription && (
+                <span className={`badge ${subscription.tier === 'ENTERPRISE' ? 'success' : subscription.tier === 'PRO' ? 'medium' : ''}`}>
+                  {subscription.tier} PLAN
+                </span>
+              )}
+              {!subscription && <span className="badge medium">PRO PLAN</span>}
+              {usage && subscription && (
+                <div style={{ fontSize: 12, color: '#666' }}>
+                  Sessions: {usage.monthly?.sessions || 0}/{subscription.sessionsLimit || '∞'}
+                </div>
+              )}
             </div>
-            <span className="badge medium">PRO PLAN</span>
           </div>
           <div className="flex gap-20" style={{ alignItems: 'center', fontSize: 14, color: '#666' }}>
-            <div className="pulse" style={{ width: 8, height: 8, background: '#4CAF50', borderRadius: '50%' }} />
-            <span>Live</span>
+            <div className="pulse" style={{ width: 8, height: 8, background: dataRefreshing ? '#FFC107' : '#4CAF50', borderRadius: '50%' }} />
+            <span>{dataRefreshing ? 'Refreshing...' : 'Live'}</span>
+            <button
+              onClick={handleManualRefresh}
+              disabled={dataRefreshing}
+              className="btn"
+              style={{ 
+                padding: '4px 8px', 
+                fontSize: 12,
+                opacity: dataRefreshing ? 0.5 : 1,
+                cursor: dataRefreshing ? 'not-allowed' : 'pointer'
+              }}
+              title="Refresh dashboard data"
+            >
+              🔄 Refresh
+            </button>
             <span>
               {currentTime.toLocaleString('en-US', {
                 month: 'short',
@@ -310,6 +457,11 @@ const DealershipAIDashboardLA: React.FC = () => {
                 hour12: true
               })}
             </span>
+            {email && (
+              <span style={{ fontSize: 12, color: '#999' }}>
+                {email}
+              </span>
+            )}
           </div>
         </div>
 
@@ -362,13 +514,20 @@ const DealershipAIDashboardLA: React.FC = () => {
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 15 }}>
-                  <div style={{ fontSize: 42, fontWeight: 300, color: '#2196F3', lineHeight: 1 }}>87.3</div>
-                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>+12%</span>
+                  <div style={{ fontSize: 42, fontWeight: 300, color: '#2196F3', lineHeight: 1 }}>
+                    {dataLoading ? '...' : dashboardData?.visibility?.seo?.toFixed(1) || '87.3'}
+                  </div>
+                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>
+                    {dashboardData?.visibility?.trends?.seo ? `+${dashboardData.visibility.trends.seo}%` : '+12%'}
+                  </span>
                 </div>
                 <div className="metric-progress">
                   <div
                     className="metric-progress-bar"
-                    style={{ width: '87.3%', background: 'linear-gradient(90deg, #2196F3, #1976D2)' }}
+                    style={{ 
+                      width: `${dashboardData?.visibility?.seo || 87.3}%`, 
+                      background: 'linear-gradient(90deg, #2196F3, #1976D2)' 
+                    }}
                   />
                 </div>
                 <div className="text-sm" style={{ color: '#666', marginTop: 10 }}>
@@ -396,8 +555,12 @@ const DealershipAIDashboardLA: React.FC = () => {
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 15 }}>
-                  <div style={{ fontSize: 42, fontWeight: 300, color: '#ff9800', lineHeight: 1 }}>73.8</div>
-                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>+8%</span>
+                  <div style={{ fontSize: 42, fontWeight: 300, color: '#ff9800', lineHeight: 1 }}>
+                    {dataLoading ? '...' : dashboardData?.visibility?.aeo?.toFixed(1) || '73.8'}
+                  </div>
+                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>
+                    {dashboardData?.visibility?.trends?.aeo ? `+${dashboardData.visibility.trends.aeo}%` : '+8%'}
+                  </span>
                 </div>
                 <div className="metric-progress">
                   <div
@@ -430,8 +593,12 @@ const DealershipAIDashboardLA: React.FC = () => {
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 15 }}>
-                  <div style={{ fontSize: 42, fontWeight: 300, color: '#f44336', lineHeight: 1 }}>65.2</div>
-                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>+3%</span>
+                  <div style={{ fontSize: 42, fontWeight: 300, color: '#f44336', lineHeight: 1 }}>
+                    {dataLoading ? '...' : dashboardData?.visibility?.geo?.toFixed(1) || '65.2'}
+                  </div>
+                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>
+                    {dashboardData?.visibility?.trends?.geo ? `+${dashboardData.visibility.trends.geo}%` : '+3%'}
+                  </span>
                 </div>
                 <div className="metric-progress">
                   <div
@@ -449,19 +616,28 @@ const DealershipAIDashboardLA: React.FC = () => {
             <div className="grid grid-4 mb-20">
               <div className="card primary">
                 <div className="metric-label">Total Visibility Score</div>
-                <div className="metric-value" style={{ color: '#1976D2' }}>87.3</div>
+                <div className="metric-value" style={{ color: '#1976D2' }}>
+                  {dataLoading ? '...' : dashboardData?.visibility?.overall?.toFixed(1) || '87.3'}
+                </div>
                 <div className="metric-progress">
-                  <div className="metric-progress-bar" style={{ width: '87.3%', background: 'linear-gradient(90deg, #2196F3, #1976D2)' }} />
+                  <div className="metric-progress-bar" style={{ 
+                    width: `${dashboardData?.visibility?.overall || 87.3}%`, 
+                    background: 'linear-gradient(90deg, #2196F3, #1976D2)' 
+                  }} />
                 </div>
                 <div className="text-sm" style={{ color: '#666' }}>Across all platforms</div>
               </div>
               <div className="card success">
                 <div className="metric-label">Revenue Impact</div>
-                <div className="metric-value" style={{ color: '#388E3C' }}>$367K</div>
+                <div className="metric-value" style={{ color: '#388E3C' }}>
+                  ${dashboardData?.revenue?.monthly ? (dashboardData.revenue.monthly / 1000).toFixed(0) + 'K' : '367K'}
+                </div>
                 <div className="metric-progress">
                   <div className="metric-progress-bar" style={{ width: '75%' }} />
                 </div>
-                <div className="text-sm" style={{ color: '#4CAF50' }}>+$45K from last month</div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>
+                  {dashboardData?.revenue?.trend ? `+$${(dashboardData.revenue.trend * 1000 / 1000).toFixed(0)}K` : '+$45K'} from last month
+                </div>
               </div>
               <div className="card warning">
                 <div className="metric-label">Opportunities Found</div>
@@ -479,6 +655,35 @@ const DealershipAIDashboardLA: React.FC = () => {
                 </div>
                 <div className="text-sm" style={{ color: '#4CAF50' }}>Excellent</div>
               </div>
+            </div>
+
+            {/* Competitive Comparison Widget */}
+            <div className="mb-20">
+              <CompetitiveComparisonWidget 
+                domain="premium-auto-dealership.com"
+                className="mb-6"
+              />
+            </div>
+
+            {/* Quick Wins Widget */}
+            <div className="mb-20">
+              <QuickWinsWidget 
+                domain="premium-auto-dealership.com"
+                className="mb-6"
+                maxWins={3}
+              />
+            </div>
+
+            {/* What-If Revenue Calculator */}
+            <div className="mb-20">
+              <WhatIfRevenueCalculator 
+                initialScores={{
+                  geo: 65.2,
+                  aeo: 73.8,
+                  seo: 87.3
+                }}
+                className="mb-6"
+              />
             </div>
 
             {/* Opportunities Engine */}
@@ -517,10 +722,24 @@ const DealershipAIDashboardLA: React.FC = () => {
             </div>
           </div>
 
-          {/* AI Health Tab (placeholder) */}
+          {/* AI Health Tab */}
           <div className={`tab-content ${activeTab === 'ai-health' ? 'active' : ''}`} id="ai-health">
-            <h2 className="section-header">AI Health</h2>
-            <p>This section is under construction.</p>
+            <PIQRDashboardWidget
+              dealerId={effectiveDealerId}
+              domain={dealerDomain}
+              range="30d"
+              onAction={(action, data) => {
+                if (action === 'open_report') {
+                  window.open(`/reports/piqr?dealerId=${effectiveDealerId}`, '_blank');
+                } else if (action === 'trigger_autofix') {
+                  showToast('info', 'Auto-fix engine triggered. Processing...', { duration: 3000 });
+                } else if (action === 'run_consensus_check') {
+                  showToast('info', 'Running AI consensus check across ChatGPT, Gemini, and Perplexity...', { duration: 3000 });
+                } else if (action === 'feedback_submitted') {
+                  showToast('success', 'Feedback recorded. Will be used for model retraining.', { duration: 3000 });
+                }
+              }}
+            />
           </div>
 
           {/* Website Tab (placeholder) */}
@@ -579,7 +798,19 @@ const DealershipAIDashboardLA: React.FC = () => {
           </div>
         </div>
       )}
-    </>
+
+      {/* dAI Cognitive Dashboard Modal */}
+      <DAICognitiveDashboardModal
+        isOpen={cognitiveModalOpen}
+        onClose={() => setCognitiveModalOpen(false)}
+      />
+
+      {/* HAL-9000 Chatbot */}
+      <HAL9000Chatbot
+        isOpen={halChatbotOpen}
+        onToggle={() => setHalChatbotOpen(!halChatbotOpen)}
+      />
+    </ErrorBoundary>
   );
 };
 

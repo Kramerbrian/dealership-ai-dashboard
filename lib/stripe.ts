@@ -6,13 +6,27 @@
 
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
+// Lazy initialization - Stripe is optional for deployment
+let stripeInstance: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not set. Stripe functionality is disabled. Add STRIPE_SECRET_KEY to enable payments.');
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-12-18.acacia',
+      typescript: true,
+    });
+  }
+  return stripeInstance;
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia',
-  typescript: true,
+// Export stripe with lazy initialization
+export const stripe = new Proxy({} as Stripe, {
+  get(target, prop) {
+    return getStripe()[prop as keyof Stripe];
+  }
 });
 
 // Pricing tiers for DealershipAI

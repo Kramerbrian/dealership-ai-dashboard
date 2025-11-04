@@ -1,9 +1,35 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Supabase client - lazy initialization to avoid build errors
+let supabaseInstance: any = null;
+
+function getSupabase() {
+  if (!supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      // Return a mock client for build time
+      return {
+        from: () => ({
+          select: () => ({ data: null, error: null }),
+          insert: () => ({ data: null, error: null }),
+          update: () => ({ data: null, error: null }),
+          delete: () => ({ data: null, error: null }),
+        }),
+      };
+    }
+    
+    supabaseInstance = createClient(supabaseUrl, supabaseKey);
+  }
+  return supabaseInstance;
+}
+
+const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+  get(target, prop) {
+    return getSupabase()[prop as keyof ReturnType<typeof createClient>];
+  }
+});
 
 // Subscription plans configuration
 export const SUBSCRIPTION_PLANS = {

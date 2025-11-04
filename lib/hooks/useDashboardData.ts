@@ -1,203 +1,82 @@
 /**
- * Custom React hooks for fetching dashboard data
+ * React Hook for Dashboard Data
+ * Fetches and manages dashboard data from all engines
+ * 
+ * @deprecated Consider using useDashboardDataReactQuery for better caching
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  dashboardAPI,
-  type DashboardOverviewData,
-  type AIVisibilityData,
-  type WebsiteData,
-  type SchemaData,
-  type ReviewsData,
-} from '../api/dashboard-client';
+import { fetchDashboardData, type DashboardData } from '@/lib/services/dashboard-data-service';
 
-interface UseDataResult<T> {
-  data: T | null;
+interface UseDashboardDataOptions {
+  dealerId: string;
+  timeRange?: '7d' | '30d' | '90d' | '1y';
+  domain?: string;
+  autoRefresh?: boolean;
+  refreshInterval?: number; // in milliseconds
+}
+
+interface UseDashboardDataReturn {
+  data: DashboardData | null;
   loading: boolean;
   error: Error | null;
-  refetch: () => Promise<void>;
+  refresh: () => Promise<void>;
+  isRefreshing: boolean;
 }
 
-/**
- * Hook for fetching dashboard overview data
- */
-export function useDashboardOverview(params?: {
-  dealerId?: string;
-  timeRange?: '7d' | '30d' | '90d' | '365d';
-  autoFetch?: boolean;
-}): UseDataResult<DashboardOverviewData> {
-  const [data, setData] = useState<DashboardOverviewData | null>(null);
-  const [loading, setLoading] = useState(true);
+export function useDashboardData(options: UseDashboardDataOptions): UseDashboardDataReturn {
+  const { dealerId, timeRange = '30d', domain, autoRefresh = false, refreshInterval = 60000 } = options;
+  
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
-  const fetchData = useCallback(async () => {
+  const loadData = useCallback(async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
-      const result = await dashboardAPI.getDashboardOverview(params);
-      setData(result);
+
+      const dashboardData = await fetchDashboardData(dealerId, timeRange, domain);
+      setData(dashboardData);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setError(err instanceof Error ? err : new Error('Failed to load dashboard data'));
+      console.error('Dashboard data loading error:', err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
-  }, [params?.dealerId, params?.timeRange]);
+  }, [dealerId, timeRange, domain]);
 
+  const refresh = useCallback(async () => {
+    await loadData(true);
+  }, [loadData]);
+
+  // Initial load
   useEffect(() => {
-    if (params?.autoFetch !== false) {
-      fetchData();
-    }
-  }, [fetchData, params?.autoFetch]);
+    loadData(false);
+  }, [loadData]);
 
-  return { data, loading, error, refetch: fetchData };
-}
-
-/**
- * Hook for fetching AI visibility data
- */
-export function useAIVisibility(params?: {
-  domain?: string;
-  dealerId?: string;
-  autoFetch?: boolean;
-}): UseDataResult<AIVisibilityData> {
-  const [data, setData] = useState<AIVisibilityData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await dashboardAPI.getAIVisibility(params);
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    } finally {
-      setLoading(false);
-    }
-  }, [params?.domain, params?.dealerId]);
-
+  // Auto-refresh
   useEffect(() => {
-    if (params?.autoFetch !== false) {
-      fetchData();
-    }
-  }, [fetchData, params?.autoFetch]);
+    if (!autoRefresh || !data) return;
 
-  return { data, loading, error, refetch: fetchData };
-}
+    const interval = setInterval(() => {
+      refresh();
+    }, refreshInterval);
 
-/**
- * Hook for fetching website performance data
- */
-export function useWebsiteData(params?: {
-  domain?: string;
-  dealerId?: string;
-  autoFetch?: boolean;
-}): UseDataResult<WebsiteData> {
-  const [data, setData] = useState<WebsiteData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+    return () => clearInterval(interval);
+  }, [autoRefresh, refreshInterval, data, refresh]);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await dashboardAPI.getWebsiteData(params);
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    } finally {
-      setLoading(false);
-    }
-  }, [params?.domain, params?.dealerId]);
-
-  useEffect(() => {
-    if (params?.autoFetch !== false) {
-      fetchData();
-    }
-  }, [fetchData, params?.autoFetch]);
-
-  return { data, loading, error, refetch: fetchData };
-}
-
-/**
- * Hook for fetching schema data
- */
-export function useSchemaData(params?: {
-  domain?: string;
-  dealerId?: string;
-  autoFetch?: boolean;
-}): UseDataResult<SchemaData> {
-  const [data, setData] = useState<SchemaData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await dashboardAPI.getSchemaData(params);
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    } finally {
-      setLoading(false);
-    }
-  }, [params?.domain, params?.dealerId]);
-
-  useEffect(() => {
-    if (params?.autoFetch !== false) {
-      fetchData();
-    }
-  }, [fetchData, params?.autoFetch]);
-
-  return { data, loading, error, refetch: fetchData };
-}
-
-/**
- * Hook for fetching reviews data
- */
-export function useReviewsData(params?: {
-  domain?: string;
-  dealerId?: string;
-  autoFetch?: boolean;
-}): UseDataResult<ReviewsData> {
-  const [data, setData] = useState<ReviewsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await dashboardAPI.getReviewsData(params);
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    } finally {
-      setLoading(false);
-    }
-  }, [params?.domain, params?.dealerId]);
-
-  useEffect(() => {
-    if (params?.autoFetch !== false) {
-      fetchData();
-    }
-  }, [fetchData, params?.autoFetch]);
-
-  return { data, loading, error, refetch: fetchData };
-}
-
-/**
- * Hook for periodic data refresh
- */
-export function useAutoRefresh(callback: () => void | Promise<void>, interval: number = 60000) {
-  useEffect(() => {
-    const timer = setInterval(() => {
-      callback();
-    }, interval);
-
-    return () => clearInterval(timer);
-  }, [callback, interval]);
+  return {
+    data,
+    loading,
+    error,
+    refresh,
+    isRefreshing
+  };
 }

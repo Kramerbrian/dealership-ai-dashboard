@@ -1,9 +1,10 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { createApiRoute } from '@/lib/api-wrapper';
+import { dashboardQuerySchema, validateQueryParams } from '@/lib/validation/schemas';
+import { cachedResponse, errorResponse } from '@/lib/api-response';
+import { CACHE_TAGS } from '@/lib/cache-tags';
 import { trackSLO } from '@/lib/slo';
 import { logger } from '@/lib/logger';
-import { cachedResponse, errorResponse, withRequestId } from '@/lib/api-response';
-// Note: getRequestId will be implemented for server-side request tracking
-// For now, we'll generate a unique ID per request
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -11,28 +12,42 @@ export const dynamic = 'force-dynamic';
 /**
  * Dashboard Overview API Endpoint
  * 
- * Example usage of new production utilities:
- * - Structured logging with logger
- * - Cached response with stale-while-revalidate
- * - Request ID tracking
- * - Error handling with errorResponse
+ * ✅ Migrated to new security middleware:
+ * - Authentication required
+ * - Query parameter validation
+ * - Rate limiting (60/min for dashboard)
+ * - Performance monitoring
+ * - Standardized error handling
  */
 
-export async function GET(req: NextRequest) {
-  const requestId = req.headers.get('x-request-id') || `dashboard-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-  const startTime = Date.now();
-  
-  try {
-    const { searchParams } = new URL(req.url);
-    const timeRange = searchParams.get('timeRange') || '30d';
-    const dealerId = searchParams.get('dealerId') || 'default';
+export const GET = createApiRoute(
+  {
+    endpoint: '/api/dashboard/overview',
+    requireAuth: true,
+    validateQuery: dashboardQuerySchema,
+    rateLimit: true,
+    performanceMonitoring: true,
+  },
+  async (req, auth) => {
+    const requestId = req.headers.get('x-request-id') || 'unknown';
+    const startTime = Date.now();
     
-    // Log request with structured logging
-    await logger.info('Dashboard overview requested', {
-      requestId,
-      timeRange,
-      dealerId
-    });
+    try {
+      // Query validation handled by wrapper, but access validated data
+      const queryValidation = validateQueryParams(req, dashboardQuerySchema);
+      if (!queryValidation.success) {
+        return queryValidation.response;
+      }
+      
+      const { dealerId, timeRange } = queryValidation.data;
+      
+      // Log request with structured logging
+      await logger.info('Dashboard overview requested', {
+        requestId,
+        timeRange,
+        dealerId,
+        userId: auth.userId, // ✅ Now has user context
+      });
 
     // Simulate database query time
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -151,45 +166,57 @@ export async function GET(req: NextRequest) {
       }
     };
 
-    const duration = Date.now() - startTime;
-    trackSLO('api.dashboard.overview', duration);
+      const duration = Date.now() - startTime;
+      await trackSLO('api.dashboard.overview', duration);
 
-    // Use cachedResponse utility (60s cache, 300s stale-while-revalidate)
-    let response = cachedResponse(dashboardData, 60, 300);
-    
-    // Add request ID and server timing
-    response = withRequestId(response, requestId);
-    response.headers.set('Server-Timing', `dashboard-overview;dur=${duration}`);
-    
-    await logger.info('Dashboard overview completed', {
-      requestId,
-      duration,
-      timeRange,
-      dealerId
-    });
-    
-    return response;
+      // Use cachedResponse utility (60s cache, 300s stale-while-revalidate)
+      const response = cachedResponse(
+        dashboardData, 
+        60, 
+        300,
+        [CACHE_TAGS.DASHBOARD_OVERVIEW, CACHE_TAGS.DASHBOARD]
+      );
+      
+      // Add server timing header
+      response.headers.set('Server-Timing', `dashboard-overview;dur=${duration}`);
+      
+      await logger.info('Dashboard overview completed', {
+        requestId,
+        duration,
+        timeRange,
+        dealerId,
+        userId: auth.userId,
+      });
+      
+      return response;
 
-  } catch (error) {
-    const duration = Date.now() - startTime;
-    trackSLO('api.dashboard.overview', duration);
-    
-    // Use structured error logging
-    await logger.error('Dashboard overview API error', {
-      requestId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      duration
-    });
-    
-    // Use errorResponse utility
-    return errorResponse(
-      'Failed to fetch dashboard data',
-      500,
-      { requestId, timestamp: new Date().toISOString() }
-    );
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      await trackSLO('api.dashboard.overview', duration);
+      
+      // Use structured error logging
+      await logger.error('Dashboard overview API error', {
+        requestId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        duration,
+        userId: auth.userId,
+      });
+      
+      // Use errorResponse utility
+      return errorResponse(
+        error instanceof Error ? error : new Error('Failed to fetch dashboard data'),
+        500,
+        { 
+          requestId, 
+          timestamp: new Date().toISOString(),
+          endpoint: '/api/dashboard/overview',
+          userId: auth.userId,
+        }
+      );
+    }
   }
-}
+);
 
 // Helper function to generate time series data
 function generateTimeSeriesData(days: number, baseValue: number, type: 'score' | 'revenue' | 'leads' = 'score') {

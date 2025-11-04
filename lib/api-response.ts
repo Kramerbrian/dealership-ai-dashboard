@@ -9,6 +9,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { trackAPIRequest } from './api-analytics';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -30,9 +31,10 @@ export interface ApiResponse<T = any> {
 export function cachedResponse<T>(
   data: T,
   maxAge = 60,
-  staleWhileRevalidate = 300
+  staleWhileRevalidate = 300,
+  tags?: string[]
 ): NextResponse<ApiResponse<T>> {
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       success: true,
       data,
@@ -45,6 +47,13 @@ export function cachedResponse<T>(
       },
     }
   );
+
+  // Add cache tags if provided
+  if (tags && tags.length > 0) {
+    return addCacheTags(response, tags);
+  }
+
+  return response;
 }
 
 /**
@@ -197,5 +206,50 @@ export function createCachedSuccessResponse<T>(
   }
   
   return response;
+}
+
+/**
+ * Wrap API handler with automatic analytics tracking
+ */
+export function withAPIAnalytics<T>(
+  handler: (req: Request) => Promise<Response>,
+  endpoint: string
+): (req: Request) => Promise<Response> {
+  return async (req: Request) => {
+    const startTime = Date.now();
+    let statusCode = 200;
+    let error: string | undefined;
+
+    try {
+      const response = await handler(req);
+      statusCode = response.status;
+
+      // Track successful request
+      const responseTime = Date.now() - startTime;
+      await trackAPIRequest(
+        endpoint,
+        req.method,
+        statusCode,
+        responseTime
+      );
+
+      return response;
+    } catch (err) {
+      statusCode = 500;
+      error = err instanceof Error ? err.message : 'Unknown error';
+      const responseTime = Date.now() - startTime;
+
+      // Track failed request
+      await trackAPIRequest(
+        endpoint,
+        req.method,
+        statusCode,
+        responseTime,
+        { error }
+      );
+
+      throw err;
+    }
+  };
 }
 

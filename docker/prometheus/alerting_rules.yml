@@ -1,0 +1,39 @@
+groups:
+  - name: gnn_alerts
+    rules:
+      - alert: GNNPrecisionLow
+        expr: gnn_precision_rolling_1h < 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GNN precision dropped below 80%"
+          description: "GNN model precision has been below 80% for 10 minutes. Review model performance."
+
+      - alert: GNNLossSpike
+        expr: gnn_training_loss_rate > 0
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "GNN training loss increasing"
+          description: "GNN training loss is increasing, indicating potential model degradation."
+
+      - alert: GNNROIUnderperform
+        expr: gnn_roi_estimate < 1
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "GNN ROI < 1 — model cost exceeds ARR gain"
+          description: "GNN model cost exceeds ARR gain. Review economic impact."
+
+      - alert: GNNPrecisionDrop
+        expr: (gnn_predictions_verified / gnn_predictions_total) < 0.75
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GNN precision below 75%"
+          description: "GNN prediction precision has dropped below 75% threshold."
+

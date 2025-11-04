@@ -6,9 +6,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowRightIcon, CheckCircleIcon, SparklesIcon, TrophyIcon } from '@heroicons/react/24/outline'
 import { personalizationEngine, DealershipProfile } from '@/lib/onboarding/personalization-engine'
+import { useABTest } from '@/lib/ab-testing-hooks'
 
 interface EnhancedLandingPageProps {
   onAnalyze?: (domain: string) => void
@@ -21,6 +23,10 @@ export default function EnhancedLandingPage({ onAnalyze, onSignIn }: EnhancedLan
   const [dealershipProfile, setDealershipProfile] = useState<DealershipProfile | null>(null)
   const [personalizedMessage, setPersonalizedMessage] = useState<string>('')
   const [showResults, setShowResults] = useState(false)
+  
+  // A/B Testing for CTA button
+  const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') || 'anonymous' : 'anonymous'
+  const { variant: ctaVariant, trackEvent } = useABTest('landing-cta-test', userId)
 
   // Generate personalized message based on time of day and other factors
   useEffect(() => {
@@ -125,10 +131,13 @@ export default function EnhancedLandingPage({ onAnalyze, onSignIn }: EnhancedLan
               transition={{ duration: 0.8 }}
             >
               <div className="flex items-center mb-6">
-                <img
+                <Image
                   src="/api/placeholder/40/40"
                   alt="AI Overviews"
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded-lg mr-3"
+                  priority
                 />
                 <span className="text-lg font-semibold text-gray-900">Algorithmic Trust Dashboard</span>
               </div>
@@ -195,7 +204,12 @@ export default function EnhancedLandingPage({ onAnalyze, onSignIn }: EnhancedLan
                   <button
                     type="submit"
                     disabled={isAnalyzing}
-                    className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    onClick={() => trackEvent('cta_click', { variant: ctaVariant, location: 'hero' })}
+                    className={`px-8 py-4 text-white text-lg font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all ${
+                      ctaVariant === 'B' 
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
                   >
                     {isAnalyzing ? (
                       <>

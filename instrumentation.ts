@@ -1,36 +1,29 @@
 /**
- * Next.js Instrumentation (Node.js Runtime Only)
- *
- * IMPORTANT: This file runs in Node.js runtime ONLY
- * Do NOT use Edge Runtime features or Sentry Edge config
- *
- * Safe for production - conditionally loads based on environment
+ * Next.js Instrumentation Hook
+ * 
+ * This file runs once when the server starts.
+ * Used for initializing monitoring, tracing, and other server-side setup.
  */
 
 export async function register() {
-  // Only load instrumentation in Node.js runtime
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    // Load Sentry for Node.js (server-side only)
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN && process.env.NODE_ENV === 'production') {
-      try {
-        await import('./sentry.server.config');
-        console.log('[Instrumentation] Sentry server config loaded');
-      } catch (error) {
-        console.warn('[Instrumentation] Failed to load Sentry:', error);
-      }
-    }
+    // Initialize enhanced Sentry for server-side
+    const { initEnhancedSentry } = await import('@/lib/enhanced-sentry');
+    initEnhancedSentry();
 
-    // Load OpenTelemetry if configured
-    if (process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT) {
+    console.log('[Instrumentation] Enhanced Sentry initialized');
+
+    // Initialize background job worker if Redis is configured
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
       try {
-        await import('./lib/otel-config');
-        console.log('[Instrumentation] OpenTelemetry config loaded');
+        const { initializeJobWorker } = await import('@/lib/jobs/worker');
+        initializeJobWorker();
+        console.log('[Instrumentation] Background job worker initialized');
       } catch (error) {
-        console.warn('[Instrumentation] Failed to load OpenTelemetry:', error);
+        console.error('[Instrumentation] Failed to initialize job worker:', error);
       }
+    } else {
+      console.log('[Instrumentation] Background job worker skipped (Redis not configured)');
     }
   }
-
-  // NEVER load Edge Runtime instrumentationin this file
-  // Edge Runtime is incompatible with many Node.js APIs
 }

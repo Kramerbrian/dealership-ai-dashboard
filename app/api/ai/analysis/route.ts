@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-interface AIAnalysisRequest {
-  domain: string;
-  dealershipSize?: 'small' | 'medium' | 'large';
-  marketType?: 'urban' | 'suburban' | 'rural';
-  aiAdoption?: 'low' | 'medium' | 'high';
-}
+import { createApiRoute } from '@/lib/api-wrapper';
+import { aiAnalysisRequestSchema, validateRequestBody } from '@/lib/validation/schemas';
+import { errorResponse, cachedResponse } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
+import { CACHE_TAGS } from '@/lib/cache-tags';
 
 interface AIAnalysisResponse {
   success: boolean;
@@ -89,65 +87,97 @@ interface AIAnalysisResponse {
   };
 }
 
-export async function POST(req: NextRequest) {
-  const startTime = Date.now();
-  
-  try {
-    const body: AIAnalysisRequest = await req.json();
-    const { domain, dealershipSize = 'medium', marketType = 'suburban', aiAdoption = 'medium' } = body;
-
-    if (!domain) {
-      return NextResponse.json(
-        { error: 'Domain is required' },
-        { status: 400 }
-      );
-    }
-
-    // TODO: Replace with real AI analysis APIs
-    // In production, this would integrate with:
-    // 1. Google Search Console API for SEO data
-    // 2. Google Analytics API for performance data
-    // 3. Google Business Profile API for local data
-    // 4. Review platform APIs (Google, Yelp, Facebook) for sentiment
-    // 5. AI model APIs for content analysis
-    // 6. Technical SEO analysis APIs
-    // 7. Backlink analysis APIs
-    // 8. Social media APIs for social signals
+/**
+ * AI Analysis API Endpoint
+ * 
+ * ✅ Migrated to new security middleware:
+ * - Input validation
+ * - Rate limiting
+ * - Performance monitoring
+ * - Standardized error handling
+ */
+export const POST = createApiRoute(
+  {
+    endpoint: '/api/ai/analysis',
+    requireAuth: false, // Public endpoint for analysis
+    validateBody: aiAnalysisRequestSchema,
+    rateLimit: true,
+    performanceMonitoring: true,
+  },
+  async (req, auth) => {
+    const requestId = req.headers.get('x-request-id') || 'unknown';
     
-    const analysisData = await performRealAIAnalysis(domain, dealershipSize, marketType, aiAdoption);
-    
-    const duration = Date.now() - startTime;
+    try {
+      // Body validation handled by wrapper
+      const bodyValidation = await validateRequestBody(req, aiAnalysisRequestSchema);
+      if (!bodyValidation.success) {
+        return bodyValidation.response;
+      }
 
-    const response: AIAnalysisResponse = {
-      success: true,
-      data: analysisData,
-      meta: {
+      const { domain, dealershipSize = 'medium', marketType = 'suburban', aiAdoption = 'medium' } = bodyValidation.data;
+
+      await logger.info('AI analysis requested', {
+        requestId,
         domain,
-        timestamp: new Date().toISOString(),
-        responseTime: `${duration}ms`,
-        source: 'ai-analysis-api'
-      }
-    };
+        dealershipSize,
+        marketType,
+        aiAdoption,
+        userId: auth?.userId,
+      });
 
-    return NextResponse.json(response, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        'Server-Timing': `ai-analysis;dur=${duration}`
-      }
-    });
+      // TODO: Replace with real AI analysis APIs
+      // In production, this would integrate with:
+      // 1. Google Search Console API for SEO data
+      // 2. Google Analytics API for performance data
+      // 3. Google Business Profile API for local data
+      // 4. Review platform APIs (Google, Yelp, Facebook) for sentiment
+      // 5. AI model APIs for content analysis
+      // 6. Technical SEO analysis APIs
+      // 7. Backlink analysis APIs
+      // 8. Social media APIs for social signals
+      
+      const analysisData = await performRealAIAnalysis(domain, dealershipSize, marketType, aiAdoption);
 
-  } catch (error) {
-    console.error('AI Analysis API Error:', error);
-    
-    return NextResponse.json(
-      { 
-        error: 'Failed to perform AI analysis',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+      const response: AIAnalysisResponse = {
+        success: true,
+        data: analysisData,
+        meta: {
+          domain,
+          timestamp: new Date().toISOString(),
+          responseTime: 'calculated',
+          source: 'ai-analysis-api'
+        }
+      };
+
+      await logger.info('AI analysis completed', {
+        requestId,
+        domain,
+      });
+
+      return cachedResponse(
+        response,
+        300, // 5 min cache
+        600, // 10 min stale
+        [CACHE_TAGS.AI_ANALYSIS]
+      );
+
+    } catch (error) {
+      await logger.error('AI Analysis API Error', {
+        requestId,
+        domain,
+        userId: auth?.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      
+      return errorResponse(error, 500, {
+        requestId,
+        endpoint: '/api/ai/analysis',
+        userId: auth?.userId,
+      });
+    }
   }
-}
+);
 
 async function performRealAIAnalysis(
   _domain: string,

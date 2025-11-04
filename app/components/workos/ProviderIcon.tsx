@@ -6,6 +6,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 export interface ProviderIconProps {
   slug: string;
@@ -38,18 +39,29 @@ export function ProviderIcon({
 }: ProviderIconProps) {
   const { light, dark } = getProviderIconUrls(slug);
 
+  // Use Next.js Image for better optimization
+  // Note: For dynamic src switching, we'll use a client-side state
+  const [isDark, setIsDark] = React.useState(false);
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDark(mediaQuery.matches);
+    
+    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
   return (
-    <picture className={className}>
-      <source srcSet={dark} media="(prefers-color-scheme: dark)" />
-      <img
-        src={light}
-        alt={name || `${slug} icon`}
-        width={size}
-        height={size}
-        className={grayscale ? 'grayscale' : ''}
-        style={grayscale ? { filter: 'grayscale(100%)' } : undefined}
-      />
-    </picture>
+    <Image
+      src={isDark ? dark : light}
+      alt={name || `${slug} icon`}
+      width={size}
+      height={size}
+      className={`${grayscale ? 'grayscale' : ''} ${className}`}
+      style={grayscale ? { filter: 'grayscale(100%)' } : undefined}
+      unoptimized // External CDN images - WorkOS handles optimization
+    />
   );
 }
 

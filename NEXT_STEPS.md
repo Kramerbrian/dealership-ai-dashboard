@@ -1,284 +1,253 @@
-# 🚀 Next Steps - Quick Start Guide
+# 🚀 Next Steps - Action Plan
 
-## Status: Ready for Configuration ✅
+## ✅ Immediate Actions (Today)
 
-All code is complete. You just need to configure Supabase and test.
-
----
-
-## Step 1: Apply Database Migrations (5 minutes)
-
-### Migration 1: AEMD & Accuracy Monitoring
-
-1. Open [Supabase SQL Editor](https://supabase.com/dashboard)
-2. Select your project
-3. Go to **SQL Editor** (left sidebar)
-4. Click **New Query**
-5. Copy the contents of: `supabase/migrations/20250111000001_add_aemd_accuracy_monitoring.sql`
-6. Paste into SQL Editor
-7. Click **Run** (or press Cmd+Enter)
-8. ✅ Should see: "Success. No rows returned"
-
-### Migration 2: API Monetization (Optional - only if you want monetization)
-
-1. In same SQL Editor
-2. Click **New Query**
-3. Copy the contents of: `supabase/migrations/20250111000002_add_api_keys_and_usage.sql`
-4. Paste into SQL Editor
-5. Click **Run**
-6. ✅ Should see: "Success. No rows returned"
-
----
-
-## Step 2: Add Environment Variables (2 minutes)
-
-### Get Your Supabase Credentials
-
-1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Select your project
-3. Click **Settings** (left sidebar)
-4. Click **API**
-5. Copy these two values:
-   - **Project URL** (looks like: `https://abc123.supabase.co`)
-   - **Service Role Key** (long string starting with `eyJ...`)
-
-### Add to `.env.local`
+### 1. Test Dashboard (5 minutes)
+**Goal**: Verify everything works end-to-end
 
 ```bash
-# Open .env.local in your editor
-nano .env.local
-
-# Add these lines (replace with your actual values):
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
-```
-
-Save and close (Ctrl+X, then Y, then Enter if using nano)
-
----
-
-## Step 3: Restart Development Server (1 minute)
-
-```bash
-# Kill any existing Next.js processes
-pkill -f "next dev"
-
-# Start fresh dev server
+# Start dev server if not running
 npm run dev
+
+# Then visit:
+http://localhost:3000/dashboard
 ```
+
+**Checklist:**
+- [ ] Dashboard loads without errors
+- [ ] All tabs navigate correctly (Overview, AI Health, Website, etc.)
+- [ ] Cognitive Dashboard modal opens
+- [ ] HAL-9000 chatbot works
+- [ ] Data loads from API endpoints
+
+**If issues found:**
+- Check browser console for errors
+- Verify API endpoints are responding
+- Check authentication state
 
 ---
 
-## Step 4: Test the System (3 minutes)
-
-### Test Internal APIs (No auth required)
+### 2. Test Audit Report Viewer (5 minutes)
+**Goal**: Verify audit reports display correctly
 
 ```bash
-# Test AEMD metrics POST
-curl -X POST http://localhost:3000/api/aemd-metrics \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tenant_id": "test-tenant",
-    "report_date": "2025-01-11",
-    "ctr_p3": 4.5,
-    "ctr_fs": 3.2,
-    "total_vdp_views": 1200,
-    "vdp_views_ai": 450,
-    "total_assisted_conversions": 85,
-    "assisted_conversions_paa": 25,
-    "omega_def": 1.0
-  }'
-
-# Test AEMD metrics GET
-curl http://localhost:3000/api/aemd-metrics?tenant_id=test-tenant
-
-# Test Accuracy monitoring POST
-curl -X POST http://localhost:3000/api/accuracy-monitoring \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tenant_id": "test-tenant",
-    "issue_detection_accuracy": 0.88,
-    "ranking_correlation": 0.72,
-    "consensus_reliability": 0.92,
-    "variance": 3.5
-  }'
-
-# Test Accuracy monitoring GET
-curl http://localhost:3000/api/accuracy-monitoring?tenant_id=test-tenant
+# Visit:
+http://localhost:3000/admin/audit
 ```
 
-### View Dashboard
-
-Open browser: http://localhost:3000/monitoring?tenant=test-tenant
+**Checklist:**
+- [ ] Table displays variant metrics
+- [ ] Chart renders (CTR vs Conversion)
+- [ ] CSV download works
+- [ ] PDF download works
+- [ ] Historical reports load
 
 ---
 
-## Step 5: Test API Monetization (Optional)
+## 🔥 High Priority (This Week)
 
-Only if you applied migration #2:
+### 3. Add Slack Performance Alerts (30 minutes)
+**Goal**: Get notified when variants outperform by >10%
 
-### Generate Your First API Key
+**Implementation Steps:**
+1. Create `/app/api/slack/alert/route.ts`
+2. Add Slack webhook URL to `.env.local`
+3. Integrate into `scripts/generate-report.js`
+4. Test alert delivery
 
-Create file: `scripts/generate-test-api-key.ts`
+**Files to Create:**
+- `app/api/slack/alert/route.ts`
+- Update `scripts/generate-report.js` to call Slack API
 
-```typescript
-import { generateApiKey } from '@/lib/api-auth';
-
-async function main() {
-  const result = await generateApiKey(
-    'test-tenant',
-    'Test API Key',
-    'free',
-    {
-      description: 'Testing API access',
-      expiresInDays: 365,
-      scopes: ['read']
-    }
-  );
-
-  if (result) {
-    console.log('✅ API Key Generated!');
-    console.log('Full Key:', result.apiKey);
-    console.log('Prefix:', result.keyPrefix);
-    console.log('\n⚠️  SAVE THIS KEY - It won\'t be shown again!\n');
-  } else {
-    console.error('❌ Failed to generate API key');
-  }
-}
-
-main();
-```
-
-Run it:
+**Environment Variable:**
 ```bash
-npx ts-node scripts/generate-test-api-key.ts
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ```
 
-### Test Authenticated Endpoint
+---
 
+### 4. Configure Real Analytics (30 minutes)
+**Goal**: Connect to actual GA4/Mixpanel/Segment data
+
+**Steps:**
+1. Add analytics credentials to `.env.local`:
+   ```bash
+   # Google Analytics 4
+   GA_PROPERTY_ID=your_property_id
+   GOOGLE_ANALYTICS_CREDENTIALS=your_credentials_json
+   
+   # OR Mixpanel
+   NEXT_PUBLIC_MIXPANEL_TOKEN=your_token
+   
+   # OR Segment
+   NEXT_PUBLIC_SEGMENT_KEY=your_key
+   ```
+2. Test analytics API endpoint:
+   ```bash
+   curl http://localhost:3000/api/analytics/variant?variant=fear&range=30d
+   ```
+3. Regenerate audit report to verify real data:
+   ```bash
+   node scripts/generate-report.js
+   ```
+
+---
+
+### 5. Verify CI/CD Integration (15 minutes)
+**Goal**: Ensure reports generate automatically on deploy
+
+**Check:**
+- [ ] `.github/workflows/abtest-deploy.yml` exists
+- [ ] Workflow runs `generate-report.js` after deployment
+- [ ] Reports are saved to `public/audit-reports/`
+- [ ] GitHub Actions has access to required secrets
+
+**If workflow doesn't exist:**
+- Create GitHub Actions workflow
+- Add `GOOGLE_PAGESPEED_API_KEY` to GitHub secrets
+- Test workflow on next deployment
+
+---
+
+## 📊 Medium Priority (Next Week)
+
+### 6. Integrate Audit Viewer into Dashboard
+**Goal**: Add audit reports to main dashboard
+
+**Options:**
+- Add "Audit Reports" tab to dashboard
+- Add widget to Settings/War Room tab
+- Add link in dashboard header
+
+**Files to Modify:**
+- `app/components/DealershipAIDashboardLA.tsx` - Add audit tab/widget
+- Import `AuditReportViewer` component
+
+---
+
+### 7. Real-time PIQR Updates
+**Goal**: Live metric updates via WebSocket
+
+**Implementation:**
+1. Set up WebSocket server (or use Supabase Realtime)
+2. Connect PIQR dashboard widget
+3. Update scores in real-time
+
+---
+
+### 8. Email Report Automation
+**Goal**: Send audit reports via email after each deploy
+
+**Implementation:**
+1. Choose email service (SendGrid/Resend)
+2. Create email template
+3. Integrate into CI/CD workflow
+4. Schedule post-deploy delivery
+
+---
+
+## 🎯 Quick Wins (30 minutes each)
+
+### 9. Add Variant Testing to Landing Page
+- Integrate `/api/variant` route
+- Apply variant styles to marketing page
+- Track impressions
+
+### 10. Performance Optimization
+- Add SEO meta tags
+- Optimize images
+- Reduce bundle size
+
+---
+
+## 📋 Testing Checklist
+
+### Dashboard Testing
 ```bash
-# Replace YOUR_API_KEY with the key from previous step
-curl -X GET "http://localhost:3000/api/v1/aemd-metrics?limit=10" \
-  -H "Authorization: Bearer YOUR_API_KEY"
+# 1. Start dev server
+npm run dev
+
+# 2. Test routes
+curl http://localhost:3000/dashboard
+curl http://localhost:3000/admin/audit
+curl http://localhost:3000/api/analytics/variant?variant=fear
+
+# 3. Test report generation
+node scripts/generate-report.js
+
+# 4. Verify files generated
+ls -lh public/audit-reports/
 ```
 
-Expected response:
-```json
-{
-  "success": true,
-  "version": "v1",
-  "data": [...],
-  "stats": {...},
-  "pagination": {...}
-}
-```
-
-Check rate limit headers:
+### API Testing
 ```bash
-# Should see headers like:
-# X-RateLimit-Remaining: 999
-# X-RateLimit-Tier: free
+# Test analytics endpoint
+curl http://localhost:3000/api/analytics/variant?variant=fear&range=30d
+
+# Test PIQR endpoint
+curl http://localhost:3000/api/piqr?dealerId=current&range=30d
+
+# Test audit history
+curl http://localhost:3000/api/audit-history
 ```
 
 ---
 
-## Troubleshooting
+## 🚨 Known Issues & Fixes
 
-### Error: "fetch failed" or connection errors
-- Check that `.env.local` has correct Supabase URL and key
-- Restart dev server after adding env vars
-- Verify Supabase project is running (check dashboard)
+### Issue: Lighthouse API errors in generate-report.js
+**Status**: Expected - requires deployed URL or API key
+**Fix**: Add `GOOGLE_PAGESPEED_API_KEY` to `.env.local` or deploy to production
 
-### Error: "relation does not exist"
-- Migrations not applied yet
-- Run SQL migrations in Supabase SQL Editor
+### Issue: Analytics returns simulated data
+**Status**: Expected - requires analytics provider credentials
+**Fix**: Add GA4/Mixpanel/Segment credentials to `.env.local`
 
-### Error: "API key not found"
-- Generate an API key first using the script above
-- Make sure you're using the full key (starts with `sk_live_`)
-
-### Port conflicts
-- If dev server won't start: `pkill -f "next dev"`
-- Check what's using port 3000: `lsof -i :3000`
+### Issue: PIQR uses mock data
+**Status**: Expected - requires database connection
+**Fix**: Verify Supabase connection and database tables exist
 
 ---
 
-## What You Have Now
+## 📈 Success Metrics
 
-✅ **AEMD Metrics System**
-- Calculate AI Economic Metric Dashboard scores
-- Track FS, AIO, PAA components
-- Store historical data
+### Completed Today ✅
+- ✅ Audit report system working
+- ✅ Analytics integration ready
+- ✅ Database queries connected
+- ✅ Multi-provider analytics support
 
-✅ **Accuracy Monitoring System**
-- Track issue detection accuracy (88%)
-- Monitor ranking correlation (72%)
-- Check consensus reliability (92%)
-- Auto-generate alerts when below thresholds
-
-✅ **Complete Dashboard**
-- AEMD score tile with breakdown
-- Heatmap for segments
-- FastSearch clarity gauges
-- Trust & accuracy monitoring
-- Active alerts banner
-
-✅ **API Monetization Foundation** (Optional)
-- API key authentication
-- Rate limiting by tier (free/pro/enterprise)
-- Usage tracking for billing
-- Versioned endpoints (`/api/v1/`)
-
-✅ **Multi-Channel Alerting**
-- Email (Resend)
-- Slack webhooks
-- Custom webhooks
-- Console logging
+### Next Session Goals
+- [ ] Dashboard loads correctly
+- [ ] Slack alerts working
+- [ ] Real analytics data flowing
+- [ ] CI/CD generating reports automatically
 
 ---
 
-## Quick Reference
+## 🎓 Recommended Order
 
-### Important Files
+**Start Here:**
+1. Test dashboard (5 min) - Verify everything works
+2. Test audit viewer (5 min) - See generated reports
+3. Add Slack alerts (30 min) - Immediate value
+4. Configure analytics (30 min) - Real data integration
 
-| File | Purpose |
-|------|---------|
-| `app/api/aemd-metrics/route.ts` | Internal AEMD API |
-| `app/api/accuracy-monitoring/route.ts` | Internal accuracy API |
-| `app/api/v1/aemd-metrics/route.ts` | Authenticated AEMD API |
-| `src/components/dashboard/AEMDMonitoringDashboard.tsx` | Dashboard component |
-| `src/lib/api-auth.ts` | Authentication library |
-| `src/lib/governance.ts` | Governance framework |
-| `src/lib/alerting/accuracy-alerts.ts` | Alert system |
-
-### Documentation
-
-| File | Description |
-|------|-------------|
-| `AEMD_ACCURACY_MONITORING_GUIDE.md` | Complete implementation guide |
-| `AEMD_QUICK_REFERENCE.md` | Developer quick reference |
-| `API_MONETIZATION_READY.md` | Monetization setup guide |
-| `DEPLOY_AEMD.md` | Deployment instructions |
+**Then:**
+5. CI/CD verification (15 min)
+6. Dashboard enhancements
+7. Real-time updates
+8. Email automation
 
 ---
 
-## When Ready to Launch
+## 💡 Tips
 
-1. ✅ Test all endpoints thoroughly
-2. ✅ Verify dashboard loads and displays data
-3. ✅ Test alert system with below-threshold values
-4. ✅ Review governance metrics
-5. ✅ (Optional) Set up Stripe for billing
-6. ✅ (Optional) Create customer-facing API key UI
-7. ✅ Deploy to Vercel/production
+- **Start with testing** - Verify what you have before adding new features
+- **Test incrementally** - Don't test everything at once
+- **Use fallbacks** - All systems gracefully degrade if APIs are unavailable
+- **Check logs** - Browser console and server logs show what's happening
 
 ---
 
-## Need Help?
-
-Check the comprehensive documentation files created:
-- `AEMD_ACCURACY_MONITORING_GUIDE.md` - Full system guide
-- `API_MONETIZATION_READY.md` - Monetization setup
-- `AEMD_SYSTEM_FLOW.md` - Architecture diagrams
-
-All systems are ready. Just configure Supabase credentials and test! 🚀
+**Ready to start?** Begin with testing the dashboard at `http://localhost:3000/dashboard` 🚀

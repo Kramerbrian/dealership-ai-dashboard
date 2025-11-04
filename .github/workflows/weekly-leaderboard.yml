@@ -1,0 +1,39 @@
+name: DealershipAI Weekly AI Visibility Leaderboard
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"  # Every Monday 9:00 AM EST (13:00 UTC)
+  workflow_dispatch:
+
+jobs:
+  leaderboard:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Leaderboard
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_LEADERBOARD_CHANNEL || '#ai-ops' }}
+        run: |
+          node scripts/generate-leaderboard.js
+
+      - name: Post to Slack
+        if: success()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_LEADERBOARD_CHANNEL || '#ai-ops' }}
+        run: |
+          node scripts/post-leaderboard-to-slack.js

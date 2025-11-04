@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createApiRoute } from '@/lib/api-wrapper';
+import { dashboardWebsiteQuerySchema, validateQueryParams } from '@/lib/validation/schemas';
+import { cachedResponse, errorResponse } from '@/lib/api-response';
+import { CACHE_TAGS } from '@/lib/cache-tags';
+import { logger } from '@/lib/logger';
 import { CacheManager, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 import { PerformanceMonitor } from '@/lib/monitoring';
 
@@ -139,92 +144,120 @@ function generateWebsiteData(): WebsiteData {
   };
 }
 
-export async function GET(req: NextRequest) {
-  const startTime = Date.now();
-  const monitor = PerformanceMonitor.getInstance();
+/**
+ * Dashboard Website API Endpoint
+ * 
+ * ✅ Migrated to new security middleware:
+ * - Authentication required
+ * - Query parameter validation
+ * - Rate limiting
+ * - Performance monitoring
+ * - Standardized error handling
+ */
+export const GET = createApiRoute(
+  {
+    endpoint: '/api/dashboard/website',
+    requireAuth: true,
+    validateQuery: dashboardWebsiteQuerySchema,
+    rateLimit: true,
+    performanceMonitoring: true,
+  },
+  async (req, auth) => {
+    const requestId = req.headers.get('x-request-id') || 'unknown';
+    const monitor = PerformanceMonitor.getInstance();
 
-  try {
-    const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain') || 'dealershipai.com';
-    const timeRange = searchParams.get('timeRange') || '30d';
+    try {
+      // Query validation handled by wrapper
+      const queryValidation = validateQueryParams(req, dashboardWebsiteQuerySchema);
+      if (!queryValidation.success) {
+        return queryValidation.response;
+      }
 
-    // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.WEBSITE_DATA(domain, timeRange);
+      const domain = queryValidation.data.domain || 'dealershipai.com';
+      const timeRange = queryValidation.data.timeRange || '30d';
 
-    const cachedData = await cache.get(cacheKey);
-    if (cachedData) {
-      const duration = Date.now() - startTime;
-
-      const response = NextResponse.json({
-        success: true,
-        data: cachedData,
-        meta: {
-          domain,
-          timeRange,
-          timestamp: new Date().toISOString(),
-          responseTime: `${duration}ms`,
-          source: 'cache'
-        }
-      });
-
-      response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-      response.headers.set('Server-Timing', `website-analysis;dur=${duration}`);
-
-      return response;
-    }
-
-    // Generate Website data with performance tracking
-    const websiteData = await monitor.trackApiCall(
-      'website_analysis',
-      () => generateWebsiteData(),
-      { domain, timeRange }
-    );
-
-    // Cache the result
-    await cache.set(cacheKey, websiteData, CACHE_TTL.WEBSITE_DATA);
-
-    const duration = Date.now() - startTime;
-
-    const response = NextResponse.json({
-      success: true,
-      data: websiteData,
-      meta: {
+      await logger.info('Website analysis requested', {
+        requestId,
         domain,
         timeRange,
-        timestamp: new Date().toISOString(),
-        responseTime: `${duration}ms`,
-        source: 'website_analysis_engine'
+        userId: auth.userId,
+      });
+
+      // Check cache first
+      const cache = CacheManager.getInstance();
+      const cacheKey = CACHE_KEYS.WEBSITE_DATA(domain, timeRange);
+
+      const cachedData = await cache.get(cacheKey);
+      if (cachedData) {
+        await logger.info('Website cache hit', {
+          requestId,
+          domain,
+          timeRange,
+        });
+
+        return cachedResponse(
+          {
+            success: true,
+            data: cachedData,
+            meta: {
+              domain,
+              timeRange,
+              timestamp: new Date().toISOString(),
+              source: 'cache'
+            }
+          },
+          300, // 5 min cache
+          600, // 10 min stale
+          [CACHE_TAGS.DASHBOARD_WEBSITE, CACHE_TAGS.DASHBOARD]
+        );
       }
-    });
 
-    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    response.headers.set('Server-Timing', `website-analysis;dur=${duration}`);
+      // Generate Website data with performance tracking
+      const websiteData = await monitor.trackApiCall(
+        'website_analysis',
+        () => generateWebsiteData(),
+        { domain, timeRange }
+      );
 
-    return response;
+      // Cache the result
+      await cache.set(cacheKey, websiteData, CACHE_TTL.WEBSITE_DATA);
 
-  } catch (error: any) {
-    console.error('Website Analysis API Error:', error);
-    monitor.trackError(error, { api: 'website_analysis', domain: req.url });
+      await logger.info('Website analysis completed', {
+        requestId,
+        domain,
+        timeRange,
+        userId: auth.userId,
+      });
 
-    // Return fallback data
-    const fallbackData = generateWebsiteData();
-    const duration = Date.now() - startTime;
+      return cachedResponse(
+        {
+          success: true,
+          data: websiteData,
+          meta: {
+            domain,
+            timeRange,
+            timestamp: new Date().toISOString(),
+            source: 'website_analysis_engine'
+          }
+        },
+        300,
+        600,
+        [CACHE_TAGS.DASHBOARD_WEBSITE, CACHE_TAGS.DASHBOARD]
+      );
 
-    const response = NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to fetch website data',
-      data: fallbackData,
-      meta: {
-        domain: req.nextUrl.searchParams.get('domain') || 'dealershipai.com',
-        timeRange: req.nextUrl.searchParams.get('timeRange') || '30d',
-        timestamp: new Date().toISOString(),
-        responseTime: `${duration}ms`,
-        source: 'fallback_mock_data'
-      }
-    }, { status: 500 });
+    } catch (error) {
+      await logger.error('Website analysis error', {
+        requestId,
+        userId: auth.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
 
-    response.headers.set('Server-Timing', `website-analysis;dur=${duration}`);
-    return response;
+      return errorResponse(error, 500, {
+        requestId,
+        endpoint: '/api/dashboard/website',
+        userId: auth.userId,
+      });
+    }
   }
-}
+);

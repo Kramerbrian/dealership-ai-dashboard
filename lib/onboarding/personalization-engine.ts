@@ -43,14 +43,27 @@ export interface PersonalizedMessage {
 }
 
 export class OnboardingPersonalizationEngine {
-  private supabase: any
+  private supabase: any = null
   private dealershipProfile: DealershipProfile | null = null
 
   constructor() {
-    this.supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    // Lazy initialization - Supabase is optional for build
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      this.supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      )
+    }
+  }
+
+  private getSupabase() {
+    if (!this.supabase && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      this.supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      )
+    }
+    return this.supabase
   }
 
   /**

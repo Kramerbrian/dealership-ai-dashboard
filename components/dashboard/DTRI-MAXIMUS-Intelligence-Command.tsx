@@ -8,7 +8,8 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
   AlertCircle, 
   TrendingUp, 
@@ -61,86 +62,90 @@ interface DTriMaximusData {
   };
 }
 
-export default function DTriMaximusIntelligenceCommand({ tenantId, dealershipId }: DTriMaximusIntelligenceProps) {
-  const [data, setData] = useState<DTriMaximusData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
+// Fetch function for React Query
+async function fetchDTriMaximusData(
+  tenantId: string,
+  dealershipId: string
+): Promise<DTriMaximusData> {
+  // Try to fetch from APIs, but fall back to mock data if they fail
+  try {
+    const [supermodalRes, microSegRes, feedbackRes, ultimateRes] = await Promise.all([
+      fetch(`/api/dtri-maximus/supermodal?tenantId=${tenantId}&dealershipId=${dealershipId}`),
+      fetch(`/api/dtri-maximus/micro-segmentation?tenantId=${tenantId}&dealershipId=${dealershipId}`),
+      fetch(`/api/dtri-maximus/feedback-loop?tenantId=${tenantId}&dealershipId=${dealershipId}&action=get_recalibration`),
+      fetch(`/api/dtri-maximus/ultimate?tenantId=${tenantId}&dealershipId=${dealershipId}&enhancement=all`)
+    ]);
 
-  useEffect(() => {
-    fetchDTriMaximusData();
-  }, [tenantId, dealershipId]);
+    const [supermodal, microSeg, feedback, ultimate] = await Promise.all([
+      supermodalRes.json(),
+      microSegRes.json(),
+      feedbackRes.json(),
+      ultimateRes.json()
+    ]);
 
-  const fetchDTriMaximusData = async () => {
-    try {
-      setLoading(true);
-      
-      // Try to fetch from APIs, but fall back to mock data if they fail
-      try {
-        const [supermodalRes, microSegRes, feedbackRes, ultimateRes] = await Promise.all([
-          fetch(`/api/dtri-maximus/supermodal?tenantId=${tenantId}&dealershipId=${dealershipId}`),
-          fetch(`/api/dtri-maximus/micro-segmentation?tenantId=${tenantId}&dealershipId=${dealershipId}`),
-          fetch(`/api/dtri-maximus/feedback-loop?tenantId=${tenantId}&dealershipId=${dealershipId}&action=get_recalibration`),
-          fetch(`/api/dtri-maximus/ultimate?tenantId=${tenantId}&dealershipId=${dealershipId}&enhancement=all`)
-        ]);
+    if (supermodal.success && microSeg.success && feedback.success && ultimate.success) {
+      return {
+        supermodal: supermodal.data,
+        microSegmentation: microSeg.data,
+        feedbackLoop: feedback.data,
+        ultimateEnhancements: ultimate.data
+      };
+    }
+  } catch (apiError) {
+    console.log('APIs not available, using mock data:', apiError);
+  }
 
-        const [supermodal, microSeg, feedback, ultimate] = await Promise.all([
-          supermodalRes.json(),
-          microSegRes.json(),
-          feedbackRes.json(),
-          ultimateRes.json()
-        ]);
-
-        if (supermodal.success && microSeg.success && feedback.success && ultimate.success) {
-          setData({
-            supermodal: supermodal.data,
-            microSegmentation: microSeg.data,
-            feedbackLoop: feedback.data,
-            ultimateEnhancements: ultimate.data
-          });
-          return;
-        }
-      } catch (apiError) {
-        console.log('APIs not available, using mock data:', apiError);
+  // Fallback to mock data
+  return {
+    supermodal: {
+      dtriScore: 85.2,
+      scoreColorCode: 'green' as const,
+      maximusInsight: 'Your current score translates to an immediate $90,000 Profit Opportunity and $18,000 in Decay Tax Risk.',
+      profitOpportunityDollars: 90000,
+      decayTaxRiskDollars: 18000,
+      lastUpdated: new Date().toISOString()
+    },
+    microSegmentation: {
+      totalProfitLift: 56100,
+      segmentedBreakdown: {
+        sales: { profitLift: 52500, dtriScore: 87.3, deltaLeads: 15 },
+        service: { profitLift: 3600, dtriScore: 82.1, deltaLeads: 8 },
+        leads: { profitLift: 0, dtriScore: 75.5, deltaLeads: 0 },
+        lifetimeValue: { profitLift: 0, dtriScore: 78.9, deltaLeads: 0 }
       }
-
-      // Fallback to mock data
-      setData({
-        supermodal: {
-          dtriScore: 85.2,
-          scoreColorCode: 'green' as const,
-          maximusInsight: 'Your current score translates to an immediate $90,000 Profit Opportunity and $18,000 in Decay Tax Risk.',
-          profitOpportunityDollars: 90000,
-          decayTaxRiskDollars: 18000,
-          lastUpdated: new Date().toISOString()
-        },
-        microSegmentation: {
-          totalProfitLift: 56100,
-          segmentedBreakdown: {
-            sales: { profitLift: 52500, dtriScore: 87.3, deltaLeads: 15 },
-            service: { profitLift: 3600, dtriScore: 82.1, deltaLeads: 8 },
-            leads: { profitLift: 0, dtriScore: 75.5, deltaLeads: 0 },
-            lifetimeValue: { profitLift: 0, dtriScore: 78.9, deltaLeads: 0 }
-          }
-        },
-        feedbackLoop: {
-          pendingRecalibrations: 3,
-          appliedRecalibrations: 12,
-          mlAccuracy: 0.92,
-          autonomousTriggers: 8
-        },
-        ultimateEnhancements: {
-          mlPredictive: { accuracy: 0.92, models: 4 },
-          autonomousAgents: { activeTriggers: 8, actionsExecuted: 24 },
-          contextualFiltering: { segments: 12, tsmCalibrations: 48 },
-          causalForecasting: { models: 3, forecastHorizon: 180 }
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching DTRI-MAXIMUS data:', error);
-    } finally {
-      setLoading(false);
+    },
+    feedbackLoop: {
+      pendingRecalibrations: 3,
+      appliedRecalibrations: 12,
+      mlAccuracy: 0.92,
+      autonomousTriggers: 8
+    },
+    ultimateEnhancements: {
+      mlPredictive: { accuracy: 0.92, models: 4 },
+      autonomousAgents: { activeTriggers: 8, actionsExecuted: 24 },
+      contextualFiltering: { segments: 12, tsmCalibrations: 48 },
+      causalForecasting: { models: 3, forecastHorizon: 180 }
     }
   };
+}
+
+export default function DTriMaximusIntelligenceCommand({ tenantId, dealershipId }: DTriMaximusIntelligenceProps) {
+  const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
+
+  // React Query hook - replaces fetch/useState/useEffect
+  const {
+    data,
+    isLoading: loading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['dtri-maximus', tenantId, dealershipId],
+    queryFn: () => fetchDTriMaximusData(tenantId, dealershipId),
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    retryOnMount: false, // Don't refetch if already cached
+  });
 
   const getScoreColor = (colorCode: string) => {
     switch (colorCode) {

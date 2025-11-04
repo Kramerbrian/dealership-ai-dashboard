@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChatBubbleLeftRightIcon,
@@ -40,108 +41,93 @@ interface SentimentSummary {
 }
 
 export function RAGDashboard() {
-  const [stats, setStats] = useState<RAGStats | null>(null);
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState<RAGResponse | null>(null);
-  const [sentiment, setSentiment] = useState<SentimentSummary | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Load initial data
-  useEffect(() => {
-    loadStats();
-    loadSentiment();
-  }, []);
-
-  const loadStats = async () => {
-    try {
+  // React Query hooks for data fetching
+  const { data: stats, refetch: refetchStats } = useQuery({
+    queryKey: ['rag', 'stats'],
+    queryFn: async () => {
       const res = await fetch('/api/ai/rag?action=get_stats');
       const data = await res.json();
-      if (data.success) {
-        setStats(data.data);
-      }
-    } catch (err) {
-      console.error('Failed to load stats:', err);
-    }
-  };
+      if (!data.success) throw new Error(data.error || 'Failed to load stats');
+      return data.data as RAGStats;
+    },
+    staleTime: 60 * 1000, // 1 minute
+    retry: 2,
+  });
 
-  const loadSentiment = async () => {
-    try {
+  const { data: sentiment, refetch: refetchSentiment } = useQuery({
+    queryKey: ['rag', 'sentiment'],
+    queryFn: async () => {
       const res = await fetch('/api/ai/rag?action=get_sentiment');
       const data = await res.json();
-      if (data.success) {
-        setSentiment(data.data);
-      }
-    } catch (err) {
-      console.error('Failed to load sentiment:', err);
-    }
-  };
+      if (!data.success) throw new Error(data.error || 'Failed to load sentiment');
+      return data.data as SentimentSummary;
+    },
+    staleTime: 60 * 1000, // 1 minute
+    retry: 2,
+  });
 
-  const ingestSampleData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  const queryClient = useQueryClient();
+
+  // Mutation for ingesting data
+  const ingestMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch('/api/ai/rag?action=test_ingest');
       const data = await res.json();
-      if (data.success) {
-        setStats(data.stats);
-        await loadSentiment();
-      } else {
-        setError(data.error || 'Failed to ingest sample data');
-      }
-    } catch (err) {
-      setError('Failed to ingest sample data');
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (!data.success) throw new Error(data.error || 'Failed to ingest sample data');
+      return data.stats as RAGStats;
+    },
+    onSuccess: (newStats) => {
+      // Update cache
+      queryClient.setQueryData(['rag', 'stats'], newStats);
+      // Refetch sentiment
+      refetchSentiment();
+    },
+  });
 
-  const handleQuery = async () => {
-    if (!query.trim()) return;
-    
-    setLoading(true);
-    setError(null);
-    try {
+  // Mutation for querying
+  const queryMutation = useMutation({
+    mutationFn: async (queryText: string) => {
       const res = await fetch('/api/ai/rag', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'query',
-          question: query,
+          question: queryText,
           k: 4,
         }),
       });
       const data = await res.json();
-      if (data.success) {
-        setResponse(data.data);
-      } else {
-        setError(data.error || 'Failed to process query');
-      }
-    } catch (err) {
-      setError('Failed to process query');
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (!data.success) throw new Error(data.error || 'Failed to process query');
+      return data.data as RAGResponse;
+    },
+    onSuccess: (data) => {
+      setResponse(data);
+    },
+  });
 
-  const getQuickInsights = async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  // Mutation for quick insights
+  const insightsMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch('/api/ai/rag?action=test_insights');
       const data = await res.json();
-      if (data.success) {
-        // Display the first insight as an example
-        const firstInsight = data.data.pricingQuestions;
-        setResponse(firstInsight);
-      } else {
-        setError(data.error || 'Failed to get insights');
-      }
-    } catch (err) {
-      setError('Failed to get insights');
-    } finally {
-      setLoading(false);
-    }
+      if (!data.success) throw new Error(data.error || 'Failed to get insights');
+      return data.data.pricingQuestions as RAGResponse;
+    },
+    onSuccess: (insight) => {
+      setResponse(insight);
+    },
+  });
+
+  const handleQuery = () => {
+    if (!query.trim()) return;
+    queryMutation.mutate(query.trim());
+  };
+
+  const getQuickInsights = () => {
+    insightsMutation.mutate();
   };
 
   return (
@@ -153,11 +139,11 @@ export function RAGDashboard() {
           <p className="text-gray-400">Analyze social media posts and customer feedback with RAG</p>
         </div>
         <button
-          onClick={ingestSampleData}
-          disabled={loading}
+          onClick={() => ingestMutation.mutate()}
+          disabled={ingestMutation.isPending}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg font-semibold transition-colors flex items-center gap-2"
         >
-          <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <ArrowPathIcon className={`w-4 h-4 ${ingestMutation.isPending ? 'animate-spin' : ''}`} />
           Load Sample Data
         </button>
       </div>
@@ -253,7 +239,7 @@ export function RAGDashboard() {
           />
           <button
             onClick={handleQuery}
-            disabled={loading || !query.trim()}
+            disabled={queryMutation.isPending || !query.trim()}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg font-semibold transition-colors"
           >
             Ask
@@ -281,7 +267,7 @@ export function RAGDashboard() {
           </button>
           <button
             onClick={getQuickInsights}
-            disabled={loading}
+            disabled={insightsMutation.isPending}
             className="px-3 py-1 text-sm bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded text-white transition-colors"
           >
             Quick Insights
@@ -297,7 +283,9 @@ export function RAGDashboard() {
           className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 flex items-center gap-3"
         >
           <ExclamationTriangleIcon className="w-5 h-5 text-red-400" />
-          <span className="text-red-300">{error}</span>
+          <span className="text-red-300">
+            {queryMutation.error?.message || insightsMutation.error?.message || ingestMutation.error?.message}
+          </span>
         </motion.div>
       )}
 
