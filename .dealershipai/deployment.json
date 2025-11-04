@@ -1,0 +1,28 @@
+{
+  "project": "DealershipAI Orchestrator Dashboard",
+  "repo": "https://github.com/Kramerbrian/dealership-ai-dashboard",
+  "branch": "main",
+  "description": "Unified AI Visibility + Trust dashboard with API integration, JSON-LD schema, and automated deployment to Vercel.",
+  "files": [
+    { "path": "lib/apiConfig.ts", "description": "Expose configurable API base URL with production and local defaults." },
+    { "path": "hooks/useDealerMetrics.ts", "description": "Client hook for orchestrator metrics with fallback data and refetch controls." },
+    { "path": "components/SEO/OrchestratorSchema.tsx", "description": "Inject AutoDealer + SoftwareApplication JSON-LD for richer SERP display." },
+    { "path": "components/DealershipAIOrchestratorDashboard.tsx", "description": "Cupertino-styled orchestrator control center consuming live metrics." },
+    { "path": "app/api/ai-scores/route.ts", "description": "Deterministic synthetic AI score endpoint powering the dashboard." },
+    { "path": "app/dashboard/page.tsx", "description": "Route entry rendering the orchestrator dashboard client component." }
+  ],
+  "postInstall": {
+    "commands": [
+      "npm install",
+      "npm run lint",
+      "npm run build"
+    ]
+  },
+  "deploy": {
+    "platform": "vercel",
+    "project": "dealership-ai-dashboard",
+    "env": {
+      "NEXT_PUBLIC_API_BASE_URL": "https://dealership-ai-dashboard.vercel.app/api"
+    }
+  }
+}
