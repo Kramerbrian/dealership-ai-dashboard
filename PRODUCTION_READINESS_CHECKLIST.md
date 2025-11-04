@@ -1,318 +1,237 @@
-# DealershipAI Visibility Engine - Production Readiness Checklist
+# Production Readiness Checklist
 
-## 🎯 Overview
-This checklist ensures your DealershipAI Visibility Engine is ready for production deployment with enterprise-grade reliability, security, and performance.
+## ✅ Completed
 
----
+### Core Functionality
+- [x] AIV calculation formulas implemented
+- [x] API endpoint with validation
+- [x] React hook for AIV calculations
+- [x] Modal UI component
+- [x] Dashboard integration
+- [x] Chatbot integration
+- [x] Redis Pub/Sub event bus
+- [x] Rate limiting on API routes
+- [x] Performance monitoring
+- [x] Input validation (Zod schemas)
 
-## 📋 Pre-Deployment Checklist
+## 🔧 Required for Production
 
-### ✅ Database Layer
-- [ ] **Supabase project created and configured**
-  - [ ] Database URL and service role key configured
-  - [ ] Row-Level Security (RLS) enabled on all tables
-  - [ ] Database migrations applied successfully
-  - [ ] All required functions deployed (`compute_aoer_summary`, `compute_elasticity`, etc.)
-  - [ ] Indexes created for optimal query performance
-  - [ ] Backup strategy configured (daily snapshots)
+### 1. Environment Variables Configuration
 
-- [ ] **Database Schema Validation**
-  - [ ] `aiv_raw_signals` table created with proper constraints
-  - [ ] `model_weights` table with versioning support
-  - [ ] `model_audit` table for tracking all operations
-  - [ ] `aoer_queries` and `aoer_summary` tables for AOER metrics
-  - [ ] `metrics_events` table for elasticity tracking
-  - [ ] `aoer_failures` table for error logging
+**Status**: ⚠️ Needs documentation
 
-### ✅ API Layer
-- [ ] **All API Endpoints Functional**
-  - [ ] `/api/kpis/latest` - Real-time AIV metrics
-  - [ ] `/api/train/evaluate` - Model evaluation
-  - [ ] `/api/anomaly/reviews` - FraudGuard detection
-  - [ ] `/api/predict/forecast` - Predictive forecasting
-  - [ ] `/api/history` - Historical trend data
-  - [ ] `/api/prompts/latest` - Benchmark results
+Create `.env.example` with all required variables:
 
-- [ ] **API Security & Performance**
-  - [ ] Input validation on all endpoints
-  - [ ] Rate limiting configured
-  - [ ] CORS properly configured
-  - [ ] Error handling and logging implemented
-  - [ ] Response caching optimized
-  - [ ] API documentation updated
+```bash
+# Redis Configuration (optional for multi-instance)
+REDIS_URL=redis://user:pass@host:6379/0
 
-### ✅ Application Layer
-- [ ] **Next.js Application**
-  - [ ] Production build successful (`npm run build`)
-  - [ ] Environment variables configured
-  - [ ] TypeScript compilation clean
-  - [ ] No linter errors or warnings
-  - [ ] Bundle size optimized
-  - [ ] Static assets properly configured
+# Application URLs
+NEXT_PUBLIC_APP_URL=https://dash.dealershipai.com
 
-- [ ] **Frontend Integration**
-  - [ ] Dashboard components connected to APIs
-  - [ ] Real-time data updates working
-  - [ ] Error boundaries implemented
-  - [ ] Loading states and user feedback
-  - [ ] Responsive design tested
-  - [ ] Accessibility compliance (WCAG 2.1)
+# Database
+DATABASE_URL=postgresql://...
 
----
+# Clerk Authentication
+CLERK_SECRET_KEY=sk_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
 
-## 🚀 Deployment Checklist
+# API Keys
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+```
 
-### ✅ Infrastructure
-- [ ] **Vercel Deployment**
-  - [ ] Project connected to GitHub repository
-  - [ ] Environment variables set in Vercel dashboard
-  - [ ] Custom domain configured (if applicable)
-  - [ ] SSL certificate valid
-  - [ ] CDN configuration optimized
-  - [ ] Edge functions configured (if needed)
+### 2. Real Data Source Integration
 
-- [ ] **Monitoring & Observability**
-  - [ ] Vercel Analytics enabled
-  - [ ] Error tracking configured (Sentry or similar)
-  - [ ] Performance monitoring active
-  - [ ] Uptime monitoring set up
-  - [ ] Log aggregation configured
-  - [ ] Alert thresholds defined
+**Status**: ⚠️ Currently using mock/fallback data
 
-### ✅ Data Pipeline
-- [ ] **Automated Processing**
-  - [ ] Cron jobs scheduled for nightly processing
-  - [ ] Data ingestion pipeline tested
-  - [ ] Model training automation verified
-  - [ ] Elasticity computation working
-  - [ ] AOER summary generation functional
-  - [ ] Failure handling and retry logic
+**Required Actions**:
+- [ ] Connect `/api/ai-scores` to real scoring engine
+- [ ] Parse A/B test metrics CSV from actual location
+- [ ] Integrate with weekly leaderboard JSON
+- [ ] Connect to actual platform visibility APIs (ChatGPT, Gemini, etc.)
+- [ ] Real-time data fetching from database
 
-- [ ] **Data Quality**
-  - [ ] Data validation rules implemented
-  - [ ] Anomaly detection thresholds set
-  - [ ] Data freshness monitoring
-  - [ ] Backup and recovery procedures tested
-  - [ ] Data retention policies configured
+**Files to Update**:
+- `lib/hooks/useAIVCalculator.ts` - Replace mock data sources
+- `app/api/aiv/calculate/route.ts` - Connect to real engines
+- `app/api/ai-scores/route.ts` - Implement real scoring logic
 
----
+### 3. Error Handling & Logging
 
-## 🔒 Security Checklist
+**Status**: ⚠️ Basic error handling exists, needs enhancement
 
-### ✅ Authentication & Authorization
-- [ ] **Clerk Integration**
-  - [ ] Multi-tenant authentication configured
-  - [ ] Role-based access control (RBAC) implemented
-  - [ ] Session management secure
-  - [ ] API key management for service accounts
-  - [ ] User provisioning and deprovisioning
+**Required Improvements**:
+- [ ] Structured error logging with context
+- [ ] Error boundaries for React components
+- [ ] Retry logic for failed API calls
+- [ ] User-friendly error messages
+- [ ] Error tracking (Sentry integration)
+- [ ] Graceful degradation when data sources fail
 
-- [ ] **Data Security**
-  - [ ] Row-Level Security (RLS) policies tested
-  - [ ] Data encryption at rest and in transit
-  - [ ] PII data handling compliant
-  - [ ] Audit logging for sensitive operations
-  - [ ] Data anonymization for analytics
+**Files to Update**:
+- `components/dashboard/AIVModal.tsx` - Add error boundary
+- `lib/hooks/useAIVCalculator.ts` - Enhanced error handling
+- `app/api/aiv/calculate/route.ts` - Better error responses
 
-### ✅ Infrastructure Security
-- [ ] **Network Security**
-  - [ ] HTTPS enforced everywhere
-  - [ ] API endpoints secured
-  - [ ] Database access restricted
-  - [ ] CORS policies properly configured
-  - [ ] Rate limiting implemented
-  - [ ] DDoS protection enabled
+### 4. Performance Optimization
 
----
+**Status**: ⚠️ Partially optimized
 
-## 📊 Performance Checklist
+**Required Actions**:
+- [ ] Cache AIV calculations (already using React Query)
+- [ ] Debounce API calls in hook
+- [ ] Lazy load AIV modal component
+- [ ] Optimize CSV parsing (consider caching parsed results)
+- [ ] Implement request deduplication
+- [ ] Add loading states for all async operations
 
-### ✅ Application Performance
-- [ ] **Frontend Performance**
-  - [ ] Core Web Vitals optimized
-  - [ ] Bundle size under 500KB
-  - [ ] Image optimization implemented
-  - [ ] Lazy loading configured
-  - [ ] Service worker for caching
-  - [ ] CDN utilization optimized
+### 5. Security Hardening
 
-- [ ] **Backend Performance**
-  - [ ] API response times < 200ms
-  - [ ] Database query optimization
-  - [ ] Caching strategy implemented
-  - [ ] Connection pooling configured
-  - [ ] Memory usage optimized
-  - [ ] CPU utilization monitored
+**Status**: ⚠️ Basic security in place
 
-### ✅ Scalability
-- [ ] **Horizontal Scaling**
-  - [ ] Stateless application design
-  - [ ] Database connection limits configured
-  - [ ] Auto-scaling policies set
-  - [ ] Load balancing configured
-  - [ ] Queue management for background jobs
-  - [ ] Resource monitoring and alerting
+**Required Actions**:
+- [ ] Verify authentication on AIV endpoints
+- [ ] Add dealerId validation (prevent cross-tenant access)
+- [ ] Sanitize all user inputs
+- [ ] Add CORS configuration
+- [ ] Rate limiting per dealer (not just global)
+- [ ] Audit logging for sensitive operations
 
----
+### 6. Monitoring & Observability
 
-## 🔄 Operational Checklist
+**Status**: ⚠️ Basic monitoring exists
 
-### ✅ Monitoring & Alerting
-- [ ] **System Health Monitoring**
-  - [ ] Database health checks
-  - [ ] API endpoint monitoring
-  - [ ] Application performance monitoring
-  - [ ] Error rate tracking
-  - [ ] Uptime monitoring
-  - [ ] Resource utilization tracking
+**Required Actions**:
+- [ ] Add performance metrics (AIV calculation time)
+- [ ] Track API usage per dealer
+- [ ] Monitor error rates
+- [ ] Set up alerts for high error rates
+- [ ] Dashboard for AIV calculation health
+- [ ] Log structured data for analysis
 
-- [ ] **Business Metrics Monitoring**
-  - [ ] AIV score accuracy tracking
-  - [ ] Model performance metrics
-  - [ ] Data pipeline health
-  - [ ] User engagement metrics
-  - [ ] Revenue impact tracking
-  - [ ] SLA compliance monitoring
+### 7. Testing
 
-### ✅ Maintenance & Support
-- [ ] **Documentation**
-  - [ ] API documentation complete
-  - [ ] Deployment procedures documented
-  - [ ] Troubleshooting guides created
-  - [ ] Runbooks for common issues
-  - [ ] Architecture diagrams updated
-  - [ ] User guides and training materials
+**Status**: ❌ No tests exist
 
-- [ ] **Support Processes**
-  - [ ] Incident response procedures
-  - [ ] Escalation matrix defined
-  - [ ] On-call rotation established
-  - [ ] Change management process
-  - [ ] Backup and recovery procedures
-  - [ ] Disaster recovery plan
+**Required Tests**:
+- [ ] Unit tests for AIV calculation formulas
+- [ ] Integration tests for API endpoint
+- [ ] E2E tests for dashboard integration
+- [ ] Chatbot response tests
+- [ ] Error handling tests
+- [ ] Performance tests (load testing)
 
----
+**Test Files to Create**:
+- `__tests__/hooks/useAIVCalculator.test.ts`
+- `__tests__/api/aiv/calculate.test.ts`
+- `__tests__/components/dashboard/AIVModal.test.tsx`
+- `__tests__/e2e/aiv-integration.test.ts`
 
-## 🧪 Testing Checklist
+### 8. Documentation
 
-### ✅ Quality Assurance
-- [ ] **Automated Testing**
-  - [ ] Unit tests for critical functions
-  - [ ] Integration tests for API endpoints
-  - [ ] End-to-end tests for user workflows
-  - [ ] Performance tests under load
-  - [ ] Security tests and vulnerability scans
-  - [ ] Regression tests for model accuracy
+**Status**: ⚠️ Basic documentation exists
 
-- [ ] **Manual Testing**
-  - [ ] User acceptance testing completed
-  - [ ] Cross-browser compatibility verified
-  - [ ] Mobile responsiveness tested
-  - [ ] Accessibility testing completed
-  - [ ] Data accuracy validation
-  - [ ] Error handling scenarios tested
+**Required Documentation**:
+- [ ] API documentation (OpenAPI/Swagger)
+- [ ] Component usage examples
+- [ ] Deployment guide
+- [ ] Troubleshooting guide
+- [ ] Architecture diagrams
+- [ ] Data flow documentation
 
----
+### 9. Data Validation & Edge Cases
 
-## 📈 Go-Live Checklist
+**Status**: ⚠️ Basic validation exists
 
-### ✅ Final Validation
-- [ ] **Pre-Launch Validation**
-  - [ ] All checklist items completed
-  - [ ] Production environment tested
-  - [ ] Data migration verified
-  - [ ] Performance benchmarks met
-  - [ ] Security audit passed
-  - [ ] Stakeholder sign-off obtained
+**Required Improvements**:
+- [ ] Handle missing data gracefully
+- [ ] Validate all numeric inputs (bounds checking)
+- [ ] Handle division by zero
+- [ ] Handle null/undefined values
+- [ ] Validate dealerId format
+- [ ] Handle concurrent calculations
 
-- [ ] **Launch Day**
-  - [ ] Deployment executed successfully
-  - [ ] Health checks passing
-  - [ ] Monitoring dashboards active
-  - [ ] Support team on standby
-  - [ ] Rollback plan ready
-  - [ ] Communication plan executed
+### 10. Redis Pub/Sub Production Setup
 
-### ✅ Post-Launch
-- [ ] **Immediate Post-Launch (24 hours)**
-  - [ ] System stability confirmed
-  - [ ] Performance metrics reviewed
-  - [ ] Error rates monitored
-  - [ ] User feedback collected
-  - [ ] Any issues resolved
-  - [ ] Success metrics validated
+**Status**: ⚠️ Code ready, needs configuration
 
-- [ ] **First Week**
-  - [ ] Daily health checks
-  - [ ] Performance optimization
-  - [ ] User training completed
-  - [ ] Documentation updated
-  - [ ] Lessons learned documented
-  - [ ] Future improvements planned
+**Required Actions**:
+- [ ] Set up Redis instance (Upstash, AWS ElastiCache, etc.)
+- [ ] Configure connection pooling
+- [ ] Set up Redis monitoring
+- [ ] Add connection health checks
+- [ ] Implement reconnection logic
+- [ ] Test multi-instance message delivery
 
----
+### 11. CI/CD Pipeline
 
-## 🎯 Success Metrics
+**Status**: ⚠️ May exist, needs verification
 
-### Key Performance Indicators (KPIs)
-- **System Availability**: > 99.9% uptime
-- **API Response Time**: < 200ms average
-- **Model Accuracy**: R² > 0.85
-- **Data Freshness**: < 1 hour lag
-- **Error Rate**: < 0.1%
-- **User Satisfaction**: > 4.5/5 rating
+**Required Actions**:
+- [ ] Run tests in CI
+- [ ] Type checking in CI
+- [ ] Linting in CI
+- [ ] Build verification
+- [ ] Automated deployment
+- [ ] Rollback procedures
 
-### Business Metrics
-- **AIV Score Accuracy**: ±5% of actual performance
-- **Prediction Accuracy**: > 80% for 4-week forecasts
-- **Anomaly Detection**: > 95% precision
-- **ROI Impact**: Measurable business value
-- **User Adoption**: > 90% of target users active
-- **Data Quality**: > 95% completeness
+### 12. Load Testing
 
----
+**Status**: ❌ Not done
 
-## 🚨 Emergency Procedures
+**Required Actions**:
+- [ ] Test AIV calculation endpoint under load
+- [ ] Test dashboard with multiple concurrent users
+- [ ] Test Redis Pub/Sub with high message volume
+- [ ] Identify bottlenecks
+- [ ] Optimize slow queries/calculations
 
-### Incident Response
-1. **Immediate Response** (0-15 minutes)
-   - Assess severity and impact
-   - Activate incident response team
-   - Implement immediate mitigation
-   - Communicate to stakeholders
+## 📊 Priority Matrix
 
-2. **Investigation** (15-60 minutes)
-   - Root cause analysis
-   - Impact assessment
-   - Solution development
-   - Testing and validation
+### Critical (Do Before Production)
+1. Real data source integration
+2. Error handling & logging enhancement
+3. Security hardening (auth, validation)
+4. Environment variables documentation
 
-3. **Resolution** (1-4 hours)
-   - Deploy fix or workaround
-   - Verify resolution
-   - Monitor system stability
-   - Update stakeholders
+### High Priority (Do Soon After Launch)
+5. Performance optimization
+6. Monitoring & observability
+7. Testing suite
+8. Redis Pub/Sub production setup
 
-4. **Post-Incident** (24-48 hours)
-   - Incident review and documentation
-   - Process improvements
-   - Prevention measures
-   - Lessons learned sharing
+### Medium Priority (Iterative Improvement)
+9. Documentation
+10. Load testing
+11. CI/CD enhancements
+12. Advanced caching strategies
 
----
+## 🚀 Quick Wins (Can Do Now)
 
-## 📞 Support Contacts
+1. **Add error boundaries** - 30 minutes
+2. **Create .env.example** - 15 minutes
+3. **Add loading states** - 1 hour
+4. **Enhance error messages** - 1 hour
+5. **Add basic unit tests** - 2 hours
+6. **Document API endpoints** - 1 hour
 
-### Technical Support
-- **Primary**: [Your DevOps Team]
-- **Secondary**: [Your Development Team]
-- **Escalation**: [Your Engineering Manager]
+## 📝 Implementation Plan
 
-### Business Support
-- **Product Owner**: [Your Product Manager]
-- **Business Stakeholders**: [Your Business Team]
-- **Executive Sponsor**: [Your Executive]
+### Phase 1: Critical Fixes (Week 1)
+- [ ] Real data source integration
+- [ ] Enhanced error handling
+- [ ] Security validation
+- [ ] Environment variables setup
 
----
+### Phase 2: Quality & Monitoring (Week 2)
+- [ ] Error boundaries
+- [ ] Performance optimization
+- [ ] Monitoring setup
+- [ ] Basic test suite
 
-*This checklist should be reviewed and updated regularly as the system evolves and new requirements emerge.*
+### Phase 3: Production Hardening (Week 3)
+- [ ] Load testing
+- [ ] Redis production setup
+- [ ] Documentation
+- [ ] CI/CD improvements

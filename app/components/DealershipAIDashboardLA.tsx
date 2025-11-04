@@ -407,6 +407,16 @@ const DealershipAIDashboardLA: React.FC = () => {
               >
                 🧠 Cognitive Dashboard
               </button>
+              <button
+                onClick={() => {
+                  setAIVModalOpen(true);
+                  handleTabClick('aiv');
+                }}
+                className="btn primary"
+                style={{ whiteSpace: 'nowrap', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+              >
+                👁️ AIV™ Score
+              </button>
               <div
                 style={{
                   padding: '8px 16px',
@@ -742,6 +752,17 @@ const DealershipAIDashboardLA: React.FC = () => {
                 }
               }}
             />
+          </div>
+
+          {/* AIV Tab */}
+          <div className={`tab-content ${activeTab === 'aiv' ? 'active' : ''}`} id="aiv">
+            <div className="p-6">
+              <AIVModal
+                isOpen={true}
+                onClose={() => handleTabClick('overview')}
+                dealerId={effectiveDealerId}
+              />
+            </div>
           </div>
 
           {/* Website Tab (placeholder) */}

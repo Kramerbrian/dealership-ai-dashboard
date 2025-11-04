@@ -101,7 +101,18 @@ async function testUpdateEndpoint(): Promise<TestResult> {
     });
 
     // We expect it to fail without valid Slack context, but endpoint should exist
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      const text = await response.text();
+      return {
+        name: 'Slack Update Endpoint Test',
+        passed: response.status !== 404 && response.status !== 500, // Endpoint exists and server is running
+        error: response.status === 404 ? 'Endpoint not found' : response.status === 500 ? 'Server error (expected without Slack config)' : 'Invalid response',
+        details: { status: response.status, response: text.substring(0, 100) },
+      };
+    }
 
     return {
       name: 'Slack Update Endpoint Test',
@@ -133,7 +144,18 @@ async function testCommandEndpoint(): Promise<TestResult> {
     });
 
     // We expect it to fail without valid signature, but endpoint should exist
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      const text = await response.text();
+      return {
+        name: 'Slack Command Endpoint Test',
+        passed: response.status !== 404 && response.status !== 500, // Endpoint exists and server is running
+        error: response.status === 404 ? 'Endpoint not found' : response.status === 500 ? 'Server error (expected without Slack config)' : 'Invalid response',
+        details: { status: response.status, response: text.substring(0, 100) },
+      };
+    }
 
     return {
       name: 'Slack Command Endpoint Test',
@@ -166,7 +188,18 @@ async function testActionsEndpoint(): Promise<TestResult> {
     });
 
     // We expect it to fail without valid signature, but endpoint should exist
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      const text = await response.text();
+      return {
+        name: 'Slack Actions Endpoint Test',
+        passed: response.status !== 404 && response.status !== 500, // Endpoint exists and server is running
+        error: response.status === 404 ? 'Endpoint not found' : response.status === 500 ? 'Server error (expected without Slack config)' : 'Invalid response',
+        details: { status: response.status, response: text.substring(0, 100) },
+      };
+    }
 
     return {
       name: 'Slack Actions Endpoint Test',
