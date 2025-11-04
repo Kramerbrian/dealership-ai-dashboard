@@ -13,21 +13,8 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const pathname = request.nextUrl.pathname;
 
-  // Handle subdomain routing
-  // dash.dealershipai.com → Show DealershipAIDashboardLA at root (/)
-  // dealershipai.com (main domain) → Show SimplifiedLandingPage (handled by app/page.tsx)
-  if (hostname.startsWith('dash.')) {
-    // dash.dealershipai.com - Show DealershipAIDashboardLA at root
-    if (pathname === '/') {
-      url.pathname = '/dashboard';
-      return NextResponse.rewrite(url);
-    }
-  }
-  // Main domain (dealershipai.com) shows SimplifiedLandingPage via app/page.tsx
-  // No rewrite needed - let it use the default route
-
-  // Skip middleware for static files, Next.js internals, and health checks
-  
+  // Skip middleware for static files, Next.js internals, and health checks FIRST
+  // This must happen before subdomain routing to avoid processing static assets
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon.ico') ||
@@ -37,6 +24,23 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
+
+  // Handle subdomain routing
+  // dash.dealershipai.com → Show DealershipAIDashboardLA at root (/)
+  // dealershipai.com (main domain) → Show SimplifiedLandingPage (handled by app/page.tsx)
+  const isDashSubdomain = 
+    hostname.startsWith('dash.') || 
+    hostname === 'dash.dealershipai.com' || 
+    hostname.includes('dash.dealershipai.com');
+  
+  if (isDashSubdomain && pathname === '/') {
+    // dash.dealershipai.com - Show DealershipAIDashboardLA at root
+    url.pathname = '/dashboard';
+    return NextResponse.rewrite(url);
+  }
+  
+  // Main domain (dealershipai.com) shows SimplifiedLandingPage via app/page.tsx
+  // No rewrite needed - let it use the default route
 
   // Apply rate limiting to API routes
   if (pathname.startsWith('/api')) {
