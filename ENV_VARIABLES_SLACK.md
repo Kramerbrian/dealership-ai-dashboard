@@ -12,7 +12,7 @@
 
 **Example**:
 ```bash
-SLACK_BOT_TOKEN=xoxb-1234567890-1234567890123-AbCdEfGhIjKlMnOpQrStUvWx
+SLACK_BOT_TOKEN=xoxb-your-slack-bot-token-here
 ```
 
 ---

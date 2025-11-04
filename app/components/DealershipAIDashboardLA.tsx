@@ -104,6 +104,7 @@ const DealershipAIDashboardLA: React.FC = () => {
   const [inputMethod, setInputMethod] = useState<string>("manual");
   const [cognitiveModalOpen, setCognitiveModalOpen] = useState<boolean>(false);
   const [halChatbotOpen, setHalChatbotOpen] = useState<boolean>(false);
+  const [aivModalOpen, setAIVModalOpen] = useState<boolean>(false);
   
   // Get authentication context
   const { dealerId, tenantId, userId, email, isAuthenticated, isLoading: authLoading } = useAuthContext();
@@ -470,6 +471,7 @@ const DealershipAIDashboardLA: React.FC = () => {
           {[
             { id: 'overview', icon: '📊', label: 'Overview' },
             { id: 'ai-health', icon: '🤖', label: 'AI Health' },
+            { id: 'aiv', icon: '👁️', label: 'AIV™' },
             { id: 'website', icon: '🌐', label: 'Website' },
             { id: 'schema', icon: '🔍', label: 'Schema' },
             { id: 'reviews', icon: '⭐', label: 'Reviews' },
@@ -809,6 +811,13 @@ const DealershipAIDashboardLA: React.FC = () => {
       <HAL9000Chatbot
         isOpen={halChatbotOpen}
         onToggle={() => setHalChatbotOpen(!halChatbotOpen)}
+      />
+
+      {/* AIV Modal (can be opened from anywhere) */}
+      <AIVModal
+        isOpen={aivModalOpen && activeTab !== 'aiv'}
+        onClose={() => setAIVModalOpen(false)}
+        dealerId={effectiveDealerId}
       />
     </ErrorBoundary>
   );

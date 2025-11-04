@@ -112,6 +112,29 @@ const HAL9000Chatbot: React.FC<HAL9000ChatbotProps> = ({ isOpen, onToggle }) => 
       return "PIQR (Perceptual Intelligence & Quality Reliability) is a composite score measuring AI reliability across trust, clarity, and consensus. Your current PIQR score reflects:\n• AI Visibility Index (AIV) - how well AI platforms find your content\n• Algorithmic Trust Index (ATI) - schema consistency and review legitimacy\n• Composite Reputation Score (CRS) - variance-weighted reputation\n• Consensus Reliability - agreement across ChatGPT, Gemini, and Perplexity\n\nYou can view detailed PIQR metrics in the AI Health tab. Would you like me to help you improve your PIQR score?";
     }
     
+    if (lowerInput.includes('aiv') || lowerInput.includes('visibility index') || lowerInput.includes('what is my visibility') || lowerInput.includes('show my ai score') || lowerInput.includes('how visible am i')) {
+      // Fetch AIV data for the response
+      try {
+        const dealerId = 'default-dealer'; // In production, get from auth context
+        const response = await fetch(`/api/aiv/calculate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dealerId }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.data?.chat_summary) {
+            return data.data.chat_summary;
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching AIV data:', e);
+      }
+      
+      return "Your AIV™ (Algorithmic Visibility Index) measures how well AI platforms like ChatGPT, Gemini, Claude, and Perplexity can find and understand your dealership content. AIVR™ (AI Visibility ROI) factors in conversion lift from your A/B tests. I can show you your current scores and revenue at risk. Would you like me to open the AIV modal for detailed insights?";
+    }
+    
     if (lowerInput.includes('consensus') || lowerInput.includes('ai agreement')) {
       return "AI Consensus measures how consistently different AI platforms (ChatGPT, Gemini, Perplexity) interpret your content. A high consensus score indicates your content is clear and unambiguous. I can help you run a consensus check to see how your content performs across AI platforms. This is available in the AI Health tab.";
     }

@@ -98,12 +98,12 @@ Add each variable below, one by one. Select **all three environments** (Producti
 
 ### 17. OPENAI_API_KEY
 - **Key:** `OPENAI_API_KEY`
-- **Value:** `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`
+- **Value:** `sk-your-openai-api-key-here`
 - ✅ Production, ✅ Preview, ✅ Development
 
 ### 18. ANTHROPIC_API_KEY
 - **Key:** `ANTHROPIC_API_KEY`
-- **Value:** `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`
+- **Value:** `sk-ant-your-anthropic-api-key-here`
 - ✅ Production, ✅ Preview, ✅ Development
 
 ---

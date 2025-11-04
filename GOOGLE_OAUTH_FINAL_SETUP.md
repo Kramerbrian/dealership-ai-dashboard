@@ -3,8 +3,8 @@
 ## ✅ Current Status
 
 **WorkOS Production Credentials:**
-- Client ID: `client_01K93QER29GBSGXH7TZR5M9WRG`
-- API Key: `sk_a2V5XzAxSzk0RFg0MjgwM0ZNUVY0RVZUWjZHUFhLLGExM1NaaU5lbHBObTdhWUxBYjNXMnJkRVk`
+- Client ID: `client_xxxxxxxxxxxxxxxxxxxxxxxx`
+- API Key: `sk_your-workos-api-key-here`
 
 **Configuration:**
 - ✅ Local environment (`.env.local`) - Updated
