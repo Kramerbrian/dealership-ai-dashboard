@@ -1,233 +1,221 @@
-# 🧪 Testing Checklist - All 3 Features
+# Trial System Testing Checklist
 
-## ✅ Pre-Testing Verification
+## ✅ Pre-Testing Setup
 
-**Dev Server Status:** ✅ Running on port 3000  
-**URL:** `http://localhost:3000/dashboard`  
-**Date:** $(date)
+- [ ] Migration applied to Supabase (via SQL Editor)
+- [ ] `telemetry` table exists
+- [ ] `trial_features` table exists
+- [ ] RLS policies enabled
+- [ ] Environment variables set:
+  - [ ] `NEXT_PUBLIC_SUPABASE_URL`
+  - [ ] `SUPABASE_SERVICE_KEY`
+- [ ] Dev server running (`npm run dev`)
 
----
+## 🧪 API Endpoint Tests
 
-## 📋 Feature #1: Competitive Comparison Widget
-
-### **Visual Check:**
-- [ ] Widget appears in Overview tab
-- [ ] Title: "How You Stack Up"
-- [ ] Shows position badge (e.g., "#2 of 6")
-- [ ] Shows message (e.g., "You're beating 4 of 5 competitors")
-- [ ] Displays 5 competitor comparison bars
-- [ ] Your score is highlighted at the bottom
-- [ ] Upgrade CTA button is visible
-
-### **Functionality:**
-- [ ] Widget loads without errors
-- [ ] Competitor bars animate in (staggered)
-- [ ] Color coding works (green = beating, red = behind)
-- [ ] Position calculation is correct
-- [ ] Click upgrade button (should navigate or show modal)
-
-### **API Test:**
+### Test 1: Grant Trial API
 ```bash
-curl -X POST http://localhost:3000/api/demo/competitor-comparison \
+curl -X POST http://localhost:3000/api/trial/grant \
   -H "Content-Type: application/json" \
-  -d '{"domain": "test.com"}'
+  -d '{"feature_id": "schema_fix"}' \
+  -v
 ```
-- [ ] API returns valid JSON
-- [ ] Response includes `prospect`, `competitors`, `position`, `message`
-- [ ] Competitors array has 5 items
-- [ ] Scores are realistic (0-100 range)
 
----
+**Expected:**
+- ✅ HTTP 200 status
+- ✅ Response: `{"success": true, "data": {...}}`
+- ✅ Cookie `dai_trial_schema_fix` is set
+- ✅ Cookie contains JSON with `expires_at`
 
-## 📋 Feature #2: What-If Revenue Calculator
-
-### **Visual Check:**
-- [ ] Widget appears after Quick Wins
-- [ ] Title: "What-If Revenue Calculator"
-- [ ] Shows 3 sliders (GEO, AEO, SEO)
-- [ ] Each slider has colored background
-- [ ] Current values displayed next to each slider
-- [ ] VAI score badge visible in header
-- [ ] Revenue impact display box visible
-- [ ] Export PDF button visible
-
-### **Functionality:**
-- [ ] Drag GEO slider → value updates instantly
-- [ ] Drag AEO slider → value updates instantly
-- [ ] Drag SEO slider → value updates instantly
-- [ ] Revenue impact updates in real-time
-- [ ] VAI score recalculates correctly
-- [ ] Impact breakdown (GEO/AEO/SEO) updates
-- [ ] Reset button appears when scores change
-- [ ] Reset button returns to initial values
-
-### **Calculations:**
-- [ ] Initial VAI = (65.2 × 0.4) + (73.8 × 0.35) + (87.3 × 0.25) ≈ 73.2
-- [ ] Revenue impact formula works correctly
-- [ ] Individual pillar impacts calculate correctly
-- [ ] Color changes (green for positive, red for negative)
-
-### **Test Scenario:**
-Set GEO to 85, AEO to 90, SEO to 95:
-- [ ] VAI should be ≈ 89.2
-- [ ] Revenue impact should be positive and substantial
-- [ ] All impacts should show in green
-
----
-
-## 📋 Feature #3: Quick Wins Widget
-
-### **Visual Check:**
-- [ ] Widget appears between Competitive Comparison and Calculator
-- [ ] Title: "Quick Wins Available"
-- [ ] Shows count badge (e.g., "5 Found")
-- [ ] Summary stats box visible (Total Impact, Revenue Impact, Avg Time)
-- [ ] Shows 3 quick win cards
-- [ ] Each card has category icon, title, description
-- [ ] Effort badge visible (low/medium/high)
-- [ ] Impact badge shows "+X VAI"
-- [ ] Time estimate visible
-- [ ] "Fix Now" button on each card
-
-### **Functionality:**
-- [ ] Widget loads without errors
-- [ ] Quick wins animate in (staggered)
-- [ ] Click "Fix Now" → card fades out/completes
-- [ ] Summary stats calculate correctly
-- [ ] "View All X Quick Wins" button appears if more than 3
-- [ ] Total impact sum is correct
-- [ ] Revenue impact sum is correct
-
-### **API Test:**
+**Or run automated test:**
 ```bash
-curl "http://localhost:3000/api/recommendations/quick-wins?domain=test.com"
+./scripts/test-trial-system.sh
 ```
-- [ ] API returns valid JSON
-- [ ] Response includes `wins` array (at least 3 items)
-- [ ] Each win has: `id`, `title`, `description`, `impact`, `effort`, `timeEstimate`
-- [ ] Wins are sorted by priority (highest first)
-- [ ] Total impact and revenue impact calculated
 
-### **Content Check:**
-- [ ] At least one schema-related quick win
-- [ ] At least one GMB-related quick win
-- [ ] At least one content-related quick win
-- [ ] Time estimates are realistic (2-30 min range)
-- [ ] Impact values are reasonable (3-11 VAI points)
+### Test 2: Trial Status API
+```bash
+curl -X GET http://localhost:3000/api/trial/status \
+  -H "Cookie: dai_trial_schema_fix=..." \
+  -v
+```
+
+**Expected:**
+- ✅ HTTP 200 status
+- ✅ Response: `{"success": true, "data": {"active": ["schema_fix"]}}`
+
+## 🎨 UI Flow Tests
+
+### Test 3: Pricing Page - Trial Grant
+
+1. **Navigate:** http://localhost:3000/pricing
+
+2. **As Tier 1 User:**
+   - [ ] See Tier 1 (Ignition) card
+   - [ ] See "Borrow a Pro feature for 24h" button
+   - [ ] Click button
+
+3. **Verify:**
+   - [ ] Success alert appears
+   - [ ] Cookie is set (DevTools → Application → Cookies)
+   - [ ] Cookie name: `dai_trial_schema_fix`
+   - [ ] localStorage has trial data (DevTools → Application → Local Storage)
+
+### Test 4: Dashboard - Schema Tab (Locked)
+
+1. **Navigate:** http://localhost:3000/dashboard
+
+2. **Click "Schema" Tab**
+
+3. **As Tier 1 User (No Trial):**
+   - [ ] See locked overlay
+   - [ ] See "Try for 24 hours" button
+   - [ ] See "Upgrade to DIY Guide" button
+   - [ ] See feature description
+
+### Test 5: Dashboard - Schema Tab (Unlock via Trial)
+
+1. **On Schema Tab overlay:**
+   - [ ] Click "Try for 24 hours"
+
+2. **Verify:**
+   - [ ] Overlay disappears
+   - [ ] Schema content becomes visible
+   - [ ] Success message appears
+
+3. **Refresh Page:**
+   - [ ] Schema content remains visible
+   - [ ] No overlay shown
+
+### Test 6: Dashboard - Mystery Shop Tab (Locked)
+
+1. **Click "Mystery Shop" Tab**
+
+2. **As Tier 1 User (No Trial):**
+   - [ ] See locked overlay
+   - [ ] See "Try for 24 hours" button
+   - [ ] See "Upgrade to DIY Guide" button
+
+### Test 7: Dashboard - Mystery Shop Tab (Unlock via Trial)
+
+1. **On Mystery Shop Tab overlay:**
+   - [ ] Click "Try for 24 hours"
+
+2. **Verify:**
+   - [ ] Overlay disappears
+   - [ ] Mystery Shop content becomes visible
+   - [ ] Success message appears
+
+3. **Refresh Page:**
+   - [ ] Mystery Shop content remains visible
+   - [ ] No overlay shown
+
+## 🔍 Browser DevTools Verification
+
+### Check Cookies
+1. Open DevTools (F12)
+2. Application → Cookies → http://localhost:3000
+3. Look for:
+   - [ ] `dai_trial_schema_fix` (after granting trial)
+   - [ ] Cookie value is JSON
+   - [ ] Cookie has expiration date
+
+### Check LocalStorage
+1. Application → Local Storage → http://localhost:3000
+2. Look for:
+   - [ ] `dai:trial:schema_fix` (after granting trial)
+   - [ ] Contains JSON with `expires_at`
+
+### Check Network Requests
+1. Network tab → Filter: "trial"
+2. Look for:
+   - [ ] `POST /api/trial/grant` → Status 200
+   - [ ] `GET /api/trial/status` → Status 200
+   - [ ] Response bodies are valid JSON
+
+### Check Console
+1. Console tab
+2. Should see:
+   - [ ] No errors related to trial system
+   - [ ] API calls logged (if logging enabled)
+
+## 🗄️ Database Verification
+
+### Check Trial Features Table
+```sql
+SELECT * FROM trial_features 
+WHERE expires_at > NOW() 
+ORDER BY granted_at DESC 
+LIMIT 10;
+```
+
+**Expected:**
+- [ ] Rows exist after granting trials
+- [ ] `feature_id` matches granted feature
+- [ ] `expires_at` is ~24 hours in future
+- [ ] `user_id` is set (or 'anonymous')
+
+### Check Telemetry Events
+```sql
+SELECT * FROM telemetry 
+WHERE event = 'trial_feature_granted' 
+ORDER BY at DESC 
+LIMIT 10;
+```
+
+**Expected:**
+- [ ] Rows exist after granting trials
+- [ ] `event` = 'trial_feature_granted'
+- [ ] `metadata` contains feature_id
+- [ ] `tier` = 'tier1' (for Tier 1 users)
+
+## 🐛 Troubleshooting
+
+### Issue: Trial grant fails
+**Check:**
+- [ ] Supabase connection (check `SUPABASE_SERVICE_KEY`)
+- [ ] RLS policies allow service role inserts
+- [ ] Browser console for errors
+- [ ] Network tab for API response
+
+### Issue: Drawer always locked
+**Check:**
+- [ ] User tier is correctly determined (defaults to Tier 1)
+- [ ] Trial cookie is set
+- [ ] localStorage has trial data
+- [ ] `/api/trial/status` returns active trials
+
+### Issue: Overlay doesn't appear
+**Check:**
+- [ ] `DrawerGuard` component is imported
+- [ ] `getUserTier()` returns correct tier
+- [ ] Browser console for errors
+- [ ] Component is wrapped correctly
+
+### Issue: Trial doesn't persist
+**Check:**
+- [ ] Cookie expiration is set correctly
+- [ ] localStorage data is valid JSON
+- [ ] Trial status API returns active trials
+- [ ] Database row exists
+
+## ✅ Success Criteria
+
+All of the following should pass:
+
+- [ ] Migration applied without errors
+- [ ] Tables exist in Supabase
+- [ ] API endpoints return 200
+- [ ] Cookies are set correctly
+- [ ] Pricing page trial button works
+- [ ] Schema tab shows locked overlay (Tier 1)
+- [ ] Schema tab unlocks with trial
+- [ ] Mystery Shop tab shows locked overlay (Tier 1)
+- [ ] Mystery Shop tab unlocks with trial
+- [ ] Trials persist after page refresh
+- [ ] Database records are created
+- [ ] No console errors
+- [ ] No network errors
 
 ---
 
-## 🔄 Integration Testing
-
-### **Dashboard Flow:**
-1. [ ] Open dashboard → Overview tab is active
-2. [ ] Scroll down → See Competitive Comparison first
-3. [ ] Continue scrolling → See Quick Wins next
-4. [ ] Continue scrolling → See What-If Calculator last
-5. [ ] All widgets load without console errors
-
-### **Responsive Design:**
-- [ ] Desktop view: All widgets full width
-- [ ] Tablet view: Layout adapts correctly
-- [ ] Mobile view: Widgets stack properly
-- [ ] No horizontal scrolling
-- [ ] Touch interactions work on mobile
-
-### **Performance:**
-- [ ] Page loads in < 3 seconds
-- [ ] Widgets appear smoothly (no layout shift)
-- [ ] Animations are smooth (60fps)
-- [ ] No console errors or warnings
-- [ ] API calls complete in < 500ms
-
----
-
-## 🐛 Common Issues to Check
-
-### **If Competitive Comparison Doesn't Load:**
-- [ ] Check browser console for errors
-- [ ] Verify API endpoint is accessible
-- [ ] Check network tab for failed requests
-- [ ] Ensure domain prop is passed correctly
-
-### **If Calculator Sliders Don't Work:**
-- [ ] Check browser console for errors
-- [ ] Verify initialScores prop is passed
-- [ ] Check for JavaScript errors
-- [ ] Try different browser
-
-### **If Quick Wins Don't Appear:**
-- [ ] Check API response in network tab
-- [ ] Verify domain prop is passed
-- [ ] Check for CORS issues
-- [ ] Ensure API endpoint is correct
-
----
-
-## ✅ Acceptance Criteria
-
-### **All Features Must:**
-- [x] Load without errors
-- [x] Display correctly on all screen sizes
-- [x] Have smooth animations
-- [x] Calculate values correctly
-- [x] Provide clear user feedback
-- [x] Match design specifications
-- [x] Be accessible (keyboard navigation, screen readers)
-
-### **Success Metrics:**
-- [ ] Zero console errors
-- [ ] All API calls succeed
-- [ ] All calculations are accurate
-- [ ] All interactions are responsive
-- [ ] All animations are smooth
-
----
-
-## 📸 Screenshots to Take
-
-1. **Full Overview Tab** - Showing all 3 widgets
-2. **Competitive Comparison** - Expanded view
-3. **Quick Wins Widget** - With 3 wins visible
-4. **What-If Calculator** - With adjusted sliders
-5. **Mobile View** - Responsive layout
-
----
-
-## 🎯 Test Results
-
-**Date:** _______________  
-**Tester:** _______________  
-**Browser:** _______________  
-**OS:** _______________  
-
-### **Feature #1 (Competitive Comparison):**
-Status: ⬜ Pass ⬜ Fail  
-Notes: ________________________________
-
-### **Feature #2 (What-If Calculator):**
-Status: ⬜ Pass ⬜ Fail  
-Notes: ________________________________
-
-### **Feature #3 (Quick Wins):**
-Status: ⬜ Pass ⬜ Fail  
-Notes: ________________________________
-
-### **Overall:**
-Status: ⬜ Pass ⬜ Fail  
-Notes: ________________________________
-
----
-
-## 🚀 Next Steps After Testing
-
-1. [ ] Fix any bugs found
-2. [ ] Optimize performance if needed
-3. [ ] Add analytics tracking
-4. [ ] Connect to real data
-5. [ ] Deploy to staging
-6. [ ] Gather user feedback
-
----
-
-**Happy Testing! 🎉**
+**Once all checks pass, the trial system is ready for production!** 🚀

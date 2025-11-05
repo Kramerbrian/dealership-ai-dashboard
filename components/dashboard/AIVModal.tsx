@@ -11,6 +11,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, TrendingUp, TrendingDown, DollarSign, BarChart3, Info } from 'lucide-react';
 import { useAIVCalculator, type AIVOutputs } from '@/lib/hooks/useAIVCalculator';
+import { AIVErrorBoundary } from './AIVErrorBoundary';
 
 interface AIVModalProps {
   isOpen: boolean;
@@ -65,19 +66,26 @@ const AIVModal: React.FC<AIVModalProps> = ({ isOpen, onClose, dealerId }) => {
 
               {/* Content */}
               <div className="p-6">
-                {isLoading && (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                  </div>
-                )}
+                <AIVErrorBoundary>
+                  {isLoading && (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                  )}
 
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                    <p className="text-red-800 text-sm">Failed to load AIV data. Please try again.</p>
-                  </div>
-                )}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <p className="text-red-800 text-sm">Failed to load AIV data. Please try again.</p>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                      >
+                        Reload Page
+                      </button>
+                    </div>
+                  )}
 
-                {outputs && (
+                  {outputs && (
                   <div className="space-y-6">
                     {/* Main Scores */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -141,7 +149,8 @@ const AIVModal: React.FC<AIVModalProps> = ({ isOpen, onClose, dealerId }) => {
                       </div>
                     </div>
                   </div>
-                )}
+                  )}
+                </AIVErrorBoundary>
               </div>
             </div>
           </motion.div>

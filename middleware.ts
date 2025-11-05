@@ -63,6 +63,26 @@ export async function middleware(request: NextRequest) {
   // Create response
   const response = NextResponse.next();
 
+  // Mirror trial cookies into headers so edge-rendered routes can read cheaply
+  request.cookies.getAll().forEach((c) => {
+    if (c.name.startsWith('dai_trial_')) {
+      const feat = c.name.replace('dai_trial_', '');
+      try {
+        // Cookie value is a JSON object: { feature_id, unlocked_at, expires_at }
+        const trialData = JSON.parse(c.value);
+        const expiresAt = new Date(trialData.expires_at);
+        const now = new Date();
+        
+        // Check if trial is still active
+        if (expiresAt && !isNaN(expiresAt.getTime()) && expiresAt > now) {
+          response.headers.set(`x-dai-trial-${feat}`, 'true');
+        }
+      } catch {
+        // Invalid cookie format - skip
+      }
+    }
+  });
+
   // Security headers (enhance existing from next.config.js)
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
@@ -78,7 +98,7 @@ export async function middleware(request: NextRequest) {
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.clerk.com https://*.clerk.dev https://*.googletagmanager.com https://*.google-analytics.com https://va.vercel-scripts.com https://*.sentry.io",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
-    "font-src 'self' data: https://fonts.gstatic.com",
+    "font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai",
     "connect-src 'self' https://*.clerk.com https://*.clerk.dev https://*.supabase.co https://*.sentry.io https://*.logtail.com https://*.googletagmanager.com https://*.google-analytics.com wss://*.clerk.com https://va.vercel-scripts.com",
     "frame-src 'self' https://*.clerk.com https://*.clerk.dev",
     "object-src 'none'",

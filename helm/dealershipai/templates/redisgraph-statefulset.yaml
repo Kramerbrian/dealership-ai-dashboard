@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redisgraph
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: redisgraph
+spec:
+  serviceName: redisgraph
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redisgraph
+  template:
+    metadata:
+      labels:
+        app: redisgraph
+    spec:
+      containers:
+        - name: redisgraph
+          image: {{ .Values.images.redisgraph }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: redisgraph
+              containerPort: 6379
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: dai-config
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          volumeMounts:
+            - name: redisgraph-data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 10
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: redisgraph-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.storage.redisgraph.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.storage.redisgraph.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redisgraph
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: redisgraph
+spec:
+  clusterIP: None
+  selector:
+    app: redisgraph
+  ports:
+    - name: redisgraph
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+

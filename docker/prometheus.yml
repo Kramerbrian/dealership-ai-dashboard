@@ -1,0 +1,56 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'dealershipai'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - '/etc/prometheus/gnn-rules.yml'
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Orchestrator API
+  - job_name: 'orchestrator'
+    static_configs:
+      - targets: ['orchestrator:3001']
+    metrics_path: '/api/metrics'
+    scrape_interval: 10s
+
+  # GNN Engine
+  - job_name: 'gnn-engine'
+    static_configs:
+      - targets: ['gnn-engine:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Dashboard (Next.js app)
+  - job_name: 'dashboard'
+    static_configs:
+      - targets: ['dashboard:3000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+  # Redis Exporter (if configured)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 30s
+
+  # Alertmanager
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+

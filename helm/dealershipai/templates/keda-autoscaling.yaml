@@ -1,0 +1,70 @@
+{{- if .Values.keda.enabled }}
+# KEDA ScaledObject for Orchestrator
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: orchestrator-scaler
+  namespace: {{ .Values.global.namespace }}
+spec:
+  scaleTargetRef:
+    name: orchestrator
+  minReplicaCount: {{ .Values.keda.orchestrator.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.orchestrator.maxReplicas }}
+  triggers:
+    - type: redis
+      metadata:
+        address: redis:6379
+        listName: {{ .Values.keda.orchestrator.queueName }}
+        listLength: "{{ .Values.keda.orchestrator.targetQueueLength }}"
+        databaseIndex: "0"
+---
+# KEDA ScaledObject for Worker Pods (if separate deployment exists)
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: worker-scaler
+  namespace: {{ .Values.global.namespace }}
+spec:
+  scaleTargetRef:
+    name: worker
+  minReplicaCount: {{ .Values.keda.worker.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.worker.maxReplicas }}
+  triggers:
+    - type: redis
+      metadata:
+        address: redis:6379
+        listName: {{ .Values.keda.worker.queueName }}
+        listLength: "{{ .Values.keda.worker.targetQueueLength }}"
+        databaseIndex: "0"
+    # Additional trigger based on CPU usage
+    - type: cpu
+      metadata:
+        type: Utilization
+        value: "70"
+---
+# KEDA ScaledObject for Dashboard (optional - based on request rate)
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: dashboard-scaler
+  namespace: {{ .Values.global.namespace }}
+spec:
+  scaleTargetRef:
+    name: dashboard
+  minReplicaCount: {{ .Values.global.replicas }}
+  maxReplicaCount: 10
+  triggers:
+    # Scale based on HTTP request rate
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus:9090
+        metricName: http_requests_per_second
+        threshold: '100'
+        query: sum(rate(http_requests_total{service="dashboard"}[1m]))
+    # Scale based on CPU
+    - type: cpu
+      metadata:
+        type: Utilization
+        value: "70"
+{{- end }}
+

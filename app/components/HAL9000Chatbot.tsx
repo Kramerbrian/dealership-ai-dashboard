@@ -62,7 +62,7 @@ const HAL9000Chatbot: React.FC<HAL9000ChatbotProps> = ({ isOpen, onToggle }) => 
       // Simulate AI response (replace with actual API call)
       await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
       
-      const response = generateResponse(userMessage.content);
+      const response = await generateResponse(userMessage.content);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -84,7 +84,7 @@ const HAL9000Chatbot: React.FC<HAL9000ChatbotProps> = ({ isOpen, onToggle }) => 
     }
   };
 
-  const generateResponse = (userInput: string): string => {
+  const generateResponse = async (userInput: string): Promise<string> => {
     const lowerInput = userInput.toLowerCase();
     
     // Pattern matching for common queries

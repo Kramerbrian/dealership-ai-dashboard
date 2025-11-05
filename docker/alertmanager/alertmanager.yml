@@ -1,55 +1,83 @@
 global:
   resolve_timeout: 5m
-  slack_api_url: https://hooks.slack.com/services/YOUR/WEBHOOK/URL   # replace
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
 
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree
 route:
-  group_by: ["alertname"]
-  group_wait: 15s
-  group_interval: 2m
-  repeat_interval: 2h
-  receiver: "slack_ai_ops"
+  receiver: 'default'
+  group_by: ['alertname', 'cluster', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
   routes:
-    # critical / executive alerts
+    # Critical alerts → #exec-board
     - match:
-        severity: "critical"
-      receiver: "slack_exec_board"
-      continue: false
-    # default warning/info alerts
-    - match_re:
-        severity: "^(warning|info)$"
-      receiver: "slack_ai_ops"
-      continue: false
+        severity: critical
+      receiver: 'slack-exec-board'
+      continue: true
+    
+    # Warning alerts → #ai-ops
+    - match:
+        severity: warning
+      receiver: 'slack-ai-ops'
+      continue: true
+    
+    # Info alerts → #ai-ops (quieter)
+    - match:
+        severity: info
+      receiver: 'slack-ai-ops'
+      continue: true
 
+# Receivers
 receivers:
-  # Operations channel
-  - name: "slack_ai_ops"
+  - name: 'default'
     slack_configs:
-      - channel: "#ai-ops"
-        username: "DealershipAI_AlertBot"
-        icon_emoji: ":warning:"
+      - channel: '#ai-ops'
+        title: 'DealershipAI Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}'
         send_resolved: true
-        title: "{{ .CommonAnnotations.summary }}"
-        text: |
-          *Status:* {{ .Status }}
-          *Alert:* {{ .CommonLabels.alertname }}
-          *Severity:* {{ .CommonLabels.severity }}
-          *Dealer:* {{ .CommonLabels.dealer | default "N/A" }}
-          *When:* {{ .StartsAt }}
-          {{ range .Alerts }}• {{ .Annotations.description | default .Annotations.summary }}{{ end }}
 
-  # Executive / critical alerts
-  - name: "slack_exec_board"
+  - name: 'slack-ai-ops'
     slack_configs:
-      - channel: "#exec-board"
-        username: "DealershipAI_ExecBot"
-        icon_emoji: ":fire:"
-        send_resolved: true
-        title: ":fire: {{ .CommonAnnotations.summary }}"
+      - channel: '#ai-ops'
+        title: '🚨 DealershipAI Alert'
         text: |
-          *Critical Alert:* {{ .CommonLabels.alertname }}
-          *Dealer:* {{ .CommonLabels.dealer | default "Portfolio" }}
-          *Severity:* {{ .CommonLabels.severity }}
-          *Triggered:* {{ .StartsAt }}
-          *Details:*
-          {{ range .Alerts }}- {{ .Annotations.description | default .Annotations.summary }}{{ end }}
-          *Next Steps:* Investigate ROI impact in Grafana → Dashboard › GNN Analytics
+          {{ range .Alerts }}
+          *Alert:* {{ .Labels.alertname }}
+          *Component:* {{ .Labels.component }}
+          *Summary:* {{ .Annotations.summary }}
+          {{ if .Annotations.description }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+          {{ end }}
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  - name: 'slack-exec-board'
+    slack_configs:
+      - channel: '#exec-board'
+        title: '🔴 CRITICAL: DealershipAI Alert'
+        text: |
+          {{ range .Alerts }}
+          *CRITICAL ALERT*
+          *Component:* {{ .Labels.component }}
+          *Summary:* {{ .Annotations.summary }}
+          {{ if .Annotations.description }}
+          *Details:* {{ .Annotations.description }}
+          {{ end }}
+          *View Dashboard:* https://grafana.dealershipai.com
+          {{ end }}
+        send_resolved: true
+        color: 'danger'
+
+# Inhibit rules (prevent duplicate alerts)
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster']

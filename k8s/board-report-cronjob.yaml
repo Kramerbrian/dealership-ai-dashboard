@@ -1,0 +1,107 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: board-report-generator
+  namespace: dealershipai
+  labels:
+    app: board-report
+    component: reporting
+spec:
+  # Run on the 1st day of each quarter at 6 AM UTC
+  schedule: "0 6 1 1,4,7,10 *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: board-report
+            component: reporting
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: report-generator
+              image: ghcr.io/dealershipai/report-generator:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: PROMETHEUS_URL
+                  value: "http://prometheus:9090"
+                - name: GRAFANA_URL
+                  value: "http://grafana:3002"
+                - name: GRAFANA_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-secrets
+                      key: api-key
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slack-secrets
+                      key: webhook-url
+                - name: S3_BUCKET
+                  value: "dealershipai-reports"
+                - name: S3_REGION
+                  value: "us-east-1"
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-secrets
+                      key: access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-secrets
+                      key: secret-access-key
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "250m"
+                limits:
+                  memory: "1Gi"
+                  cpu: "500m"
+              volumeMounts:
+                - name: report-output
+                  mountPath: /tmp/reports
+          volumes:
+            - name: report-output
+              emptyDir: {}
+---
+# ServiceAccount for S3 access (if using IAM roles)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: board-report-sa
+  namespace: dealershipai
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/board-report-role  # Optional: for EKS IRSA
+---
+# RoleBinding for the ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: board-report-rolebinding
+  namespace: dealershipai
+subjects:
+  - kind: ServiceAccount
+    name: board-report-sa
+    namespace: dealershipai
+roleRef:
+  kind: Role
+  name: board-report-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Role for the ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: board-report-role
+  namespace: dealershipai
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: ["batch"]
+    resources: ["cronjobs", "jobs"]
+    verbs: ["get", "list", "watch"]
+

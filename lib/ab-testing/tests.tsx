@@ -1,7 +1,7 @@
 'use client';
 
+import React from 'react';
 import { abTesting, TestConfig, TestVariant } from './framework';
-import { ReactNode } from 'react';
 
 /**
  * A/B Test Configurations

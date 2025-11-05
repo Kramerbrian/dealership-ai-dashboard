@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sparkles, Search, ArrowRight, CheckCircle, Shield,
-  Zap, DollarSign, Trophy, Star, BarChart3, Clock,
-  ChevronDown, Award, AlertTriangle, X, Menu
+  Zap, Star, BarChart3, Clock,
+  ChevronDown, AlertTriangle, X, Menu
 } from 'lucide-react';
 import { ga } from '@/lib/ga';
 import { ExitIntentModal } from '@/components/marketing/ExitIntentModal';
@@ -31,6 +31,7 @@ import { ABTestWrapper, useABTestConversion } from '@/components/ab-testing/ABTe
 import { initializeABTests, headlineVariants, ctaButtonVariants, subheadlineVariants } from '@/lib/ab-testing/tests';
 import { abTesting } from '@/lib/ab-testing/framework';
 import AhaResults from './AhaResults';
+import { UrgencyTimer, SocialProofCounter, RiskReversalBadge } from './AdvancedCTAOptimizations';
 import dynamic from 'next/dynamic';
 
 // Lazy load heavy components
@@ -71,6 +72,9 @@ export default function SimplifiedLandingPage() {
   const { trackConversion: trackCTAConversion } = useABTestConversion('cta-button-test');
   const { trackConversion: trackSubheadlineConversion } = useABTestConversion('subheadline-test');
 
+  // Conversion funnel tracking (for future use)
+  // const funnelStage = useConversionFunnel();
+
   // Initialize personalization, analytics, and A/B tests
   useEffect(() => {
     // Only run on client side
@@ -100,6 +104,15 @@ export default function SimplifiedLandingPage() {
       advancedAnalytics.init();
     } catch (error) {
       console.warn('Advanced analytics failed to initialize:', error);
+    }
+
+    // Initialize CTA performance optimizations
+    try {
+      import('@/lib/performance/cta-optimizer').then(({ initCTAPerformanceOptimizations }) => {
+        initCTAPerformanceOptimizations();
+      });
+    } catch (error) {
+      console.warn('CTA performance optimizations failed to initialize:', error);
     }
 
     // Show quick start if available
@@ -183,8 +196,10 @@ export default function SimplifiedLandingPage() {
       
       // Save for quick start
       const cleanDomain = urlInput.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
-      saveQuickStart(cleanDomain);
-      saveRecentDomain(cleanDomain);
+      if (cleanDomain) {
+        saveQuickStart(cleanDomain);
+        saveRecentDomain(cleanDomain);
+      }
       
       // Track funnel step
       advancedAnalytics.recordFunnelStep('analysis_complete', { domain: cleanDomain });
@@ -195,9 +210,15 @@ export default function SimplifiedLandingPage() {
         const ctaVariant = abTesting.getVariant('cta-button-test');
         const subheadlineVariant = abTesting.getVariant('subheadline-test');
         
-        if (headlineVariant) trackHeadlineConversion(headlineVariant, { domain: cleanDomain, action: 'analysis_complete' });
-        if (ctaVariant) trackCTAConversion(ctaVariant, { domain: cleanDomain, action: 'analysis_complete' });
-        if (subheadlineVariant) trackSubheadlineConversion(subheadlineVariant, { domain: cleanDomain, action: 'analysis_complete' });
+        if (headlineVariant && typeof headlineVariant === 'string') {
+          trackHeadlineConversion(headlineVariant, { domain: cleanDomain, action: 'analysis_complete' });
+        }
+        if (ctaVariant && typeof ctaVariant === 'string') {
+          trackCTAConversion(ctaVariant, { domain: cleanDomain, action: 'analysis_complete' });
+        }
+        if (subheadlineVariant && typeof subheadlineVariant === 'string') {
+          trackSubheadlineConversion(subheadlineVariant, { domain: cleanDomain, action: 'analysis_complete' });
+        }
       }
       
       showToast('Analysis complete! Scroll down to see results.', 'success', 5000);
@@ -371,7 +392,7 @@ export default function SimplifiedLandingPage() {
                   document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' });
                   ga('cta_click', { id: 'nav_analyze' });
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-blue-700 to-purple-700 text-white rounded-lg font-medium hover:from-blue-800 hover:to-purple-800 transition-all flex items-center gap-2 shadow-lg ring-1 ring-blue-500/20"
               >
                 <Search className="w-4 h-4" />
                 Analyze Free
@@ -480,9 +501,6 @@ export default function SimplifiedLandingPage() {
               testId="headline-test"
               variants={headlineVariants}
               defaultVariant="headline-control"
-              onVariantLoad={(variantId) => {
-                // Track headline view (already tracked in framework)
-              }}
             >
               {personalizedContent?.headline || (
                 <>
@@ -569,7 +587,7 @@ export default function SimplifiedLandingPage() {
                           advancedAnalytics.recordFunnelStep('form_submit');
                           trackCTAConversion(variant.id, { action: 'form_submit' });
                         }}
-                        className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl font-semibold text-white hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:transform-none relative overflow-hidden group"
+                        className="px-8 py-4 bg-gradient-to-r from-blue-700 to-purple-700 rounded-2xl font-semibold text-white hover:from-blue-800 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 disabled:transform-none relative overflow-hidden group ring-2 ring-blue-500/20 active:scale-95"
                         data-funnel-step="cta_click"
                       >
                         {analyzing ? (
@@ -613,9 +631,10 @@ export default function SimplifiedLandingPage() {
                   </button>
                 </ABTestWrapper>
               </div>
-              <p className="text-sm text-gray-500">
-                ✓ No email required  ✓ Instant results  ✓ See your competitors
-              </p>
+              <div className="flex flex-col items-center gap-3">
+                <RiskReversalBadge />
+                <SocialProofCounter />
+              </div>
             </form>
           </div>
 
@@ -989,8 +1008,8 @@ export default function SimplifiedLandingPage() {
                   }}
                   className={`w-full px-6 py-3 rounded-xl font-semibold mb-6 transition-all ${
                     tier.popular
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-2xl ring-2 ring-emerald-500/30'
+                      : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg ring-1 ring-slate-700/50'
                   }`}
                 >
                   {tier.cta}
@@ -1102,10 +1121,15 @@ export default function SimplifiedLandingPage() {
             Stop Losing Sales<br />to AI-Savvy Competitors
           </h2>
           
-          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Every day you wait is another day your competitors get recommended instead of you. 
             Start your free analysis now - no email required.
           </p>
+
+          {/* Urgency Timer */}
+          <div className="mb-8 flex justify-center">
+            <UrgencyTimer expiresInMinutes={30} />
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 max-w-2xl mx-auto">
             <input
@@ -1117,7 +1141,7 @@ export default function SimplifiedLandingPage() {
             />
             <button 
               onClick={() => handleAnalyze()}
-              className="w-full sm:w-auto px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 bg-white text-blue-700 rounded-xl font-semibold hover:bg-blue-700 hover:text-white transition-all transform hover:scale-105 shadow-2xl border-2 border-blue-700 flex items-center justify-center gap-2 ring-2 ring-white/20"
             >
               <Zap className="w-5 h-5" />
               Analyze Now - Free
@@ -1157,7 +1181,7 @@ export default function SimplifiedLandingPage() {
                   document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' });
                   ga('cta_click', { id: 'sticky_mobile_cta' });
                 }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 shadow-lg"
+                className="bg-gradient-to-r from-blue-700 to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:from-blue-800 hover:to-purple-800 transition-all flex items-center gap-2 shadow-2xl ring-2 ring-blue-500/30"
               >
                 Start
                 <ArrowRight className="w-4 h-4" />

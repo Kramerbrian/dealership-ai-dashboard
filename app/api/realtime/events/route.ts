@@ -1,19 +1,22 @@
 /**
  * Server-Sent Events (SSE) Endpoint
  * 
- * Provides real-time updates for dashboard and metrics
+ * Provides real-time updates for dashboard and metrics via Redis Pub/Sub
  */
 
 import { NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { bus, Channels } from '@/lib/events/bus';
+import type { AiScoreUpdateEvent, MSRPChangeEvent } from '@/lib/events/bus';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge'; // Use Edge runtime for SSE
+export const runtime = 'nodejs'; // Use Node.js runtime for EventEmitter access
 
 /**
  * GET /api/realtime/events
  * 
  * Server-Sent Events stream for real-time updates
+ * Listens to event bus for AI score updates and MSRP changes
  */
 export async function GET(req: NextRequest) {
   try {
@@ -23,66 +26,90 @@ export async function GET(req: NextRequest) {
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const dealerId = searchParams.get('dealerId') || undefined;
+
     // Create a readable stream for SSE
     const stream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder();
 
         // Send initial connection message
-        controller.enqueue(encoder.encode('data: {"type":"connected","message":"Real-time updates enabled"}\n\n'));
+        controller.enqueue(
+          encoder.encode('data: {"type":"connected","message":"Real-time updates enabled"}\n\n')
+        );
 
-        // Send periodic updates with actual dashboard metrics
-        const interval = setInterval(async () => {
+        // Listen to AI score updates
+        const aiScoreHandler = (event: AiScoreUpdateEvent) => {
+          // Filter by dealerId if provided
+          if (dealerId && event.dealerId && event.dealerId !== dealerId) {
+            return;
+          }
+
           try {
-            // Fetch latest dashboard data
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-            const dashboardResponse = await fetch(`${baseUrl}/api/dashboard/overview`, {
-              headers: {
-                'Cookie': req.headers.get('cookie') || '',
-              },
-            });
-
-            let dashboardData = null;
-            if (dashboardResponse.ok) {
-              const result = await dashboardResponse.json();
-              dashboardData = result.data;
-            }
-
-            // Create real-time metrics update
-            const metrics = {
-              type: 'metrics',
-              timestamp: new Date().toISOString(),
-              data: dashboardData ? {
-                aiVisibility: dashboardData.aiVisibility,
-                revenue: dashboardData.revenue,
-                performance: dashboardData.performance,
-                leads: dashboardData.leads,
-                competitive: dashboardData.competitive,
-              } : {
-                // Fallback metrics if dashboard fetch fails
-                aiVisibility: {
-                  score: 85 + Math.random() * 10,
-                  trend: (Math.random() - 0.5) * 5,
-                },
-                revenue: {
-                  atRisk: 25000 + Math.random() * 10000,
-                  trend: (Math.random() - 0.3) * 10,
+            const message = {
+              type: 'ai-score-update',
+              timestamp: event.ts,
+              data: {
+                vin: event.vin,
+                dealerId: event.dealerId,
+                reason: event.reason,
+                scores: {
+                  avi: event.avi,
+                  ati: event.ati,
+                  cis: event.cis,
                 },
               },
             };
-
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify(metrics)}\n\n`)
+              encoder.encode(`data: ${JSON.stringify(message)}\n\n`)
             );
           } catch (error) {
-            console.error('Error sending SSE update:', error);
-            // Don't close connection on error, just log it
+            console.error('Error encoding AI score event:', error);
           }
-        }, 10000); // Update every 10 seconds
+        };
+
+        // Listen to MSRP changes
+        const msrpChangeHandler = (event: MSRPChangeEvent) => {
+          try {
+            const message = {
+              type: 'msrp-change',
+              timestamp: event.ts,
+              data: {
+                vin: event.vin,
+                old: event.old,
+                new: event.new,
+                deltaPct: event.deltaPct,
+              },
+            };
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify(message)}\n\n`)
+            );
+          } catch (error) {
+            console.error('Error encoding MSRP change event:', error);
+          }
+        };
+
+        // Subscribe to event bus
+        bus.on(Channels.ai, aiScoreHandler);
+        bus.on(Channels.msrp, msrpChangeHandler);
+
+        // Send periodic heartbeat to keep connection alive
+        const heartbeatInterval = setInterval(() => {
+          try {
+            controller.enqueue(
+              encoder.encode('data: {"type":"heartbeat","timestamp":"' + new Date().toISOString() + '"}\n\n')
+            );
+          } catch (error) {
+            console.error('Error sending heartbeat:', error);
+          }
+        }, 30000); // Every 30 seconds
 
         // Cleanup on client disconnect
         req.signal.addEventListener('abort', () => {
-          clearInterval(interval);
+          clearInterval(heartbeatInterval);
+          bus.off(Channels.ai, aiScoreHandler);
+          bus.off(Channels.msrp, msrpChangeHandler);
           controller.close();
         });
       },

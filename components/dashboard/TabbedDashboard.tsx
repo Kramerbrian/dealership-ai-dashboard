@@ -57,6 +57,7 @@ import SEOModal from '../modals/SEOModal';
 import AEOModal from '../modals/AEOModal';
 import GEOModal from '../modals/GEOModal';
 import { userManager } from '@/lib/user-management';
+import { DrawerGuard } from '@/components/drawer-guard';
 
 interface TabData {
   id: string;
@@ -656,77 +657,92 @@ export default function TabbedDashboard() {
     </div>
   );
 
+  // Helper to get user tier from subscription
+  const getUserTier = (): 1 | 2 | 3 => {
+    if (!userSubscription) return 1; // Default to tier 1
+    const plan = userSubscription.plan?.toLowerCase() || '';
+    if (plan.includes('enterprise') || plan.includes('tier3') || plan === 'hyperdrive') return 3;
+    if (plan.includes('pro') || plan.includes('tier2') || plan === 'diy guide') return 2;
+    return 1; // tier1, free, ignition, etc.
+  };
+
   // Schema Tab Component
-  const SchemaTab = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Schema Markup Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-6"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Database className="w-5 h-5 text-blue-400" />
-            Schema Markup Status
-          </h3>
-          <div className="space-y-3">
-            {[
-              { type: 'Organization', status: 'implemented', pages: 12 },
-              { type: 'LocalBusiness', status: 'implemented', pages: 8 },
-              { type: 'Product', status: 'partial', pages: 45 },
-              { type: 'Review', status: 'missing', pages: 0 },
-              { type: 'FAQ', status: 'implemented', pages: 3 }
-            ].map((schema) => (
-              <div key={schema.type} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <span className="text-white/80">{schema.type}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-white/60">{schema.pages} pages</span>
-                  <div className={`w-2 h-2 rounded-full ${
-                    schema.status === 'implemented' ? 'bg-green-400' :
-                    schema.status === 'partial' ? 'bg-yellow-400' : 'bg-red-400'
-                  }`}></div>
+  const SchemaTab = () => {
+    const userTier = getUserTier();
+    
+    return (
+      <DrawerGuard tier={userTier} featureId="schema_fix" requiredTier={2}>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Schema Markup Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-6"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Database className="w-5 h-5 text-blue-400" />
+                Schema Markup Status
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { type: 'Organization', status: 'implemented', pages: 12 },
+                  { type: 'LocalBusiness', status: 'implemented', pages: 8 },
+                  { type: 'Product', status: 'partial', pages: 45 },
+                  { type: 'Review', status: 'missing', pages: 0 },
+                  { type: 'FAQ', status: 'implemented', pages: 3 }
+                ].map((schema) => (
+                  <div key={schema.type} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <span className="text-white/80">{schema.type}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-white/60">{schema.pages} pages</span>
+                      <div className={`w-2 h-2 rounded-full ${
+                        schema.status === 'implemented' ? 'bg-green-400' :
+                        schema.status === 'partial' ? 'bg-yellow-400' : 'bg-red-400'
+                      }`}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Schema Validation */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="glass-card p-6"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-400" />
+                Schema Validation
+              </h3>
+              <div className="space-y-4">
+                <div className="text-center p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <div className="text-2xl font-bold text-green-400 mb-1">94%</div>
+                  <div className="text-sm text-white/60">Valid Schema</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/80">Valid Pages</span>
+                    <span className="text-green-400">68</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/80">Errors</span>
+                    <span className="text-red-400">4</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/80">Warnings</span>
+                    <span className="text-yellow-400">2</span>
+                  </div>
                 </div>
               </div>
-            ))}
+            </motion.div>
           </div>
-        </motion.div>
-
-        {/* Schema Validation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card p-6"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-400" />
-            Schema Validation
-          </h3>
-          <div className="space-y-4">
-            <div className="text-center p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-              <div className="text-2xl font-bold text-green-400 mb-1">94%</div>
-              <div className="text-sm text-white/60">Valid Schema</div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-white/80">Valid Pages</span>
-                <span className="text-green-400">68</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-white/80">Errors</span>
-                <span className="text-red-400">4</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-white/80">Warnings</span>
-                <span className="text-yellow-400">2</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </div>
-  );
+        </div>
+      </DrawerGuard>
+    );
+  };
 
   // Reviews Tab Component
   const ReviewsTab = () => (
@@ -829,80 +845,86 @@ export default function TabbedDashboard() {
   );
 
   // Mystery Shop Tab Component
-  const MysteryShopTab = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Mystery Shop Results */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-6"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Eye className="w-5 h-5 text-purple-400" />
-            Mystery Shop Results
-          </h3>
-          <div className="space-y-4">
-            {[
-              { metric: 'Response Time', score: 85, target: 90 },
-              { metric: 'Follow-up Quality', score: 92, target: 85 },
-              { metric: 'Information Accuracy', score: 88, target: 90 },
-              { metric: 'Customer Service', score: 94, target: 85 }
-            ].map((result) => (
-              <div key={result.metric} className="p-3 bg-white/5 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white/80">{result.metric}</span>
-                  <span className={`text-sm font-medium ${result.score >= result.target ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {result.score}%
-                  </span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full ${result.score >= result.target ? 'bg-green-500' : 'bg-yellow-500'}`}
-                    style={{ width: `${result.score}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Competitor Comparison */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card p-6"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-red-400" />
-            Competitor Comparison
-          </h3>
-          <div className="space-y-3">
-            {[
-              { competitor: 'Your Dealership', score: 89 },
-              { competitor: 'Competitor A', score: 76 },
-              { competitor: 'Competitor B', score: 82 },
-              { competitor: 'Competitor C', score: 71 }
-            ].map((comp) => (
-              <div key={comp.competitor} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <span className="text-white/80">{comp.competitor}</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-16 bg-white/10 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full"
-                      style={{ width: `${comp.score}%` }}
-                    ></div>
+  const MysteryShopTab = () => {
+    const userTier = getUserTier();
+    
+    return (
+      <DrawerGuard tier={userTier} featureId="mystery_shop" requiredTier={2}>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Mystery Shop Results */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-6"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Eye className="w-5 h-5 text-purple-400" />
+                Mystery Shop Results
+              </h3>
+              <div className="space-y-4">
+                {[
+                  { metric: 'Response Time', score: 85, target: 90 },
+                  { metric: 'Follow-up Quality', score: 92, target: 85 },
+                  { metric: 'Information Accuracy', score: 88, target: 90 },
+                  { metric: 'Customer Service', score: 94, target: 85 }
+                ].map((result) => (
+                  <div key={result.metric} className="p-3 bg-white/5 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-white/80">{result.metric}</span>
+                      <span className={`text-sm font-medium ${result.score >= result.target ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {result.score}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${result.score >= result.target ? 'bg-green-500' : 'bg-yellow-500'}`}
+                        style={{ width: `${result.score}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <span className="text-sm text-white font-medium">{comp.score}%</span>
-                </div>
+                ))}
               </div>
-            ))}
+            </motion.div>
+
+            {/* Competitor Comparison */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="glass-card p-6"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-red-400" />
+                Competitor Comparison
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { competitor: 'Your Dealership', score: 89 },
+                  { competitor: 'Competitor A', score: 76 },
+                  { competitor: 'Competitor B', score: 82 },
+                  { competitor: 'Competitor C', score: 71 }
+                ].map((comp) => (
+                  <div key={comp.competitor} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <span className="text-white/80">{comp.competitor}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-white/10 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full"
+                          style={{ width: `${comp.score}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-white font-medium">{comp.score}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
-      </div>
-    </div>
-  );
+        </div>
+      </DrawerGuard>
+    );
+  };
 
   // Predictive Tab Component
   const PredictiveTab = () => (

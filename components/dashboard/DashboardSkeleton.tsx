@@ -1,74 +1,27 @@
-'use client';
-
-import React from 'react';
-
-/**
- * Loading skeleton for dashboard
- * Provides visual feedback during data loading
- */
 export function DashboardSkeleton() {
   return (
-    <div className="container">
-      <style jsx>{`
-        .skeleton {
-          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-          background-size: 200% 100%;
-          animation: loading 1.5s ease-in-out infinite;
-        }
-        @keyframes loading {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 animate-pulse">
       {/* Header Skeleton */}
-      <div className="header skeleton" style={{ height: 80, marginBottom: 20, borderRadius: 8 }} />
-
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16" />
+      
       {/* Tabs Skeleton */}
-      <div className="skeleton" style={{ height: 60, marginBottom: 20, borderRadius: 8 }} />
-
-      {/* Cards Grid Skeleton */}
-      <div className="grid grid-3 mb-20">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="card skeleton"
-            style={{
-              height: 200,
-              borderRadius: 8,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Summary Metrics Skeleton */}
-      <div className="grid grid-4 mb-20">
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="card skeleton"
-            style={{
-              height: 150,
-              borderRadius: 8,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Widgets Skeleton */}
-      <div className="grid grid-2 mb-20">
-        {[1, 2].map((i) => (
-          <div
-            key={i}
-            className="card skeleton"
-            style={{
-              height: 300,
-              borderRadius: 8,
-            }}
-          />
-        ))}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-14" />
+      
+      {/* Content Skeleton */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Metric Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl" />
+          ))}
+        </div>
+        
+        {/* AIV Breakdown */}
+        <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl mb-8" />
+        
+        {/* Actions */}
+        <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-xl" />
       </div>
     </div>
   );
 }
-

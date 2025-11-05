@@ -1,39 +1,64 @@
 /**
  * GET /api/diagnostics/redis
  * 
- * Redis connection diagnostics endpoint
- * Returns Redis configuration status and connection health
+ * Health check endpoint for Redis Pub/Sub configuration
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createApiRoute } from '@/lib/api-wrapper';
-import { cachedResponse } from '@/lib/api-response';
+import { NextResponse } from 'next/server';
 
-export const GET = createApiRoute(
-  {
-    endpoint: '/api/diagnostics/redis',
-    requireAuth: false,
-    rateLimit: true,
-    performanceMonitoring: true,
-  },
-  async (req) => {
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
     const redisUrl = process.env.REDIS_URL;
-    const hasRedisUrl = !!redisUrl;
-    
-    // Check if Redis is actually connected (from the event bus)
-    const isConnected = (globalThis as any).__dai_bus_connected || false;
-    
-    const response = {
-      redisUrl: hasRedisUrl,
-      redisConfigured: hasRedisUrl,
-      status: hasRedisUrl ? (isConnected ? "connected" : "configured") : "fallback-local",
-      mode: hasRedisUrl ? "redis-pubsub" : "local-eventemitter",
-      message: hasRedisUrl
-        ? "Redis Pub/Sub enabled - multi-instance safe"
-        : "Using local EventEmitter - single instance only",
-    };
+    const hasRedis = !!redisUrl;
 
-    return cachedResponse(response, 60); // Cache for 60 seconds
+    // Check if Redis module is available
+    let redisModuleAvailable = false;
+    try {
+      await import('redis');
+      redisModuleAvailable = true;
+    } catch {
+      redisModuleAvailable = false;
+    }
+
+    // Check if event bus is initialized
+    let busStatus = 'unknown';
+    let busError: string | undefined;
+    try {
+      const { bus } = await import('@/lib/events/bus');
+      busStatus = bus ? 'initialized' : 'not-initialized';
+    } catch (error) {
+      busStatus = 'error';
+      busError = error instanceof Error ? error.message : 'Unknown error';
+    }
+
+    return NextResponse.json({
+      redisUrl: hasRedis ? 'configured' : 'not-configured',
+      redisModuleAvailable,
+      busStatus,
+      ...(busError && { busError }),
+      status: hasRedis && redisModuleAvailable ? 'configured' : 'fallback-local',
+      message: hasRedis && redisModuleAvailable
+        ? 'Redis Pub/Sub is configured and ready'
+        : 'Using local EventEmitter fallback (single-instance mode)',
+      timestamp: new Date().toISOString(),
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        redisUrl: 'error',
+        redisModuleAvailable: false,
+        busStatus: 'error',
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
-);
-
+}

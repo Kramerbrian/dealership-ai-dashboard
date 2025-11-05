@@ -1,0 +1,17 @@
+apiVersion: v2
+name: dealershipai
+description: DealershipAI Orchestration Cloud Stack
+type: application
+version: 1.0.0
+appVersion: "3.3"
+keywords:
+  - dealership
+  - ai
+  - analytics
+  - orchestration
+maintainers:
+  - name: DealershipAI Team
+home: https://dealershipai.com
+sources:
+  - https://github.com/dealershipai/dealership-ai-dashboard
+

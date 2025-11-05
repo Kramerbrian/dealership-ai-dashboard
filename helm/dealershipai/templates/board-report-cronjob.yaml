@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: board-report-job
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: board-report-generator
+spec:
+  schedule: "0 6 1 */3 *"  # Every quarter (1st day of month at 6 AM UTC)
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: board-report-generator
+        spec:
+          containers:
+            - name: report-generator
+              image: ghcr.io/dealershipai/report-bot:latest
+              imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+              envFrom:
+                - configMapRef:
+                    name: dai-config
+              resources:
+                requests:
+                  cpu: "200m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "1Gi"
+              volumeMounts:
+                - name: chart-output
+                  mountPath: /tmp/charts
+                - name: report-output
+                  mountPath: /tmp/reports
+          volumes:
+            - name: chart-output
+              emptyDir: {}
+            - name: report-output
+              emptyDir: {}
+          restartPolicy: OnFailure
+

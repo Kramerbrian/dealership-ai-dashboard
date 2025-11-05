@@ -50,6 +50,30 @@ export async function processAIScoreCalculation(payload: AIScoreJobPayload): Pro
       scores,
     });
 
+    // Publish AI score update event
+    try {
+      const { publish } = await import('@/lib/events/bus');
+      
+      // For each VIN/entity that was scored, publish an event
+      // In production, this would iterate over actual scored entities
+      const sampleVin = `VIN${Math.floor(Math.random() * 10000)}`;
+      
+      await publish('ai', {
+        vin: sampleVin,
+        dealerId: tenantId,
+        reason: 'recompute',
+        avi: scores.vai,
+        ati: scores.vai * 0.95, // Approximate ATI from VAI
+        cis: scores.qai,
+        ts: new Date().toISOString(),
+      });
+    } catch (error) {
+      // Don't fail the job if event publishing fails
+      await logger.error('Failed to publish AI score event', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+
     // TODO: Store in database
     // TODO: Invalidate cache
     // TODO: Send notification if score changed significantly

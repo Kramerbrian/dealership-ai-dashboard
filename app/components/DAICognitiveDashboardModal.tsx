@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, TrendingUp, AlertCircle, Info, DollarSign, Users, Wrench, ShoppingCart, Megaphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RecommendedActions } from '@/components/dashboard/RecommendedActions';
+import { AIVBreakdown } from '@/components/dashboard/AIVBreakdown';
+import { MetricDetailModal } from '@/components/dashboard/MetricDetailModal';
+import { SignalComparison } from '@/components/dashboard/SignalComparison';
 
 interface KPI {
   id: string;
@@ -513,6 +517,39 @@ interface DAICognitiveDashboardModalProps {
 const DAICognitiveDashboardModal: React.FC<DAICognitiveDashboardModalProps> = ({ isOpen, onClose }) => {
   const [selectedKPI, setSelectedKPI] = useState<KPI | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedMetric, setSelectedMetric] = useState<'aiv' | 'ati' | 'crs' | 'rank' | null>(null);
+  const [metricData, setMetricData] = useState<any>(null);
+
+  // Fetch dashboard metrics
+  useEffect(() => {
+    if (isOpen) {
+      fetchDashboardMetrics();
+    }
+  }, [isOpen]);
+
+  async function fetchDashboardMetrics() {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/dashboard/metrics');
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard metrics:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleMetricClick = (metric: 'aiv' | 'ati' | 'crs' | 'rank') => {
+    if (dashboardData) {
+      setMetricData(dashboardData);
+      setSelectedMetric(metric);
+    }
+  };
 
   if (!isOpen) return null;
 

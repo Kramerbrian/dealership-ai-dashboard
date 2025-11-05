@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gnn-engine
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: gnn-engine
+    component: ml
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gnn-engine
+  template:
+    metadata:
+      labels:
+        app: gnn-engine
+        component: ml
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+        - name: gnn-engine
+          image: {{ .Values.images.gnnEngine }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: dai-config
+          resources:
+            {{- toYaml .Values.resources.gnnEngine | nindent 12 }}
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: gnn-model-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gnn-engine
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: gnn-engine
+spec:
+  type: ClusterIP
+  selector:
+    app: gnn-engine
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+

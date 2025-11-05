@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { verifyAndGetSlackUserEmail } from '@/lib/slack/security';
 
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET!;
 const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || 'http://localhost:3001';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 /**
  * Verify Slack request signature
@@ -79,7 +81,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { dealer, action } = JSON.parse(actionData.value);
+    const actionValue = JSON.parse(actionData.value);
+    const { dealer, action, retry } = actionValue;
+
+    // Security: Verify Slack user with Clerk (for sensitive actions)
+    const userId = payload.user?.id;
+    if (userId && (action === 'arr_forecast' || action === 'ai_score_recompute')) {
+      const userEmail = await verifyAndGetSlackUserEmail(userId);
+      if (!userEmail) {
+        return NextResponse.json({
+          response_type: 'ephemeral',
+          text: '❌ Access denied. You must be a verified user to execute this action.',
+        });
+      }
+    }
 
     // Map Slack actions to orchestrator tasks
     const taskMap: Record<string, string> = {

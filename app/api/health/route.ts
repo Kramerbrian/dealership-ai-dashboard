@@ -1,95 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createApiRoute } from '@/lib/api-wrapper';
-import { cachedResponse, errorResponse } from '@/lib/api-response';
-import { checkDatabaseHealth } from '@/lib/db';
-import { logger } from '@/lib/logger';
 
 /**
- * Health Check API Endpoint
+ * Health Check Endpoint
  * 
- * ✅ Migrated to new security middleware:
- * - Rate limiting (lenient: 1000/min for public endpoint)
- * - Performance monitoring
- * - Standardized error handling
+ * Provides system health status for monitoring and load balancers
  */
-export const GET = createApiRoute(
-  {
-    endpoint: '/api/health',
-    requireAuth: false, // Public endpoint
-    rateLimit: true, // Still rate limited (prevents abuse)
-    performanceMonitoring: true,
-  },
-  async (req, auth) => {
-    const requestId = req.headers.get('x-request-id') || 'unknown';
-    
-    try {
-      // Log health check request
-      await logger.info('Health check requested', { requestId });
-      
-      // Check database connectivity
-      const dbHealth = await checkDatabaseHealth();
-      const dbStatus = dbHealth.healthy ? 'healthy' : 'unhealthy';
-      const dbResponseTime = dbHealth.latency || 0;
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
-      // Check system metrics
-      const systemHealth = {
-        timestamp: new Date().toISOString(),
-        status: dbStatus === 'healthy' ? 'healthy' : 'degraded',
-        version: '2.0.0',
-        environment: process.env.NODE_ENV || 'development',
-        uptime: process.uptime(),
-        memory: {
-          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-          external: Math.round(process.memoryUsage().external / 1024 / 1024)
-        },
-        database: {
-          status: dbStatus,
-          responseTime: dbResponseTime
-        },
-        apis: {
-          total: 136,
-          operational: 136,
-          status: 'all_operational'
-        },
-        features: {
-          hyperIntelligence: 'active',
-          realTimeMonitoring: 'active',
-          automatedAlerts: 'active',
-          enhancedAnalytics: 'active',
-          performanceMonitoring: 'active',
-          complianceMonitoring: 'active',
-          predictiveAnalytics: 'active',
-          competitorIntelligence: 'active',
-          customerBehavior: 'active',
-          marketTrends: 'active'
-        }
-      };
-      
-      await logger.info('Health check completed', { 
-        requestId,
-        dbStatus 
-      });
-      
-      // Use cachedResponse for health checks (60s cache)
-      return cachedResponse({
-        success: true,
-        data: systemHealth,
-        message: 'DealershipAI Hyper-Intelligence System is operational'
-      }, 60); // Cache for 60 seconds
-      
-    } catch (error) {
-      await logger.error('Health check error', {
-        requestId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      
-      return errorResponse(
-        error instanceof Error ? error : new Error('Health check failed'),
-        500,
-        { requestId, timestamp: new Date().toISOString() }
-      );
-    }
+export async function GET(request: NextRequest) {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    services: {
+      supabase: 'unknown',
+      redis: 'unknown',
+      stripe: 'unknown',
+    },
+    endpoints: {
+      telemetry: 'unknown',
+      trial: 'unknown',
+      visibility: 'unknown',
+    },
+  };
+
+  // Check Supabase
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    health.services.supabase = 'configured';
+  } else {
+    health.services.supabase = 'not_configured';
   }
-);
+
+  // Check Redis
+  if (process.env.REDIS_URL || process.env.KV_URL) {
+    health.services.redis = 'configured';
+  } else {
+    health.services.redis = 'not_configured';
+  }
+
+  // Check Stripe
+  if (process.env.STRIPE_SECRET_KEY || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+    health.services.stripe = 'configured';
+  } else {
+    health.services.stripe = 'not_configured';
+  }
+
+  // Check critical endpoints
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+  
+  try {
+    const telemetryCheck = await fetch(`${baseUrl}/api/telemetry`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'health_check', tier: 'system', surface: 'health' }),
+    });
+    health.endpoints.telemetry = telemetryCheck.ok ? 'operational' : 'error';
+  } catch {
+    health.endpoints.telemetry = 'error';
+  }
+
+  try {
+    const trialCheck = await fetch(`${baseUrl}/api/trial/status`);
+    health.endpoints.trial = trialCheck.ok ? 'operational' : 'error';
+  } catch {
+    health.endpoints.trial = 'error';
+  }
+
+  try {
+    const visibilityCheck = await fetch(`${baseUrl}/api/agent/visibility?dealerId=test`);
+    health.endpoints.visibility = visibilityCheck.ok ? 'operational' : 'error';
+  } catch {
+    health.endpoints.visibility = 'error';
+  }
+
+  // Determine overall status
+  const criticalServices = [
+    health.services.supabase,
+    health.endpoints.telemetry,
+  ];
+
+  const hasErrors = criticalServices.some(s => s === 'error' || s === 'not_configured');
+  health.status = hasErrors ? 'degraded' : 'healthy';
+
+  return NextResponse.json(health, {
+    status: health.status === 'healthy' ? 200 : 503,
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'Content-Type': 'application/json',
+    },
+  });
+}

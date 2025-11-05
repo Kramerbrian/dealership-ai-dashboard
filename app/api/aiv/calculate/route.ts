@@ -10,6 +10,7 @@ import { createApiRoute } from '@/lib/api-wrapper';
 import { z } from 'zod';
 import { errorResponse, cachedResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
+import { handleAIVError, validateAIVScore, sanitizeAIVInputs } from '@/lib/utils/aiv-error-handler';
 
 const aivInputSchema = z.object({
   dealerId: z.string(),
@@ -38,8 +39,13 @@ const aivInputSchema = z.object({
 });
 
 function calculateAIV(inputs: z.infer<typeof aivInputSchema>): any {
-  // Use defaults if not provided
-  const platform_scores = inputs.platform_scores || {
+  try {
+    // Sanitize inputs
+    const sanitized = sanitizeAIVInputs(inputs as any);
+    const cleanInputs = { ...inputs, ...sanitized };
+    
+    // Use defaults if not provided
+    const platform_scores = cleanInputs.platform_scores || {
     chatgpt: 0.86,
     claude: 0.82,
     perplexity: 0.78,
@@ -71,47 +77,56 @@ function calculateAIV(inputs: z.infer<typeof aivInputSchema>): any {
     (inputs.crawl_budget_mult || 0.98) * 
     (inputs.inventory_truth_mult || 1.00);
   
-  // AIV
-  const AIV_score = Math.min(1.0, Math.max(0, (AIV_core * AIV_mods) * (1 + 0.25 * AIV_sel)));
+    // AIV
+    let AIV_score = Math.min(1.0, Math.max(0, (AIV_core * AIV_mods) * (1 + 0.25 * AIV_sel)));
+    AIV_score = validateAIVScore(AIV_score, 'AIV');
+    
+    // AIVR
+    const ctrDelta = cleanInputs.ctr_delta || 0;
+    const conversionDelta = cleanInputs.conversion_delta || 0;
+    let AIVR_score = Math.min(2.0, Math.max(0, AIV_score * (1 + ctrDelta + conversionDelta)));
+    AIVR_score = validateAIVScore(AIVR_score, 'AIVR');
   
-  // AIVR
-  const ctrDelta = inputs.ctr_delta || 0;
-  const conversionDelta = inputs.conversion_delta || 0;
-  const AIVR_score = Math.min(2.0, Math.max(0, AIV_score * (1 + ctrDelta + conversionDelta)));
-  
-  // Revenue at Risk
-  const monthlyOpps = inputs.monthly_opportunities || 450;
-  const avgGross = inputs.avg_gross_per_unit || 1200;
-  const visibilityLoss = (1 - AIV_score) * 100;
-  const Revenue_at_Risk_USD = Math.round((visibilityLoss / 100) * monthlyOpps * avgGross);
-  
-  // Summaries
-  const percentile = Math.round((1 - AIV_score) * 100);
-  const modal_summary = `Your dealership ranks in the top ${percentile}% for AI visibility across assistant platforms. ` +
-    `Strong schema coverage (${Math.round((inputs.schema_coverage_ratio || 0.91) * 100)}%) and clarity signals ` +
-    `(SCS ${SCS.toFixed(2)} / SIS ${SIS.toFixed(2)}) are driving visibility gains.`;
-  
-  const chat_summary = `Your AIV™ is **${AIV_score.toFixed(2)}** and your AIVR™ is **${AIVR_score.toFixed(2)}**, ` +
-    `meaning you're capturing ${(AIVR_score * 50).toFixed(0)}% of your visibility potential. ` +
-    `Estimated revenue at risk from missed AI exposure: **$${(Revenue_at_Risk_USD / 1000).toFixed(1)}K** per month.`;
-  
-  return {
-    AIV_score: Math.round(AIV_score * 1000) / 1000,
-    AIVR_score: Math.round(AIVR_score * 1000) / 1000,
-    Revenue_at_Risk_USD: Math.round(Revenue_at_Risk_USD),
-    modal_summary,
-    chat_summary,
-    breakdown: {
-      AIV_core: Math.round(AIV_core * 1000) / 1000,
-      AIV_sel: Math.round(AIV_sel * 1000) / 1000,
-      AIV_mods: Math.round(AIV_mods * 1000) / 1000,
-      SEO,
-      AEO,
-      GEO,
-      UGC,
-      GeoLocal,
-    },
-  };
+    // Revenue at Risk
+    const monthlyOpps = cleanInputs.monthly_opportunities || 450;
+    const avgGross = cleanInputs.avg_gross_per_unit || 1200;
+    const visibilityLoss = (1 - AIV_score) * 100;
+    const Revenue_at_Risk_USD = Math.round((visibilityLoss / 100) * monthlyOpps * avgGross);
+    
+    // Validate revenue calculation (reasonable bounds)
+    const maxRevenueAtRisk = 1000000; // $1M max
+    const finalRevenueAtRisk = Math.min(maxRevenueAtRisk, Math.max(0, Revenue_at_Risk_USD));
+    
+    // Summaries
+    const percentile = Math.round((1 - AIV_score) * 100);
+    const modal_summary = `Your dealership ranks in the top ${percentile}% for AI visibility across assistant platforms. ` +
+      `Strong schema coverage (${Math.round((cleanInputs.schema_coverage_ratio || 0.91) * 100)}%) and clarity signals ` +
+      `(SCS ${SCS.toFixed(2)} / SIS ${SIS.toFixed(2)}) are driving visibility gains.`;
+    
+    const chat_summary = `Your AIV™ is **${AIV_score.toFixed(2)}** and your AIVR™ is **${AIVR_score.toFixed(2)}**, ` +
+      `meaning you're capturing ${(AIVR_score * 50).toFixed(0)}% of your visibility potential. ` +
+      `Estimated revenue at risk from missed AI exposure: **$${(finalRevenueAtRisk / 1000).toFixed(1)}K** per month.`;
+    
+    return {
+      AIV_score: Math.round(AIV_score * 1000) / 1000,
+      AIVR_score: Math.round(AIVR_score * 1000) / 1000,
+      Revenue_at_Risk_USD: Math.round(finalRevenueAtRisk),
+      modal_summary,
+      chat_summary,
+      breakdown: {
+        AIV_core: Math.round(AIV_core * 1000) / 1000,
+        AIV_sel: Math.round(AIV_sel * 1000) / 1000,
+        AIV_mods: Math.round(AIV_mods * 1000) / 1000,
+        SEO,
+        AEO,
+        GEO,
+        UGC,
+        GeoLocal,
+      },
+    };
+  } catch (error) {
+    throw new Error(`AIV calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export const POST = createApiRoute(
@@ -123,16 +138,24 @@ export const POST = createApiRoute(
     performanceMonitoring: true,
   },
   async (req) => {
+    const startTime = Date.now();
     try {
       const body = await req.json();
       const inputs = body;
       
+      // Validate dealerId access (in production, check user has access to this dealer)
+      if (!inputs.dealerId) {
+        return errorResponse('dealerId is required', 400);
+      }
+      
       const outputs = calculateAIV(inputs);
+      const duration = Date.now() - startTime;
       
       await logger.info('AIV calculation completed', {
         dealerId: inputs.dealerId,
         AIV_score: outputs.AIV_score,
         AIVR_score: outputs.AIVR_score,
+        duration,
       });
       
       return cachedResponse({
@@ -141,11 +164,15 @@ export const POST = createApiRoute(
         meta: {
           dealerId: inputs.dealerId,
           timestamp: new Date().toISOString(),
+          calculation_duration_ms: duration,
         },
       }, 300); // Cache for 5 minutes
     } catch (error) {
-      await logger.error('AIV calculation error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+      const duration = Date.now() - startTime;
+      await handleAIVError(error, {
+        dealerId: (await req.json()).dealerId,
+        calculation: 'AIV',
+        step: 'api_calculate',
       });
       
       return errorResponse('Failed to calculate AIV scores', 500);

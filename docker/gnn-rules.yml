@@ -1,0 +1,57 @@
+groups:
+  - name: gnn_engine
+    interval: 30s
+    rules:
+      - alert: HighPrecisionDrop
+        expr: gnn_precision_by_dealer < 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: gnn
+        annotations:
+          summary: "GNN precision dropped below 85% for {{ $labels.dealer }}"
+          description: "Precision is {{ $value }} for dealer {{ $labels.dealer }}"
+
+      - alert: ARRGainAnomaly
+        expr: gnn_arr_gain_by_dealer < -1000
+        for: 2m
+        labels:
+          severity: critical
+          component: revenue
+        annotations:
+          summary: "ARR gain anomaly detected for {{ $labels.dealer }}"
+          description: "ARR gain is {{ $value }} (negative) for dealer {{ $labels.dealer }}"
+
+      - alert: OrchestratorDown
+        expr: up{job="orchestrator"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: orchestrator
+        annotations:
+          summary: "Orchestrator is down"
+          description: "Orchestrator service is not responding"
+
+      - alert: GNNEngineDown
+        expr: up{job="gnn-engine"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: gnn
+        annotations:
+          summary: "GNN Engine is down"
+          description: "GNN Engine service is not responding"
+
+  - name: slack_actions
+    interval: 1m
+    rules:
+      - alert: HighSlackUsage
+        expr: rate(slack_action_count[5m]) > 10
+        for: 5m
+        labels:
+          severity: info
+          component: slack
+        annotations:
+          summary: "High Slack action usage detected"
+          description: "Slack actions are being used at {{ $value }} actions/min"
+

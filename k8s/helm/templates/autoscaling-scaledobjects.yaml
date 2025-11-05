@@ -1,0 +1,113 @@
+{{- if .Values.keda.enabled }}
+
+{{- if .Values.autoscaling.orchestrator.enabled }}
+---
+# === Orchestrator autoscaling (Redis queue length) ===
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: orchestrator-queue-scaler
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: orchestrator
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    name: orchestrator
+  pollingInterval: {{ .Values.autoscaling.orchestrator.pollingInterval }}
+  cooldownPeriod: {{ .Values.autoscaling.orchestrator.cooldownPeriod }}
+  minReplicaCount: {{ .Values.autoscaling.orchestrator.minReplicaCount }}
+  maxReplicaCount: {{ .Values.autoscaling.orchestrator.maxReplicaCount }}
+  triggers:
+    - type: redis
+      metadata:
+        address: redis:6379
+        listName: dealershipai_tasks
+        listLength: "{{ .Values.autoscaling.orchestrator.queueLength }}"
+        activationThreshold: "1"
+{{- end }}
+
+{{- if .Values.autoscaling.worker.enabled }}
+---
+# === Worker autoscaling (Redis queue length) ===
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: orchestrator-worker-scaler
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: orchestrator-worker
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    name: orchestrator-worker
+  pollingInterval: {{ .Values.autoscaling.worker.pollingInterval }}
+  cooldownPeriod: {{ .Values.autoscaling.worker.cooldownPeriod }}
+  minReplicaCount: {{ .Values.autoscaling.worker.minReplicaCount }}
+  maxReplicaCount: {{ .Values.autoscaling.worker.maxReplicaCount }}
+  advanced:
+    restoreToOriginalReplicaCount: true
+  triggers:
+    - type: redis
+      metadata:
+        address: redis:6379
+        listName: dealershipai_tasks
+        listLength: "{{ .Values.autoscaling.worker.queueLength }}"
+        activationThreshold: "{{ .Values.autoscaling.worker.activationThreshold }}"
+{{- end }}
+
+{{- if .Values.autoscaling.gnnEngine.enabled }}
+---
+# === GNN engine autoscaling (CPU based) ===
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: gnn-engine-cpu-scaler
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: gnn-engine
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    name: gnn-engine
+  pollingInterval: {{ .Values.autoscaling.gnnEngine.pollingInterval }}
+  cooldownPeriod: {{ .Values.autoscaling.gnnEngine.cooldownPeriod }}
+  minReplicaCount: {{ .Values.autoscaling.gnnEngine.minReplicaCount }}
+  maxReplicaCount: {{ .Values.autoscaling.gnnEngine.maxReplicaCount }}
+  triggers:
+    - type: cpu
+      metadata:
+        type: Utilization
+        value: "{{ .Values.autoscaling.gnnEngine.cpuUtilization }}"
+{{- end }}
+
+{{- if and .Values.prometheus.enabled .Values.autoscaling.orchestrator.enabled }}
+---
+# === Optional: Orchestrator throughput-based scaling (Prometheus) ===
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: orchestrator-throughput-scaler
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: orchestrator
+    component: autoscaling
+    metric-type: throughput
+spec:
+  scaleTargetRef:
+    name: orchestrator
+  pollingInterval: 30
+  cooldownPeriod: {{ .Values.autoscaling.orchestrator.cooldownPeriod }}
+  minReplicaCount: {{ .Values.autoscaling.orchestrator.minReplicaCount }}
+  maxReplicaCount: {{ .Values.autoscaling.orchestrator.maxReplicaCount }}
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus:9090
+        metricName: dealershipai_tasks_total
+        threshold: "{{ .Values.autoscaling.orchestrator.prometheusThreshold }}"
+        query: rate(dealershipai_tasks_total[1m])
+{{- end }}
+
+{{- end }}
+

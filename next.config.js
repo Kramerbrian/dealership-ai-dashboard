@@ -171,31 +171,12 @@ const nextConfig = {
   
   // Webpack configuration
   webpack: (config, { isServer }) => {
-    // Ensure React is resolved correctly
-    // Note: jsx-runtime should be automatically resolved by Next.js,
-    // but we add explicit aliases to help with module resolution
-    try {
+    // Fix for jsx-runtime module resolution
+    // Next.js should handle this automatically, but we ensure it works
+    if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        'react': require.resolve('react'),
-        'react-dom': require.resolve('react-dom'),
       };
-      
-      // Only add jsx-runtime alias if it exists
-      try {
-        config.resolve.alias['react/jsx-runtime'] = require.resolve('react/jsx-runtime');
-      } catch (e) {
-        // jsx-runtime might not exist in older React versions, skip
-      }
-      
-      try {
-        config.resolve.alias['react/jsx-dev-runtime'] = require.resolve('react/jsx-dev-runtime');
-      } catch (e) {
-        // jsx-dev-runtime might not exist, skip
-      }
-    } catch (error) {
-      // If require.resolve fails, use default resolution
-      console.warn('Could not resolve React modules, using default resolution:', error);
     }
 
     // Bundle analyzer (enable with ANALYZE=true)

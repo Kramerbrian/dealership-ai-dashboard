@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DealershipAI Quarterly Executive Report</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #0f172a;
+      color: #fff;
+      padding: 20px 40px;
+    }
+    header h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+    header p {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    section {
+      padding: 25px 40px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    h2 {
+      color: #334155;
+      border-left: 4px solid #3b82f6;
+      padding-left: 8px;
+      font-size: 18px;
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #334155;
+    }
+    .metric {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1d4ed8;
+    }
+    .chart {
+      text-align: center;
+      margin: 15px 0;
+    }
+    .chart img {
+      max-width: 95%;
+      height: auto;
+    }
+    footer {
+      font-size: 10px;
+      color: #64748b;
+      text-align: center;
+      padding: 10px;
+    }
+    .positive {
+      color: #059669;
+    }
+    .negative {
+      color: #dc2626;
+    }
+    ul {
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>DealershipAI Quarterly Executive Report</h1>
+  <p>Reporting Period: {{ period_start }} – {{ period_end }} |
+     Generated: {{ generation_date }}</p>
+</header>
+
+<section>
+  <h2>Summary Metrics</h2>
+  <table>
+    <tr>
+      <th>Metric</th><th>Current</th><th>Change (QoQ)</th><th>Target</th>
+    </tr>
+    <tr>
+      <td>Uptime</td>
+      <td class="metric">{{ metrics.uptime | round(3) }} %</td>
+      <td class="{{ 'positive' if deltas.uptime >= 0 else 'negative' }}">{{ deltas.uptime | round(2) }} %</td>
+      <td>≥ 99.9 %</td>
+    </tr>
+    <tr>
+      <td>ARR Forecast Error</td>
+      <td class="metric">± {{ metrics.arr_error | round(2) }} %</td>
+      <td class="{{ 'positive' if deltas.arr_error <= 0 else 'negative' }}">{{ deltas.arr_error | round(2) }} %</td>
+      <td>≤ 5 %</td>
+    </tr>
+    <tr>
+      <td>Self-Heal Rate</td>
+      <td class="metric">{{ metrics.self_heal | round(1) }} %</td>
+      <td class="{{ 'positive' if deltas.self_heal >= 0 else 'negative' }}">{{ deltas.self_heal | round(1) }} %</td>
+      <td>80 %</td>
+    </tr>
+    <tr>
+      <td>Automation Coverage</td>
+      <td class="metric">{{ metrics.automation | round(1) }} %</td>
+      <td class="{{ 'positive' if deltas.automation >= 0 else 'negative' }}">{{ deltas.automation | round(1) }} %</td>
+      <td>85 %</td>
+    </tr>
+    <tr>
+      <td>Cost per Compute Hour</td>
+      <td class="metric">${{ metrics.cost_per_hour | round(2) }}</td>
+      <td class="{{ 'positive' if deltas.cost_per_hour <= 0 else 'negative' }}">${{ deltas.cost_per_hour | round(2) }}</td>
+      <td>≤ $0.70</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Reliability Overview</h2>
+  <div class="chart">
+    <img src="{{ charts.uptime_trend }}" alt="Uptime Trend">
+  </div>
+  <p>Average MTTD: {{ metrics.mttd | round(1) }} min |
+     MTTR: {{ metrics.mttr | round(1) }} min</p>
+  {% if top_incidents %}
+  <h3>Top 5 Incidents This Quarter</h3>
+  <table>
+    <tr>
+      <th>Date</th><th>Duration</th><th>Root Cause</th><th>Impact</th>
+    </tr>
+    {% for incident in top_incidents %}
+    <tr>
+      <td>{{ incident.date }}</td>
+      <td>{{ incident.duration }} min</td>
+      <td>{{ incident.root_cause }}</td>
+      <td>{{ incident.impact }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</section>
+
+<section>
+  <h2>AI Performance</h2>
+  <div class="chart">
+    <img src="{{ charts.gnn_precision }}" alt="GNN Precision Chart">
+  </div>
+  <p>GNN precision reached {{ metrics.gnn_precision | round(1) }} % this quarter,
+     up {{ deltas.gnn_precision | round(1) }} points from last quarter.
+     The reinforcement learner updated AIV/ATI weights {{ rl_updates }} times.</p>
+  {% if arr_forecast %}
+  <div class="chart">
+    <img src="{{ charts.arr_forecast }}" alt="ARR Forecast">
+  </div>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Automation & Self-Healing</h2>
+  <div class="chart">
+    <img src="{{ charts.auto_fixes }}" alt="Automation Breakdown">
+  </div>
+  <p>{{ automation_summary }}</p>
+  {% if top_auto_fixes %}
+  <h3>Top 10 Self-Resolved Incidents</h3>
+  <table>
+    <tr>
+      <th>Incident Type</th><th>Count</th><th>Success Rate</th><th>Avg Resolution Time</th>
+    </tr>
+    {% for fix in top_auto_fixes %}
+    <tr>
+      <td>{{ fix.type }}</td>
+      <td>{{ fix.count }}</td>
+      <td>{{ fix.success_rate | round(1) }} %</td>
+      <td>{{ fix.avg_resolution }} min</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Financial Impact</h2>
+  <div class="chart">
+    <img src="{{ charts.arr_gain }}" alt="ARR Gain Trend">
+  </div>
+  <p>Total ARR uplift this quarter: <b>${{ metrics.arr_gain | int | string }}</b></p>
+  {% if dealer_segments %}
+  <h3>ARR Uplift by Dealer Segment</h3>
+  <table>
+    <tr>
+      <th>Segment</th><th>Dealers</th><th>ARR Uplift</th><th>Avg per Dealer</th>
+    </tr>
+    {% for segment in dealer_segments %}
+    <tr>
+      <td>{{ segment.name }}</td>
+      <td>{{ segment.dealers }}</td>
+      <td>${{ segment.arr_gain | int | string }}</td>
+      <td>${{ (segment.arr_gain / segment.dealers) | int | string }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Upcoming Objectives (Next Quarter)</h2>
+  <ul>
+    {% for goal in next_goals %}
+      <li>{{ goal }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if gpt_summary %}
+<section>
+  <h2>Executive Summary</h2>
+  <p style="font-style: italic; line-height: 1.8;">{{ gpt_summary }}</p>
+</section>
+{% endif %}
+
+<footer>
+  © {{ current_year }} DealershipAI | Generated automatically by the Orchestrator Intelligence Suite v3.3<br>
+  Report Hash: {{ report_hash }} | Generated at: {{ generation_timestamp }}
+</footer>
+
+</body>
+</html>
+

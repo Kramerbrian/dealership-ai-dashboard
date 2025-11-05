@@ -46,7 +46,8 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useToast } from "@/components/ui/Toast";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import PIQRDashboardWidget from "@/components/dashboard/PIQRDashboardWidget";
-import AIVModal from "@/components/dashboard/AIVModal";
+import AIVModal from "@/components/AIVModal";
+import AIVForecastPanelWrapper from "@/components/dashboard/AIVForecastPanelWrapper";
 import dynamic from "next/dynamic";
 
 // Types for modal content
@@ -756,12 +757,14 @@ const DealershipAIDashboardLA: React.FC = () => {
 
           {/* AIV Tab */}
           <div className={`tab-content ${activeTab === 'aiv' ? 'active' : ''}`} id="aiv">
-            <div className="p-6">
+            <div className="p-6 space-y-6">
               <AIVModal
                 isOpen={true}
                 onClose={() => handleTabClick('overview')}
                 dealerId={effectiveDealerId}
               />
+              {/* AIV Forecast Panel - displays below AIVModal */}
+              <AIVForecastPanelWrapper dealerId={effectiveDealerId} />
             </div>
           </div>
 

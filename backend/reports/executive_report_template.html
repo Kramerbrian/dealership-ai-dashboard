@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DealershipAI Quarterly Executive Report</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #0f172a;
+      color: #fff;
+      padding: 20px 40px;
+    }
+    header h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+    header p {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    section {
+      padding: 25px 40px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    h2 {
+      color: #334155;
+      border-left: 4px solid #3b82f6;
+      padding-left: 8px;
+      font-size: 18px;
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #334155;
+    }
+    .metric {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1d4ed8;
+    }
+    .chart {
+      text-align: center;
+      margin: 15px 0;
+    }
+    footer {
+      font-size: 10px;
+      color: #64748b;
+      text-align: center;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>DealershipAI Quarterly Executive Report</h1>
+  <p>Reporting Period: {{ period_start }} – {{ period_end }} |
+     Generated: {{ generation_date }}</p>
+</header>
+
+<section>
+  <h2>Summary Metrics</h2>
+  <table>
+    <tr>
+      <th>Metric</th><th>Current</th><th>Change (QoQ)</th><th>Target</th>
+    </tr>
+    <tr>
+      <td>Uptime</td>
+      <td class="metric">{{ metrics.uptime | round(3) }} %</td>
+      <td>{{ deltas.uptime }} %</td>
+      <td>≥ 99.9 %</td>
+    </tr>
+    <tr>
+      <td>ARR Forecast Error</td>
+      <td class="metric">± {{ metrics.arr_error | round(2) }} %</td>
+      <td>{{ deltas.arr_error }} %</td>
+      <td>≤ 5 %</td>
+    </tr>
+    <tr>
+      <td>Self-Heal Rate</td>
+      <td class="metric">{{ metrics.self_heal | round(1) }} %</td>
+      <td>{{ deltas.self_heal }} %</td>
+      <td>80 %</td>
+    </tr>
+    <tr>
+      <td>Automation Coverage</td>
+      <td class="metric">{{ metrics.automation | round(1) }} %</td>
+      <td>{{ deltas.automation }} %</td>
+      <td>85 %</td>
+    </tr>
+    <tr>
+      <td>Cost per Compute Hour</td>
+      <td class="metric">${{ metrics.cost_per_hour | round(2) }}</td>
+      <td>${{ deltas.cost_per_hour | round(2) }}</td>
+      <td>≤ $0.70</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Reliability Overview</h2>
+  <div class="chart">
+    <img src="{{ charts.uptime_trend }}" width="95%" alt="Uptime Trend">
+  </div>
+  <p>Average MTTD: {{ metrics.mttd | round(1) }} min |
+     MTTR: {{ metrics.mttr | round(1) }} min</p>
+</section>
+
+<section>
+  <h2>AI Performance</h2>
+  <div class="chart">
+    <img src="{{ charts.gnn_precision }}" width="95%" alt="GNN Precision Chart">
+  </div>
+  <p>GNN precision reached {{ metrics.gnn_precision | round(1) }} % this quarter,
+     up {{ deltas.gnn_precision | round(1) }} points from last quarter.
+     The reinforcement learner updated AIV/ATI weights {{ rl_updates }} times.</p>
+</section>
+
+<section>
+  <h2>Automation & Self-Healing</h2>
+  <div class="chart">
+    <img src="{{ charts.auto_fixes }}" width="95%" alt="Automation Breakdown">
+  </div>
+  <p>{{ automation_summary }}</p>
+</section>
+
+<section>
+  <h2>Financial Impact</h2>
+  <div class="chart">
+    <img src="{{ charts.arr_gain }}" width="95%" alt="ARR Gain Trend">
+  </div>
+  <p>Total ARR uplift this quarter: <b>${{ metrics.arr_gain | int | string }}</b></p>
+</section>
+
+<section>
+  <h2>Upcoming Objectives (Next Quarter)</h2>
+  <ul>
+    {% for goal in next_goals %}
+      <li>{{ goal }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<footer>
+  © {{ current_year }} DealershipAI | Generated automatically by the Orchestrator Intelligence Suite v3.3
+</footer>
+
+</body>
+</html>
+

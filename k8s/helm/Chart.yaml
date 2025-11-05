@@ -1,0 +1,23 @@
+apiVersion: v2
+name: dealershipai
+description: DealershipAI Orchestration Cloud Stack
+type: application
+version: 1.0.0
+appVersion: "2.0.0"
+
+dependencies:
+  - name: keda
+    version: "2.12.2"
+    repository: "https://kedacore.github.io/charts"
+    condition: keda.enabled
+
+keywords:
+  - dealershipai
+  - orchestration
+  - ai
+  - analytics
+  - monitoring
+
+maintainers:
+  - name: DealershipAI Team
+

@@ -1,0 +1,114 @@
+global:
+  imagePullPolicy: Always
+  namespace: dealershipai
+  replicas: 2
+
+# Image registry and tags
+images:
+  orchestrator: ghcr.io/dealershipai/orchestrator:latest
+  dashboard: ghcr.io/dealershipai/dashboard:latest
+  gnnEngine: ghcr.io/dealershipai/gnn-engine:latest
+  redis: redis/redis-stack-server:latest
+  redisgraph: redislabs/redisgraph:2.12.0
+  postgres: postgres:16
+  prometheus: prom/prometheus:latest
+  grafana: grafana/grafana:latest
+  alertmanager: prom/alertmanager:latest
+
+# Environment variables
+env:
+  POSTGRES_USER: dai_admin
+  POSTGRES_PASSWORD: dai_pass
+  POSTGRES_DB: dealershipai
+  REDIS_URL: redis://redis:6379
+  REDISGRAPH_URL: redis://redisgraph:6379
+  POSTGRES_URL: postgres://dai_admin:dai_pass@postgres:5432/dealershipai
+  CLERK_SECRET_KEY: sk_test_xxx
+  SLACK_BOT_TOKEN: xoxb-your-slack-bot
+  SLACK_SIGNING_SECRET: your-slack-signing-secret
+  PROMETHEUS_URL: http://prometheus:9090
+  GRAFANA_URL: http://grafana:3000
+  ORCHESTRATOR_URL: http://orchestrator:3001
+  MODEL_PATH: /models/latest.pt
+
+# Resource limits and requests
+resources:
+  orchestrator:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+  dashboard:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  gnnEngine:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+# Storage
+storage:
+  redisgraph:
+    size: 5Gi
+    storageClass: standard
+  postgres:
+    size: 20Gi
+    storageClass: standard
+  prometheus:
+    size: 50Gi
+    storageClass: standard
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: dash.dealershipai.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: api.dealershipai.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: dealershipai-tls
+      hosts:
+        - dash.dealershipai.com
+        - api.dealershipai.com
+
+# KEDA autoscaling
+keda:
+  enabled: true
+  orchestrator:
+    minReplicas: 2
+    maxReplicas: 10
+    queueName: "orchestrator"
+    targetQueueLength: 10
+  worker:
+    minReplicas: 1
+    maxReplicas: 20
+    queueName: "worker"
+    targetQueueLength: 5
+
+# Monitoring
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    scrapeInterval: 30s
+  grafana:
+    enabled: true
+    adminPassword: admin
+

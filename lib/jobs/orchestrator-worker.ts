@@ -49,30 +49,61 @@ async function updateSlackStatus(
     error?: string;
     taskId?: string;
     grafanaUrl?: string;
+    metrics?: {
+      arrGain?: number;
+      precision?: number;
+      kpi?: string;
+    };
   }
 ): Promise<void> {
   try {
-    const response = await fetch(`${APP_URL}/api/slack/update`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        channel: slackContext.channel,
-        ts: slackContext.ts,
-        status,
-        task,
-        dealer,
-        ...details,
-      }),
-    });
+    const { updateSlackProgress, fetchCompletionMetrics } = await import('../services/slackUpdate');
+    
+    // Fetch metrics for completed tasks
+    let metrics = details?.metrics;
+    if (status === 'completed' && !metrics) {
+      metrics = await fetchCompletionMetrics(dealer);
+    }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to update Slack message: ${response.status} ${errorText}`);
+    const success = await updateSlackProgress(
+      slackContext.channel,
+      slackContext.ts,
+      task,
+      dealer,
+      status === 'running' ? 'progress' : status === 'completed' ? 'completed' : 'failed',
+      details?.progress || 0,
+      {
+        ...details,
+        metrics,
+      }
+    );
+
+    if (!success) {
+      console.error('Failed to update Slack message');
     }
   } catch (error) {
     console.error('Error updating Slack message:', error);
+  }
+}
+
+/**
+ * Post threaded progress update
+ */
+async function postThreadProgress(
+  slackContext: { channel: string; ts: string },
+  progress: number,
+  step?: string
+): Promise<void> {
+  try {
+    const { postProgressThread } = await import('../services/slackUpdate');
+    await postProgressThread(
+      slackContext.channel,
+      slackContext.ts,
+      progress,
+      step
+    );
+  } catch (error) {
+    console.error('Error posting thread progress:', error);
   }
 }
 
@@ -270,9 +301,34 @@ async function processMSRPSync(
 
   await new Promise(resolve => setTimeout(resolve, 3000));
 
+  // Simulate MSRP sync results (in production, this would come from actual DB queries)
+  const recordsSynced = Math.floor(Math.random() * 1000) + 500;
+  const priceChanges = Math.floor(Math.random() * 50);
+  
+  // Publish MSRP change events for each price change
+  if (priceChanges > 0) {
+    const { publish } = await import('@/lib/events/bus');
+    
+    // Simulate price changes for sample VINs
+    for (let i = 0; i < Math.min(priceChanges, 10); i++) { // Limit to 10 events per sync
+      const sampleVin = `VIN${Math.floor(Math.random() * 10000)}`;
+      const oldPrice = Math.floor(Math.random() * 50000) + 20000;
+      const newPrice = oldPrice + (Math.random() - 0.5) * 5000;
+      const deltaPct = ((newPrice - oldPrice) / oldPrice) * 100;
+
+      await publish('msrp', {
+        vin: sampleVin,
+        old: oldPrice,
+        new: newPrice,
+        deltaPct: Math.round(deltaPct * 100) / 100,
+        ts: new Date().toISOString(),
+      });
+    }
+  }
+
   const result = {
-    recordsSynced: Math.floor(Math.random() * 1000) + 500,
-    priceChanges: Math.floor(Math.random() * 50),
+    recordsSynced,
+    priceChanges,
     success: true,
   };
 
@@ -296,17 +352,49 @@ async function processAIScoreRecompute(
   const { slackContext } = job.data;
   const dealer = payload.dealerId;
 
+  const scoresUpdated = Math.floor(Math.random() * 100) + 50;
+  const newAverageScore = 85 + Math.random() * 10;
+
   for (let progress = 20; progress <= 100; progress += 20) {
     await job.updateProgress(progress);
     if (slackContext?.channel && slackContext?.ts) {
       await updateSlackStatus(slackContext, 'running', 'ai_score_recompute', dealer, { progress, taskId: job.id });
     }
+    
+    // Publish score updates as we process (simulate batch processing)
+    if (progress === 100) {
+      try {
+        const { publish } = await import('@/lib/events/bus');
+        
+        // Publish events for sample VINs (in production, iterate over actual scored entities)
+        for (let i = 0; i < Math.min(scoresUpdated, 10); i++) { // Limit to 10 events
+          const sampleVin = `VIN${Math.floor(Math.random() * 10000)}`;
+          const avi = newAverageScore + (Math.random() - 0.5) * 5;
+          const ati = avi * 0.95;
+          const cis = newAverageScore + (Math.random() - 0.5) * 3;
+
+          await publish('ai', {
+            vin: sampleVin,
+            dealerId: dealer,
+            reason: 'recompute',
+            avi: Math.round(avi * 10) / 10,
+            ati: Math.round(ati * 10) / 10,
+            cis: Math.round(cis * 10) / 10,
+            ts: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        // Don't fail the job if event publishing fails
+        console.error('Failed to publish AI score events:', error);
+      }
+    }
+    
     await new Promise(resolve => setTimeout(resolve, 800));
   }
 
   const result = {
-    scoresUpdated: Math.floor(Math.random() * 100) + 50,
-    newAverageScore: 85 + Math.random() * 10,
+    scoresUpdated,
+    newAverageScore,
     success: true,
   };
 
@@ -360,9 +448,21 @@ export function createOrchestratorWorker(): Worker<OrchestratorJobData> | null {
     console.error(`❌ Task ${job?.id} (${job?.data.type}) failed:`, err);
   });
 
-  // Log job progress
-  worker.on('progress', (job, progress) => {
+  // Log job progress and post to Slack thread
+  worker.on('progress', async (job, progress) => {
     console.log(`📊 Task ${job.id} progress: ${progress}%`);
+    
+    // Post threaded updates for major milestones
+    if (job.data.slackContext && (progress % 20 === 0 || progress === 100)) {
+      const step = progress === 20 ? 'Schema detected'
+        : progress === 40 ? 'Validation started'
+        : progress === 60 ? 'Processing'
+        : progress === 80 ? 'Injected into site'
+        : progress === 100 ? 'Completed'
+        : undefined;
+      
+      await postThreadProgress(job.data.slackContext, progress, step);
+    }
   });
 
   return worker;

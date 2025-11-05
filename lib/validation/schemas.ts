@@ -202,14 +202,6 @@ export const dashboardReviewsQuerySchema = z.object({
   source: z.string().optional(),
 });
 
-// AI Analysis schemas
-export const aiAnalysisRequestSchema = z.object({
-  domain: domainSchema,
-  dealershipSize: z.enum(['small', 'medium', 'large']).optional(),
-  marketType: z.enum(['urban', 'suburban', 'rural']).optional(),
-  aiAdoption: z.enum(['low', 'medium', 'high']).optional(),
-});
-
 // Validation helper functions
 export function validateAndSanitize<T>(
   schema: z.ZodSchema<T>,

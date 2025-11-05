@@ -68,21 +68,21 @@ async function initRedis() {
     await safeConnect(async () => {
       await Promise.all([pub.connect(), sub.connect()]);
 
-      await sub.subscribe(CHANNELS.ai, (raw: string) => {
+      // Subscribe to channels with message handler
+      sub.on('message', (channel: string, raw: string) => {
         try {
-          LOCAL.emit(CHANNELS.ai, JSON.parse(raw) as AiScoreUpdateEvent);
+          if (channel === CHANNELS.ai) {
+            LOCAL.emit(CHANNELS.ai, JSON.parse(raw) as AiScoreUpdateEvent);
+          } else if (channel === CHANNELS.msrp) {
+            LOCAL.emit(CHANNELS.msrp, JSON.parse(raw) as MSRPChangeEvent);
+          }
         } catch (e) {
-          console.error("[redis:sub] Failed to parse AI score event", e);
+          console.error(`[redis:sub] Failed to parse event from ${channel}`, e);
         }
       });
 
-      await sub.subscribe(CHANNELS.msrp, (raw: string) => {
-        try {
-          LOCAL.emit(CHANNELS.msrp, JSON.parse(raw) as MSRPChangeEvent);
-        } catch (e) {
-          console.error("[redis:sub] Failed to parse MSRP event", e);
-        }
-      });
+      await sub.subscribe(CHANNELS.ai);
+      await sub.subscribe(CHANNELS.msrp);
 
       useRedis = true;
       console.log("[events] Redis Pub/Sub initialized successfully");

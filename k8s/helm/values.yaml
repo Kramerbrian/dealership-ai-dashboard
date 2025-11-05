@@ -1,0 +1,250 @@
+# DealershipAI Helm Chart Values
+
+# Global settings
+global:
+  namespace: dealershipai
+  imageRegistry: ""
+  imagePullPolicy: IfNotPresent
+
+# KEDA Configuration
+keda:
+  enabled: true
+  operator:
+    logLevel: info
+    replicas: 2
+  metricsServer:
+    enabled: true
+    replicas: 1
+
+# Autoscaling Configuration
+autoscaling:
+  orchestrator:
+    enabled: true
+    minReplicaCount: 2
+    maxReplicaCount: 10
+    queueLength: 50
+    pollingInterval: 15
+    cooldownPeriod: 300
+    prometheusThreshold: 5  # tasks/sec
+
+  worker:
+    enabled: true
+    minReplicaCount: 1
+    maxReplicaCount: 20
+    queueLength: 25
+    pollingInterval: 15
+    cooldownPeriod: 300
+    activationThreshold: 1
+
+  gnnEngine:
+    enabled: true
+    minReplicaCount: 1
+    maxReplicaCount: 5
+    cpuUtilization: 75
+    pollingInterval: 30
+    cooldownPeriod: 300
+
+# Orchestrator Service
+orchestrator:
+  enabled: true
+  image:
+    repository: dealershipai/orchestrator
+    tag: "2.0.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 3001
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  env:
+    - name: PORT
+      value: "3001"
+    - name: REDIS_URL
+      value: "redis://redis:6379"
+
+# Orchestrator Worker
+orchestratorWorker:
+  enabled: true
+  image:
+    repository: dealershipai/orchestrator-worker
+    tag: "2.0.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+# Dashboard (Frontend)
+dashboard:
+  enabled: true
+  image:
+    repository: dealershipai/dashboard
+    tag: "2.0.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# GNN Engine
+gnnEngine:
+  enabled: true
+  image:
+    repository: dealershipai/gnn-engine
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8080
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+      nvidia.com/gpu: 1  # GPU request
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+      nvidia.com/gpu: 1
+  nodeSelector:
+    accelerator: nvidia-gpu  # Optional: GPU node selector
+
+# Redis
+redis:
+  enabled: true
+  image:
+    repository: redis/redis-stack-server
+    tag: "latest"
+  replicaCount: 3  # For HA
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+
+# PostgreSQL
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16"
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 50Gi
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+  auth:
+    postgresPassword: "change-me-in-production"
+
+# Prometheus
+prometheus:
+  enabled: true
+  server:
+    persistentVolume:
+      enabled: true
+      size: 50Gi
+    retention: 30d
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+
+# Grafana
+grafana:
+  enabled: true
+  admin:
+    user: admin
+    password: change-me-in-production
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# Alertmanager
+alertmanager:
+  enabled: true
+  config:
+    global:
+      slack_api_url: "${SLACK_WEBHOOK_URL}"
+    route:
+      receiver: 'default'
+      group_by: ['alertname', 'severity']
+    receivers:
+      - name: 'default'
+        slack_configs:
+          - channel: '#ai-ops'
+
+# Slack Service
+slackService:
+  enabled: true
+  image:
+    repository: dealershipai/slack-service
+    tag: "2.0.0"
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Ingress
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: dash.dealershipai.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: dashboard
+            port: 3000
+    - host: orchestrator.dealershipai.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: orchestrator
+            port: 3001
+
