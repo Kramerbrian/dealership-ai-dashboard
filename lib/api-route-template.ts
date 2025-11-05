@@ -173,28 +173,29 @@ export const DELETE = createApiRoute(
 // ============================================
 // TEMPLATE 5: Public Endpoint (No Auth)
 // ============================================
-export const GET = createApiRoute(
-  {
-    endpoint: '/api/public-endpoint',
-    requireAuth: false, // Public endpoint
-    rateLimit: true, // Still rate limited (prevents abuse)
-    performanceMonitoring: true,
-  },
-  async (req, auth) => {
-    // auth is null for public endpoints
-    
-    try {
-      // Public data
-      const data = await fetchPublicData();
-      
-      return cachedResponse(data, 60, 300); // Shorter cache for public data
-      
-    } catch (error) {
-      return errorResponse(error, 500, {
-        requestId: req.headers.get('x-request-id'),
-        endpoint: '/api/public-endpoint',
-      });
-    }
-  }
-);
+// Note: This template has a duplicate GET export - rename one when using
+// Example: export const GET_PUBLIC = createApiRoute(
+//   {
+//     endpoint: '/api/public-endpoint',
+//     requireAuth: false, // Public endpoint
+//     rateLimit: true, // Still rate limited (prevents abuse)
+//     performanceMonitoring: true,
+//   },
+//   async (req, auth) => {
+//     // auth is null for public endpoints
+//     
+//     try {
+//       // Public data
+//       const data = await fetchPublicData();
+//       
+//       return cachedResponse(data, 60, 300); // Shorter cache for public data
+//       
+//     } catch (error) {
+//       return errorResponse(error, 500, {
+//         requestId: req.headers.get('x-request-id'),
+//         endpoint: '/api/public-endpoint',
+//       });
+//     }
+//   }
+// );
 

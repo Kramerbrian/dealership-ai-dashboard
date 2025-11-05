@@ -1,0 +1,13 @@
+groups:
+  - name: schema_validation_rules
+    interval: 30s
+    rules:
+      - record: schema_validation_failure_ratio
+        expr: |
+          (rate(schema_validation_failure_total[5m])) /
+          clamp_min(
+            rate(schema_validation_success_total[5m]) + 
+            rate(schema_validation_failure_total[5m]),
+            1
+          )
+

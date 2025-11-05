@@ -1,0 +1,12 @@
+global:
+  namespace: dealershipai
+  replicas: 3
+  imagePullPolicy: IfNotPresent
+
+images:
+  orchestrator: ghcr.io/dealershipai/orchestrator:latest
+
+eventConfig:
+  enabled: true
+  file: files/orchestrator_event_system.json
+
