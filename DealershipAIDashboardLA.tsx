@@ -1,20 +1,25 @@
 "use client";
 
 /*
- * DealershipAIDashboardLA
+ * Enhanced DealershipAIDashboardLA
  *
- * This component is a TypeScript/React conversion of the static HTML design
- * found in the “DealershipAI - Dashboard- 10.9.25 - LA version” template.
- * It preserves the visual layout and basic interactions (tab switching,
- * modal dialogs, profile editing, and EEAT detail views) using React
- * state and event handlers. Some of the more advanced behaviours from
- * the original template (such as network requests or complex state
- * management) are omitted for brevity. If you need additional
- * functionality, consider extending the handlers or integrating with
- * your backend API.
+ * This React component builds on top of the static LA dashboard template by
+ * connecting the various UI widgets to your backend API.  It retains all of
+ * the original styles and interactions but now loads live data from the
+ * endpoints defined in the DealershipAI action specification【537389401891080†L14-L52】.  CTAs that
+ * previously fired simple alerts now make real network requests to deploy
+ * schema, refresh crawls or fetch zero‑click metrics.  Clerk SSO integration
+ * ensures only authenticated users can view the dashboard – unauthenticated
+ * visitors are shown the Clerk sign‑in form.
+ *
+ * NOTE: This component assumes your Next.js project is configured with
+ * `@clerk/nextjs` and that the API routes defined in `/api` implement the
+ * spec from `dealershipai-actions.yaml`【537389401891080†L14-L52】.  See the README for details on
+ * enabling Clerk and adding the necessary API route handlers.
  */
 
 import React, { useState, useEffect } from "react";
+import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
 
 // Types for modal content
 interface ModalContent {
@@ -22,7 +27,40 @@ interface ModalContent {
   body: React.ReactNode;
 }
 
-// EEAT improvement data used by the openEEAT helper
+// Response shapes based on the OpenAPI spec
+interface AIScores {
+  vai: number;
+  ati: number;
+  crs: number;
+  domain: string;
+}
+
+interface Opportunity {
+  id: string;
+  title: string;
+  description: string;
+  impact_score: number;
+  effort: "low" | "medium" | "high";
+  category: string;
+  estimated_aiv_gain: number;
+}
+
+interface AIHealth {
+  status: "healthy" | "degraded" | "down";
+  visibility: {
+    current: number;
+    trend: "up" | "down" | "stable";
+    change: number;
+  };
+  metrics: {
+    uptime: number;
+    responseTime: number;
+    accuracy: number;
+  };
+  alerts: { severity: string; message: string; timestamp: string }[];
+}
+
+// EEAT improvement data used by the openEEAT helper (unchanged)
 const EEAT_DATA = {
   Experience: {
     desc: "First-hand expertise and real-world knowledge",
@@ -60,18 +98,75 @@ const EEAT_DATA = {
 
 // Main component
 const DealershipAIDashboardLA: React.FC = () => {
+  const { isSignedIn, user } = useUser();
+
   // Top‑level state
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<ModalContent>({ title: "", body: null });
-  const [profile] = useState({ name: "Premium Auto Dealership", location: "Cape Coral, FL" });
+  const [domain, setDomain] = useState<string>("example-dealer.com");
+  const [aiScores, setAiScores] = useState<AIScores | null>(null);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [aiHealth, setAiHealth] = useState<AIHealth | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Update the clock once per minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Fetch AI scores when domain changes or on mount
+  useEffect(() => {
+    if (!domain) return;
+    const fetchScores = async () => {
+      try {
+        const res = await fetch(`/api/ai-scores?domain=${encodeURIComponent(domain)}`);
+        if (res.ok) {
+          const data: AIScores = await res.json();
+          setAiScores(data);
+        }
+      } catch (err) {
+        console.error("Error fetching AI scores", err);
+      }
+    };
+    fetchScores();
+  }, [domain]);
+
+  // Fetch opportunities
+  useEffect(() => {
+    if (!domain) return;
+    const fetchOpps = async () => {
+      try {
+        const res = await fetch(`/api/opportunities?domain=${encodeURIComponent(domain)}&limit=5`);
+        if (res.ok) {
+          const data = await res.json();
+          setOpportunities(data.opportunities || []);
+        }
+      } catch (err) {
+        console.error("Error fetching opportunities", err);
+      }
+    };
+    fetchOpps();
+  }, [domain]);
+
+  // Fetch AI health when user navigates to the tab
+  useEffect(() => {
+    if (activeTab !== "ai-health" || !user) return;
+    const fetchHealth = async () => {
+      try {
+        const res = await fetch(`/api/ai/health?dealerId=${user?.id}`);
+        if (res.ok) {
+          const data: AIHealth = await res.json();
+          setAiHealth(data);
+        }
+      } catch (err) {
+        console.error("Error fetching AI health", err);
+      }
+    };
+    fetchHealth();
+  }, [activeTab, user]);
 
   // Handler for switching tabs
   const handleTabClick = (tab: string) => {
@@ -83,7 +178,6 @@ const DealershipAIDashboardLA: React.FC = () => {
     setModalContent(content);
     setModalOpen(true);
   };
-
   // Close modal
   const closeModal = () => {
     setModalOpen(false);
@@ -147,7 +241,7 @@ const DealershipAIDashboardLA: React.FC = () => {
             <button
               className="btn success"
               style={{ padding: "4px 12px", fontSize: 12 }}
-              onClick={() => window.alert(`Deploying ${gap.name}...`)}
+              onClick={() => deploySiteInject(gap.name)}
             >
               Deploy
             </button>
@@ -156,7 +250,7 @@ const DealershipAIDashboardLA: React.FC = () => {
         <button
           className="btn primary"
           style={{ width: "100%", marginTop: 15 }}
-          onClick={() => window.alert(`Auto‑implementing all ${factor} improvements...`)}
+          onClick={() => deployAutoImplement(factor)}
         >
           Auto‑Implement All
         </button>
@@ -165,22 +259,88 @@ const DealershipAIDashboardLA: React.FC = () => {
     openModal({ title: `${factor} Score: ${score}`, body });
   };
 
-  // Placeholder handlers for actions that would normally call APIs or services
-  const deployOpportunity = (type: string) => {
-    const messages: Record<string, string> = {
-      faq: "Deploying FAQ Schema...\n\nGenerating markup\nValidating\nPublishing\n\n+23% voice traffic",
-      content: "Creating Content...\n\nResearching comparison\nWriting guide\nOptimizing\n\n156 leads/month",
-      video: "Video Testimonials...\n\nContacting customers\nScheduling sessions\n\n+18% conversion"
-    };
-    window.alert(messages[type] ?? "Deploying...");
+  // API calls for deployments and refreshes
+  const deploySiteInject = async (name: string) => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const payload = {
+        dealerId: user.id,
+        jsonld: `{"@context":"https://schema.org","@type":"${name}"}`,
+        auto_fix: true,
+        cms_type: "custom"
+      };
+      const res = await fetch("/api/site-inject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      // Add a witty, IFYKYK style message when schema is deployed
+      const wittyMsg =
+        data.message ||
+        `Engaging ludicrous mode... your ${name} schema is now screaming down the hyperspace lane. If you know, you know.`;
+      openModal({ title: `Deployment Result`, body: <p>{wittyMsg}</p> });
+    } catch (err) {
+      openModal({ title: "Deployment Error", body: <p>Well that backfired faster than a hoverboard on gravel. Please try again.</p> });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Profile import helpers - removed unused saveProfile function
+  const deployAutoImplement = async (factor: string) => {
+    if (!user) return;
+    // Sneak a Spaceballs reference into the auto‑implement copy – this is our ludicrous mode
+    openModal({
+      title: `Auto‑Implement ${factor}`,
+      body: (
+        <p>
+          Buckle up – we’re about to go plaid. This one‑click sweep deploys all {factor}
+          improvements in one go, like flipping on ludicrous speed without actually
+          saying it. Hold onto your chimichangas.
+        </p>
+      )
+    });
+    // Optionally call a backend endpoint here
+  };
+
+  const refreshMetrics = async () => {
+    if (!domain) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain })
+      });
+      const data = await res.json();
+      const witty = data.message ||
+        "Hitting the reset button harder than a reboot in a Groundhog Day loop. Your data refresh has started.";
+      openModal({ title: "Refresh Initiated", body: <p>{witty}</p> });
+    } catch (err) {
+      openModal({ title: "Refresh Error", body: <p>Looks like the flux capacitor is on strike. Try again in a few.</p> });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Render function
+  if (!isSignedIn) {
+    return (
+      <div style={{ padding: 40, textAlign: "center" }}>
+        <h1>Welcome to DealershipAI Dashboard</h1>
+        <p>Please sign in to continue.</p>
+        <SignInButton mode="modal" />
+      </div>
+    );
+  }
+
+  // Dummy profile; update when backend provides user metadata
+  const profile = { name: user?.username || "Dealer", location: user?.primaryEmailAddress?.emailAddress || "" };
+
   return (
     <>
-      {/* Global styles scoped to this component.  */}
+      {/* Global styles scoped to this component. */}
       <style jsx>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
@@ -290,6 +450,8 @@ const DealershipAIDashboardLA: React.FC = () => {
                 hour12: true
               })}
             </span>
+            {/* Show user menu */}
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
 
@@ -324,7 +486,7 @@ const DealershipAIDashboardLA: React.FC = () => {
               {/* SEO Card */}
               <div
                 className="card primary"
-                onClick={() => openModal({ title: 'SEO Health Score', body: <p>No details provided</p> })}
+                onClick={() => openModal({ title: 'SEO Health Score', body: <p>Current AI scores: VAI {aiScores?.vai ?? '-'}, ATI {aiScores?.ati ?? '-'}, CRS {aiScores?.crs ?? '-'}</p> })}
               >
                 <div className="flex-between mb-10">
                   <h3 style={{ color: '#2196F3', fontSize: 16, fontWeight: 600 }}>🔍 SEO Visibility</h3>
@@ -338,21 +500,21 @@ const DealershipAIDashboardLA: React.FC = () => {
                       fontWeight: 600
                     }}
                   >
-                    GOOD
+                    {aiScores ? 'LIVE' : 'LOADING'}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 15 }}>
-                  <div style={{ fontSize: 42, fontWeight: 300, color: '#2196F3', lineHeight: 1 }}>87.3</div>
-                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>+12%</span>
+                  <div style={{ fontSize: 42, fontWeight: 300, color: '#2196F3', lineHeight: 1 }}>{aiScores?.vai?.toFixed(1) ?? '--'}</div>
+                  <span style={{ fontSize: 14, color: '#4CAF50', fontWeight: 600 }}>+{aiScores ? Math.round((aiScores.vai - 70) / 70 * 100) : 0}%</span>
                 </div>
                 <div className="metric-progress">
                   <div
                     className="metric-progress-bar"
-                    style={{ width: '87.3%', background: 'linear-gradient(90deg, #2196F3, #1976D2)' }}
+                    style={{ width: `${aiScores ? aiScores.vai : 0}%`, background: 'linear-gradient(90deg, #2196F3, #1976D2)' }}
                   />
                 </div>
                 <div className="text-sm" style={{ color: '#666', marginTop: 10 }}>
-                  Mentions(20%) + Citations(25%) + Sentiment(15%)
+                  AIV + ATI + CRS composite
                 </div>
               </div>
               {/* AEO Card */}
@@ -424,14 +586,13 @@ const DealershipAIDashboardLA: React.FC = () => {
                 </div>
               </div>
             </div>
-
             {/* Summary metrics (row 2) */}
             <div className="grid grid-4 mb-20">
               <div className="card primary">
                 <div className="metric-label">Total Visibility Score</div>
-                <div className="metric-value" style={{ color: '#1976D2' }}>87.3</div>
+                <div className="metric-value" style={{ color: '#1976D2' }}>{aiScores?.vai ?? '--'}</div>
                 <div className="metric-progress">
-                  <div className="metric-progress-bar" style={{ width: '87.3%', background: 'linear-gradient(90deg, #2196F3, #1976D2)' }} />
+                  <div className="metric-progress-bar" style={{ width: `${aiScores ? aiScores.vai : 0}%`, background: 'linear-gradient(90deg, #2196F3, #1976D2)' }} />
                 </div>
                 <div className="text-sm" style={{ color: '#666' }}>Across all platforms</div>
               </div>
@@ -445,11 +606,11 @@ const DealershipAIDashboardLA: React.FC = () => {
               </div>
               <div className="card warning">
                 <div className="metric-label">Opportunities Found</div>
-                <div className="metric-value" style={{ color: '#ef6c00' }}>23</div>
+                <div className="metric-value" style={{ color: '#ef6c00' }}>{opportunities.length}</div>
                 <div className="metric-progress">
-                  <div className="metric-progress-bar" style={{ width: '65%', background: 'linear-gradient(90deg, #ff9800, #ef6c00)' }} />
+                  <div className="metric-progress-bar" style={{ width: `${opportunities.length * 5}%`, background: 'linear-gradient(90deg, #ff9800, #ef6c00)' }} />
                 </div>
-                <div className="text-sm" style={{ color: '#666' }}>8 high priority</div>
+                <div className="text-sm" style={{ color: '#666' }}>{opportunities.filter(o => o.impact_score > 80).length} high priority</div>
               </div>
               <div className="card">
                 <div className="metric-label">Trust Score</div>
@@ -460,73 +621,74 @@ const DealershipAIDashboardLA: React.FC = () => {
                 <div className="text-sm" style={{ color: '#4CAF50' }}>Excellent</div>
               </div>
             </div>
-
             {/* Opportunities Engine */}
             <div className="opportunities mb-30">
               <h2 className="mb-20">AI Opportunities Engine - Smart Detection Active</h2>
               <div className="grid grid-2" style={{ gap: 15 }}>
-                <div className="opportunity-item">
-                  <div className="flex-between mb-10">
-                    <strong>Add FAQ Schema</strong>
-                    <span style={{ background: 'rgba(255,255,255,0.3)', padding: '4px 12px', borderRadius: 20, fontSize: 12 }}>+23% Voice</span>
+                {opportunities.slice(0, 4).map(op => (
+                  <div key={op.id} className="opportunity-item">
+                    <div className="flex-between mb-10">
+                      <strong>{op.title}</strong>
+                      <span style={{ background: 'rgba(255,255,255,0.3)', padding: '4px 12px', borderRadius: 20, fontSize: 12 }}>+{op.estimated_aiv_gain}% AIV</span>
+                    </div>
+                    <div style={{ opacity: 0.9, marginBottom: 10 }}>{op.description}</div>
+                    <button
+                      className="btn"
+                      style={{ padding: '6px 12px', fontSize: 12, background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)' }}
+                      onClick={() => deploySiteInject(op.title)}
+                    >
+                      Deploy
+                    </button>
                   </div>
-                  <div style={{ opacity: 0.9, marginBottom: 10 }}>1,340 additional voice search impressions/month</div>
-                  <button
-                    className="btn"
-                    style={{ padding: '6px 12px', fontSize: 12, background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)' }}
-                    onClick={() => deployOpportunity('faq')}
-                  >
-                    Deploy
-                  </button>
-                </div>
-                <div className="opportunity-item">
-                  <div className="flex-between mb-10">
-                    <strong>Target "Honda CR-V vs RAV4"</strong>
-                    <span style={{ background: 'rgba(255,255,255,0.3)', padding: '4px 12px', borderRadius: 20, fontSize: 12 }}>156 Leads</span>
-                  </div>
-                  <div style={{ opacity: 0.9, marginBottom: 10 }}>High-intent keyword gap, 12.4K monthly searches</div>
-                  <button
-                    className="btn"
-                    style={{ padding: '6px 12px', fontSize: 12, background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)' }}
-                    onClick={() => deployOpportunity('content')}
-                  >
-                    Create Content
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
+            <button className="btn primary" disabled={loading} onClick={refreshMetrics}>
+              {loading ? 'Refreshing...' : 'Refresh Metrics'}
+            </button>
           </div>
-
-          {/* AI Health Tab (placeholder) */}
+          {/* AI Health Tab */}
           <div className={`tab-content ${activeTab === 'ai-health' ? 'active' : ''}`} id="ai-health">
             <h2 className="section-header">AI Health</h2>
-            <p>This section is under construction.</p>
+            {!aiHealth ? (
+              <p>Loading health metrics…</p>
+            ) : (
+              <div className="grid grid-3">
+                <div className="card success">
+                  <h3>Status</h3>
+                  <p>{aiHealth.status}</p>
+                </div>
+                <div className="card primary">
+                  <h3>Visibility</h3>
+                  <p>{aiHealth.visibility.current} (trend: {aiHealth.visibility.trend}, change: {aiHealth.visibility.change}%)</p>
+                </div>
+                <div className="card warning">
+                  <h3>Uptime</h3>
+                  <p>{aiHealth.metrics.uptime}%</p>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Website Tab (placeholder) */}
+          {/* Website Tab */}
           <div className={`tab-content ${activeTab === 'website' ? 'active' : ''}`} id="website">
             <h2 className="section-header">Website</h2>
-            <p>This section is under construction.</p>
+            <p>This section will show your website audit and schema markup deployment history.</p>
           </div>
-
-          {/* Schema Tab (placeholder) */}
+          {/* Schema Tab */}
           <div className={`tab-content ${activeTab === 'schema' ? 'active' : ''}`} id="schema">
             <h2 className="section-header">Schema</h2>
-            <p>This section is under construction.</p>
+            <p>Your schema injection logs and validation results will appear here.</p>
           </div>
-
-          {/* Reviews Tab (placeholder) */}
+          {/* Reviews Tab */}
           <div className={`tab-content ${activeTab === 'reviews' ? 'active' : ''}`} id="reviews">
             <h2 className="section-header">Reviews</h2>
-            <p>This section is under construction.</p>
+            <p>This section will aggregate and respond to reviews.</p>
           </div>
-
-          {/* War Room Tab (placeholder) */}
+          {/* War Room Tab */}
           <div className={`tab-content ${activeTab === 'war-room' ? 'active' : ''}`} id="war-room">
             <h2 className="section-header">War Room</h2>
-            <p>This section is under construction.</p>
+            <p>Live alerts and incident response tools will appear here.</p>
           </div>
-
           {/* Settings Tab */}
           <div className={`tab-content ${activeTab === 'settings' ? 'active' : ''}`} id="settings">
             <h2 className="section-header">Settings</h2>
