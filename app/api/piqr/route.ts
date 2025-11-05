@@ -369,9 +369,11 @@ export const GET = createApiRoute(
         },
       ];
 
-      // Calculate final CRS for PIQR formula
+      // Calculate final CRS for response
       const finalCRS = calculateCRS(aivScore, atiScore, varianceAIV, varianceATI);
-      const finalPIQR = (aivScore * 0.35 + atiScore * 0.25 + finalCRS.score * 0.20 + ugcHealth * 0.10 + zeroClickRate * 0.05) * (1 + consensusReliability * 0.1);
+      
+      // Use the new PIQR calculation result
+      const finalPIQR = piqrResult.piqr_score;
 
       const response: PIQRResponse = {
         success: true,

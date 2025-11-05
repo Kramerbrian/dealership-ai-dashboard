@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orchestrator-event-config
+  namespace: {{ .Values.global.namespace | default "dealershipai" }}
+  labels:
+    app: orchestrator
+    component: event-system
+data:
+  orchestrator_event_system.json: |
+{{ .Files.Get "files/orchestrator_event_system.json" | indent 4 }}
+

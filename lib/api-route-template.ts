@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createApiRoute } from '@/lib/api-wrapper';
-import { /* yourSchema */ } from '@/lib/validation/schemas';
+// import { yourSchema } from '@/lib/validation/schemas'; // Import your schema here
 import { validateRequestBody, validateQueryParams } from '@/lib/validation/schemas';
 import { cachedResponse, errorResponse, noCacheResponse } from '@/lib/api-response';
 import { CACHE_TAGS } from '@/lib/cache-tags';
@@ -27,7 +27,7 @@ export const GET = createApiRoute(
     
     try {
       // If you need validated query params (even though wrapper validates)
-      const queryValidation = validateQueryParams(req, /* yourQuerySchema */);
+      const queryValidation = validateQueryParams(req, undefined); // Replace with yourQuerySchema
       if (!queryValidation.success) {
         return queryValidation.response;
       }
@@ -108,15 +108,15 @@ export const PUT = createApiRoute(
   },
   async (req, auth) => {
     try {
-      const bodyValidation = await validateRequestBody(req, /* yourUpdateSchema */);
+      const bodyValidation = await validateRequestBody(req, undefined); // Replace with yourUpdateSchema
       if (!bodyValidation.success) {
         return bodyValidation.response;
       }
       
-      const { /* destructure */ } = bodyValidation.data;
+      const validatedUpdate = bodyValidation.data; // Destructure as needed
       
       // Update logic
-      const updated = await updateData(/* data */, auth.userId);
+      const updated = await updateData(validatedUpdate, auth.userId);
       
       return NextResponse.json({
         success: true,

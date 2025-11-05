@@ -4,6 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type Trial = { feature: string; expiresAt: string };
 
+/**
+ * useTrialStatus — memoizes trial status and provides time-left helpers.
+ * - Polls once on mount, then refreshes when a custom event 'dai:trial_granted' fires.
+ * - Provides get(feature) → { active, msLeft } and list of active features.
+ */
 export function useTrialStatus() {
   const cacheRef = useRef<{ list: Trial[]; ts: number }>({ list: [], ts: 0 });
   const [tick, setTick] = useState(0);
@@ -21,14 +26,14 @@ export function useTrialStatus() {
     refresh();
     const onGrant = () => refresh();
     window.addEventListener("dai:trial_granted", onGrant as any);
-    const id = setInterval(() => setTick((x) => x + 1), 60_000);
+    const id = setInterval(() => setTick((x) => x + 1), 60_000); // minute heartbeat for countdowns
     return () => {
       window.removeEventListener("dai:trial_granted", onGrant as any);
       clearInterval(id);
     };
   }, []);
 
-  return useMemo(() => {
+  const api = useMemo(() => {
     return {
       list: cacheRef.current.list,
       get(feature: string) {
@@ -37,12 +42,15 @@ export function useTrialStatus() {
         const msLeft = Math.max(0, new Date(item.expiresAt).getTime() - Date.now());
         return { active: msLeft > 0, msLeft };
       },
+      // utility to format ms into "Hh Mm" style
       format(ms: number) {
         const m = Math.max(0, Math.floor(ms / 60_000));
         const h = Math.floor(m / 60);
         const mm = m % 60;
         return h > 0 ? `${h}h ${mm}m` : `${mm}m`;
-      },
+      }
     };
   }, [tick]);
+
+  return api;
 }

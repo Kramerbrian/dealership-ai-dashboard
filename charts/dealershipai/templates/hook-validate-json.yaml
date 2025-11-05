@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: validate-event-config
+  namespace: {{ .Values.global.namespace | default "dealershipai" }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: json-validator
+          image: node:20
+          command:
+            - sh
+            - -c
+            - |
+              node -e "
+                const fs = require('fs');
+                try {
+                  const content = fs.readFileSync('/config/orchestrator_event_system.json', 'utf8');
+                  JSON.parse(content);
+                  console.log('✅ JSON config valid');
+                  process.exit(0);
+                } catch (e) {
+                  console.error('❌ JSON validation failed:', e.message);
+                  process.exit(1);
+                }
+              "
+          volumeMounts:
+            - name: orchestrator-event-config
+              mountPath: /config
+      restartPolicy: OnFailure
+      volumes:
+        - name: orchestrator-event-config
+          configMap:
+            name: orchestrator-event-config
+
