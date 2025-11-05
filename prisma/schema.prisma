@@ -5,7 +5,7 @@
 model EventOutbox {
   id          String   @id @default(cuid())
   topic       String
-  payload     Json
+  payload     String   // Store JSON as string for SQLite compatibility
   processedAt DateTime?
   createdAt   DateTime @default(now())
 
