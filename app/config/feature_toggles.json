@@ -1,0 +1,10 @@
+{
+  "marketplace_suppression": true,
+  "national_benchmarks": true,
+  "compare_mode": true,
+  "relevance_overlay": true,
+  "health_diagnostics_modal": true,
+  "core_web_vitals_plain_english": true
+}
+
+

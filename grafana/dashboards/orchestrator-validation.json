@@ -1,0 +1,99 @@
+{
+  "dashboard": {
+    "title": "Orchestrator Schema Validation",
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Validations / 5 min",
+        "targets": [
+          {
+            "expr": "rate(schema_validation_success_total[5m])",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Failures / 5 min",
+        "targets": [
+          {
+            "expr": "rate(schema_validation_failure_total[5m])",
+            "refId": "B"
+          }
+        ],
+        "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 }
+      },
+      {
+        "id": 3,
+        "type": "graph",
+        "title": "Validation Latency (s)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.9, sum(rate(schema_validation_duration_seconds_bucket[5m])) by (le))"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 }
+      },
+      {
+        "id": 4,
+        "type": "table",
+        "title": "Failure Breakdown by Event Type",
+        "targets": [
+          {
+            "expr": "sum(rate(schema_validation_failure_total[10m])) by (event_type, reason)",
+            "format": "table"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 4, "w": 12, "h": 6 }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Adaptive Remediations (24h)",
+        "targets": [
+          {
+            "expr": "increase(schema_adaptive_remediation_total[24h])"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 10, "w": 6, "h": 4 }
+      },
+      {
+        "id": 6,
+        "type": "graph",
+        "title": "Average RL Reward per Schema Type",
+        "targets": [
+          {
+            "expr": "schema_adaptive_reward"
+          }
+        ],
+        "gridPos": { "x": 6, "y": 10, "w": 12, "h": 6 }
+      },
+      {
+        "id": 7,
+        "type": "graph",
+        "title": "RL Score Distribution",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.9, sum(rate(rl_policy_score_distribution_bucket[5m])) by (le))"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 16, "w": 12, "h": 6 }
+      },
+      {
+        "id": 8,
+        "type": "stat",
+        "title": "Decision Volume by Band",
+        "targets": [
+          {
+            "expr": "sum(increase(rl_policy_decisions_total[1h])) by (priority_band)"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 16, "w": 12, "h": 6 }
+      }
+    ]
+  }
+}
+

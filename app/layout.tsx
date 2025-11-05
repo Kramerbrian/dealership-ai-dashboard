@@ -106,7 +106,14 @@ export default function RootLayout({
           // Add nonce to help with CSP if needed
           nonce={typeof window !== 'undefined' ? undefined : 'google-analytics'}
         />
-        <ClerkProvider>
+        <ClerkProvider
+          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          domain={typeof window !== 'undefined' ? window.location.hostname : undefined}
+          signInUrl="/sign-in"
+          signUpUrl="/sign-up"
+          fallbackRedirectUrl="/dashboard"
+          forceRedirectUrl="/dashboard"
+        >
           <QueryProvider>
             <PWAProvider>
               <ToastProvider>

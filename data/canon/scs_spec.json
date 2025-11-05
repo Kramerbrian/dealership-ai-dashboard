@@ -1,0 +1,14 @@
+{
+  "name": "Schema Confidence Score (SCS)",
+  "formula": "SCS = (ParsedFields / ExpectedFields) * ValidationHealth * SourceTrust",
+  "inputs": {
+    "parsed_fields": "Number of schema.org/JSON-LD fields successfully parsed",
+    "expected_fields": "Required + recommended fields for the surface",
+    "validation_health": "Guideline compliance (Google/Perplexity/Gemini)",
+    "source_trust": "Domain/feed authority weighting"
+  },
+  "leaderboard_columns": ["Dealer", "SCS (%)", "Errors Detected", "Authority Weight", "Rank"],
+  "drilldown": ["Missing fields", "Malformed fields", "Last crawl", "Engine-specific notes"]
+}
+
+

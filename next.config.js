@@ -56,6 +56,7 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://*.sentry.io",
+              "worker-src 'self' blob: https://*.clerk.com https://*.clerk.dev https://clerk.accounts.dev https://clerk.dealershipai.com https://js.clerk.com https://js.clerk.dev",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai",

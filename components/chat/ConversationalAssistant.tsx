@@ -46,12 +46,14 @@ interface ChatSession {
 }
 
 interface ConversationalAssistantProps {
-  tenantId: string
-  dealerId: string
+  tenantId: string | null
+  dealerId: string | null
   userRole?: string
   subscriptionTier?: string
   isOpen: boolean
   onClose: () => void
+  onboardingMode?: boolean
+  onOnboardingComplete?: (data: any) => void
 }
 
 const LUDICROUS_BUTTONS = [

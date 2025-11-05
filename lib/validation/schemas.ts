@@ -202,6 +202,36 @@ export const dashboardReviewsQuerySchema = z.object({
   source: z.string().optional(),
 });
 
+// Predictive Analytics schemas
+export const predictiveAnalyticsRequestSchema = z.object({
+  vin: z.string().min(1, 'VIN is required'),
+  historicalData: z.object({
+    currentPrice: z.number().min(0).optional(),
+    daysOnMarket: z.number().int().min(0).optional(),
+    views: z.number().int().min(0).optional(),
+    inquiries: z.number().int().min(0).optional(),
+  }).optional(),
+  marketConditions: z.object({
+    averageDaysToSell: z.number().int().min(0).optional(),
+    marketInventory: z.number().int().min(0).optional(),
+    competitorPrices: z.array(z.number()).optional(),
+  }).optional(),
+});
+
+// AI Visibility Index schemas
+export const aiVisibilityIndexQuerySchema = z.object({
+  domain: domainSchema.optional(),
+  dealerId: z.string().min(1).optional(),
+  timeRange: dateRangeSchema.optional(),
+});
+
+export const aiVisibilityIndexPostSchema = z.object({
+  domain: domainSchema,
+  dealerId: z.string().min(1).optional(),
+  includeHistorical: z.boolean().default(false),
+  includeCompetitors: z.boolean().default(false),
+});
+
 // Validation helper functions
 export function validateAndSanitize<T>(
   schema: z.ZodSchema<T>,

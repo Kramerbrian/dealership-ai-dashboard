@@ -48,6 +48,8 @@ import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import PIQRDashboardWidget from "@/components/dashboard/PIQRDashboardWidget";
 import AIVModal from "@/components/AIVModal";
 import AIVForecastPanelWrapper from "@/components/dashboard/AIVForecastPanelWrapper";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { ADIModal } from "@/components/dashboard/ADIModal";
 import dynamic from "next/dynamic";
 
 // Types for modal content
@@ -106,6 +108,9 @@ const DealershipAIDashboardLA: React.FC = () => {
   const [cognitiveModalOpen, setCognitiveModalOpen] = useState<boolean>(false);
   const [halChatbotOpen, setHalChatbotOpen] = useState<boolean>(false);
   const [aivModalOpen, setAIVModalOpen] = useState<boolean>(false);
+  const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(false);
+  const [adiModalOpen, setAdiModalOpen] = useState<boolean>(false);
+  const [adiData, setAdiData] = useState<any>(null);
   
   // Get authentication context
   const { dealerId, tenantId, userId, email, isAuthenticated, isLoading: authLoading } = useAuthContext();
@@ -156,6 +161,41 @@ const DealershipAIDashboardLA: React.FC = () => {
   // Close modal
   const closeModal = () => {
     setModalOpen(false);
+  };
+
+  // Handler for opening ADI modal
+  const openADI = async () => {
+    try {
+      // Fetch ADI data from API or use mock data
+      const mockAdiData = {
+        overall: 0.72,
+        trend: 0.05,
+        history: [
+          { date: '2024-01-01', value: 0.65 },
+          { date: '2024-01-08', value: 0.67 },
+          { date: '2024-01-15', value: 0.69 },
+          { date: '2024-01-22', value: 0.70 },
+          { date: '2024-01-29', value: 0.72 },
+        ],
+        breakdown: {
+          expertContent: 0.8,
+          citations: 0.6,
+          authorCredentials: 0.7,
+          contentFreshness: 0.75,
+          engagementScore: 0.65,
+        },
+        recommendations: [
+          'Increase citation count by reaching out to industry publications',
+          'Update content more frequently to improve freshness score',
+          'Engage with user comments to boost engagement metrics',
+        ],
+      };
+      setAdiData(mockAdiData);
+      setAdiModalOpen(true);
+    } catch (error) {
+      console.error('Failed to load ADI data:', error);
+      showToast('error', 'Failed to load ADI data', { duration: 3000 });
+    }
   };
 
   // Handler for opening EEAT modal with dynamic content
@@ -417,6 +457,20 @@ const DealershipAIDashboardLA: React.FC = () => {
                 style={{ whiteSpace: 'nowrap', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
               >
                 👁️ AIV™ Score
+              </button>
+              <button
+                onClick={() => openADI()}
+                className="btn primary"
+                style={{ whiteSpace: 'nowrap', background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)' }}
+              >
+                📊 ADI™ Score
+              </button>
+              <button
+                onClick={() => setOnboardingModalOpen(true)}
+                className="btn success"
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                🚀 Onboarding
               </button>
               <div
                 style={{
@@ -798,9 +852,23 @@ const DealershipAIDashboardLA: React.FC = () => {
             <div className="settings-nav mb-20">
               {[
                 { id: 'profile', label: 'Profile' },
-                { id: 'connections', label: 'Connections' }
+                { id: 'connections', label: 'Connections' },
+                { id: 'onboarding', label: 'Run Onboarding' },
+                { id: 'adi', label: 'View ADI Score' }
               ].map(item => (
-                <div key={item.id} className="settings-nav-item" onClick={() => openModal({ title: 'Coming Soon', body: <p>This feature is not yet implemented.</p> })}>
+                <div 
+                  key={item.id} 
+                  className="settings-nav-item" 
+                  onClick={() => {
+                    if (item.id === 'onboarding') {
+                      setOnboardingModalOpen(true);
+                    } else if (item.id === 'adi') {
+                      openADI();
+                    } else {
+                      openModal({ title: 'Coming Soon', body: <p>This feature is not yet implemented.</p> });
+                    }
+                  }}
+                >
                   {item.label}
                 </div>
               ))}
@@ -843,6 +911,31 @@ const DealershipAIDashboardLA: React.FC = () => {
         onClose={() => setAIVModalOpen(false)}
         dealerId={effectiveDealerId}
       />
+
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        isOpen={onboardingModalOpen}
+        onClose={() => setOnboardingModalOpen(false)}
+        onComplete={() => {
+          console.log('Onboarding completed');
+          setOnboardingModalOpen(false);
+        }}
+        onSkip={() => {
+          console.log('Onboarding skipped');
+          setOnboardingModalOpen(false);
+        }}
+      />
+
+      {/* ADI Modal */}
+      {adiModalOpen && adiData && (
+        <ADIModal
+          data={adiData}
+          onClose={() => {
+            setAdiModalOpen(false);
+            setAdiData(null);
+          }}
+        />
+      )}
     </ErrorBoundary>
   );
 };

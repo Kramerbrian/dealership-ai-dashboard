@@ -64,8 +64,20 @@ export function AdvancedCTA({
     if (buttonRef.current) {
       const ripple = document.createElement('div');
       ripple.className = 'absolute inset-0 rounded-2xl bg-white/20 animate-ping';
-      buttonRef.current.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 600);
+      ripple.style.zIndex = '1';
+      // Use insertBefore or appendChild safely with error handling
+      try {
+        if (buttonRef.current && buttonRef.current.parentNode) {
+          buttonRef.current.appendChild(ripple);
+          setTimeout(() => {
+            if (ripple.parentNode) {
+              ripple.remove();
+            }
+          }, 600);
+        }
+      } catch (error) {
+        console.warn('Ripple effect error:', error);
+      }
     }
     
     setTimeout(() => setIsClicked(false), 300);

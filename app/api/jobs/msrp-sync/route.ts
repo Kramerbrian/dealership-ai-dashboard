@@ -11,7 +11,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { createApiRoute } from "@/lib/api-route-template";
+import { createApiRoute } from "@/lib/api-wrapper";
 
 export const POST = createApiRoute(async (req) => {
   // TODO: Implement actual MSRP sync logic

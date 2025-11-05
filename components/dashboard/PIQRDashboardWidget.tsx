@@ -183,7 +183,14 @@ export default function PIQRDashboardWidget({
       existing.remove();
     }
 
-    document.head.appendChild(script);
+    // Safely append script to head
+    try {
+      if (document.head && script) {
+        document.head.appendChild(script);
+      }
+    } catch (error) {
+      console.warn('Failed to append JSON-LD script:', error);
+    }
 
     return () => {
       const toRemove = document.getElementById('piqr-jsonld');

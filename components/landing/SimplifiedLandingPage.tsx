@@ -25,7 +25,7 @@ import { advancedAnalytics } from '@/lib/analytics/advanced-tracking';
 import { ProductTour } from '@/components/onboarding/ProductTour';
 import { ScoreLeaderboard } from './ScoreLeaderboard';
 import { AchievementBadges } from './AchievementBadges';
-import { ComparisonTable } from './ComparisonTable';
+// ComparisonTable removed - focusing on unique value proposition instead
 import { LiveChatWidget } from './LiveChatWidget';
 import { ABTestWrapper, useABTestConversion } from '@/components/ab-testing/ABTestWrapper';
 import { initializeABTests, headlineVariants, ctaButtonVariants, subheadlineVariants } from '@/lib/ab-testing/tests';
@@ -844,32 +844,109 @@ export default function SimplifiedLandingPage() {
         </ScrollReveal>
       )}
 
-      {/* Comparison Table */}
+      {/* Unique Value Proposition */}
       <ScrollReveal>
         <section className="py-24 px-4 bg-gradient-to-b from-gray-50 to-white">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose DealershipAI?</h2>
-              <p className="text-xl text-gray-600">See how we compare to the competition</p>
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">What Makes DealershipAI Unique</h2>
+              <p className="text-xl text-gray-600">The only platform built specifically for automotive dealerships in the AI era</p>
             </div>
-            <ComparisonTable />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-4">
+                  <Search className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">AI-First Architecture</h3>
+                <p className="text-gray-600">
+                  Built from the ground up for AI search visibility. Track ChatGPT, Claude, Perplexity, and Google AI Overviews in real-time.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mb-4">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Zero-Click Shield</h3>
+                <p className="text-gray-600">
+                  Protect your dealership from AI Overview zero-click results. Only DealershipAI monitors and defends against this revenue threat.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-4">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Revenue Impact Tracking</h3>
+                <p className="text-gray-600">
+                  See exactly how AI visibility translates to dollars. Track revenue at risk and recovered with precision.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Automated Fixes</h3>
+                <p className="text-gray-600">
+                  One-click fixes for schema issues, GBP optimization, and content gaps. No manual work required.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center mb-4">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Real-Time Monitoring</h3>
+                <p className="text-gray-600">
+                  Get instant alerts when your dealership appears (or disappears) from AI responses. Never miss an opportunity.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mb-4">
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Dealership-Specific</h3>
+                <p className="text-gray-600">
+                  Every feature designed for automotive dealerships. Inventory, service, parts, and finance all optimized for your business.
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-12 text-center">
+              <p className="text-lg text-gray-700 mb-6">
+                <strong className="text-gray-900">No other platform</strong> combines AI search tracking, zero-click protection, and revenue attribution specifically for dealerships.
+              </p>
+              <button
+                onClick={() => {
+                  ga('event', 'cta_click', { location: 'unique_value_prop', cta: 'start_free_trial' });
+                  document.getElementById('quick-audit')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+              >
+                Start Your Free 14-Day Trial
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </button>
+            </div>
           </div>
         </section>
       </ScrollReveal>
 
-      {/* Social Proof */}
-      <section className="py-24 px-4 bg-white">
+      {/* Social Proof - Suppressed until testimonials are available */}
+      {false && (
+      <section className="py-12 px-4 bg-white opacity-50">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal>
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Trusted by <AnimatedCounter value={500} suffix="+ " />Dealerships
               </h2>
-              <p className="text-xl text-gray-600">Join dealers who've reclaimed their AI visibility</p>
+              <p className="text-lg text-gray-600">Join dealers who've reclaimed their AI visibility</p>
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4">
             {[
               {
                 name: "Mike Thompson",

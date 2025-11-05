@@ -1,0 +1,83 @@
+/**
+ * Forecast Log Database Operations
+ * 
+ * Helper functions for storing and retrieving forecast predictions
+ */
+
+import { db } from "@/lib/db";
+
+export interface ForecastLogData {
+  timestamp: string;
+  dealers: string[];
+  forecast: Record<string, number>;
+  ci?: string;
+  leadsForecast?: number;
+  revenueForecast?: number;
+}
+
+/**
+ * Store a forecast prediction in the database
+ */
+export async function createForecastLog(data: ForecastLogData) {
+  try {
+    // Check if using Prisma (check if db.forecastLog exists)
+    if ('forecastLog' in db && typeof (db as any).forecastLog?.create === 'function') {
+      return await (db as any).forecastLog.create({
+        data: {
+          timestamp: new Date(data.timestamp),
+          dealers: data.dealers,
+          forecast: data.forecast,
+          ci: data.ci,
+          leadsForecast: data.leadsForecast,
+          revenueForecast: data.revenueForecast,
+        },
+      });
+    }
+    
+    // Fallback: If Prisma model doesn't exist, return success
+    // The actual storage will happen when the Prisma schema is updated
+    console.log('Forecast log (Prisma model not yet configured):', data);
+    return { id: 'temp', ...data };
+  } catch (error: any) {
+    // If table doesn't exist, log and continue
+    if (error.message?.includes('does not exist') || error.message?.includes('Unknown arg')) {
+      console.log('Forecast logs table not yet created, skipping database write');
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Retrieve forecast history from database
+ */
+export async function getForecastHistory(limit: number = 100) {
+  try {
+    if ('forecastLog' in db && typeof (db as any).forecastLog?.findMany === 'function') {
+      const forecasts = await (db as any).forecastLog.findMany({
+        orderBy: {
+          timestamp: 'desc',
+        },
+        take: limit,
+      });
+
+      return forecasts.map((f: any) => ({
+        timestamp: f.timestamp.toISOString(),
+        dealers: f.dealers,
+        forecast: f.forecast,
+        ci: f.ci,
+        leadsForecast: f.leadsForecast,
+        revenueForecast: f.revenueForecast,
+      }));
+    }
+    
+    // Table doesn't exist yet
+    return [];
+  } catch (error: any) {
+    if (error.message?.includes('does not exist') || error.message?.includes('Unknown arg')) {
+      return [];
+    }
+    throw error;
+  }
+}
+

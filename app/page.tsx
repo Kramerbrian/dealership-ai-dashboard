@@ -1,10 +1,10 @@
 'use client';
-import SimplifiedLandingPage from '@/components/landing/SimplifiedLandingPage';
+import DealershipAI17SectionPremium from '@/components/landing/DealershipAI17SectionPremium';
 
 /**
  * Main homepage (dealershipai.com)
- * Shows the marketing/landing page
+ * Shows the premium 17-section marketing/landing page
  */
 export default function Home() {
-  return <SimplifiedLandingPage />;
+  return <DealershipAI17SectionPremium />;
 }

@@ -58,6 +58,7 @@ import AEOModal from '../modals/AEOModal';
 import GEOModal from '../modals/GEOModal';
 import { userManager } from '@/lib/user-management';
 import { DrawerGuard } from '@/components/drawer-guard';
+import LiveMetricsDashboard from '@/components/DashboardHovercards';
 
 interface TabData {
   id: string;
@@ -292,6 +293,19 @@ export default function TabbedDashboard() {
   // Overview Tab Component
   const OverviewTab = () => (
     <div className="space-y-6">
+      {/* Live KPI Metrics Dashboard */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0 }}
+      >
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-white mb-2">Performance Metrics</h2>
+          <p className="text-sm text-white/60">Real-time KPI scores with trend indicators</p>
+        </div>
+        <LiveMetricsDashboard />
+      </motion.div>
+
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* AI Visibility Score */}

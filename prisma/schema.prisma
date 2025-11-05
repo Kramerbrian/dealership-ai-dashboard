@@ -293,3 +293,154 @@ model MarketplaceReview {
   @@unique([appId, userId])
   @@map("marketplace_reviews")
 }
+
+// ==================== Onboarding & Competitive Analysis Models ====================
+
+model Tenant {
+  id           String   @id @default(cuid())
+  name         String
+  website      String?
+  city         String?
+  state        String?
+  lat          Float?
+  lng          Float?
+  gpPlaceId    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  profiles     Profile[]
+  connections  Connection[]
+  competitors  Competitor[]
+  insights     Insight[]
+  actions      Action[]
+  onboarding   OnboardingRun?
+  pulses       PulseMetric[]
+  relationsA   Relation[] @relation("A")
+  relationsB   Relation[] @relation("B")
+  memories     Memory[]
+  
+  @@map("tenants")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     String
+  role      String   @default("admin")
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lastSeen  DateTime @default(now())
+  
+  @@map("profiles")
+}
+
+model Connection {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider  String   // google_gbp, ga4, gsc
+  status    String   // connected, pending, error
+  scopes    String   // JSON array stored as string for SQLite
+  createdAt DateTime @default(now())
+  
+  @@map("connections")
+}
+
+model OnboardingRun {
+  id        String   @id @default(cuid())
+  tenantId  String   @unique
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  step      Int      @default(1) // 1 Identify, 2 Connect, 3 Confirm
+  payload   String?  // JSON stored as string for SQLite
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+  
+  @@map("onboarding_runs")
+}
+
+model Competitor {
+  id           String   @id @default(cuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  placeId      String
+  name         String
+  website      String?
+  rating       Float?
+  reviewCount  Int?
+  aiVisibility Int?     // 0-100
+  zeroClick    Int?     // 0-100
+  sentiment    Int?     // 0-100
+  distanceMi   Float?
+  lastScan     DateTime @default(now())
+
+  @@unique([tenantId, placeId])
+  @@map("competitors")
+}
+
+model Insight {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type      String   // ai_mention, gbp_health, zero_click, review_trust, competitor_pulse
+  score     Int
+  delta     Int       @default(0)
+  evidence  String?   // JSON stored as string for SQLite
+  createdAt DateTime  @default(now())
+  
+  @@map("insights")
+}
+
+model Action {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  kind      String   // schema_fix, gbp_update, mystery_shop, mystery_360
+  status    String   @default("queued") // queued, running, done, error
+  impact    Int?     // estimated $$ or points
+  meta      String?  // JSON stored as string for SQLite
+  createdAt DateTime @default(now())
+  
+  @@map("actions")
+}
+
+model PulseMetric {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  period    DateTime // week start
+  aiVis     Int
+  zeroClick Int
+  review    Int
+  gbp       Int
+  createdAt DateTime @default(now())
+  
+  @@unique([tenantId, period])
+  @@map("pulse_metrics")
+}
+
+model Relation {
+  id        String   @id @default(cuid())
+  tenantId  String
+  aId       String
+  bId       String
+  kind      String   // comention, serp, traffic, review
+  weight    Float    // 0-1 strength
+  updatedAt DateTime @updatedAt
+  tenantA   Tenant   @relation("A", fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantB   Tenant   @relation("B", fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId, aId, bId, kind])
+  @@map("relations")
+}
+
+model Memory {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  key       String
+  value     String   // JSON stored as string for SQLite
+  updatedAt DateTime @updatedAt
+  
+  @@unique([tenantId, key])
+  @@map("memories")
+}

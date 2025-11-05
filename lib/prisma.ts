@@ -23,6 +23,9 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
   },
 });
 
+// Export as 'db' for compatibility with newer patterns
+export const db = prisma;
+
 /**
  * Health check for database connection
  * Returns health status with latency measurement

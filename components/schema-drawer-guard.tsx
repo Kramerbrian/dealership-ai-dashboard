@@ -32,20 +32,13 @@ interface SchemaDrawerGuardProps {
 }
 
 export function SchemaDrawerGuard({ tier, children }: SchemaDrawerGuardProps) {
-  const trial = useTrialStatus();
-  const status = trial.get("schema_fix");
-  const unlocked = tier >= 2 || status.active;
-  const label = status.active ? `${trial.format(status.msLeft)} left` : "Trial inactive";
-
-  // Auto-dismiss overlay when trial fires
-  useEffect(() => {
-    const onGrant = () => { /* hook refresh already runs; no-op here */ };
-    window.addEventListener("dai:trial_granted", onGrant as any);
-    return () => window.removeEventListener("dai:trial_granted", onGrant as any);
-  }, []);
+  const trials = useTrialStatus();
+  const s = trials.get("schema_fix");
+  const unlocked = tier >= 2 || s.active;
+  const label = s.active ? `${trials.format(s.msLeft)} left` : "Trial inactive";
 
   // Determine if content should be unlocked
-  const isUnlocked = tier >= 2 || status.active;
+  const isUnlocked = tier >= 2 || s.active;
 
   // Handle trial grant
   const handleGrantTrial = async () => {
@@ -79,67 +72,23 @@ export function SchemaDrawerGuard({ tier, children }: SchemaDrawerGuardProps) {
     }
   };
 
-  // If unlocked, show children with trial chip if applicable
-  if (isUnlocked) {
-    return (
-      <div className="relative">
-        {status.active && tier < 2 && <TrialChip label={label} />}
-        {children}
-      </div>
-    );
-  }
-
-  // Else show overlay
   return (
     <div className="relative">
+      {s.active && tier < 2 && <TrialChip label={label} />}
       <div aria-disabled={!unlocked} className={!unlocked ? "pointer-events-none select-none opacity-40" : ""}>
         {children}
       </div>
-      
-      {/* Overlay */}
-      <div className="absolute inset-0 z-10 grid place-items-center rounded-xl bg-black/80 backdrop-blur-sm">
-        <div className="mx-4 max-w-sm rounded-xl border border-white/10 bg-gray-900/95 p-6 text-center text-white">
-          {/* Icon */}
-          <div className="mb-4 rounded-full bg-gray-700/50 p-4">
-            <Lock className="w-8 h-8 text-gray-400" />
-          </div>
-          
-          {/* Title */}
-          <h3 className="mb-2 text-lg font-semibold text-white">
-            Schema Auditor is locked
-          </h3>
-          
-          {/* Description */}
-          <p className="mb-6 max-w-sm text-sm text-gray-400">
-            {tier === 1 
-              ? 'Upgrade to Enhanced (Tier 2) or try it free for 24 hours'
-              : 'This feature requires Enhanced (Tier 2) or higher'}
-          </p>
-
-          {/* Actions */}
-          <div className="flex flex-col gap-3 w-full max-w-sm">
-            {tier === 1 && (
-              <button
-                onClick={handleGrantTrial}
-                className="flex items-center justify-center gap-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 px-4 py-2 text-sm font-medium text-cyan-300 hover:bg-cyan-500/30 transition-colors"
-              >
-                <Sparkles className="w-4 h-4" />
-                Try for 24 hours
-              </button>
-            )}
-            
-            <button
-              onClick={() => {
-                window.location.href = '/pricing';
-              }}
-              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-            >
-              Upgrade to Enhanced
-              <ArrowRight className="w-4 h-4" />
+      {!unlocked && (
+        <div className="absolute inset-0 grid place-items-center">
+          <div className="rounded-xl border border-white/15 bg-black/60 p-4 text-center text-sm text-white">
+            <div className="mb-2 font-semibold">Schema Auditor is locked on Basic</div>
+            <div className="mb-3 text-white/80">Enable a 24h trial from Pricing to view schema validation & JSON-LD fixes.</div>
+            <button onClick={() => (window.location.href = "/pricing")} className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-black hover:bg-white/90">
+              Go to Pricing
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

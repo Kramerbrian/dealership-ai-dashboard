@@ -146,6 +146,11 @@
       "source": "/marketing.html",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/marketing",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "env": {
@@ -167,6 +172,14 @@
     {
       "path": "/api/cron/fleet-refresh",
       "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/pulse/weekly",
+      "schedule": "0 13 * * 1"
+    },
+    {
+      "path": "/api/competitors/watch",
+      "schedule": "0 */6 * * *"
     }
   ]
 }

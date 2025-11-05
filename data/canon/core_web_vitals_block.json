@@ -1,0 +1,29 @@
+{
+  "pattern": {
+    "title": "Page Performance Summary (Plain-English)",
+    "columns": ["Metric", "Label", "Meaning", "Status"],
+    "rows": [
+      {
+        "metric": "Speed (LCP)",
+        "label": "Loads in ≈ 2½ seconds",
+        "meaning": "How fast the biggest thing (photo or headline) appears. Under 2.5 s = feels snappy.",
+        "status": "🟢 Good (↘ 0.2 s improvement)"
+      },
+      {
+        "metric": "Stability (CLS)",
+        "label": "Page stays steady",
+        "meaning": "Measures layout jumps while loading. ≤ 0.1 = no annoying shifts.",
+        "status": "🟢 Stable (0.12)"
+      },
+      {
+        "metric": "Response (INP)",
+        "label": "Reacts in 0.18 seconds",
+        "meaning": "How quickly the site responds when someone taps or clicks. < 0.2 s = feels instant.",
+        "status": "🟢 Responsive (✓)"
+      }
+    ]
+  },
+  "locked": true
+}
+
+

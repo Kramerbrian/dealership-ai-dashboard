@@ -1,232 +1,173 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import SmartPreOnboarding from '@/app/components/onboarding/SmartPreOnboarding';
-import { Loader2 } from 'lucide-react';
+import { Building2, Globe, ArrowRight, Loader2 } from 'lucide-react';
 
-interface SessionData {
-  subscription: {
-    id: string;
-    plan: string;
-    status: string;
-    trialEnd: number;
-    currentPeriodEnd: number;
-  };
-  dealership: {
-    domain: string;
-    company: string;
-  };
-  customer: {
-    id: string;
-    email: string;
-  };
-}
-
-export default function OnboardingPage() {
+/**
+ * Simple Onboarding Page
+ * 
+ * Collects dealer name and website, then redirects to dashboard.
+ * This is a simplified version compared to the chat-based onboarding.
+ */
+export default function Onboarding() {
   const { user, isLoaded } = useUser();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const sessionId = searchParams.get('session_id');
-  const tier = searchParams.get('tier'); // 'free' for Tier 1 users
+  const [dealerName, setDealerName] = useState('');
+  const [website, setWebsite] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const [sessionData, setSessionData] = useState<SessionData | null>(null);
-  const [showPreOnboarding, setShowPreOnboarding] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Redirect if not authenticated
+  if (isLoaded && !user) {
+    router.push('/sign-in?redirect_url=/onboarding');
+    return null;
+  }
 
-  // Fetch Stripe session data OR handle free tier
-  useEffect(() => {
-    if (sessionId && isLoaded) {
-      // Paid tier (Tier 2/3) - fetch Stripe session
-      fetchSessionData();
-    } else if (isLoaded && !sessionId) {
-      if (tier === 'free') {
-        // Free tier (Tier 1) - skip Stripe, go straight to onboarding
-        setSessionData(null); // No session data for free users
-        setIsLoading(false);
-      } else {
-        // No session ID and not free tier - check if user already completed onboarding
-        checkOnboardingStatus();
-      }
-    }
-  }, [sessionId, tier, isLoaded]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
 
-  const fetchSessionData = async () => {
     try {
-      const res = await fetch(`/api/onboarding/session?session_id=${sessionId}`);
-
-      if (!res.ok) {
-        throw new Error('Failed to fetch session data');
+      // Validate inputs
+      if (!dealerName.trim()) {
+        setError('Dealership name is required');
+        setIsSubmitting(false);
+        return;
       }
 
-      const data = await res.json();
-      setSessionData(data);
-      setIsLoading(false);
+      if (!website.trim()) {
+        setError('Website is required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Normalize website URL
+      let normalizedWebsite = website.trim();
+      if (!normalizedWebsite.startsWith('http://') && !normalizedWebsite.startsWith('https://')) {
+        normalizedWebsite = `https://${normalizedWebsite}`;
+      }
+
+      // Submit onboarding data
+      const response = await fetch('/api/onboarding/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dealerName,
+          website: normalizedWebsite,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to complete onboarding');
+      }
+
+      // Set onboarding completion cookie
+      document.cookie = `dai_step=3; path=/; max-age=${60 * 60 * 24 * 30}`;
+
+      // Redirect to dashboard
+      router.push('/dashboard');
     } catch (err) {
-      console.error('Error fetching session:', err);
-      setError('Failed to load session data');
-      setIsLoading(false);
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setIsSubmitting(false);
     }
   };
 
-  const checkOnboardingStatus = async () => {
-    try {
-      // Check if user has already completed onboarding
-      const res = await fetch('/api/onboarding/status');
-      const { completed } = await res.json();
-
-      if (completed) {
-        // Already onboarded - redirect to dashboard
-        router.push('/dashboard');
-      } else {
-        // Start onboarding without session data
-        setIsLoading(false);
-      }
-    } catch (err) {
-      console.error('Error checking status:', err);
-      setIsLoading(false);
-    }
-  };
-
-  const handleStartOnboarding = () => {
-    setShowPreOnboarding(false);
-  };
-
-  const handleSkipOnboarding = () => {
-    router.push('/dashboard?onboarding=skipped');
-  };
-
-  // Loading state
-  if (!isLoaded || isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0a0b0f] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-          <p className="text-white/70">Loading your experience...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#0a0b0f] flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">⚠️</span>
-          </div>
-          <h1 className="text-2xl font-semibold text-white mb-2">Something went wrong</h1>
-          <p className="text-white/70 mb-6">{error}</p>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-          >
-            Go to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Pre-onboarding experience
-  if (showPreOnboarding) {
-    return (
-      <SmartPreOnboarding
-        onStart={handleStartOnboarding}
-        userData={{
-          name: user?.firstName || undefined,
-          company: sessionData?.dealership?.company,
-          plan: tier === 'free' ? 'Free' : (sessionData?.subscription?.plan || 'Professional')
-        }}
-      />
-    );
-  }
-
-  // Main onboarding flow (to be implemented)
   return (
-    <div className="min-h-screen bg-[#0a0b0f] text-white">
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="text-center">
-          <h1 className="text-3xl font-semibold mb-4">Welcome to DealershipAI!</h1>
-          <p className="text-white/70 mb-8">
-            Let's get you set up in just a few minutes.
-          </p>
-
-          {/* Trial countdown for paid tiers only */}
-          {sessionData?.subscription?.trialEnd && tier !== 'free' && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-8">
-              <p className="text-sm text-blue-300">
-                🎁 Your {sessionData.subscription.plan} trial expires in{' '}
-                {Math.ceil((sessionData.subscription.trialEnd * 1000 - Date.now()) / (1000 * 60 * 60 * 24))}{' '}
-                days
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-8 shadow-2xl">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
+              <Building2 className="w-8 h-8 text-white" />
             </div>
-          )}
-
-          {/* Free tier welcome message */}
-          {tier === 'free' && (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-8">
-              <p className="text-sm text-green-300">
-                🎉 Welcome to DealershipAI! You're on the <strong>Free tier</strong> with 5 scans per month.
-                <br />
-                <span className="text-xs text-green-400">
-                  Upgrade anytime to unlock bi-weekly checks, automated responses, and more!
-                </span>
-              </p>
-            </div>
-          )}
-
-          {/* Quick setup form */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-left">
-            <h2 className="text-xl font-semibold mb-4">Quick Setup</h2>
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">
-                  Your Website URL
-                </label>
-                <input
-                  type="text"
-                  defaultValue={sessionData?.dealership?.domain || ''}
-                  placeholder="www.yourdealership.com"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">
-                  Company Name
-                </label>
-                <input
-                  type="text"
-                  defaultValue={sessionData?.dealership?.company || ''}
-                  placeholder="Your Dealership Name"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => router.push('/dashboard?onboarded=true')}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
-              >
-                Complete Setup
-              </button>
-              <button
-                onClick={handleSkipOnboarding}
-                className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-lg transition-colors"
-              >
-                Skip for now
-              </button>
-            </div>
+            <h1 className="text-2xl font-semibold text-white mb-2">
+              Welcome to DealershipAI
+            </h1>
+            <p className="text-white/70 text-sm">
+              Let's set up your dealership profile
+            </p>
           </div>
 
-          <p className="text-sm text-white/50 mt-6">
-            Don't worry, you can always complete this later from your dashboard
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Dealership Name */}
+            <div>
+              <label htmlFor="dealerName" className="block text-sm font-medium text-white/90 mb-2">
+                Dealership Name
+              </label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  id="dealerName"
+                  type="text"
+                  value={dealerName}
+                  onChange={(e) => setDealerName(e.target.value)}
+                  placeholder="e.g., Lou Grubbs Motors"
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Website */}
+            <div>
+              <label htmlFor="website" className="block text-sm font-medium text-white/90 mb-2">
+                Website URL
+              </label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  id="website"
+                  type="text"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="e.g., lougrubbs.com or https://lougrubbs.com"
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg text-white font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Setting up...
+                </>
+              ) : (
+                <>
+                  Continue to Dashboard
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <p className="mt-6 text-center text-xs text-white/50">
+            By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
       </div>

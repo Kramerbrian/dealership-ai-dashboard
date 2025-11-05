@@ -1,0 +1,9 @@
+{
+  "retail_listings": ["Cars.com", "AutoTrader", "CarGurus", "Facebook Marketplace", "eBay Motors", "TrueCar"],
+  "valuation_anchors": ["AccuTrade", "GiveMeTheVIN", "CarMax", "EchoPark", "Lithia Driveway", "AutoNation USA", "Asbury Clicklane", "PenskeCarShop"],
+  "data_authorities": ["Edmunds", "CarFax", "KBB", "Black Book", "J.D. Power", "AutoCheck"],
+  "service_parts": ["RepairPal", "AutoZone", "O'Reilly", "NAPA", "TireRack", "OEM Parts Portals"],
+  "notes": "CarMax/Carvana included as benchmark/reference nodes; not syndication endpoints."
+}
+
+

@@ -93,9 +93,11 @@ export async function middleware(request: NextRequest) {
   // CSP (allows Google Analytics and other third-party scripts)
   // Note: 'unsafe-eval' is required for Google Analytics gtag function
   // 'unsafe-inline' is required for inline scripts in Next.js
+  // worker-src is required for Clerk blob workers
   const cspDirectives = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.clerk.com https://*.clerk.dev https://*.googletagmanager.com https://*.google-analytics.com https://va.vercel-scripts.com https://*.sentry.io",
+    "worker-src 'self' blob: https://*.clerk.com https://*.clerk.dev",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai",

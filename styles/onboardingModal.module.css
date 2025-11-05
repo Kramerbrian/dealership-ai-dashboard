@@ -1,0 +1,250 @@
+/* DealershipAI Orchestrator 3.4 — Onboarding Modal Styles */
+/* CSS Variables are set globally via theme.ts - no :root needed here */
+
+/* LIGHT THEME */
+.modal {
+  background: var(--bg-light);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 2rem;
+  max-width: 920px;
+  margin: 4rem auto;
+  transition: var(--transition);
+}
+
+[data-theme="dark"] .modal {
+  background: var(--bg-dark);
+  color: #f1f1f1;
+  border: 1px solid var(--border-dark);
+}
+
+/* HEADER */
+.modal h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.modal h3,
+.modal h4 {
+  color: var(--brand-primary);
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+
+[data-theme="dark"] .modal h3,
+[data-theme="dark"] .modal h4 {
+  color: var(--brand-accent);
+}
+
+/* BASELINE SCORES */
+.baselines ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.baselines li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(27, 117, 187, 0.05);
+  margin-bottom: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius);
+}
+
+[data-theme="dark"] .baselines li {
+  background: rgba(0, 200, 150, 0.08);
+}
+
+/* COMPETITOR TABLE */
+.competitors table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.8rem;
+}
+
+.competitors th,
+.competitors td {
+  text-align: left;
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+[data-theme="dark"] .competitors th,
+[data-theme="dark"] .competitors td {
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.competitors th {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .competitors th {
+  color: #f1f1f1;
+}
+
+/* PLG UPSELLS GRID */
+.upsells {
+  margin-top: 1.6rem;
+}
+
+.upsellGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.upsellCard {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: var(--transition);
+}
+
+.upsellCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.upsellCard h5 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.upsellCard p {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0 0 0.8rem;
+  opacity: 0.95;
+}
+
+.upsellCard button {
+  background: #fff;
+  color: var(--brand-primary);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.upsellCard button:hover {
+  background: #f4f4f4;
+}
+
+.upsellCard button:active {
+  transform: scale(0.98);
+}
+
+/* HOVERCARD */
+.hovercard {
+  position: relative;
+  display: inline-block;
+}
+
+.hovercardTrigger {
+  margin-left: 0.4rem;
+  cursor: pointer;
+  color: var(--brand-accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.hovercardContent {
+  display: none;
+  position: absolute;
+  top: 1.2rem;
+  left: 0;
+  background: var(--bg-light);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  width: 240px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .hovercardContent {
+  background: #1b1f27;
+  color: #f5f5f5;
+  border-color: var(--border-dark);
+}
+
+.hovercard:hover .hovercardContent {
+  display: block;
+}
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.primaryButton {
+  background: var(--brand-primary);
+  color: #fff;
+  border: none;
+  padding: 0.8rem 1.4rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.primaryButton:hover {
+  background: var(--brand-accent);
+}
+
+.primaryButton:active {
+  transform: scale(0.98);
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .modal {
+    padding: 1.4rem;
+    margin: 2rem 1rem;
+  }
+
+  .modal h2 {
+    font-size: 1.3rem;
+  }
+
+  .competitors table,
+  .baselines ul {
+    font-size: 0.9rem;
+  }
+
+  .upsellGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .primaryButton {
+    width: 100%;
+  }
+}
+

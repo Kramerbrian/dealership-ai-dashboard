@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +21,7 @@ function getSupabase() {
  */
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json(
@@ -35,9 +35,15 @@ export async function POST(req: NextRequest) {
       sessionId,
       domain,
       company,
+      dealerName, // Simple onboarding flow
+      website, // Simple onboarding flow
       integrations = [],
       skipReason
     } = body;
+
+    // Handle simple onboarding flow (dealerName + website)
+    const companyName = company || dealerName;
+    const domainValue = domain || website;
 
     const supabase = getSupabase();
 
@@ -59,8 +65,8 @@ export async function POST(req: NextRequest) {
           current_step: 5,
           completion_percentage: 100,
           stripe_session_id: sessionId,
-          domain: domain,
-          company_name: company,
+          domain: domainValue,
+          company_name: companyName,
           connected_integrations: integrations,
           completed_at: new Date().toISOString(),
           last_updated_at: new Date().toISOString(),
@@ -119,7 +125,7 @@ export async function POST(req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json(

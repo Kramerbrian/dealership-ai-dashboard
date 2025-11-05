@@ -1,0 +1,12 @@
+{
+  "cards": [
+    {"factor": "AI doesn't respect geography", "why": "Generative search blends national inventory/pricing; your VINs are benchmarked against distant players."},
+    {"factor": "Market psychology is nationalized", "why": "Carvana/AutoNation price anchors shape expectations everywhere."},
+    {"factor": "AI summaries are blended", "why": "Models mix multiple sources even for local queries, diluting regional bubbles."},
+    {"factor": "Trust propagation", "why": "CarFax/Edmunds citations elevate perceived trust for linked VINs when schema connects them."},
+    {"factor": "Suppression toggle", "why": "Hide competitors visually, retain signals for accurate RI math."},
+    {"factor": "Generative visibility weight", "why": "Measures how often a source is cited or implied in AI answers for your segments."}
+  ]
+}
+
+

@@ -1,0 +1,29 @@
+{
+  "composite_index": {
+    "name": "Relevance Index (RI)",
+    "formula": "RI = (Visibility * Proximity * Authority) * (SCS / 100)",
+    "dimensions": {
+      "visibility": "% of generative answers citing or paraphrasing the source",
+      "proximity": "VIN overlap or regional overlap with dealer inventory",
+      "authority": "AI trust / citation weight for the source",
+      "schema_weight": "SCS / 100 applied as a multiplier"
+    }
+  },
+  "metrics": [
+    "Generative Citation Share (GCS)",
+    "VIN Overlap Index (VOI)",
+    "Schema Confidence Score (SCS)",
+    "Trust Carryover Factor (TCF)",
+    "Geo-Irrelevance Multiplier (GIM)",
+    "Citation Momentum (MoM change)"
+  ],
+  "ui": {
+    "heatmap": "intensity=authority, ring=proximity, glow=visibility, opacity=schema health",
+    "momentum_arrows": true,
+    "filters": ["Retail", "Wholesale", "Data Authority", "Service & Parts"],
+    "compare_mode": true,
+    "suppression": {"ui_only": true, "backend_signals_retained": true}
+  }
+}
+
+
