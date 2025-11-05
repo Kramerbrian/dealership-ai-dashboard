@@ -62,6 +62,8 @@ export function MysteryShopGuard({ tier, children }: DrawerGuardProps) {
         const data = await response.json();
         if (data.success) {
           window.dispatchEvent(new Event("dai:trial_granted"));
+          // Optional: basic toast
+          document.dispatchEvent(new CustomEvent("dai:toast", { detail: { text: "24h trial enabled." } }));
         }
       }
     } catch (error) {

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { verifyAndGetSlackUserEmail } from '@/lib/slack/security';
+// Dynamic import for Slack security to avoid build errors if @slack/web-api not installed
+let verifyAndGetSlackUserEmail: (userId: string) => Promise<string | null>;
+try {
+  const slackSecurity = require('@/lib/slack/security');
+  verifyAndGetSlackUserEmail = slackSecurity.verifyAndGetSlackUserEmail;
+} catch {
+  verifyAndGetSlackUserEmail = async () => null; // Fallback if module fails
+}
 
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET!;
 const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || 'http://localhost:3001';

@@ -67,7 +67,7 @@ export const TrialFeatureGate: React.FC<TrialFeatureGateProps> = ({
         </h3>
         
         <p className="mb-4 text-sm text-gray-400">
-          {tierRequired === 'tier2' ? 'DIY Guide' : 'Hyperdrive'} tier required
+          {tierRequired === 'tier2' ? 'Enhanced' : 'Premium'} tier required
         </p>
 
         {currentTier === 'tier1' && (
@@ -99,7 +99,7 @@ export const TrialFeatureGate: React.FC<TrialFeatureGateProps> = ({
               }}
               className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
             >
-              Upgrade to {tierRequired === 'tier2' ? 'DIY Guide' : 'Hyperdrive'}
+              Upgrade to {tierRequired === 'tier2' ? 'Enhanced' : 'Premium'}
             </button>
           </div>
         )}

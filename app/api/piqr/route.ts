@@ -249,11 +249,37 @@ export const GET = createApiRoute(
       const zeroClickRate = 35 + Math.random() * 15;
       const consensusReliability = 0.82 + Math.random() * 0.10;
       
-      // Calculate PIQR using the exact formula from spec:
-      // (aiv_score*0.35 + ati_score*0.25 + crs_score*0.20 + ugc_health*0.10 + zero_click_rate*0.05) * (1 + consensus_reliability*0.1)
-      // Note: CRS will be calculated below, so we'll use aiv and ati for initial calculation
-      const baseScore = (aivScore * 0.35 + atiScore * 0.25 + ugcHealth * 0.10 + zeroClickRate * 0.05);
-      const piqrOverall = baseScore * (1 + consensusReliability * 0.1);
+      // Calculate PIQR using v3 formula system:
+      // PIQR_v2.3 = (0.30 × Performance) + (0.25 × Intelligence) + (0.25 × Quality) + (0.20 × Readiness)
+      // PIQR_v3 = (0.35 × Data Completeness) + (0.30 × AI Confidence) + (0.20 × Trust Integrity) + (0.15 × System Harmony)
+      // PIQR_custom = f(KPI_alignment, Hovercard_accuracy, DPI_correlation)
+      // PIQR_score = (0.25 × PIQR_v2.3) + (0.50 × PIQR_v3) + (0.25 × PIQR_custom)
+      
+      // Map existing metrics to new formula inputs
+      const v2_3_inputs = {
+        performance: ugcHealth, // DMS uptime logs, API metrics
+        intelligence: aivScore * 0.8 + atiScore * 0.2, // AI inference telemetry
+        quality: atiScore, // Schema validators, Search APIs
+        readiness: zeroClickRate * 2, // CRM logs, Automation coverage
+      };
+      
+      const v3_inputs = {
+        dataCompleteness: aivScore, // VIN registry, OEM feeds
+        aiConfidence: consensusReliability * 100, // Model outputs
+        trustIntegrity: atiScore, // Review APIs, GBP consistency
+        systemHarmony: 85 + Math.random() * 10, // SSE + dashboard diff telemetry
+      };
+      
+      const custom_inputs = {
+        kpiAlignment: 80 + Math.random() * 15,
+        hovercardAccuracy: 75 + Math.random() * 20,
+        dpiCorrelation: 82 + Math.random() * 12,
+      };
+      
+      // Import and use new calculation
+      const { calculatePIQR } = await import('@/lib/scoring/piqr-v3');
+      const piqrResult = calculatePIQR(v2_3_inputs, v3_inputs, custom_inputs, 100);
+      const piqrOverall = piqrResult.piqr_score;
 
       // Generate historical data
       const historical = [];

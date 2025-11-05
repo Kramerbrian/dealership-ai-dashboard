@@ -69,15 +69,15 @@ export const POST = createApiRoute(
   async (req, auth) => {
     try {
       // Body validation handled by wrapper, but access validated data
-      const bodyValidation = await validateRequestBody(req, /* yourBodySchema */);
+      const bodyValidation = await validateRequestBody(req, undefined); // Replace with yourBodySchema
       if (!bodyValidation.success) {
         return bodyValidation.response;
       }
       
-      const { /* destructure validated body */ } = bodyValidation.data;
+      const validatedBody = bodyValidation.data; // Destructure as needed
       
       // Your business logic here
-      const result = await createData(/* validated data */, auth.userId);
+      const result = await createData(validatedBody, auth.userId);
       
       // POST routes typically don't cache
       return noCacheResponse(

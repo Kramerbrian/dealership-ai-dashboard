@@ -1,60 +1,35 @@
 /**
  * GET /api/trial/status
  * 
- * Returns active trial features by reading unexpired dai_trial_* cookies
+ * Returns active trial features with expiration times
  * Used by client-side components to check if features are unlocked
+ * Returns: { active: [{ feature, expiresAt }] }
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createApiRoute } from '@/lib/api-wrapper';
-import { noCacheResponse } from '@/lib/api-response';
+export const dynamic = "force-dynamic";
 
-export const GET = createApiRoute(
-  {
-    endpoint: '/api/trial/status',
-    requireAuth: false,
-    rateLimit: true,
-    performanceMonitoring: true,
-  },
-  async (req) => {
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+
+export async function GET() {
+  const jar = cookies();
+  const now = Date.now();
+  const active = jar.getAll().flatMap((c) => {
+    if (!c.name.startsWith("dai_trial_")) return [];
+    const feature = c.name.replace("dai_trial_", "");
     try {
-      const active: string[] = [];
-      const now = new Date();
-
-      // Read all dai_trial_* cookies
-      req.cookies.getAll().forEach((cookie) => {
-        if (cookie.name.startsWith('dai_trial_')) {
-          const featureId = cookie.name.replace('dai_trial_', '');
-          
-          try {
-            // Parse cookie value (JSON object)
-            const trialData = JSON.parse(cookie.value);
-            const expiresAt = new Date(trialData.expires_at);
-
-            // Check if trial is still active
-            if (expiresAt && !isNaN(expiresAt.getTime()) && expiresAt > now) {
-              active.push(featureId);
-            }
-          } catch {
-            // Invalid cookie format - skip
-          }
-        }
-      });
-
-      return noCacheResponse({
-        success: true,
-        data: {
-          active,
-        },
-      });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Failed to check trial status',
-        },
-        { status: 500 }
-      );
+      const trialData = JSON.parse(c.value);
+      const exp = new Date(trialData.expires_at || trialData.expiresAt);
+      return isFinite(exp.getTime()) && exp.getTime() > now
+        ? [{ feature, expiresAt: exp.toISOString() }]
+        : [];
+    } catch {
+      return [];
     }
-  }
-);
+  });
+  return NextResponse.json({ active }, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+    },
+  });
+}

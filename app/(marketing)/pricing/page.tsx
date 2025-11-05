@@ -40,27 +40,27 @@ interface TierMeta {
 const TIERS: TierMeta[] = [
   {
     id: "tier1",
-    name: "Ignition",
+    name: "Basic",
     price: "$0",
-    tagline: "See what the algorithms already know about you.",
+    tagline: "Basic features, foundational value, entry point.",
     color: "cyan",
     cta: "Start Free",
   },
   {
     id: "tier2",
-    name: "DIY Guide",
+    name: "Enhanced",
     price: "$599/mo",
-    tagline: "Know exactly what to fix — and how.",
+    tagline: "Enhanced features and broader capabilities.",
     color: "blue",
-    cta: "Upgrade to DIY",
+    cta: "Upgrade to Enhanced",
   },
   {
     id: "tier3",
-    name: "Hyperdrive",
+    name: "Premium",
     price: "$999/mo",
-    tagline: "The dashboard that fixes itself.",
+    tagline: "Premium features, maximum access, advanced automation.",
     color: "neon",
-    cta: "Enable Autonomy",
+    cta: "Enable Premium",
   },
 ];
 
@@ -387,6 +387,19 @@ export default function PricingPage() {
   const [tier2Gain, setTier2Gain] = useState({ percent: 25, revenue: 8 });
   const [tier3Gain, setTier3Gain] = useState({ percent: 45, revenue: 15 });
 
+  // Toast listener
+  React.useEffect(() => {
+    function onToast(e: any) {
+      const el = document.createElement("div");
+      el.className = "fixed bottom-4 right-4 px-3 py-2 rounded bg-white text-black text-sm shadow-lg z-50";
+      el.textContent = e.detail?.text || "Done";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+    document.addEventListener("dai:toast", onToast as any);
+    return () => document.removeEventListener("dai:toast", onToast as any);
+  }, []);
+
   // Fetch RaR data on mount
   React.useEffect(() => {
     fetch('/api/aiv/calculate?preview=true')
@@ -511,9 +524,9 @@ export default function PricingPage() {
               </p>
             )}
             <p className="mb-5 text-sm text-white/70">
-              {t.id === "tier1" && "Diagnostic visibility. Data ingestion unlocked (CRM, GA4, OEM)."}
-              {t.id === "tier2" && "Guided fixes, competitive expansion, and measurable ROI."}
-              {t.id === "tier3" && "Autonomous execution with compounding optimizations."}
+              {t.id === "tier1" && "Basic features, foundational value, entry point."}
+              {t.id === "tier2" && "Enhanced features and broader capabilities."}
+              {t.id === "tier3" && "Premium features, maximum access, advanced automation."}
             </p>
 
             <ul className="mb-6 space-y-2">
@@ -583,7 +596,10 @@ export default function PricingPage() {
                               at: new Date().toISOString()
                             })
                           });
-                          alert(`"${opt.label}" enabled for 24 hours. Check your dashboard drawers.`);
+                          // Fire client event for guards and toasts
+                          window.dispatchEvent(new Event("dai:trial_granted"));
+                          // Optional: basic toast
+                          document.dispatchEvent(new CustomEvent("dai:toast", { detail: { text: "24h trial enabled." } }));
                         } catch (error) {
                           console.error("Trial feature error:", error);
                           alert("Failed to enable trial feature. Please try again.");
