@@ -1,0 +1,150 @@
+{
+  "spec_version": "2025-11-02",
+  "stack_id": "dealershipAI_AIVR_ARR_v1",
+  "description": "End-to-end orchestration manifest linking AIV™, AIVR™, Forecast, and ARR Projection modules across dashboard, API, and CI/CD pipelines.",
+  "modules": {
+    "frontend": {
+      "components": [
+        "/components/AIVModal.tsx",
+        "/components/AIVForecastPanel.tsx",
+        "/components/MultiDealerForecastDashboard.tsx",
+        "/components/ARRProjectionPanel.tsx"
+      ],
+      "hooks": [
+        "/hooks/useAIVCalculator.ts",
+        "/hooks/useAIVForecast.ts",
+        "/hooks/useARRProjection.ts"
+      ]
+    },
+    "backend": {
+      "api_routes": [
+        "/api/agent/visibility.js",
+        "/api/agent/forecast.js",
+        "/api/forecast/all.js",
+        "/api/arr/portfolio.js"
+      ]
+    },
+    "automation": {
+      "workflows": [
+        ".github/workflows/abtest-deploy.yml",
+        ".github/workflows/weekly-leaderboard.yml"
+      ],
+      "scripts": [
+        "scripts/generate-report.js",
+        "scripts/slack-performance-alert.js",
+        "scripts/forecast-portfolio.js",
+        "scripts/arr-projection.js"
+      ]
+    },
+    "analytics": {
+      "data_sources": [
+        "/public/audit-reports/abtest_metrics.csv",
+        "/public/audit-reports/leaderboard_latest.json"
+      ],
+      "update_schedule": "daily",
+      "slack_channels": [
+        "#ai-visibility",
+        "#executive-kpi"
+      ]
+    }
+  },
+  "execution_flow": {
+    "1_AIV_Calculation": {
+      "hook": "useAIVCalculator",
+      "trigger": "Dashboard load or /api/ai-scores refresh",
+      "outputs": ["AIV_score", "AIVR_score", "Revenue_at_Risk_USD"]
+    },
+    "2_AIVR_Forecast": {
+      "hook": "useAIVForecast",
+      "trigger": "Weekly leaderboards or /api/forecast/all",
+      "outputs": ["nextMonthAIVR", "projectedRevenueGain"]
+    },
+    "3_Portfolio_Aggregation": {
+      "component": "MultiDealerForecastDashboard",
+      "data": "/api/forecast/all",
+      "outputs": ["avgAIVR", "avgForecast", "totalGain"]
+    },
+    "4_ARR_Projection": {
+      "hook": "useARRProjection",
+      "trigger": "Post-forecast aggregation",
+      "outputs": ["quarterlyARRGain", "projectedARR"],
+      "analytics_pipeline": "ARRProjectionPanel + Slack #executive-kpi"
+    }
+  },
+  "deployment": {
+    "vercel": {
+      "project": "dealershipai-orchestrator",
+      "env": {
+        "NEXT_PUBLIC_VARIANT_MODE": "edge",
+        "NEXT_PUBLIC_VERCEL_ENV": "production",
+        "NEXT_PUBLIC_ANALYTICS_PROVIDER": "gtag",
+        "NEXT_PUBLIC_GTAG_ID": "G-XXXXXXXXXX"
+      },
+      "routes": [
+        { "src": "/dashboard", "dest": "/app/admin/page" },
+        { "src": "/forecast", "dest": "/api/forecast/all" },
+        { "src": "/arr", "dest": "/api/arr/portfolio" }
+      ]
+    },
+    "github": {
+      "actions": [
+        {
+          "name": "DealershipAI A/B Deploy",
+          "workflow": ".github/workflows/abtest-deploy.yml",
+          "on_push": true
+        },
+        {
+          "name": "Weekly Leaderboard + ARR Forecast",
+          "workflow": ".github/workflows/weekly-leaderboard.yml",
+          "schedule": "0 13 * * 1"
+        }
+      ],
+      "secrets": [
+        "VERCEL_TOKEN",
+        "VERCEL_PROJECT_ID",
+        "VERCEL_ORG_ID",
+        "SLACK_WEBHOOK_URL"
+      ]
+    }
+  },
+  "outputs": {
+    "ui_panels": [
+      "AIVModal",
+      "AIVForecastPanel",
+      "MultiDealerForecastDashboard",
+      "ARRProjectionPanel"
+    ],
+    "slack_reports": [
+      "Performance Alerts",
+      "Weekly Leaderboard",
+      "ARR Impact Forecast"
+    ],
+    "artifact_paths": [
+      "/public/audit-reports/abtest_metrics.csv",
+      "/public/audit-reports/abtest_report.pdf",
+      "/public/audit-reports/leaderboard_latest.json"
+    ]
+  },
+  "validation": {
+    "ci_checks": [
+      "Lighthouse >= 90",
+      "Core Web Vitals within pass thresholds",
+      "JSON-LD schema validation: true"
+    ],
+    "data_integrity": {
+      "expected_keys": ["AIV_score", "AIVR_score", "Revenue_at_Risk_USD"],
+      "allow_null": false
+    }
+  },
+  "notifications": {
+    "on_success": {
+      "slack": "#executive-kpi",
+      "message": "✅ DealershipAI ARR projection pipeline completed successfully."
+    },
+    "on_failure": {
+      "slack": "#ai-visibility",
+      "message": "⚠️ DealershipAI pipeline error. Check recent workflow logs."
+    }
+  }
+}
+

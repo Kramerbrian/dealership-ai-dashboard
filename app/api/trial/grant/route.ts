@@ -13,8 +13,12 @@ import { logger } from '@/lib/logger';
 import { createClient } from '@supabase/supabase-js';
 
 const grantTrialSchema = z.object({
-  feature_id: z.string(),
+  feature: z.string().optional(), // Alias for feature_id
+  feature_id: z.string().optional(), // Original parameter name
+  hours: z.number().optional().default(24), // Trial duration in hours
   user_id: z.string().optional(),
+}).refine(data => data.feature || data.feature_id, {
+  message: "Either 'feature' or 'feature_id' must be provided",
 });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -37,11 +41,19 @@ export const POST = createApiRoute(
   async (req, auth) => {
     try {
       const body = await req.json();
-      const { feature_id, user_id } = body;
+      const { feature, feature_id, hours, user_id } = body;
+      
+      // Use feature or feature_id (feature takes precedence)
+      const finalFeatureId = feature || feature_id;
+      if (!finalFeatureId) {
+        return errorResponse('feature or feature_id is required', 400);
+      }
       
       const userId = user_id || auth?.userId || 'anonymous';
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + TRIAL_DURATION_MS);
+      // Use hours parameter or default to 24
+      const trialDurationMs = (hours || 24) * 60 * 60 * 1000;
+      const expiresAt = new Date(now.getTime() + trialDurationMs);
 
       // Store trial in Supabase if configured
       if (supabase) {
@@ -50,7 +62,7 @@ export const POST = createApiRoute(
             .from('trial_features')
             .insert({
               user_id: userId,
-              feature_id,
+              feature_id: finalFeatureId,
               granted_at: now.toISOString(),
               expires_at: expiresAt.toISOString(),
             });
@@ -71,9 +83,10 @@ export const POST = createApiRoute(
 
       // Log telemetry
       await logger.info('Trial feature granted', {
-        feature_id,
+        feature_id: finalFeatureId,
         userId,
         expires_at: expiresAt.toISOString(),
+        hours: hours || 24,
       });
 
       // Track telemetry event
@@ -85,7 +98,7 @@ export const POST = createApiRoute(
             event: 'trial_feature_granted',
             tier: 'tier1',
             surface: 'api',
-            metadata: { feature_id },
+            metadata: { feature_id: finalFeatureId, hours: hours || 24 },
           }),
         });
       } catch {}
@@ -93,9 +106,9 @@ export const POST = createApiRoute(
       const response = NextResponse.json({
         success: true,
         data: {
-          feature_id,
+          feature_id: finalFeatureId,
           expires_at: expiresAt.toISOString(),
-          hours_remaining: 24,
+          hours_remaining: hours || 24,
         },
       }, {
         status: 200,
@@ -105,8 +118,8 @@ export const POST = createApiRoute(
       });
 
       // Set cookie for server-side checks
-      response.cookies.set(`dai_trial_${feature_id}`, JSON.stringify({
-        feature_id,
+      response.cookies.set(`dai_trial_${finalFeatureId}`, JSON.stringify({
+        feature_id: finalFeatureId,
         unlocked_at: now.toISOString(),
         expires_at: expiresAt.toISOString(),
       }), {
@@ -121,6 +134,7 @@ export const POST = createApiRoute(
     } catch (error) {
       await logger.error('Trial grant error', {
         error: error instanceof Error ? error.message : 'Unknown error',
+        feature: feature || feature_id,
       });
 
       return errorResponse('Failed to grant trial feature', 500);

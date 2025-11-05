@@ -4,9 +4,21 @@
  * Verifies Slack user identity against Clerk tenant before executing actions
  */
 
-import { WebClient } from "@slack/web-api";
+// Dynamic import to avoid build errors if @slack/web-api is not installed
+let WebClient: any;
+let slackClient: any;
 
-const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
+async function initSlackClient() {
+  if (!slackClient && process.env.SLACK_BOT_TOKEN) {
+    try {
+      WebClient = (await import("@slack/web-api")).WebClient;
+      slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
+    } catch (error) {
+      console.warn("@slack/web-api not installed, Slack features disabled");
+    }
+  }
+  return slackClient;
+}
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 
 /**
@@ -14,7 +26,9 @@ const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
  */
 export async function getSlackUserEmail(userId: string): Promise<string | null> {
   try {
-    const result = await slackClient.users.info({ user: userId });
+    const client = await initSlackClient();
+    if (!client) return null;
+    const result = await client.users.info({ user: userId });
     return result.user?.profile?.email || null;
   } catch (error) {
     console.error("Failed to get Slack user email:", error);

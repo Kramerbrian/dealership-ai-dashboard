@@ -17,7 +17,7 @@ export const GET = createApiRoute(
   {
     endpoint: '/api/your-endpoint',
     requireAuth: true, // Set to false for public endpoints
-    validateQuery: /* yourQuerySchema */, // Optional: validate query params
+    validateQuery: undefined, // Optional: validate query params (replace with yourQuerySchema)
     rateLimit: true, // Rate limiting enabled
     performanceMonitoring: true, // Performance tracking enabled
   },
@@ -62,7 +62,7 @@ export const POST = createApiRoute(
   {
     endpoint: '/api/your-endpoint',
     requireAuth: true,
-    validateBody: /* yourBodySchema */, // Validates request body
+    validateBody: undefined, // Validates request body (replace with yourBodySchema)
     rateLimit: true,
     performanceMonitoring: true,
   },
@@ -102,7 +102,7 @@ export const PUT = createApiRoute(
   {
     endpoint: '/api/your-endpoint',
     requireAuth: true,
-    validateBody: /* yourUpdateSchema */,
+    validateBody: undefined, // Replace with yourUpdateSchema
     rateLimit: true,
     performanceMonitoring: true,
   },

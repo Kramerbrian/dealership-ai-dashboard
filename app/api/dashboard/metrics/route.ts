@@ -1,229 +1,212 @@
-/**
- * GET /api/dashboard/metrics
- * 
- * Returns comprehensive dashboard metrics including AIV, ATI, CRS scores,
- * market rank, recommended actions, and chat usage
- */
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { createApiRoute } from "@/lib/api-route-template";
-import { prisma } from "@/lib/prisma";
+export const dynamic = 'force-dynamic';
 
-// Mock calculation functions - replace with actual implementations
+// Mock calculation functions (replace with actual implementations)
 async function calculateAIV(dealership: any) {
-  // TODO: Implement actual AIV calculation
   return {
     score: 87.3,
-    trend: 12,
-    breakdown: {
-      schema_health: 72,
-      review_velocity: 60,
-      content_freshness: 50,
-    },
+    trend: 2.4,
+    breakdown: [
+      { label: 'Schema Health', value: 91, status: 'good' as const },
+      { label: 'Review Velocity', value: 68, status: 'warning' as const },
+      { label: 'Content Freshness', value: 52, status: 'critical' as const },
+      { label: 'AI Platform Coverage', value: 85, status: 'good' as const },
+      { label: 'Local Entity Consistency', value: 94, status: 'good' as const },
+    ]
   };
 }
 
 async function calculateATI(dealership: any) {
-  // TODO: Implement actual ATI calculation
   return {
-    score: 82.5,
-    trend: 8,
-    breakdown: {},
+    score: 82.1,
+    trend: 1.8,
+    breakdown: [
+      { label: 'Trust Signals', value: 88, status: 'good' as const },
+      { label: 'Authority Depth', value: 75, status: 'warning' as const },
+      { label: 'Expertise Indicators', value: 83, status: 'good' as const },
+    ]
   };
 }
 
 async function calculateCRS(dealership: any) {
-  // TODO: Implement actual CRS calculation
   return {
     score: 78.9,
-    trend: 5,
+    trend: 0.5,
+    breakdown: [
+      { label: 'Google Reviews', value: 85, status: 'good' as const },
+      { label: 'DealerRater', value: 72, status: 'warning' as const },
+      { label: 'Yelp', value: 68, status: 'warning' as const },
+    ]
   };
 }
 
 function calculateRankTrend(history: any[]) {
-  // TODO: Implement rank trend calculation
-  return "+3";
+  if (history.length < 2) return 0;
+  return history[history.length - 1].value - history[0].value;
 }
 
 async function generateRecommendedActions(dealership: any, competitors: any[]) {
   const actions = [];
-
+  
   // Check for urgent competitive alerts
-  const recentCompetitorGains = competitors.filter((c) => {
-    const aivTrend = c.aiv_trend || 0;
-    const updatedAt = c.updatedAt ? new Date(c.updatedAt) : new Date(0);
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    return aivTrend > 10 && updatedAt > oneDayAgo;
-  });
+  const recentCompetitorGains = competitors?.filter((c: any) => 
+    c.aiv_trend > 10 && new Date(c.updatedAt) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+  ) || [];
 
   if (recentCompetitorGains.length > 0) {
     const top = recentCompetitorGains[0];
     actions.push({
       id: `alert-${top.id}`,
-      type: "alert",
+      type: 'alert',
       title: `${top.name} just gained ${top.aiv_trend} AIV points`,
       description: `Based on public signals, here's what it looks like they're doing to move the needle. Want to know their playbook?`,
       competitive_context: `The data shows ${top.name} likely implemented schema markup and improved review response rates in the last 48 hours.`,
       expected_impact: { aiv_gain: 15, confidence: 87 },
-      time_required: "4-6 hours",
-      difficulty: "medium",
-      locked: dealership.tier === "free",
+      time_required: '4-6 hours',
+      difficulty: 'medium' as const,
+      locked: dealership.tier === 'free'
     });
   }
 
   // Strategic actions based on weaknesses
   const aivScore = await calculateAIV(dealership);
-
-  if (aivScore.breakdown.schema_health < 70) {
+  
+  const schemaHealth = aivScore.breakdown.find((b: any) => b.label === 'Schema Health')?.value || 100;
+  if (schemaHealth < 70) {
     actions.push({
-      id: "strategy-schema",
-      type: "strategic",
-      title: "Implement AI-Ready Schema Markup",
-      description: "Your website is missing structured data that AI search engines need.",
-      competitive_context: `${competitors[0]?.name || "Top competitors"} have full schema coverage. This is giving them a significant edge in AI search results.`,
+      id: 'strategy-schema',
+      type: 'strategic',
+      title: 'Implement AI-Ready Schema Markup',
+      description: 'Your website is missing structured data that AI search engines need.',
+      competitive_context: `${competitors[0]?.name || 'Top competitors'} have full schema coverage. This is giving them a significant edge in AI search results.`,
       expected_impact: { aiv_gain: 18, confidence: 94 },
-      time_required: "3-4 hours",
-      difficulty: "easy",
-      locked: dealership.tier === "free",
+      time_required: '3-4 hours',
+      difficulty: 'easy' as const,
+      locked: dealership.tier === 'free'
     });
   }
 
-  if (aivScore.breakdown.review_velocity < 60) {
+  const reviewVelocity = aivScore.breakdown.find((b: any) => b.label === 'Review Velocity')?.value || 100;
+  if (reviewVelocity < 60) {
     actions.push({
-      id: "strategy-reviews",
-      type: "strategic",
-      title: "Activate AI-Powered Review Responses",
-      description: "You're only responding to 30% of reviews. AI search heavily weights engagement.",
+      id: 'strategy-reviews',
+      type: 'strategic',
+      title: 'Activate AI-Powered Review Responses',
+      description: 'You\'re only responding to 30% of reviews. AI search heavily weights engagement.',
       expected_impact: { aiv_gain: 12, confidence: 91 },
-      time_required: "2 hours setup",
-      difficulty: "easy",
-      locked: false,
+      time_required: '2 hours setup',
+      difficulty: 'easy' as const,
+      locked: false
     });
   }
 
-  if (aivScore.breakdown.content_freshness < 50) {
+  const contentFreshness = aivScore.breakdown.find((b: any) => b.label === 'Content Freshness')?.value || 100;
+  if (contentFreshness < 50) {
     actions.push({
-      id: "strategy-content",
-      type: "quick_win",
-      title: "Publish Fresh Content",
-      description: "Your last blog post was 3 months ago. AI models favor recent, relevant content.",
+      id: 'strategy-content',
+      type: 'quick_win',
+      title: 'Publish Fresh Content',
+      description: 'Your last blog post was 3 months ago. AI models favor recent, relevant content.',
       expected_impact: { aiv_gain: 8, confidence: 78 },
-      time_required: "2-3 hours",
-      difficulty: "easy",
-      locked: false,
+      time_required: '2-3 hours',
+      difficulty: 'easy' as const,
+      locked: false
     });
   }
 
   return actions.slice(0, 3); // Max 3 actions
 }
 
-export const GET = createApiRoute(
-  {
-    endpoint: "/api/dashboard/metrics",
-    requireAuth: true,
-    rateLimit: true,
-    performanceMonitoring: true,
-  },
-  async (req, auth) => {
-    if (!auth?.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function GET() {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    try {
-      // TODO: Replace with actual Prisma query when schema is ready
-      // For now, return mock data structure
-      const user = null; // await prisma.user.findUnique({ where: { clerkId: auth.userId } });
-
-      if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-
-      // Mock dealership data
-      const dealership = {
-        id: "1",
-        name: "Naples Honda",
-        domain: "naples-honda.com",
-        tier: "free",
-        aiv_score: 87.3,
-        market_rank: 5,
-        competitors: [],
-        metrics: Array.from({ length: 7 }, (_, i) => ({
-          timestamp: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-          value: 87.3 - i * 0.5,
-        })),
-      };
-
-      // Calculate current scores
-      const aiv = await calculateAIV(dealership);
-      const ati = await calculateATI(dealership);
-      const crs = await calculateCRS(dealership);
-
-      // Get 7-day history
-      const history = [...dealership.metrics].reverse();
-
-      // Generate recommended actions
-      const actions = await generateRecommendedActions(dealership, dealership.competitors);
-
-      // Check chat usage today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    // For now, return mock data structure
+    // TODO: Replace with actual database queries
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      // Return demo data if Supabase not configured
+      const aiv = await calculateAIV({});
+      const ati = await calculateATI({});
+      const crs = await calculateCRS({});
       
-      // TODO: Replace with actual Prisma query
-      const chatUsage = 0; // await prisma.chatMessage.count({ where: { userId: user.id, createdAt: { gte: today } } });
+      // Generate demo history
+      const history = Array.from({ length: 7 }, (_, i) => ({
+        date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        value: 85 + Math.random() * 5 - 2.5,
+        timestamp: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000)
+      }));
 
-      return NextResponse.json(
-        {
-          dealership: {
-            name: dealership.name,
-            domain: dealership.domain,
-            tier: dealership.tier || "free",
-          },
-          aiv: {
-            overall: aiv.score,
-            trend: aiv.trend,
-            breakdown: aiv.breakdown,
-            history: history.map((m) => ({
-              date: m.timestamp.toLocaleDateString(),
-              value: m.value,
-            })),
-          },
-          ati: {
-            overall: ati.score,
-            trend: ati.trend,
-            breakdown: ati.breakdown,
-            history: history.map((m) => ({
-              date: m.timestamp.toLocaleDateString(),
-              value: m.value,
-            })),
-          },
-          crs: crs.score,
-          crs_trend: crs.trend,
-          crs_history: history.map((m) => ({
-            date: m.timestamp.toLocaleDateString(),
-            value: m.value,
-          })),
-          market_rank: dealership.market_rank,
-          total_competitors: dealership.competitors.length,
-          rank_trend: calculateRankTrend(history),
-          recommended_actions: actions,
-          chat_usage: {
-            questions_today: chatUsage,
-            questions_limit: dealership.tier === "free" ? 5 : 999,
-          },
+      const actions = await generateRecommendedActions(
+        { tier: 'free' },
+        [{ id: '1', name: 'Competitor A', aiv_trend: 15, updatedAt: new Date() }]
+      );
+
+      return NextResponse.json({
+        dealership: {
+          name: 'Demo Dealership',
+          domain: 'demo-dealership.com',
+          tier: 'free'
         },
-        {
-          headers: {
-            "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-          },
+        aiv: {
+          overall: aiv.score,
+          trend: aiv.trend,
+          breakdown: aiv.breakdown,
+          history: history.map(m => ({
+            date: m.date,
+            value: m.value
+          }))
+        },
+        ati: {
+          overall: ati.score,
+          trend: ati.trend,
+          breakdown: ati.breakdown,
+          history: history.map(m => ({
+            date: m.date,
+            value: m.value
+          }))
+        },
+        crs: crs.score,
+        crs_trend: crs.trend,
+        crs_history: history.map(m => ({
+          date: m.date,
+          value: m.value
+        })),
+        crs_breakdown: crs.breakdown,
+        market_rank: 3,
+        total_competitors: 5,
+        rank_trend: 1,
+        rank_history: history.map(m => ({
+          date: m.date,
+          value: 3 + Math.random() * 2 - 1
+        })),
+        recommended_actions: actions,
+        chat_usage: {
+          questions_today: 2,
+          questions_limit: 5
         }
-      );
-    } catch (error) {
-      console.error("[dashboard/metrics] Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      });
     }
+
+    // TODO: Implement actual database queries
+    // const user = await db.user.findUnique({...});
+    
+    return NextResponse.json({ error: 'Database integration pending' }, { status: 501 });
+  } catch (error) {
+    console.error('Dashboard metrics API error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch dashboard metrics' },
+      { status: 500 }
+    );
   }
-);
+}
+
