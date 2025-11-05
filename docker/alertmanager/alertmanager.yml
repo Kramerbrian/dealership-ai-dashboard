@@ -14,6 +14,15 @@ route:
   group_interval: 10s
   repeat_interval: 12h
   routes:
+    # Schema validation alerts → orchestrator webhook + Slack
+    - match:
+        alertname: "SchemaValidationWarning"
+      receiver: "orchestrator_webhook"
+      continue: true
+    - match:
+        alertname: "SchemaValidationCritical"
+      receiver: "orchestrator_webhook"
+      continue: true
     # Critical alerts → #exec-board
     - match:
         severity: critical
@@ -56,6 +65,11 @@ receivers:
           {{ end }}
         send_resolved: true
         color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  - name: 'orchestrator_webhook'
+    webhook_configs:
+      - url: "http://orchestrator:3001/api/alert"
+        send_resolved: true
 
   - name: 'slack-exec-board'
     slack_configs:

@@ -1,0 +1,26 @@
+groups:
+  - name: schema_validation_alerts
+    interval: 30s
+    rules:
+      # Warning – short-term spike
+      - alert: SchemaValidationWarning
+        expr: schema_validation_failure_ratio > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: ai-ops
+        annotations:
+          summary: "⚠️ Schema validation failures exceed 5 %"
+          description: "Validation failure ratio {{ $value | printf \"%.2f\" }} over 5 min window"
+
+      # Critical – sustained or severe drift
+      - alert: SchemaValidationCritical
+        expr: schema_validation_failure_ratio > 0.15
+        for: 10m
+        labels:
+          severity: critical
+          team: exec-board
+        annotations:
+          summary: "🔥 Schema validation drift critical (> 15 %)"
+          description: "Persistent schema mismatch across event types — investigate new schema deployment or data corruption."
+
