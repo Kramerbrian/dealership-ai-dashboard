@@ -1,0 +1,14 @@
+{{- if .Values.eventBus.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dealershipai.fullname" . }}-event-config
+  namespace: {{ .Values.namespace | default "dealershipai" }}
+  labels:
+    {{- include "dealershipai.labels" . | nindent 4 }}
+    component: event-bus
+data:
+  orchestrator_event_system.json: |
+{{ .Files.Get "orchestrator_event_system.json" | indent 4 }}
+{{- end }}
+

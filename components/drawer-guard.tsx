@@ -139,7 +139,7 @@ export function DrawerGuard({
   }
 
   // Show locked state with CTA
-  const tierName = requiredTier === 2 ? 'DIY Guide' : 'Hyperdrive';
+  const tierName = requiredTier === 2 ? 'Enhanced' : 'Premium';
   
   return (
     <div className="relative rounded-lg border border-gray-700 bg-gray-800/50 p-6 backdrop-blur-sm">

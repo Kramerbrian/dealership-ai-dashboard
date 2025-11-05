@@ -14,9 +14,17 @@
  * ```
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Lock, Sparkles, ArrowRight } from 'lucide-react';
-import { isTrialActive, fetchActiveTrials } from '@/lib/utils/trial-feature';
+import { useTrialStatus } from '@/hooks/useTrialStatus';
+
+function TrialChip({ label }: { label: string }) {
+  return (
+    <span className="absolute right-3 top-3 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+      {label}
+    </span>
+  );
+}
 
 interface SchemaDrawerGuardProps {
   tier: 1 | 2 | 3;
@@ -24,36 +32,23 @@ interface SchemaDrawerGuardProps {
 }
 
 export function SchemaDrawerGuard({ tier, children }: SchemaDrawerGuardProps) {
-  const [trialActive, setTrialActive] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [granting, setGranting] = useState(false);
+  const trial = useTrialStatus();
+  const status = trial.get("schema_fix");
+  const unlocked = tier >= 2 || status.active;
+  const label = status.active ? `${trial.format(status.msLeft)} left` : "Trial inactive";
 
-  // Check trial status on mount
+  // Auto-dismiss overlay when trial fires
   useEffect(() => {
-    const checkTrial = async () => {
-      setLoading(true);
-      
-      // Check localStorage first (fast)
-      const localActive = isTrialActive('schema_fix');
-      
-      // Also check API for server-side cookies
-      const activeTrials = await fetchActiveTrials();
-      const apiActive = activeTrials.includes('schema_fix');
-      
-      setTrialActive(localActive || apiActive);
-      setLoading(false);
-    };
-    
-    checkTrial();
+    const onGrant = () => { /* hook refresh already runs; no-op here */ };
+    window.addEventListener("dai:trial_granted", onGrant as any);
+    return () => window.removeEventListener("dai:trial_granted", onGrant as any);
   }, []);
 
   // Determine if content should be unlocked
-  const isUnlocked = tier >= 2 || trialActive;
+  const isUnlocked = tier >= 2 || status.active;
 
   // Handle trial grant
   const handleGrantTrial = async () => {
-    setGranting(true);
-    
     try {
       const response = await fetch('/api/trial/grant', {
         method: 'POST',
@@ -76,96 +71,75 @@ export function SchemaDrawerGuard({ tier, children }: SchemaDrawerGuardProps) {
           }));
         }
         
-        // Update state
-        setTrialActive(true);
-        
-        // Show success message
-        alert('Schema Auditor unlocked for 24 hours!');
-      } else {
-        throw new Error(data.error || 'Failed to grant trial');
+        // Fire event to refresh hook
+        window.dispatchEvent(new Event("dai:trial_granted"));
       }
     } catch (error) {
-      console.error('Trial grant error:', error);
-      alert('Failed to enable trial. Please try again.');
-    } finally {
-      setGranting(false);
+      console.error('Failed to grant trial:', error);
     }
   };
 
-  // Show loading state
-  if (loading) {
+  // If unlocked, show children with trial chip if applicable
+  if (isUnlocked) {
     return (
-      <div className="relative rounded-lg border border-gray-700 bg-gray-800/50 p-6 backdrop-blur-sm">
-        <div className="flex items-center justify-center py-8">
-          <div className="text-white/60">Checking access...</div>
-        </div>
+      <div className="relative">
+        {status.active && tier < 2 && <TrialChip label={label} />}
+        {children}
       </div>
     );
   }
 
-  // Show unlocked content
-  if (isUnlocked) {
-    return <>{children}</>;
-  }
-
-  // Show locked state with CTA
+  // Else show overlay
   return (
-    <div className="relative rounded-lg border border-gray-700 bg-gray-800/50 p-6 backdrop-blur-sm">
-      {/* Overlay gradient */}
-      <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-gray-900/80 via-gray-800/60 to-gray-900/80 backdrop-blur-sm" />
+    <div className="relative">
+      <div aria-disabled={!unlocked} className={!unlocked ? "pointer-events-none select-none opacity-40" : ""}>
+        {children}
+      </div>
       
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center py-12">
-        {/* Lock icon */}
-        <div className="mb-4 rounded-full bg-gray-700/50 p-4">
-          <Lock className="w-8 h-8 text-gray-400" />
-        </div>
-        
-        {/* Title */}
-        <h3 className="mb-2 text-lg font-semibold text-white">
-          Schema Auditor is locked
-        </h3>
-        
-        {/* Description */}
-        <p className="mb-6 max-w-sm text-sm text-gray-400">
-          {tier === 1 
-            ? 'Upgrade to DIY Guide (Tier 2) or try it free for 24 hours'
-            : 'This feature requires DIY Guide (Tier 2) or higher'}
-        </p>
-
-        {/* Actions */}
-        <div className="flex flex-col gap-3 w-full max-w-sm">
-          {tier === 1 && (
-            <button
-              onClick={handleGrantTrial}
-              disabled={granting}
-              className="flex items-center justify-center gap-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 px-4 py-2 text-sm font-medium text-cyan-300 hover:bg-cyan-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Sparkles className="w-4 h-4" />
-              {granting ? 'Unlocking...' : 'Try for 24 hours'}
-            </button>
-          )}
+      {/* Overlay */}
+      <div className="absolute inset-0 z-10 grid place-items-center rounded-xl bg-black/80 backdrop-blur-sm">
+        <div className="mx-4 max-w-sm rounded-xl border border-white/10 bg-gray-900/95 p-6 text-center text-white">
+          {/* Icon */}
+          <div className="mb-4 rounded-full bg-gray-700/50 p-4">
+            <Lock className="w-8 h-8 text-gray-400" />
+          </div>
           
-          <button
-            onClick={() => {
-              window.location.href = '/pricing';
-            }}
-            className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-          >
-            Upgrade to DIY Guide
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Feature preview hint */}
-        {tier === 1 && (
-          <p className="mt-6 text-xs text-gray-500">
-            <Sparkles className="inline w-3 h-3 mr-1" />
-            Trial unlocks: Schema validation, JSON-LD fix generator, and implementation recommendations
+          {/* Title */}
+          <h3 className="mb-2 text-lg font-semibold text-white">
+            Schema Auditor is locked
+          </h3>
+          
+          {/* Description */}
+          <p className="mb-6 max-w-sm text-sm text-gray-400">
+            {tier === 1 
+              ? 'Upgrade to Enhanced (Tier 2) or try it free for 24 hours'
+              : 'This feature requires Enhanced (Tier 2) or higher'}
           </p>
-        )}
+
+          {/* Actions */}
+          <div className="flex flex-col gap-3 w-full max-w-sm">
+            {tier === 1 && (
+              <button
+                onClick={handleGrantTrial}
+                className="flex items-center justify-center gap-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 px-4 py-2 text-sm font-medium text-cyan-300 hover:bg-cyan-500/30 transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                Try for 24 hours
+              </button>
+            )}
+            
+            <button
+              onClick={() => {
+                window.location.href = '/pricing';
+              }}
+              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+            >
+              Upgrade to Enhanced
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-

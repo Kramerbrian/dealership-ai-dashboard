@@ -1,0 +1,334 @@
+openapi: 3.1.0
+info:
+  title: Appraise Orchestrator Action
+  version: "2025.11.04"
+  description: |
+    Unified snapshot and diagnostics API for DealershipAI Appraise Orchestrator.
+    Designed for GPT Actions integration with pull-based updates.
+servers:
+  - url: https://YOUR_DASH_DOMAIN
+    description: Production server (replace with your domain)
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /api/orchestrator/snapshot:
+    get:
+      operationId: getSnapshot
+      summary: Get unified Appraise SDK snapshot (with diagnostics)
+      description: |
+        Returns a complete snapshot of orchestrator state including:
+        - Pulse radar data (dealers, intents, fixes)
+        - MSRP sync status and recent changes
+        - System diagnostics (freshness, business identity match)
+        - Graph state summary
+        
+        Supports ETag-based caching for efficient polling.
+      parameters:
+        - in: header
+          name: If-None-Match
+          required: false
+          schema:
+            type: string
+          description: ETag from previous response for conditional requests
+        - in: header
+          name: x-pulse-key
+          required: false
+          schema:
+            type: string
+          description: API key for authentication (if configured)
+      responses:
+        "200":
+          description: Snapshot payload
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: ETag for cache validation
+            Cache-Control:
+              schema:
+                type: string
+              description: Cache control directives
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppraiseSDKResponse"
+              example:
+                freshnessScore: 0.95
+                businessIdentityMatch: 0.99
+                pulse:
+                  version: "2025.11.04"
+                  window: "7d"
+                  actions: []
+                  radar:
+                    dealers: 0
+                    intents: 0
+                    fixes: 0
+                msrpSync:
+                  lastRun: "2025-11-04T10:00:00Z"
+                  count: 0
+                  avgDeltaPct: 0
+                  delta: 0
+                  pulseLatencyMs: 150
+                  status: "ok"
+                  message: "MSRP sync operational"
+                graph:
+                  dealers: 0
+                  intents: 0
+                  fixes: 0
+                  edges: 0
+                  updateTs: "2025-11-04T12:00:00Z"
+                diagnostics:
+                  freshnessScore: 0.95
+                  businessIdentityMatch: 0.99
+                  msrpSync:
+                    lastRun: "2025-11-04T10:00:00Z"
+                    count: 0
+                    avgDeltaPct: 0
+                    pulseLatencyMs: 150
+                    status: "ok"
+                    message: "MSRP sync operational"
+                  aiScores:
+                    aivRefreshed: 0
+                    atiRefreshed: 0
+                    cisRefreshed: 0
+                    refreshDurationMs: 0
+                  status: "ok"
+                  lastUpdated: "2025-11-04T12:00:00Z"
+                meta:
+                  version: "2025.11.04"
+                  source: "AppraiseYourVehicleOrchestrator"
+                  sdkCompatible: true
+                  generatedAt: "2025-11-04T12:00:00Z"
+        "304":
+          description: Not Modified (ETag match)
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: Same ETag as request
+        "401":
+          description: Unauthorized (invalid API key)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/diagnostics/msrp-sync:
+    get:
+      operationId: getMsrpDiagnostics
+      summary: Get MSRP sync telemetry
+      description: Returns detailed MSRP synchronization status and metrics
+      parameters:
+        - in: header
+          name: x-pulse-key
+          required: false
+          schema:
+            type: string
+          description: API key for authentication (if configured)
+      responses:
+        "200":
+          description: MSRP sync diagnostics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MsrpSyncDiagnostics"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    AppraiseSDKResponse:
+      type: object
+      required:
+        - freshnessScore
+        - businessIdentityMatch
+        - pulse
+        - msrpSync
+        - graph
+        - diagnostics
+        - meta
+      properties:
+        freshnessScore:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Data freshness score (0-1)
+        businessIdentityMatch:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Business identity match accuracy (0-1)
+        pulse:
+          type: object
+          description: Pulse radar data
+          properties:
+            version:
+              type: string
+            window:
+              type: string
+            actions:
+              type: array
+              items:
+                type: object
+            radar:
+              type: object
+              properties:
+                dealers:
+                  type: integer
+                intents:
+                  type: integer
+                fixes:
+                  type: integer
+            lastUpdated:
+              type: string
+              format: date-time
+        msrpSync:
+          $ref: "#/components/schemas/MsrpSyncState"
+        graph:
+          type: object
+          properties:
+            dealers:
+              type: integer
+            intents:
+              type: integer
+            fixes:
+              type: integer
+            edges:
+              type: integer
+            updateTs:
+              type: string
+              format: date-time
+        diagnostics:
+          $ref: "#/components/schemas/MsrpSyncDiagnostics"
+        meta:
+          type: object
+          required:
+            - version
+            - source
+            - sdkCompatible
+            - generatedAt
+          properties:
+            version:
+              type: string
+              description: Snapshot version identifier
+            source:
+              type: string
+              description: Source system identifier
+            sdkCompatible:
+              type: boolean
+              description: Whether this snapshot is SDK-compatible
+            generatedAt:
+              type: string
+              format: date-time
+              description: When this snapshot was generated
+
+    MsrpSyncState:
+      type: object
+      properties:
+        lastRun:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last MSRP sync execution time
+        count:
+          type: integer
+          description: Number of records processed
+        avgDeltaPct:
+          type: number
+          format: float
+          description: Average price change percentage
+        delta:
+          type: number
+          format: float
+          description: Overall price delta
+        pulseLatencyMs:
+          type: integer
+          description: Pulse service latency in milliseconds
+        status:
+          type: string
+          enum: [ok, warning, error]
+          description: Sync status
+        message:
+          type: string
+          description: Status message
+        source:
+          type: string
+          description: Data source identifier
+
+    MsrpSyncDiagnostics:
+      type: object
+      required:
+        - freshnessScore
+        - businessIdentityMatch
+        - msrpSync
+        - aiScores
+        - status
+        - lastUpdated
+      properties:
+        freshnessScore:
+          type: number
+          format: float
+        businessIdentityMatch:
+          type: number
+          format: float
+        msrpSync:
+          $ref: "#/components/schemas/MsrpSyncState"
+        aiScores:
+          type: object
+          properties:
+            aivRefreshed:
+              type: integer
+              description: Number of AIV scores refreshed
+            atiRefreshed:
+              type: integer
+              description: Number of ATI scores refreshed
+            cisRefreshed:
+              type: integer
+              description: Number of CIS scores refreshed
+            refreshDurationMs:
+              type: integer
+              description: Total refresh duration in milliseconds
+        status:
+          type: string
+          enum: [ok, warning, error]
+          description: Overall diagnostics status
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Last diagnostics update time
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+        message:
+          type: string
+          description: Detailed error message (optional)
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-pulse-key
+      description: API key for authentication (optional if PULSE_API_KEY is not configured)
+
+security:
+  - ApiKeyAuth: []
+

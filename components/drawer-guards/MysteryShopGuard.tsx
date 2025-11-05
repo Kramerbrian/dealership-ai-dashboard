@@ -1,10 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Clock, ArrowUpRight, ShoppingBag } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Clock, ArrowUpRight, ShoppingBag } from 'lucide-react';
 import { DrawerGuardProps } from './types';
-import { useTrialFeature } from '@/lib/hooks/useTrialFeature';
+import { useTrialStatus } from '@/hooks/useTrialStatus';
+
+function TrialChip({ label }: { label: string }) {
+  return (
+    <span className="absolute right-3 top-3 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+      {label}
+    </span>
+  );
+}
 
 /**
  * MysteryShopGuard
@@ -15,15 +22,17 @@ import { useTrialFeature } from '@/lib/hooks/useTrialFeature';
  * - Else → gray overlay with "Enable 24h Trial" and Upgrade buttons
  */
 export function MysteryShopGuard({ tier, children }: DrawerGuardProps) {
-  const [isTrialActive, setIsTrialActive] = useState(false);
-  const [isGranting, setIsGranting] = useState(false);
-  const { data: trialStatus, mutate: checkTrial } = useTrialFeature('mystery_shop');
+  const trial = useTrialStatus();
+  const status = trial.get("mystery_shop");
+  const unlocked = tier >= 2 || status.active;
+  const label = status.active ? `${trial.format(status.msLeft)} left` : "Trial inactive";
 
+  // Auto-dismiss overlay when trial fires
   useEffect(() => {
-    if (trialStatus?.is_active) {
-      setIsTrialActive(true);
-    }
-  }, [trialStatus]);
+    const onGrant = () => { /* hook refresh already runs; no-op here */ };
+    window.addEventListener("dai:trial_granted", onGrant as any);
+    return () => window.removeEventListener("dai:trial_granted", onGrant as any);
+  }, []);
 
   // Tier ≥ 2 → unlocked
   if (tier >= 2) {
@@ -31,13 +40,17 @@ export function MysteryShopGuard({ tier, children }: DrawerGuardProps) {
   }
 
   // Tier 1 + active trial → unlocked
-  if (tier === 1 && isTrialActive) {
-    return <>{children}</>;
+  if (status.active) {
+    return (
+      <div className="relative">
+        <TrialChip label={label} />
+        {children}
+      </div>
+    );
   }
 
   // Else → show overlay
   const handleEnableTrial = async () => {
-    setIsGranting(true);
     try {
       const response = await fetch('/api/trial/grant', {
         method: 'POST',
@@ -48,80 +61,44 @@ export function MysteryShopGuard({ tier, children }: DrawerGuardProps) {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setIsTrialActive(true);
-          // Refresh trial status
-          checkTrial();
+          window.dispatchEvent(new Event("dai:trial_granted"));
         }
       }
     } catch (error) {
       console.error('Failed to grant trial:', error);
-    } finally {
-      setIsGranting(false);
     }
   };
 
   const handleUpgrade = () => {
-    window.location.href = '/pricing?upgrade=pro';
+    window.location.href = '/pricing?upgrade=enhanced';
   };
 
   return (
     <div className="relative">
-      {/* Blurred content */}
-      <div className="blur-sm pointer-events-none select-none opacity-50">
+      {status.active && tier < 2 && <TrialChip label={label} />}
+      <div aria-disabled={!unlocked} className={!unlocked ? "pointer-events-none select-none opacity-40" : ""}>
         {children}
       </div>
-
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200">
-        <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-          <div className="mb-4">
-            <div className="p-3 bg-purple-500/10 rounded-lg inline-block">
-              <ShoppingBag className="w-8 h-8 text-purple-500" />
-            </div>
-          </div>
-
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Mystery Shop Simulator
-          </h3>
-
-          <p className="text-sm text-gray-600 mb-6 max-w-sm">
-            This feature requires Pro tier or higher. Try it free for 24 hours!
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+      {!unlocked && (
+        <div className="absolute inset-0 grid place-items-center">
+          <div className="rounded-xl border border-white/15 bg-black/60 p-4 text-center text-sm text-white">
+            <div className="mb-2 font-semibold">Mystery Shop Simulator is locked on Basic</div>
+            <div className="mb-3 text-white/80">Enable a 24h trial from Pricing to view AI-powered mystery shopping scenarios.</div>
             <button
               onClick={handleEnableTrial}
-              disabled={isGranting}
-              className="flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg font-medium transition-colors"
+              className="mr-2 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-black hover:bg-white/90"
             >
-              {isGranting ? (
-                <>
-                  <Clock className="w-4 h-4 animate-spin" />
-                  <span>Enabling...</span>
-                </>
-              ) : (
-                <>
-                  <Clock className="w-4 h-4" />
-                  <span>Enable 24h Trial</span>
-                </>
-              )}
+              Enable 24h Trial
             </button>
-
             <button
               onClick={handleUpgrade}
-              className="flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium transition-colors"
+              className="rounded-lg border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
             >
-              <span>Upgrade</span>
-              <ArrowUpRight className="w-4 h-4" />
+              Go to Pricing
             </button>
           </div>
-
-          <p className="text-xs text-gray-500 mt-4">
-            No credit card required for trial
-          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 }
-

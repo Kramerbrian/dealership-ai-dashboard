@@ -1,0 +1,63 @@
+{{- if .Values.eventBus.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dealershipai.fullname" . }}-event-consumer
+  namespace: {{ .Values.namespace | default "dealershipai" }}
+  labels:
+    {{- include "dealershipai.labels" . | nindent 4 }}
+    component: event-consumer
+spec:
+  replicas: {{ .Values.eventBus.replicas | default 3 }}
+  selector:
+    matchLabels:
+      {{- include "dealershipai.selectorLabels" . | nindent 6 }}
+      component: event-consumer
+  template:
+    metadata:
+      labels:
+        {{- include "dealershipai.selectorLabels" . | nindent 8 }}
+        component: event-consumer
+    spec:
+      containers:
+        - name: event-consumer
+          image: {{ .Values.eventBus.image | default "ghcr.io/dealershipai/event-consumer:latest" }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "dealershipai.fullname" . }}-secrets
+                  key: redis-url
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "dealershipai.fullname" . }}-secrets
+                  key: postgres-url
+            - name: EVENT_CONFIG_PATH
+              value: "/config/orchestrator_event_system.json"
+          volumeMounts:
+            - name: event-config
+              mountPath: /config
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.eventBus.healthcheck.path | default "/health" }}
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: {{ .Values.eventBus.healthcheck.interval_seconds | default 30 }}
+            timeoutSeconds: {{ .Values.eventBus.healthcheck.timeout_seconds | default 5 }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.eventBus.healthcheck.path | default "/health" }}
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.eventBus.resources | nindent 12 }}
+      volumes:
+        - name: event-config
+          configMap:
+            name: {{ include "dealershipai.fullname" . }}-event-config
+{{- end }}
+

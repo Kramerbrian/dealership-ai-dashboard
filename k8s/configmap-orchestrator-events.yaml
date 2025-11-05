@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orchestrator-event-config
+  namespace: dealershipai
+  labels:
+    app: dealershipai-orchestrator
+    component: event-bus
+data:
+  orchestrator_event_system.json: |
+    {
+      "spec_version": "2025-10-31",
+      "system": "DealershipAI Orchestrator 3.0 Event Bus",
+      "purpose": "Maintain real-time synchronization across all ecosystem agents using Redis Streams and BullMQ.",
+      "components": {
+        "stream": {
+          "name": "dai-events",
+          "type": "redis_stream",
+          "url": "redis://redis:6379",
+          "consumer_groups": [
+            {
+              "name": "orchestrator-consumers",
+              "members": 3,
+              "read_policy": "acknowledged_once",
+              "max_pending": 5000
+            }
+          ]
+        },
+        "queue": {
+          "name": "update_tasks",
+          "type": "bullmq",
+          "connection": "redis://redis:6379",
+          "retry_strategy": { "attempts": 3, "delay_ms": 5000 },
+          "priority_levels": ["high", "normal", "low"]
+        },
+        "database": {
+          "driver": "postgres",
+          "connection": "postgres://dai_admin:dai_pass@postgres:5432/dealershipai",
+          "tables": {
+            "orchestrator_state": {
+              "primary_key": "metric",
+              "columns": {
+                "metric": "TEXT",
+                "value": "NUMERIC",
+                "updated_at": "TIMESTAMP"
+              }
+            }
+          }
+        },
+        "metrics": {
+          "pushgateway": "http://prometheus-pushgateway:9091/metrics/job/orchestrator",
+          "fields": [
+            "uptime_percent",
+            "aiv_score",
+            "ati_score",
+            "gnn_precision",
+            "arr_gain_usd_quarter",
+            "self_heal_rate",
+            "automation_coverage"
+          ]
+        },
+        "event_types": {
+          "prometheus.alert": "Metric update from Prometheus/Alertmanager",
+          "model.update": "GNN or RL model retrain notification",
+          "snapshot.ingest": "New JSON snapshot export available",
+          "slack.action": "ChatOps trigger or user command",
+          "autoscale.event": "KEDA scaling or pod count change"
+        },
+        "handlers": {
+          "prometheus.alert": ["updateDB", "pushToPrometheus"],
+          "model.update": ["updateDB"],
+          "snapshot.ingest": ["queue.sync_snapshot"],
+          "slack.action": ["queue.process_slack_action"],
+          "autoscale.event": ["updateDB"]
+        },
+        "security": {
+          "auth": "service_token",
+          "encryption": "TLSv1.3",
+          "secrets_source": "vault"
+        }
+      },
+      "deployment": {
+        "replicas": 3,
+        "image": "ghcr.io/dealershipai/event-consumer:latest",
+        "namespace": "dealershipai",
+        "autoscaling": {
+          "enabled": true,
+          "min": 1,
+          "max": 5,
+          "trigger": "queue_depth"
+        },
+        "healthcheck": {
+          "path": "/health",
+          "interval_seconds": 30,
+          "timeout_seconds": 5
+        }
+      },
+      "integration_points": {
+        "gnn_engine": {
+          "endpoint": "http://gnn-engine:8080/predict",
+          "event_type": "model.update"
+        },
+        "exporter": {
+          "s3_bucket": "dealershipai-data-exports",
+          "lambda_trigger": "snapshot.ingest"
+        },
+        "slack_service": {
+          "webhook": "https://slack.com/api/chat.postMessage",
+          "event_type": "slack.action"
+        },
+        "prometheus": {
+          "alert_webhook": "http://orchestrator:3001/api/alert",
+          "event_type": "prometheus.alert"
+        }
+      },
+      "telemetry": {
+        "grafana_dashboard": "dai-orchestrator-eventbus",
+        "log_labels": ["event_type", "status", "latency_ms"],
+        "retention_days": 30
+      }
+    }
+

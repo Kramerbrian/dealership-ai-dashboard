@@ -570,7 +570,7 @@ export default function PricingPage() {
                           await fetch("/api/trial/grant", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ feature_id: opt.key })
+                            body: JSON.stringify({ feature: opt.key, hours: 24 })
                           });
                           await fetch("/api/telemetry", {
                             method: "POST",

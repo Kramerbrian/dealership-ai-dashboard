@@ -32,10 +32,10 @@ export const GET = createApiRoute(
         return queryValidation.response;
       }
       
-      const { /* destructure validated params */ } = queryValidation.data;
+      const validatedParams = queryValidation.data; // Destructure as needed
       
       // Your business logic here
-      const data = await fetchData(/* params */);
+      const data = await fetchData(validatedParams);
       
       // Return cached response for GET routes
       return cachedResponse(

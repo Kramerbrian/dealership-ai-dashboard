@@ -1,0 +1,28 @@
+# Event Bus Configuration for DealershipAI Orchestrator
+eventBus:
+  enabled: true
+  replicas: 3
+  image: "ghcr.io/dealershipai/event-consumer:latest"
+  
+  healthcheck:
+    path: "/health"
+    interval_seconds: 30
+    timeout_seconds: 5
+  
+  autoscaling:
+    enabled: true
+    min: 1
+    max: 5
+    trigger: "queue_depth"
+  
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  
+  # Configuration will be loaded from orchestrator_event_system.json ConfigMap
+  configPath: "/config/orchestrator_event_system.json"
+
