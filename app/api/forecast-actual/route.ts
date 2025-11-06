@@ -1,27 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+const forecastActualSchema = z.object({
+  forecastId: z.string().min(1, 'Forecast ID is required'),
+  actualScores: z.record(z.string(), z.number()),
+  actualLeads: z.number().optional(),
+  actualRevenue: z.number().optional(),
+});
 
 /**
  * POST /api/forecast-actual
  * 
  * Submit actual KPI scores to compare with forecasts
  * This enables forecast accuracy tracking
+ * Requires authentication
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { forecastId, actualScores, actualLeads, actualRevenue } = body;
-
-    if (!forecastId || !actualScores) {
+    // Authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
       return NextResponse.json(
-        { error: "Missing required fields: forecastId, actualScores" },
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Input validation
+    const body = await req.json();
+    const validation = forecastActualSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          details: validation.error.errors
+        },
         { status: 400 }
       );
     }
 
-    // Find the forecast
+    const { forecastId, actualScores, actualLeads, actualRevenue } = validation.data;
+
+    // Find the forecast (with proper typing)
+    // Note: This assumes forecastLog table exists in Prisma schema
+    // If not, this will need to be updated when schema is added
     if (!('forecastLog' in db) || typeof (db as any).forecastLog?.findUnique !== 'function') {
       return NextResponse.json(
         { error: "Database not configured" },
@@ -32,7 +60,7 @@ export async function POST(req: NextRequest) {
     const forecast = await (db as any).forecastLog.findUnique({
       where: { id: forecastId },
     });
-
+    
     if (!forecast) {
       return NextResponse.json(
         { error: "Forecast not found" },
@@ -77,28 +105,64 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
+      success: true,
       status: "updated",
       accuracy: accuracy ? `${accuracy.toFixed(2)}%` : null,
       forecastId,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Forecast actual update error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update forecast with actual scores" },
+      { 
+        error: 'Failed to update forecast with actual scores',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
 }
 
+const forecastQuerySchema = z.object({
+  limit: z.string().optional().transform(val => val ? parseInt(val, 10) : 10),
+});
+
 /**
  * GET /api/forecast-actual
  * 
  * Get forecast accuracy statistics
+ * Requires authentication
  */
 export async function GET(req: NextRequest) {
   try {
+    // Authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Input validation
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get("limit") || "10");
+    const queryParams = {
+      limit: searchParams.get("limit") || undefined,
+    };
+    
+    const validation = forecastQuerySchema.safeParse(queryParams);
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid query parameters',
+          details: validation.error.errors
+        },
+        { status: 400 }
+      );
+    }
+    
+    const limit = validation.data.limit;
 
     if (!('forecastLog' in db) || typeof (db as any).forecastLog?.findMany !== 'function') {
       return NextResponse.json({ accuracy: [], stats: null });
@@ -136,10 +200,13 @@ export async function GET(req: NextRequest) {
       })),
       stats,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Forecast accuracy error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to get forecast accuracy" },
+      { 
+        error: 'Failed to get forecast accuracy',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

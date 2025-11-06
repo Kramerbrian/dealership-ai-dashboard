@@ -70,7 +70,8 @@
     "test:slack-workflow": "bash scripts/test-slack-workflow.sh",
     "worker:orchestrator": "tsx lib/jobs/orchestrator-worker.ts",
     "start:scheduler": "tsx scripts/scheduler.ts",
-    "automate:actual-scores": "tsx scripts/automate-actual-scores.ts"
+    "automate:actual-scores": "tsx scripts/automate-actual-scores.ts",
+    "generate:automation-keys": "tsx scripts/generate-automation-keys.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.66.0",

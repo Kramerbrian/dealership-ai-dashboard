@@ -1,18 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 
 export const dynamic = "force-dynamic";
+
+const pulseQuerySchema = z.object({
+  dealerId: z.string().optional(),
+  domain: z.string().url().optional().default("germainnissan.com"),
+});
 
 /**
  * GET /api/pulse
  * 
  * Aggregates real-time pulse data for the DealershipAI Pulse Dashboard
  * Returns: AI Visibility Index, Revenue at Risk, UGC Health, Zero-Click Inclusion
+ * 
+ * Note: Public endpoint for demo purposes, but should be rate-limited
  */
 export async function GET(req: NextRequest) {
   try {
+    // Optional authentication (public endpoint but tracks user if available)
+    const { userId } = await auth();
+    
+    // Input validation
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get("dealerId");
-    const domain = searchParams.get("domain") || "germainnissan.com";
+    const queryParams = {
+      dealerId: searchParams.get("dealerId") || undefined,
+      domain: searchParams.get("domain") || undefined,
+    };
+    
+    const validation = pulseQuerySchema.safeParse(queryParams);
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid query parameters',
+          details: validation.error.errors
+        },
+        { status: 400 }
+      );
+    }
+    
+    const { dealerId, domain } = validation.data;
 
     // Fetch data from multiple sources in parallel
     const [aiScores, visibility, reviews, overview] = await Promise.all([
@@ -107,10 +136,13 @@ export async function GET(req: NextRequest) {
         },
       }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Pulse API error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch pulse data" },
+      { 
+        error: 'Failed to fetch pulse data',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

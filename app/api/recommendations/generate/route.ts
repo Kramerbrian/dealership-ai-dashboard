@@ -1,25 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 import { calculateDLOC, DLOCInputs } from "@/lib/analytics/d-loc-calculator";
 
 export const dynamic = "force-dynamic";
+
+const recommendationsSchema = z.object({
+  inputs: z.object({
+    avgLeadResponseTimeMinutes: z.number().min(0),
+    websiteLoadSpeedLossRate: z.number().min(0).max(1),
+    totalMonthlyAdSpend: z.number().min(0),
+    // Add other DLOCInputs fields as needed
+  }),
+  dealerName: z.string().min(1, 'Dealer name is required'),
+  context: z.string().optional(),
+});
 
 /**
  * POST /api/recommendations/generate
  * 
  * Generates GPT-powered actionable recommendations based on D-LOC analysis
- * Body: { inputs: DLOCInputs, dealerName: string, context?: string }
+ * Requires authentication
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { inputs, dealerName, context } = body;
-
-    if (!inputs || !dealerName) {
+    // Authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
       return NextResponse.json(
-        { error: "Missing required fields: inputs, dealerName" },
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Input validation
+    const body = await req.json();
+    const validation = recommendationsSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          details: validation.error.errors
+        },
         { status: 400 }
       );
     }
+
+    const { inputs, dealerName, context } = validation.data;
 
     // Calculate D-LOC first
     const dlocResults = calculateDLOC(inputs as DLOCInputs);
@@ -42,10 +71,13 @@ export async function POST(req: NextRequest) {
       },
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Recommendation generation error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to generate recommendations" },
+      { 
+        error: 'Failed to generate recommendations',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
@@ -174,10 +206,10 @@ async function generateRecommendations(prompt: string): Promise<any> {
         note: "Failed to parse as JSON, returning raw GPT response",
       };
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("GPT recommendation generation error:", error);
     return {
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       message: "Failed to generate GPT recommendations",
     };
   }

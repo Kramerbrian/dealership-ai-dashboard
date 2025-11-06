@@ -1,15 +1,49 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 
-export async function POST(req: Request) {
+export const dynamic = 'force-dynamic';
+
+const sendDigestSchema = z.object({
+  summary: z.string().min(1, 'Summary is required'),
+  channel: z.enum(['slack', 'email'], {
+    errorMap: () => ({ message: 'Channel must be "slack" or "email"' })
+  }),
+});
+
+/**
+ * POST /api/send-digest
+ * 
+ * Send executive digest via Slack or Email
+ * Requires authentication
+ */
+export async function POST(req: NextRequest) {
   try {
-    const { summary, channel } = await req.json();
-
-    if (!summary || !channel) {
+    // Authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
       return NextResponse.json(
-        { error: "Missing summary or channel" },
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Input validation
+    const body = await req.json();
+    const validation = sendDigestSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          details: validation.error.errors
+        },
         { status: 400 }
       );
     }
+
+    const { summary, channel } = validation.data;
 
     if (channel === "slack") {
       // Check if this is a drift alert
@@ -74,11 +108,19 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ status: "sent", channel });
-  } catch (error: any) {
+    return NextResponse.json({ 
+      success: true,
+      status: "sent", 
+      channel 
+    });
+  } catch (error) {
     console.error("Send digest error:", error);
+    
     return NextResponse.json(
-      { error: error.message || "Failed to send digest" },
+      { 
+        error: 'Failed to send digest',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
