@@ -88,6 +88,7 @@
     "@opentelemetry/sdk-node": "^0.207.0",
     "@opentelemetry/semantic-conventions": "^1.37.0",
     "@prisma/client": "^5.6.0",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^9.88.13",
     "@react-three/fiber": "^8.15.19",
