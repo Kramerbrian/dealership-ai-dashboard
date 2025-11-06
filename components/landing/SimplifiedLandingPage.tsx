@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sparkles, Search, ArrowRight, CheckCircle, Shield,
   Zap, Star, BarChart3, Clock,
@@ -340,13 +340,14 @@ export default function SimplifiedLandingPage() {
   ];
 
   // Filter FAQs based on search term
-  const filteredFaqs = faqSearchTerm
-    ? faqs.filter(
-        (faq) =>
-          faq.q.toLowerCase().includes(faqSearchTerm.toLowerCase()) ||
-          faq.a.toLowerCase().includes(faqSearchTerm.toLowerCase())
-      )
-    : faqs;
+  const filteredFaqs = useMemo(() => {
+    if (!faqSearchTerm) return faqs;
+    return faqs.filter(
+      (faq) =>
+        faq.q.toLowerCase().includes(faqSearchTerm.toLowerCase()) ||
+        faq.a.toLowerCase().includes(faqSearchTerm.toLowerCase())
+    );
+  }, [faqSearchTerm, faqs]);
 
   return (
     <>

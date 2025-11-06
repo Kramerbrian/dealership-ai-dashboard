@@ -455,7 +455,12 @@ model ForecastLog {
   ci            String?  // Confidence interval as string
   leadsForecast Int?
   revenueForecast Int?
+  actualScores  String?  // JSON object with actual KPIs when available
+  actualLeads   Int?
+  actualRevenue Int?
+  accuracy      Float?   // MAPE (Mean Absolute Percentage Error)
   createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt
   
   @@index([timestamp(sort: Desc)])
   @@map("forecast_logs")
