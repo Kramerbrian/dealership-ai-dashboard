@@ -1,11 +1,9 @@
-'use client';
-import DealershipAIDashboardLA from '../components/DealershipAIDashboardLA';
+import { CognitiveDashboard } from '@/components/cognitive/CognitiveDashboard';
 
-// Force dynamic rendering to avoid SSR context issues
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export default function DashboardPage() {
-  return <DealershipAIDashboardLA />;
+  return <CognitiveDashboard />;
 }
 
