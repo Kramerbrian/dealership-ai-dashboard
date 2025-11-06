@@ -3,10 +3,10 @@ import type { CoreWebVitals } from "@/types/metrics";
 
 export default function CoreWebVitalsCard({ data }: { data: CoreWebVitals }) {
   const lcpSec = (data.lcp_ms / 1000).toFixed(1);
-  const lcpDelta = data.lcp_delta_ms ? ` (↘ ${(data.lcp_delta_ms/1000).toFixed(1)} s)` : "";
-  const clsStatus = data.cls <= 0.1 ? "🟢 Stable" : "🟡 Jumpy";
-  const inpStatus = data.inp_ms < 200 ? "🟢 Responsive (✓)" : "🟡 Laggy";
-  const lcpStatus = data.lcp_ms < 2500 ? `🟢 Good${lcpDelta}` : `🟡 Needs work${lcpDelta}`;
+  const lcpDelta = data.lcp_delta_ms ? ` (↓ ${(data.lcp_delta_ms/1000).toFixed(1)} s)` : "";
+  const clsStatus = data.cls <= 0.1 ? "✓ Stable" : "⚠ Jumpy";
+  const inpStatus = data.inp_ms < 200 ? "✓ Responsive" : "⚠ Laggy";
+  const lcpStatus = data.lcp_ms < 2500 ? `✓ Good${lcpDelta}` : `⚠ Needs work${lcpDelta}`;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur ring-1 ring-gray-900/5 p-6 shadow-sm hover:shadow-md transition-all duration-200">

@@ -138,12 +138,67 @@ export default function ForecastAccuracyLeaderboard() {
         <span className="text-slate-400">—</span>
       );
 
-    return { name, accuracy, drift, avgError };
+    // Get badges for this dealership
+    const dealershipBadges = badges[name] || [];
+
+    return { name, accuracy, drift, avgError, badges: dealershipBadges };
   });
 
   const ranked = leaderboard
     .filter((r) => r.accuracy > 0)
     .sort((a, b) => b.accuracy - a.accuracy);
+
+  // Award monthly badge (runs once per month)
+  useEffect(() => {
+    async function checkAndAwardBadge() {
+      if (ranked.length === 0 || loading) return;
+
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+      const lastBadgeMonth = localStorage.getItem("lastBadgeMonth");
+
+      // Only award once per month
+      if (lastBadgeMonth === currentMonth) return;
+
+      try {
+        const res = await fetch("/api/badges/top-forecaster", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            month: currentMonth,
+            leaderboard: ranked.map((r) => ({
+              name: r.name,
+              accuracy: r.accuracy,
+            })),
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === "awarded" && data.badge) {
+            // Store badge in localStorage
+            const updatedBadges = { ...badges };
+            if (!updatedBadges[data.badge.dealership]) {
+              updatedBadges[data.badge.dealership] = [];
+            }
+            updatedBadges[data.badge.dealership].push(data.badge.month);
+            setBadges(updatedBadges);
+            localStorage.setItem("forecastBadges", JSON.stringify(updatedBadges));
+            localStorage.setItem("lastBadgeMonth", currentMonth);
+
+            console.log(`🏆 Badge awarded to ${data.badge.dealership} for ${currentMonth}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to award badge:", err);
+      }
+    }
+
+    // Only check if we have data and haven't awarded this month
+    if (!loading && ranked.length > 0) {
+      checkAndAwardBadge();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ranked.length, loading]);
 
   return (
     <div className="p-6 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 space-y-4">
@@ -194,7 +249,19 @@ export default function ForecastAccuracyLeaderboard() {
                         <span>{i + 1}</span>
                       )}
                     </td>
-                    <td className="px-2 font-semibold text-white">{r.name}</td>
+                    <td className="px-2 font-semibold text-white">
+                      <div className="flex items-center gap-2">
+                        <span>{r.name}</span>
+                        {r.badges && r.badges.length > 0 && (
+                          <div className="flex items-center gap-1" title={`Top Forecaster badges: ${r.badges.length}`}>
+                            <Award className="w-4 h-4 text-yellow-400" />
+                            <span className="text-xs text-yellow-400 font-semibold">
+                              {r.badges.length}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td
                       className={`text-center px-2 font-medium ${
                         r.accuracy > 85

@@ -342,7 +342,7 @@ export default function SimplifiedLandingPage() {
   // Filter FAQs based on search term
   const filteredFaqs = faqSearchTerm
     ? faqs.filter(
-        faq =>
+        (faq) =>
           faq.q.toLowerCase().includes(faqSearchTerm.toLowerCase()) ||
           faq.a.toLowerCase().includes(faqSearchTerm.toLowerCase())
       )

@@ -444,3 +444,19 @@ model Memory {
   @@unique([tenantId, key])
   @@map("memories")
 }
+
+// Forecast Logs for adaptive forecasting system
+// Stores historical forecast predictions for accuracy tracking
+model ForecastLog {
+  id            String   @id @default(cuid())
+  timestamp     DateTime
+  dealers       String   // JSON array stored as string for SQLite compatibility
+  forecast      String   // JSON object stored as string for SQLite compatibility
+  ci            String?  // Confidence interval as string
+  leadsForecast Int?
+  revenueForecast Int?
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  @@index([timestamp(sort: Desc)])
+  @@map("forecast_logs")
+}

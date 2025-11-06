@@ -4,6 +4,7 @@ import DealershipCompareDashboard from '@/components/DealershipCompareDashboard'
 import GroupExecutiveSummary from '@/components/GroupExecutiveSummary';
 import ForecastReviewDashboard from '@/components/ForecastReviewDashboard';
 import ForecastAccuracyLeaderboard from '@/components/ForecastAccuracyLeaderboard';
+import DLOCCalculator from '@/components/analytics/DLOCCalculator';
 
 export default function CompareDashboardPage() {
   return (
@@ -12,6 +13,7 @@ export default function CompareDashboardPage() {
       <GroupExecutiveSummary />
       <ForecastReviewDashboard />
       <ForecastAccuracyLeaderboard />
+      <DLOCCalculator />
     </div>
   );
 }

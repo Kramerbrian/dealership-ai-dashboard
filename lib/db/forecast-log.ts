@@ -25,8 +25,13 @@ export async function createForecastLog(data: ForecastLogData) {
       return await (db as any).forecastLog.create({
         data: {
           timestamp: new Date(data.timestamp),
-          dealers: data.dealers,
-          forecast: data.forecast,
+          // SQLite stores arrays/JSON as strings, PostgreSQL uses native types
+          dealers: Array.isArray(data.dealers) 
+            ? JSON.stringify(data.dealers) 
+            : data.dealers,
+          forecast: typeof data.forecast === 'object'
+            ? JSON.stringify(data.forecast)
+            : data.forecast,
           ci: data.ci,
           leadsForecast: data.leadsForecast,
           revenueForecast: data.revenueForecast,
@@ -61,14 +66,32 @@ export async function getForecastHistory(limit: number = 100) {
         take: limit,
       });
 
-      return forecasts.map((f: any) => ({
-        timestamp: f.timestamp.toISOString(),
-        dealers: f.dealers,
-        forecast: f.forecast,
-        ci: f.ci,
-        leadsForecast: f.leadsForecast,
-        revenueForecast: f.revenueForecast,
-      }));
+      return forecasts.map((f: any) => {
+        // Parse JSON strings back to objects/arrays for SQLite compatibility
+        let dealers = f.dealers;
+        let forecast = f.forecast;
+        
+        try {
+          dealers = typeof dealers === 'string' ? JSON.parse(dealers) : dealers;
+        } catch (e) {
+          // If parsing fails, keep as is
+        }
+        
+        try {
+          forecast = typeof forecast === 'string' ? JSON.parse(forecast) : forecast;
+        } catch (e) {
+          // If parsing fails, keep as is
+        }
+        
+        return {
+          timestamp: f.timestamp.toISOString(),
+          dealers,
+          forecast,
+          ci: f.ci,
+          leadsForecast: f.leadsForecast,
+          revenueForecast: f.revenueForecast,
+        };
+      });
     }
     
     // Table doesn't exist yet
