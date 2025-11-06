@@ -18,6 +18,7 @@ import {
   Zap
 } from 'lucide-react';
 import { usePerformanceMonitoring } from '@/lib/monitoring';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface SEOModalProps {
   isOpen: boolean;
@@ -64,7 +65,7 @@ interface SEOMetrics {
   };
 }
 
-export default function SEOModal({ isOpen, onClose, domain = 'dealershipai.com' }: SEOModalProps) {
+function SEOModalContent({ isOpen, onClose, domain = 'dealershipai.com' }: SEOModalProps) {
   const [data, setData] = useState<SEOMetrics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -454,5 +455,15 @@ export default function SEOModal({ isOpen, onClose, domain = 'dealershipai.com' 
         </motion.div>
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+export default function SEOModal(props: SEOModalProps) {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="SEO Modal" onClose={props.onClose}>
+      <SEOModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }

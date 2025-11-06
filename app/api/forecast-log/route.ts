@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     // Store forecast using helper function
     // This will gracefully handle missing database table
-    await createForecastLog({
+    const result = await createForecastLog({
       timestamp,
       dealers,
       forecast,
@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
       status: "logged",
       message: "Forecast logged successfully",
       timestamp,
+      id: result?.id || null, // Return forecast ID for reference
     });
   } catch (error: any) {
     console.error("Forecast log error:", error);

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface OnboardingModalProps {
   onSkip?: () => void;
 }
 
-export function OnboardingModal({ 
+function OnboardingModalContent({ 
   isOpen, 
   onClose, 
   onComplete, 
@@ -66,6 +67,16 @@ export function OnboardingModal({
         </div>
       </div>
     </div>
+  );
+}
+
+export function OnboardingModal(props: OnboardingModalProps) {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="Onboarding Modal" onClose={props.onClose}>
+      <OnboardingModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }
 

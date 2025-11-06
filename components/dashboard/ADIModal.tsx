@@ -3,6 +3,7 @@
 
 import { X, TrendingUp, Award, BookOpen, User, Clock, Heart } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface ADIModalProps {
   data: {
@@ -21,7 +22,7 @@ interface ADIModalProps {
   onClose: () => void;
 }
 
-export function ADIModal({ data, onClose }: ADIModalProps) {
+function ADIModalContent({ data, onClose }: ADIModalProps) {
   const { overall, trend, history, breakdown, recommendations = [] } = data;
 
   // Prepare radar chart data
@@ -372,6 +373,14 @@ export function ADIModal({ data, onClose }: ADIModalProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+export function ADIModal(props: ADIModalProps) {
+  return (
+    <ModalErrorBoundary modalName="ADI Modal" onClose={props.onClose}>
+      <ADIModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }
 

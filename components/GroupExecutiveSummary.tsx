@@ -187,12 +187,24 @@ export default function GroupExecutiveSummary() {
       const trimmed = existing.slice(-50);
       localStorage.setItem("forecastHistory", JSON.stringify(trimmed));
 
-      // Also log to backend API
-      await fetch("/api/forecast-log", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(forecastData),
-      });
+      // Also log to backend API and capture forecast ID
+      try {
+        const logRes = await fetch("/api/forecast-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(forecastData),
+        });
+        
+        if (logRes.ok) {
+          const logData = await logRes.json();
+          // Store forecast ID for later reference (optional)
+          if (logData.id) {
+            console.log("Forecast logged with ID:", logData.id);
+          }
+        }
+      } catch (logErr) {
+        console.error("Forecast logging failed:", logErr);
+      }
     } catch (err) {
       console.error("Forecast log failed:", err);
     }

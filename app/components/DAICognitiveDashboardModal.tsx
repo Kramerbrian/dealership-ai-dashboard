@@ -7,6 +7,7 @@ import { RecommendedActions } from '@/components/dashboard/RecommendedActions';
 import { AIVBreakdown } from '@/components/dashboard/AIVBreakdown';
 import { MetricDetailModal } from '@/components/dashboard/MetricDetailModal';
 import { SignalComparison } from '@/components/dashboard/SignalComparison';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface KPI {
   id: string;
@@ -514,7 +515,7 @@ interface DAICognitiveDashboardModalProps {
   onClose: () => void;
 }
 
-const DAICognitiveDashboardModal: React.FC<DAICognitiveDashboardModalProps> = ({ isOpen, onClose }) => {
+const DAICognitiveDashboardModalContent: React.FC<DAICognitiveDashboardModalProps> = ({ isOpen, onClose }) => {
   const [selectedKPI, setSelectedKPI] = useState<KPI | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -713,6 +714,16 @@ const DAICognitiveDashboardModal: React.FC<DAICognitiveDashboardModalProps> = ({
         />
       )}
     </>
+  );
+};
+
+const DAICognitiveDashboardModal: React.FC<DAICognitiveDashboardModalProps> = (props) => {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="Cognitive Dashboard Modal" onClose={props.onClose}>
+      <DAICognitiveDashboardModalContent {...props} />
+    </ModalErrorBoundary>
   );
 };
 

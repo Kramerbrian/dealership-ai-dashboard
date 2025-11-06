@@ -340,12 +340,13 @@ export default function SimplifiedLandingPage() {
   ];
 
   // Filter FAQs based on search term
-  const filteredFaqs = faqSearchTerm
-    ? faqs.filter((faq) => 
-        faq.q.toLowerCase().includes(faqSearchTerm.toLowerCase()) || 
-        faq.a.toLowerCase().includes(faqSearchTerm.toLowerCase())
-      )
-    : faqs;
+  let filteredFaqs = faqs;
+  if (faqSearchTerm) {
+    filteredFaqs = faqs.filter((faq) => 
+      faq.q.toLowerCase().includes(faqSearchTerm.toLowerCase()) || 
+      faq.a.toLowerCase().includes(faqSearchTerm.toLowerCase())
+    );
+  }
 
   return (
     <>
@@ -575,9 +576,8 @@ export default function SimplifiedLandingPage() {
                 </div>
                 <ABTestWrapper
                   testId="cta-button-test"
-                  variants={ctaButtonVariants.map(variant => ({
-                    ...variant,
-                    component: (
+                  variants={ctaButtonVariants.map((variant) => {
+                    const buttonComponent = (
                       <button
                         key={variant.id}
                         type="submit"
@@ -602,8 +602,12 @@ export default function SimplifiedLandingPage() {
                           </>
                         )}
                       </button>
-                    )
-                  }))}
+                    );
+                    return {
+                      ...variant,
+                      component: buttonComponent
+                    };
+                  })}
                   defaultVariant="cta-control"
                 >
                   <button
@@ -1073,10 +1077,12 @@ export default function SimplifiedLandingPage() {
                 
                 <button
                   onClick={() => {
-                    ga('cta_click', { id: `pricing_${tier.name.toLowerCase()}` });
+                    const tierId = 'pricing_' + tier.name.toLowerCase();
+                    ga('cta_click', { id: tierId });
                     if (tier.name === 'Pro' || tier.name === 'Enterprise') {
                       // Paid tiers (Tier 2 & 3) - go to signup with Stripe
-                      window.location.href = `/signup?plan=${tier.name.toLowerCase()}`;
+                      const plan = tier.name.toLowerCase();
+                      window.location.href = '/signup?plan=' + plan;
                     } else {
                       // Tier 1 (Free) - go directly to agentic onboarding (NO Stripe)
                       window.location.href = '/onboarding?tier=free';
