@@ -83,6 +83,16 @@ export async function getForecastHistory(limit: number = 100) {
           // If parsing fails, keep as is
         }
         
+        // Parse actual scores if they exist
+        let actualScores = null;
+        try {
+          actualScores = f.actualScores 
+            ? (typeof f.actualScores === 'string' ? JSON.parse(f.actualScores) : f.actualScores)
+            : null;
+        } catch (e) {
+          // Keep as null if parsing fails
+        }
+        
         return {
           timestamp: f.timestamp.toISOString(),
           dealers,
@@ -90,6 +100,10 @@ export async function getForecastHistory(limit: number = 100) {
           ci: f.ci,
           leadsForecast: f.leadsForecast,
           revenueForecast: f.revenueForecast,
+          actualScores,
+          actualLeads: f.actualLeads,
+          actualRevenue: f.actualRevenue,
+          accuracy: f.accuracy,
         };
       });
     }

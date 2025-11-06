@@ -4,7 +4,10 @@ import DealershipCompareDashboard from '@/components/DealershipCompareDashboard'
 import GroupExecutiveSummary from '@/components/GroupExecutiveSummary';
 import ForecastReviewDashboard from '@/components/ForecastReviewDashboard';
 import ForecastAccuracyLeaderboard from '@/components/ForecastAccuracyLeaderboard';
+import ForecastAccuracyTracker from '@/components/ForecastAccuracyTracker';
+import ScenarioPlanningTool from '@/components/ScenarioPlanningTool';
 import DLOCCalculator from '@/components/analytics/DLOCCalculator';
+import OrchestratorStatus from '@/components/orchestrator/OrchestratorStatus';
 
 export default function CompareDashboardPage() {
   return (
@@ -12,8 +15,11 @@ export default function CompareDashboardPage() {
       <DealershipCompareDashboard />
       <GroupExecutiveSummary />
       <ForecastReviewDashboard />
+      <ScenarioPlanningTool />
+      <ForecastAccuracyTracker />
       <ForecastAccuracyLeaderboard />
       <DLOCCalculator />
+      <OrchestratorStatus />
     </div>
   );
 }
