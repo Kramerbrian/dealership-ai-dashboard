@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Zap } from 'lucide-react';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface ChatModalProps {
   tier: 'free' | 'pro' | 'acceleration';
@@ -15,7 +16,7 @@ interface Message {
   actions?: Array<{ label: string; strategy_id: string }>;
 }
 
-export function ChatModal({ tier, questionsToday, maxQuestions }: ChatModalProps) {
+function ChatModalContent({ tier, questionsToday, maxQuestions }: ChatModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -231,6 +232,14 @@ export function ChatModal({ tier, questionsToday, maxQuestions }: ChatModalProps
         </div>
       )}
     </>
+  );
+}
+
+export function ChatModal(props: ChatModalProps) {
+  return (
+    <ModalErrorBoundary modalName="Chat Modal" onClose={() => {}}>
+      <ChatModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }
 

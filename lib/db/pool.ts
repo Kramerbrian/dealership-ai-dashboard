@@ -21,10 +21,17 @@ const globalForPrisma = globalThis as unknown as {
 /**
  * Create Prisma client with optimized configuration
  */
-function createPrismaClient(): PrismaClient {
+function createPrismaClient(): PrismaClient | null {
   const databaseUrl = process.env.DATABASE_URL;
   
+  // During build time, DATABASE_URL might not be available
+  // Return null instead of throwing to allow build to proceed
   if (!databaseUrl) {
+    if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.NODE_ENV === 'production') {
+      // During build, return null to allow build to proceed
+      // The actual error will be thrown when the database is accessed at runtime
+      return null;
+    }
     throw new Error('DATABASE_URL environment variable is required');
   }
   
@@ -65,8 +72,45 @@ function createPrismaClient(): PrismaClient {
   return client;
 }
 
-// Export singleton instance
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+// Lazy initialization - only create client when actually needed
+function getDb(): PrismaClient {
+  if (globalForPrisma.prisma) {
+    return globalForPrisma.prisma;
+  }
+  
+  const client = createPrismaClient();
+  if (!client) {
+    // If client creation failed (e.g., during build), create a mock client
+    // that will throw when actually used
+    const mockClient = new PrismaClient({
+      datasources: {
+        db: {
+          url: 'postgresql://placeholder',
+        },
+      },
+    });
+    
+    // Override all methods to throw helpful error
+    const handler = {
+      get(target: any, prop: string) {
+        if (prop.startsWith('$') || prop === 'then' || prop === 'catch') {
+          return target[prop];
+        }
+        return () => {
+          throw new Error('DATABASE_URL environment variable is required. Please set it in your .env.local file or environment variables.');
+        };
+      }
+    };
+    
+    return new Proxy(mockClient, handler) as PrismaClient;
+  }
+  
+  globalForPrisma.prisma = client;
+  return client;
+}
+
+// Export singleton instance with lazy initialization
+export const db = getDb();
 export const prisma = db; // Alias for compatibility
 
 // Prevent multiple instances in development

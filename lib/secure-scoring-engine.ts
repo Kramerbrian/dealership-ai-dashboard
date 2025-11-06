@@ -298,3 +298,4 @@ class SecureScoringEngine {
 }
 
 export default SecureScoringEngine;
+export { SecureScoringEngine };

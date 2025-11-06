@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { alertType, threshold, dealerId, notificationChannels } = await req.json();

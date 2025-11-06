@@ -1,6 +1,7 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReactNode } from 'react';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface KPIModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface KPIModalProps {
   className?: string;
 }
 
-export default function KPIModal({
+function KPIModalContent({
   isOpen,
   onClose,
   title,
@@ -98,6 +99,16 @@ export default function KPIModal({
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+export default function KPIModal(props: KPIModalProps) {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="KPI Modal" onClose={props.onClose}>
+      <KPIModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }
 

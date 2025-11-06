@@ -17,6 +17,7 @@ import {
   Target,
   BarChart3
 } from 'lucide-react';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface AEOModalProps {
   isOpen: boolean;
@@ -77,7 +78,7 @@ interface AEOMetrics {
   };
 }
 
-export default function AEOModal({ isOpen, onClose, domain = 'dealershipai.com' }: AEOModalProps) {
+function AEOModalContent({ isOpen, onClose, domain = 'dealershipai.com' }: AEOModalProps) {
   const [data, setData] = useState<AEOMetrics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -403,5 +404,15 @@ export default function AEOModal({ isOpen, onClose, domain = 'dealershipai.com' 
         </motion.div>
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+export default function AEOModal(props: AEOModalProps) {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="AEO Modal" onClose={props.onClose}>
+      <AEOModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }

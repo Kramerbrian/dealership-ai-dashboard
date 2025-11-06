@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loadStripe } from '@stripe/stripe-js';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -71,7 +72,7 @@ const plans = [
   }
 ];
 
-export default function UpgradeModal({ isOpen, onClose, currentTier = 'free' }: UpgradeModalProps) {
+function UpgradeModalContent({ isOpen, onClose, currentTier = 'free' }: UpgradeModalProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [email, setEmail] = useState('');
 
@@ -270,5 +271,15 @@ export default function UpgradeModal({ isOpen, onClose, currentTier = 'free' }: 
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+export default function UpgradeModal(props: UpgradeModalProps) {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="Upgrade Modal" onClose={props.onClose}>
+      <UpgradeModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }

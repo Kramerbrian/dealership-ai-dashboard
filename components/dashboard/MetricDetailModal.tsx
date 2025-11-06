@@ -2,6 +2,7 @@
 
 import { X, TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface MetricDetailModalProps {
   metric: 'aiv' | 'ati' | 'crs' | 'rank';
@@ -9,7 +10,7 @@ interface MetricDetailModalProps {
   onClose: () => void;
 }
 
-export function MetricDetailModal({ metric, data, onClose }: MetricDetailModalProps) {
+function MetricDetailModalContent({ metric, data, onClose }: MetricDetailModalProps) {
   const metricConfig = {
     aiv: {
       title: 'AI Visibility Index',
@@ -210,5 +211,13 @@ export function MetricDetailModal({ metric, data, onClose }: MetricDetailModalPr
         </div>
       </div>
     </div>
+  );
+}
+
+export function MetricDetailModal(props: MetricDetailModalProps) {
+  return (
+    <ModalErrorBoundary modalName="Metric Detail Modal" onClose={props.onClose}>
+      <MetricDetailModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }

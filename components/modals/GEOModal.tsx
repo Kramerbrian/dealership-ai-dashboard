@@ -19,6 +19,7 @@ import {
   Code,
   FileText
 } from 'lucide-react';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface GEOModalProps {
   isOpen: boolean;
@@ -77,7 +78,7 @@ interface GEOMetrics {
   };
 }
 
-export default function GEOModal({ isOpen, onClose, domain = 'dealershipai.com' }: GEOModalProps) {
+function GEOModalContent({ isOpen, onClose, domain = 'dealershipai.com' }: GEOModalProps) {
   const [data, setData] = useState<GEOMetrics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -436,5 +437,15 @@ export default function GEOModal({ isOpen, onClose, domain = 'dealershipai.com' 
         </motion.div>
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+export default function GEOModal(props: GEOModalProps) {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="GEO Modal" onClose={props.onClose}>
+      <GEOModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }

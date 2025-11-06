@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, CheckCircleIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
 
 interface Recommendation {
   id: string;
@@ -34,7 +35,7 @@ const statusIcons = {
   completed: CheckCircleIcon
 };
 
-export default function RecommendationsModal({
+function RecommendationsModalContent({
   isOpen,
   onClose,
   recommendations,
@@ -182,5 +183,15 @@ export default function RecommendationsModal({
         </motion.div>
       </div>
     </AnimatePresence>
+  );
+}
+
+export default function RecommendationsModal(props: RecommendationsModalProps) {
+  if (!props.isOpen) return null;
+  
+  return (
+    <ModalErrorBoundary modalName="Recommendations Modal" onClose={props.onClose}>
+      <RecommendationsModalContent {...props} />
+    </ModalErrorBoundary>
   );
 }
