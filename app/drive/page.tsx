@@ -119,23 +119,15 @@ export default function DrivePage() {
 
 
   function openFix(p: Pulse) {
-
     setPreview({
-
+      pulseId: p.id,
       summary: p.title,
-
       diff: `${p.diagnosis}\n\n${p.prescription}`,
-
       risk: 'low',
-
       etaSeconds: p.etaSeconds,
-
       projectedDeltaUSD: p.impactMonthlyUSD
-
     });
-
     setDrawerOpen(true);
-
   }
 
 
