@@ -29,11 +29,17 @@
   --color-error: #ef4444;        /* Red - 5.2:1 ratio */
   --color-info: #3b82f6;         /* Blue - 4.9:1 ratio */
 
-  /* Background Colors */
-  --bg-primary: #0a0b0f;         /* Near-black base */
-  --bg-secondary: #1a1b1f;       /* Slightly lighter */
-  --bg-tertiary: #2a2b2f;        /* Card backgrounds */
-  --bg-elevated: #3a3b3f;        /* Elevated elements */
+  /* Canonized Apple Colors - Light Mode */
+  --apple-bg: #FFFFFF;           /* Pure white */
+  --apple-secondary: #F5F5F7;     /* Apple's exact gray */
+  --apple-border: #D2D2D7;        /* 0.5px precision border */
+  --apple-blue: #007AFF;          /* iOS system blue */
+
+  /* Background Colors - Light Mode */
+  --bg-primary: #FFFFFF;          /* Pure white */
+  --bg-secondary: #F5F5F7;        /* Apple's exact gray */
+  --bg-tertiary: #F5F5F7;         /* Card backgrounds */
+  --bg-elevated: #FFFFFF;         /* Elevated elements */
 
   /* Text Colors - WCAG AA Compliant */
   --text-primary: #ffffff;       /* 21:1 contrast ratio */
@@ -57,10 +63,12 @@
   --glass-border: rgba(255, 255, 255, 0.12);
   --glass-hover: rgba(255, 255, 255, 0.1);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  /* Shadows - Canonized Apple Light Mode */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);      /* sm: subtle elevation */
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04);      /* md: medium elevation */
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);    /* lg: large elevation */
+
+  /* Legacy shadows (for backward compatibility) */
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
   --shadow-glow: 0 0 60px rgba(59, 130, 246, 0.35);
@@ -110,21 +118,23 @@
   --tracking-widest: 0.1em;
 
   /* ========================================
-     SPACING TOKENS (8pt Grid System)
+     SPACING TOKENS - Canonized Apple 4pt Grid
      ======================================== */
 
+  --space-1: 4px;        /* 4px */
+  --space-2: 8px;        /* 8px */
+  --space-3: 12px;       /* 12px */
+  --space-4: 16px;       /* 16px */
+  --space-5: 20px;       /* 20px */
+  --space-6: 24px;       /* 24px */
+  --space-8: 32px;       /* 32px */
+  --space-12: 48px;      /* 48px */
+  --space-16: 64px;      /* 64px */
+  --space-20: 80px;      /* 80px */
+
+  /* Legacy spacing (for backward compatibility) */
   --space-0: 0;
-  --space-1: 0.25rem;    /* 4px */
-  --space-2: 0.5rem;     /* 8px */
-  --space-3: 0.75rem;    /* 12px */
-  --space-4: 1rem;       /* 16px */
-  --space-5: 1.25rem;    /* 20px */
-  --space-6: 1.5rem;     /* 24px */
-  --space-8: 2rem;       /* 32px */
   --space-10: 2.5rem;    /* 40px */
-  --space-12: 3rem;      /* 48px */
-  --space-16: 4rem;      /* 64px */
-  --space-20: 5rem;      /* 80px */
   --space-24: 6rem;      /* 96px */
 
   /* ========================================
@@ -134,13 +144,15 @@
   /* Minimum Touch Targets (WCAG AA) */
   --touch-target-min: 44px;
 
-  /* Border Radius */
-  --radius-sm: 0.25rem;   /* 4px */
-  --radius-md: 0.5rem;    /* 8px */
-  --radius-lg: 0.75rem;   /* 12px */
-  --radius-xl: 1rem;      /* 16px */
-  --radius-2xl: 1.5rem;   /* 24px */
+  /* Border Radius - Canonized Apple Scale */
+  --radius-sm: 8px;       /* sm: 8px (buttons, chips) */
+  --radius-md: 12px;      /* md: 12px (cards, inputs) */
+  --radius-lg: 16px;      /* lg: 16px (panels) */
+  --radius-xl: 20px;      /* xl: 20px (hero sections) */
   --radius-full: 9999px;
+
+  /* Legacy border radius (for backward compatibility) */
+  --radius-xs: 0.25rem;   /* 4px */
 
   /* ========================================
      ANIMATION TOKENS
