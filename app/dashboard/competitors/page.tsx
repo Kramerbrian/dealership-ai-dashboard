@@ -13,6 +13,7 @@ export default function Competitors() {
     typeof window !== 'undefined'
       ? localStorage.getItem('tenantId') || 'demo'
       : 'demo';
+  const { plan } = usePlan();
   const { data, isLoading } = useSWR(
     `/api/competitors/nearby?tenantId=${tenantId}`,
     fetcher,
@@ -22,7 +23,10 @@ export default function Competitors() {
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-10 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-6">Competitive Benchmark</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold">Competitive Benchmark</h1>
+        {plan === "free" && <UpgradeButton plan="pro" currentPlan={plan} />}
+      </div>
       {isLoading ? (
         <div className="text-white/60">Loading competitors...</div>
       ) : (
@@ -42,10 +46,14 @@ export default function Competitors() {
                 <Stat label="Sentiment" value={`${c.sentiment}%`} />
               </div>
               <div className="mt-3 flex gap-2">
-                <button className="px-3 py-1.5 text-xs rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-colors">
-                  Compare
-                </button>
-                <MysteryUpsell competitor={c.name} tenantId={tenantId} />
+                <TierGate plan={plan} min="pro">
+                  <button className="px-3 py-1.5 text-xs rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-colors">
+                    Compare
+                  </button>
+                </TierGate>
+                <TierGate plan={plan} min="pro">
+                  <MysteryUpsell competitor={c.name} tenantId={tenantId} />
+                </TierGate>
               </div>
             </div>
           ))}

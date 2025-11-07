@@ -364,9 +364,11 @@ export default function DrivePage() {
         )}
 
         <aside className="hidden lg:block">
-
-          <ImpactLedger receipts={ledger} onExport={(fmt)=>console.log('export', fmt)} />
-
+          <ImpactLedgerPro
+            receipts={ledger}
+            onPatch={patchReceipt}
+            onExport={(fmt) => console.log("export", fmt)}
+          />
         </aside>
 
       </section>
