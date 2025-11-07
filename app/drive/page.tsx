@@ -21,7 +21,7 @@ const AIVCompositeChip = dynamic(() => import('@/components/visibility/AIVCompos
 
 const FixTierDrawer = dynamic(() => import('@/components/pulse/FixTierDrawer'), { ssr: false });
 
-const ImpactLedger = dynamic(() => import('@/components/pulse/ImpactLedger'), { ssr: false });
+const ImpactLedgerPro = dynamic(() => import('@/components/pulse/ImpactLedgerPro'), { ssr: false });
 
 const ZeroClickHeat = dynamic(() => import('@/components/pulse/ZeroClickHeat'), { ssr: false });
 
