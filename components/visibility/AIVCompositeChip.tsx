@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Sparkline from "@/components/visibility/Sparkline";
 
 type EngineName = "ChatGPT" | "Perplexity" | "Gemini" | "Copilot";
 
@@ -24,6 +25,7 @@ export default function AIVCompositeChip({
 }) {
   const [data, setData] = useState<Presence | null>(null);
   const [open, setOpen] = useState(false);
+  const [history, setHistory] = useState<number[] | null>(null);
 
   useEffect(() => {
     let ok = true;
@@ -35,6 +37,26 @@ export default function AIVCompositeChip({
       if (ok) setData(json);
     })();
     return () => { ok = false; };
+  }, [domain]);
+
+  useEffect(() => {
+    let ok = true;
+    (async () => {
+      try {
+        const q = new URLSearchParams();
+        if (domain) q.set("domain", domain);
+        const res = await fetch(`/api/visibility/history?${q.toString()}`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (ok) setHistory(json?.aiv || null);
+      } catch {
+        /* noop */
+      }
+    })();
+    return () => {
+      ok = false;
+    };
   }, [domain]);
 
   const { score, terms } = useMemo(() => {
@@ -89,6 +111,12 @@ export default function AIVCompositeChip({
           <div className="mt-3 text-xs text-white/50">
             Composite score rounds to nearest integer. Engine weights from Formula Registry.
           </div>
+          {history && history.length >= 2 && (
+            <div className="mt-3 border-t border-white/10 pt-3">
+              <div className="text-xs text-white/60 mb-1">AIV 7-day trend</div>
+              <Sparkline values={history} width={260} height={50} />
+            </div>
+          )}
         </div>
       )}
     </div>
