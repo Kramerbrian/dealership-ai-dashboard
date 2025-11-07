@@ -28,6 +28,8 @@
     "health:check": "curl -X GET http://localhost:3000/api/health",
     "test:endpoints": "tsx scripts/test-production-endpoints.ts",
     "setup:integration": "bash scripts/setup-integration.sh",
+    "setup:api-keys": "tsx scripts/configure-all-keys.ts",
+    "setup:api-keys:bash": "bash scripts/connect-api-keys.sh",
     "setup:check": "tsx scripts/check-setup.ts",
     "setup:verify-env": "bash scripts/verify-env.sh",
     "test:integration": "bash scripts/test-integration.sh",

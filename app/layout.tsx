@@ -111,8 +111,9 @@ export default function RootLayout({
           domain={typeof window !== 'undefined' ? window.location.hostname : undefined}
           signInUrl="/sign-in"
           signUpUrl="/sign-up"
-          fallbackRedirectUrl="/dashboard"
-          forceRedirectUrl="/dashboard"
+          afterSignInUrl="/dashboard"
+          afterSignUpUrl="/dashboard"
+          afterSignOutUrl="/"
         >
           <QueryProvider>
             <PWAProvider>

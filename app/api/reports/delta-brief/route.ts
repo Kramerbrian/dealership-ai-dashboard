@@ -5,12 +5,10 @@
  * Used for GPT Actions and learning loop
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+import { NextResponse } from "next/server";
+import { withAuth } from "../../_utils/withAuth";
+import { cacheJSON } from "@/lib/cache";
+import { sendMilestone } from "@/lib/slack/milestones";
 
 interface DeltaBrief {
   date: string;
@@ -33,178 +31,66 @@ interface DeltaBrief {
   };
 }
 
-export async function GET(req: NextRequest) {
-  try {
-    // Auth check (optional for cron, required for user requests)
-    const session = await getServerSession(authOptions);
-    const isCron = req.headers.get('x-vercel-cron') === '1';
-    
-    if (!session && !isCron) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+export const GET = withAuth(async ({ req, tenantId }) => {
+  const url = new URL(req.url);
+  const sinceISO = url.searchParams.get("since") || new Date(Date.now() - 24*3600*1000).toISOString();
 
-    // Get tenant/dealer ID
-    const dealerId = session?.user?.id || req.headers.get('x-tenant-id') || 'default';
-    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const key = `delta-brief:${tenantId}:${sinceISO}`;
+  const brief = await cacheJSON(key, 3600, async () => {
+    // TODO: replace with real data sources
+    const scores = await loadScoreDeltas(tenantId, sinceISO);    // { AIV:+6, ATI:+3, CVI:+2 }
+    const fixes = await loadFixReceipts(tenantId, sinceISO);     // [{id, deltaUSD, timeToResolveMin}, ...]
+    const integrations = await loadIntegrations(tenantId);       // ['ga4','reviews_api', ...]
 
-    // Fetch today's snapshot
-    const snapshot = await fetchSnapshot(dealerId, date);
-    
-    // Calculate deltas from yesterday
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayDate = yesterday.toISOString().split('T')[0];
-    const yesterdaySnapshot = await fetchSnapshot(dealerId, yesterdayDate);
-
-    // Calculate score deltas
-    const scores = {
-      AIV: calculateDelta(snapshot.scores?.AIV, yesterdaySnapshot.scores?.AIV),
-      ATI: calculateDelta(snapshot.scores?.ATI, yesterdaySnapshot.scores?.ATI),
-      CVI: calculateDelta(snapshot.scores?.CVI, yesterdaySnapshot.scores?.CVI),
-    };
-
-    // Get pulses closed today
-    const pulses_closed = snapshot.pulses_closed || [];
-
-    // Get active integrations
-    const integrations = await getActiveIntegrations(dealerId);
-
-    // Calculate metadata
-    const totalRevenueRecovered = pulses_closed.reduce((sum, p) => sum + p.deltaUSD, 0);
-    const totalPulsesResolved = pulses_closed.length;
-    const averageResolutionTime = totalPulsesResolved > 0
-      ? Math.round(pulses_closed.reduce((sum, p) => sum + p.timeToResolveMin, 0) / totalPulsesResolved)
-      : 0;
-
-    const brief: DeltaBrief = {
-      date,
-      dealership: snapshot.dealership,
+    const weeklyRecovered = fixes.reduce((s,f)=> s + (f.deltaUSD || 0), 0);
+    const payload = {
+      date: new Date().toISOString().slice(0,10),
+      tenantId,
       scores,
-      pulses_closed,
+      pulses_closed: fixes,
       integrations,
-      metadata: {
-        totalRevenueRecovered,
-        totalPulsesResolved,
-        averageResolutionTime
-      }
+      weeklyRecovered
     };
 
-    // Send to Slack if significant changes
-    if (totalRevenueRecovered > 5000 || Math.abs(scores.AIV || 0) > 5) {
-      await sendSlackAlert(brief);
-    }
-
-    return NextResponse.json(brief, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+    // Optional Slack post on large gains
+    try {
+      const big = fixes.filter(f => f.deltaUSD >= 5000);
+      if (scores?.AIV && scores.AIV >= 10) {
+        await sendMilestone({
+          type: "aiv_spike",
+          tenantId,
+          value: scores.AIV,
+          metadata: { weeklyRecovered }
+        });
       }
-    });
+      if (big.length > 0) {
+        await sendMilestone({
+          type: "revenue_recovered",
+          tenantId,
+          value: weeklyRecovered,
+          metadata: { fixes: big.length }
+        });
+      }
+    } catch { /* no-op */ }
 
-  } catch (error) {
-    console.error('Delta Brief error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate delta brief' },
-      { status: 500 }
-    );
-  }
+    return payload;
+  });
+
+  return NextResponse.json(brief, {
+    headers: { "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400" }
+  });
+});
+
+// ---- mock loaders (replace with your DB/analytics) ----
+async function loadScoreDeltas(tenantId: string, sinceISO: string) {
+  return { AIV: 6, ATI: 3, CVI: 2 };
 }
-
-// Helper functions
-async function fetchSnapshot(dealerId: string, date: string) {
-  // In production, fetch from your database/cache
-  // For now, return mock structure
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dash.dealershipai.com';
-  
-  try {
-    const response = await fetch(`${baseUrl}/api/orchestrator/snapshot?date=${date}&dealerId=${dealerId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store'
-    });
-
-    if (response.ok) {
-      return await response.json();
-    }
-  } catch (error) {
-    console.error('Failed to fetch snapshot:', error);
-  }
-
-  // Fallback to empty structure
-  return {
-    date,
-    dealership: null,
-    pulses_closed: [],
-    scores: {}
-  };
+async function loadFixReceipts(tenantId: string, sinceISO: string) {
+  return [
+    { id: "schema_missing_vdp", deltaUSD: 8200, timeToResolveMin: 17 },
+    { id: "reviews_latency_high", deltaUSD: 3100, timeToResolveMin: 9 }
+  ];
 }
-
-function calculateDelta(current: number | undefined, previous: number | undefined): number | undefined {
-  if (current === undefined || previous === undefined) return undefined;
-  return current - previous;
-}
-
-async function getActiveIntegrations(dealerId: string): Promise<string[]> {
-  // In production, check your integration status
-  // For now, return common integrations
-  const integrations: string[] = [];
-  
-  // Check GA4
-  // Check Reviews API
-  // Check Schema status
-  // etc.
-
-  return integrations.length > 0 ? integrations : ['ga4', 'reviews_api'];
-}
-
-async function sendSlackAlert(brief: DeltaBrief) {
-  const webhookUrl = process.env.TELEMETRY_WEBHOOK;
-  if (!webhookUrl) return;
-
-  try {
-    const message = {
-      text: `📊 Daily Delta Brief - ${brief.date}`,
-      blocks: [
-        {
-          type: 'header',
-          text: {
-            type: 'plain_text',
-            text: `📊 Daily Delta Brief - ${brief.date}`
-          }
-        },
-        {
-          type: 'section',
-          fields: [
-            {
-              type: 'mrkdwn',
-              text: `*AIV:* ${brief.scores.AIV ? `+${brief.scores.AIV}` : 'N/A'}`
-            },
-            {
-              type: 'mrkdwn',
-              text: `*ATI:* ${brief.scores.ATI ? `+${brief.scores.ATI}` : 'N/A'}`
-            },
-            {
-              type: 'mrkdwn',
-              text: `*CVI:* ${brief.scores.CVI ? `+${brief.scores.CVI}` : 'N/A'}`
-            },
-            {
-              type: 'mrkdwn',
-              text: `*Revenue Recovered:* $${brief.metadata?.totalRevenueRecovered?.toLocaleString() || 0}`
-            }
-          ]
-        }
-      ]
-    };
-
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(message)
-    });
-  } catch (error) {
-    console.error('Failed to send Slack alert:', error);
-  }
+async function loadIntegrations(tenantId: string) {
+  return ["ga4", "reviews_api"];
 }

@@ -8,7 +8,10 @@ export default authMiddleware({
     "/.well-known/ai-plugin.json",
     "/api/gpt/(.*)",
     "/robots.txt",
-    "/sitemap.xml"
+    "/sitemap.xml",
+    "/sign-in(.*)",
+    "/sign-up(.*)",
+    "/sso-callback(.*)"
   ],
   ignoredRoutes: [
     "/_next(.*)",
