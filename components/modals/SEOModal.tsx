@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { usePerformanceMonitoring } from '@/lib/monitoring';
 import { ModalErrorBoundary } from '@/components/modals/ModalErrorBoundary';
+import { ModalSkeleton } from '@/components/ui/ModalSkeleton';
 
 interface SEOModalProps {
   isOpen: boolean;
@@ -169,12 +170,7 @@ function SEOModalContent({ isOpen, onClose, domain = 'dealershipai.com' }: SEOMo
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
             {loading && !data ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-white/60">Analyzing SEO performance...</p>
-                </div>
-              </div>
+              <ModalSkeleton variant="chart" />
             ) : error ? (
               <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sparkles, Search, ArrowRight, CheckCircle, Shield,
   Zap, Star, BarChart3, Clock,
@@ -32,6 +32,7 @@ import { initializeABTests, headlineVariants, ctaButtonVariants, subheadlineVari
 import { abTesting } from '@/lib/ab-testing/framework';
 import AhaResults from './AhaResults';
 import { UrgencyTimer, SocialProofCounter, RiskReversalBadge } from './AdvancedCTAOptimizations';
+import { dAIQuoteFetcher } from '@/lib/dAIQuoteFetcher';
 import dynamic from 'next/dynamic';
 
 // Lazy load heavy components
@@ -722,8 +723,22 @@ export default function SimplifiedLandingPage() {
         <section className="py-12 px-4 bg-gradient-to-b from-blue-50 to-white">
           <div className="max-w-6xl mx-auto">
             <div className="mb-6 text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Activity</h3>
-              <p className="text-sm text-gray-600">See what other dealerships are achieving</p>
+              {(() => {
+                const defaultHeading = "Live Activity";
+                const enhancedHeading = dAIQuoteFetcher({
+                  contextTag: 'Data Insight, KPI Spike, Validation',
+                  defaultText: defaultHeading,
+                  minSubtlety: 3 // Prefer subtle quotes for landing page
+                });
+                return (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {enhancedHeading}
+                    </h3>
+                    <p className="text-sm text-gray-600">See what other dealerships are achieving</p>
+                  </>
+                );
+              })()}
             </div>
             <LiveActivityFeed />
           </div>

@@ -42,9 +42,13 @@ GOOGLE_MY_BUSINESS_API_KEY="AIza..."
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NODE_ENV="development"
 
-# Security
-NEXTAUTH_SECRET="your-nextauth-secret"
-NEXTAUTH_URL="http://localhost:3000"
+# Clerk Authentication (Required)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
 
 # Monitoring (Optional)
 SENTRY_DSN="https://..."

@@ -1,0 +1,60 @@
+{
+  "brand": {
+    "name": "dealershipAI",
+    "voice": {
+      "tone": ["confident", "helpful", "incisive", "human"],
+      "rules": [
+        "Lead with outcomes, not features.",
+        "One-liners > jargon. Explain the why in plain English.",
+        "Every metric gets an action: fix, compare, simulate, export."
+      ],
+      "examples": {
+        "hero": "Your real-time dealership diagnostic dashboard.",
+        "sound_bite": "dealershipAI doesn't just show where you stand — it shows you what to fix next to win the click (or zero-click) before your competitors even realize what's happening.",
+        "cta_primary": "See your Relevance Overlay",
+        "cta_secondary": "Fix the top issue"
+      }
+    },
+    "visual": {
+      "aesthetic": "liquid-glass cupertino / calm gradients / soft depth",
+      "motion_model": ["Morph", "Orbit Realignment"],
+      "auditory_palette": ["hum", "chime", "minor-interval warn", "autonomy swell", "hover tick"],
+      "grid": { "base": 8, "radius": 16, "shadow": "soft-2" }
+    },
+    "accessibility": { "contrast_min": 4.5, "motion_reduced": true, "haptics": true }
+  },
+  "copy_patterns": {
+    "metric_table_headers": ["Metric", "Label", "Meaning", "Status"],
+    "cwv_block": {
+      "Speed (LCP)": ["Loads in ≈ 2½ seconds", "How fast the biggest thing appears. Under 2.5 s = feels snappy.", "status"],
+      "Stability (CLS)": ["Page stays steady", "Measures layout jumps. ≤ 0.1 = no shifts.", "status"],
+      "Response (INP)": ["Reacts in 0.18 seconds", "Tap/click responsiveness. < 0.2 s = instant.", "status"]
+    },
+    "hover_cards": [
+      {"factor":"AI doesn't respect geography","why":"Generative search blends national data; your VINs are benchmarked against distant players."},
+      {"factor":"Market psychology is nationalized","why":"Carvana/AutoNation price anchors shape expectations everywhere."},
+      {"factor":"AI summaries are blended","why":"Models mix multiple sources even for local queries, diluting regional bubbles."},
+      {"factor":"Trust propagation","why":"CarFax/Edmunds citations elevate perceived trust when schema connects them."}
+    ]
+  },
+  "design_system": {
+    "tokens_file": "styles/design-tokens.json",
+    "components": [
+      "CoreWebVitalsCard", "RelevanceOverlay", "MarketplaceCitationsPanel", "HealthDiagnosticsModal", "RISimulator", "EvidencePacketButton"
+    ],
+    "states": ["default", "loading", "success", "warn", "danger"],
+    "roles": ["GM", "Marketing", "Used", "Service", "Parts"],
+    "views": {
+      "GM": ["Relevance Overlay", "Revenue at Risk", "Evidence Packets"],
+      "Marketing": ["Generative Citations", "CWV", "Schema Fix-Now"],
+      "Used": ["Valuation & Anchors", "VIN Overlap", "RI Simulator"],
+      "Service": ["Search Visibility (services)", "Parts Fitment", "OCI"]
+    }
+  },
+  "gtm": {
+    "pillars": ["Discovery", "Positioning", "Design System", "Activation"],
+    "activation_assets": ["Landing hero", "Explainer (Relevance Overlay)", "Playbooks", "Case study", "Evidence packet"],
+    "success_metrics": ["trial activations", "schema fixes executed", "AI citation share lift", "lead volume", "RO count"]
+  }
+}
+

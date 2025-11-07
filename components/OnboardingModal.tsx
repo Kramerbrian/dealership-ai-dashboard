@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styles from '../styles/onboardingModal.module.css';
+import { dAIQuoteFetcher } from '@/lib/dAIQuoteFetcher';
 
 interface BaselineScore {
   metric: string;
@@ -60,6 +61,18 @@ export default function OnboardingModal({
     }
   }, []);
 
+  // Generate Easter Egg quote for welcome title
+  const enhancedTitle = useMemo(() => {
+    if (title === "Welcome to DealershipAI" || title.includes("Welcome")) {
+      return dAIQuoteFetcher({
+        contextTag: 'Introduction, Ambition, Vision',
+        defaultText: title,
+        minSubtlety: 2 // Allow slightly more obvious quotes for welcome
+      });
+    }
+    return title;
+  }, [title]);
+
   if (!isOpen) return null;
 
   return (
@@ -72,7 +85,7 @@ export default function OnboardingModal({
         className={styles.modal}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>{title}</h2>
+        <h2>{enhancedTitle}</h2>
 
         {baselines.length > 0 && (
           <div className={styles.baselines}>

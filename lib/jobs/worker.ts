@@ -7,6 +7,7 @@
 import { createWorker, JobType } from '@/lib/job-queue';
 import { processAIScoreCalculation } from './ai-score-calculator';
 import { processReportGeneration } from './report-generator';
+import { processSchemaFix, processReprobe, processCrawl } from './processors';
 
 /**
  * Initialize job worker
@@ -24,6 +25,18 @@ export function initializeJobWorker() {
       
       case 'report-generation':
         await processReportGeneration(payload);
+        break;
+      
+      case 'schema-fix':
+        await processSchemaFix(job);
+        break;
+      
+      case 'reprobe':
+        await processReprobe(job);
+        break;
+      
+      case 'crawl':
+        await processCrawl(job);
         break;
       
       default:

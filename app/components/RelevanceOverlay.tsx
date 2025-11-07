@@ -9,8 +9,11 @@ export default function RelevanceOverlay({ nodes }: { nodes: Array<RelevanceInpu
     <div className="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur ring-1 ring-gray-900/5 p-6 shadow-sm hover:shadow-md transition-all duration-200">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Relevance Overlay</h3>
-        <span className="text-xs text-gray-500">dealershipAI shows what to fix next — see sound bite</span>
+        <span className="text-xs text-gray-500">What to fix next — before competitors even realize.</span>
       </div>
+      <p className="text-sm text-gray-600 mb-4">
+        dealershipAI doesn't just show where you stand — it shows you what to fix next to win the click (or zero-click) before your competitors even realize what's happening.
+      </p>
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left border-b border-gray-200">

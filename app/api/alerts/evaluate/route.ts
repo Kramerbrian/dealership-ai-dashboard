@@ -1,32 +1,55 @@
-// /app/api/alerts/evaluate/route.ts
-
 import { NextResponse } from "next/server";
-import { SMART_ALERTS } from "@/lib/smartAlerts";
-
-type Input = {
-  dealerId: string;
-  deltas: { competitor: string; delta24h: number }[];
-  website: { down: boolean; errorsSpike: boolean };
-  rank: { you: number; competitor: string; youOvertook: boolean };
-};
+import { evaluateAlerts } from "@/app/lib/alerts/rules";
+import { sendSlackAlert } from "@/lib/alerts/slack";
+import { enforceTenantIsolation } from "@/lib/api-protection/tenant-isolation";
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as Input;
-  const out: any[] = [];
+  // Enforce tenant isolation
+  const isolation = await enforceTenantIsolation(req as any);
+  if (!isolation.allowed || !isolation.tenantId) {
+    return isolation.response || NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
 
-  // urgent
-  body.deltas.filter(d => d.delta24h >= 10).forEach(d =>
-    out.push({ type: "urgent", competitor: d.competitor, message: `${d.competitor} gained ${d.delta24h} pts in 24h`, channels: SMART_ALERTS.types.urgent.channels })
-  );
-  // opportunity
-  body.deltas.filter(d => d.delta24h <= -5).forEach(d =>
-    out.push({ type: "opportunity", competitor: d.competitor, message: `Opportunity: ${d.competitor} dropped ${Math.abs(d.delta24h)} pts`, suggested_action: SMART_ALERTS.types.opportunity.suggested_action })
-  );
-  // milestone
-  if (body.rank.youOvertook) out.push({ type: "milestone", message: SMART_ALERTS.types.milestone.message, auto_share: true });
-  // maintenance
-  if (body.website.down || body.website.errorsSpike) out.push({ type: "maintenance", priority: "critical", escalation: true });
+  const metrics = await req.json();
+  const alerts = evaluateAlerts(metrics);
+  const tenantId = isolation.tenantId;
 
-  return NextResponse.json({ alerts: out });
+  // Send Slack notifications for each alert
+  const slackPromises = alerts.map(alert => {
+    // Parse channel from notify array (e.g., "#seo-ops@slack" -> "seo-ops")
+    const slackChannels = alert.notify
+      .filter(n => n.includes('@slack'))
+      .map(n => n.replace('@slack', '').replace('#', ''));
+
+    // Determine severity from alert ID
+    const severity = alert.id.includes('serve_errors') || alert.id.includes('scs_floor')
+      ? 'error'
+      : alert.id.includes('ai_visibility_gap')
+      ? 'warning'
+      : 'info';
+
+    // Send to each Slack channel
+    return Promise.all(
+      slackChannels.map(channel =>
+        sendSlackAlert({
+          title: `Alert: ${alert.id}`,
+          message: alert.text,
+          severity: severity as 'info' | 'warning' | 'error' | 'critical',
+          tenantId,
+          metadata: { alertId: alert.id, metrics },
+          channel: `#${channel}`,
+        })
+      )
+    );
+  });
+
+  // Fire and forget Slack notifications
+  Promise.all(slackPromises).catch(err => {
+    console.error('Failed to send Slack alerts:', err);
+  });
+
+  return NextResponse.json({ alerts });
 }
-

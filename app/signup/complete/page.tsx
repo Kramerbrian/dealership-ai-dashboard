@@ -6,13 +6,13 @@ export const runtime = 'nodejs';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { CheckCircle2, ArrowRight, Loader2, Building2, Mail, Phone, Globe } from 'lucide-react';
 
 function SignupCompleteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     company: '',
@@ -25,10 +25,10 @@ function SignupCompleteContent() {
   const email = searchParams.get('email') || '';
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (isLoaded && !user) {
+      router.push('/sign-in');
     }
-  }, [status, router]);
+  }, [isLoaded, user, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({
@@ -70,7 +70,7 @@ function SignupCompleteContent() {
     }
   };
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-[var(--brand-bg,#0a0b0f)] text-white flex items-center justify-center">
         <div className="text-center">
@@ -81,7 +81,7 @@ function SignupCompleteContent() {
     );
   }
 
-  if (!session) {
+  if (!user) {
     return null;
   }
 
@@ -134,11 +134,11 @@ function SignupCompleteContent() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-white/60" />
-                <span>{session.user?.email}</span>
+                <span>{user.primaryEmailAddress?.emailAddress || 'No email'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-4 h-4 text-white/60">👤</span>
-                <span>{session.user?.name || 'Name not provided'}</span>
+                <span>{user.fullName || user.firstName || 'Name not provided'}</span>
               </div>
             </div>
           </div>

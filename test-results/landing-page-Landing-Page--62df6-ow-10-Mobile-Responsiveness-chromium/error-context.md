@@ -1,0 +1,211 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - generic [ref=e18]:
+            - generic [ref=e19]: DealershipAI
+            - generic [ref=e20]: AI Visibility Intelligence
+        - button [ref=e21] [cursor=pointer]:
+          - img [ref=e22]
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - img [ref=e29]
+        - generic [ref=e35]: "Live: 847 dealerships being analyzed"
+      - heading "Stop Being Invisible to AI Car Shoppers" [level=1] [ref=e36]:
+        - text: Stop Being Invisible
+        - text: to AI Car Shoppers
+      - paragraph [ref=e37]:
+        - status [ref=e38]:
+          - generic [ref=e39]: ChatGPT
+        - text: are recommending your competitors.
+        - text: Find out why in 30 seconds (no signup required)
+      - generic [ref=e44]:
+        - generic [ref=e45]: Watch Demo (60 seconds)
+        - generic [ref=e46]: "See How Lou Grubbs Motors Went From #12 → #1"
+      - generic [ref=e47]:
+        - generic [ref=e49]:
+          - textbox "yourdealership.com" [ref=e50]
+          - button "Analyze Free" [disabled] [ref=e51]:
+            - img [ref=e52]
+            - text: Analyze Free
+        - paragraph [ref=e54]:
+          - generic [ref=e55]:
+            - img [ref=e56]
+            - text: No email required
+          - generic [ref=e59]:
+            - img [ref=e60]
+            - text: Instant results
+          - generic [ref=e63]:
+            - img [ref=e64]
+            - text: See competitors
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - img [ref=e69]
+          - generic [ref=e74]:
+            - generic [ref=e75]: 500+ Dealerships
+            - generic [ref=e76]: Nationwide
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - generic [ref=e80]:
+            - generic [ref=e81]: 5 AI Platforms
+            - generic [ref=e82]: Tracked 24/7
+        - generic [ref=e83]:
+          - img [ref=e84]
+          - generic [ref=e88]:
+            - generic [ref=e89]: 99.9% Accuracy
+            - generic [ref=e90]: Verified Daily
+    - generic [ref=e97]:
+      - generic [ref=e98]:
+        - img [ref=e100]
+        - generic [ref=e102]:
+          - heading "Real-Time Revenue Loss" [level=3] [ref=e103]
+          - paragraph [ref=e104]: Every second your dealership is invisible to AI...
+      - generic [ref=e105]:
+        - generic [ref=e106]: $0.00
+        - paragraph [ref=e107]: Lost since you landed on this page
+        - paragraph [ref=e108]: ≈ $0.00/second
+    - generic [ref=e111]:
+      - generic [ref=e112]:
+        - generic [ref=e113]: THE CRISIS
+        - heading "The $45K/Month Problem Nobody's Talking About" [level=2] [ref=e114]:
+          - text: The $45K/Month Problem
+          - text: Nobody's Talking About
+        - paragraph [ref=e115]: While you're optimizing for Google, 67% of car shoppers are asking ChatGPT, Gemini, Perplexity, and Google AI Overviews which dealer to visit. And they're not finding you.
+      - generic [ref=e116]:
+        - generic [ref=e119]:
+          - img [ref=e121]
+          - generic [ref=e124]: 67%
+          - heading "AI Invisibility Crisis" [level=3] [ref=e125]
+          - paragraph [ref=e126]: of car shoppers use AI before visiting dealerships
+          - paragraph [ref=e128]: You're losing 2 out of 3 potential customers
+        - generic [ref=e131]:
+          - img [ref=e133]
+          - generic [ref=e135]: $45K
+          - heading "Revenue Hemorrhage" [level=3] [ref=e136]
+          - paragraph [ref=e137]: average monthly loss per dealership
+          - paragraph [ref=e139]: That's 16 vehicles you didn't sell
+        - generic [ref=e142]:
+          - img [ref=e144]
+          - generic [ref=e150]: 3.4x
+          - heading "Competitor Advantage" [level=3] [ref=e151]
+          - paragraph [ref=e152]: more likely to be recommended if optimized
+          - paragraph [ref=e154]: They're taking your customers
+    - generic [ref=e157]:
+      - generic [ref=e158]:
+        - generic [ref=e159]: PRICING
+        - heading "Choose Your Arsenal" [level=2] [ref=e160]
+        - paragraph [ref=e161]: Start free, upgrade when you're hooked (you will be)
+      - generic [ref=e162]:
+        - generic [ref=e164]:
+          - generic [ref=e165]:
+            - heading "Free" [level=3] [ref=e166]
+            - paragraph [ref=e167]: Perfect for trying us out
+            - generic [ref=e169]: $0
+            - generic [ref=e170]: 5 scans/month
+          - button "Start Free" [ref=e171] [cursor=pointer]
+          - generic [ref=e172]:
+            - generic [ref=e173]:
+              - img [ref=e174]
+              - generic [ref=e177]: Basic AI visibility score
+            - generic [ref=e178]:
+              - img [ref=e179]
+              - generic [ref=e182]: Competitive leaderboard access
+            - generic [ref=e183]:
+              - img [ref=e184]
+              - generic [ref=e187]: UGC health tracking
+            - generic [ref=e188]:
+              - img [ref=e189]
+              - generic [ref=e192]: Email alerts
+            - generic [ref=e193]:
+              - img [ref=e194]
+              - generic [ref=e197]: Limited historical data
+        - generic [ref=e198]:
+          - generic [ref=e200]:
+            - img [ref=e201]
+            - text: MOST POPULAR
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - heading "Pro" [level=3] [ref=e205]
+              - paragraph [ref=e206]: For serious dealers
+              - generic [ref=e207]:
+                - generic [ref=e208]: $499
+                - generic [ref=e209]: /month
+              - generic [ref=e210]: 200 sessions/month
+            - button "Start 14-Day Trial" [ref=e211] [cursor=pointer]
+            - generic [ref=e212]:
+              - generic [ref=e213]:
+                - img [ref=e214]
+                - generic [ref=e217]: "Everything in Free, plus:"
+              - generic [ref=e218]:
+                - img [ref=e219]
+                - generic [ref=e222]: Full 5-pillar breakdown
+              - generic [ref=e223]:
+                - img [ref=e224]
+                - generic [ref=e227]: E-E-A-T detailed scoring
+              - generic [ref=e228]:
+                - img [ref=e229]
+                - generic [ref=e232]: Competitor intelligence
+              - generic [ref=e233]:
+                - img [ref=e234]
+                - generic [ref=e237]: 30-day action plans
+              - generic [ref=e238]:
+                - img [ref=e239]
+                - generic [ref=e242]: Priority support
+              - generic [ref=e243]:
+                - img [ref=e244]
+                - generic [ref=e247]: API access
+        - generic [ref=e249]:
+          - generic [ref=e250]:
+            - heading "Enterprise" [level=3] [ref=e251]
+            - paragraph [ref=e252]: White-glove service
+            - generic [ref=e253]:
+              - generic [ref=e254]: $999
+              - generic [ref=e255]: /month
+            - generic [ref=e256]: Unlimited sessions
+          - button "Book Demo" [ref=e257] [cursor=pointer]
+          - generic [ref=e258]:
+            - generic [ref=e259]:
+              - img [ref=e260]
+              - generic [ref=e263]: "Everything in Pro, plus:"
+            - generic [ref=e264]:
+              - img [ref=e265]
+              - generic [ref=e268]: Mystery Shop AI
+            - generic [ref=e269]:
+              - img [ref=e270]
+              - generic [ref=e273]: Custom query library
+            - generic [ref=e274]:
+              - img [ref=e275]
+              - generic [ref=e278]: Multi-location support
+            - generic [ref=e279]:
+              - img [ref=e280]
+              - generic [ref=e283]: White-label reports
+            - generic [ref=e284]:
+              - img [ref=e285]
+              - generic [ref=e288]: Dedicated success manager
+            - generic [ref=e289]:
+              - img [ref=e290]
+              - generic [ref=e293]: Custom integrations
+      - paragraph [ref=e295]: All plans include 14-day free trial • No credit card required • Cancel anytime
+    - contentinfo [ref=e296]:
+      - generic [ref=e297]:
+        - generic [ref=e298]:
+          - generic [ref=e299]:
+            - img [ref=e300]
+            - generic [ref=e311]:
+              - generic [ref=e312]: DealershipAI
+              - generic [ref=e313]: AI Visibility Intelligence
+          - generic [ref=e314]:
+            - link "Privacy" [ref=e315] [cursor=pointer]:
+              - /url: /privacy
+            - link "Terms" [ref=e316] [cursor=pointer]:
+              - /url: /terms
+            - link "Contact" [ref=e317] [cursor=pointer]:
+              - /url: "#contact"
+        - generic [ref=e318]: © 2025 DealershipAI. All rights reserved. Making dealerships visible in the AI age.
+  - alert [ref=e319]
+```

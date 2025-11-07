@@ -1,0 +1,35 @@
+/// Append to your existing Prisma schema; run `npx prisma migrate dev -n "dealer_scores_health"`
+
+model DealerSourceScore {
+  id         String   @id @default(cuid())
+  tenantId   String
+  source     String   // e.g., "Cars.com"
+  date       DateTime @default(now())
+  visibility Float
+  proximity  Float
+  authority  Float
+  scsPct     Float
+  @@index([tenantId, source, date])
+}
+
+model CrawlIssue {
+  id        String   @id @default(cuid())
+  tenantId  String
+  code      Int
+  url       String
+  frequency Int
+  lastSeen  DateTime
+  impact    String
+  @@index([tenantId, code, lastSeen])
+}
+
+model CoreWebVitals {
+  id         String   @id @default(cuid())
+  tenantId   String
+  lcpMs      Int
+  cls        Float
+  inpMs      Int
+  capturedAt DateTime @default(now())
+  @@index([tenantId, capturedAt])
+}
+

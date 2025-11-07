@@ -14,7 +14,7 @@
  * your backend API.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 // Lazy load heavy components for better performance
 const CompetitiveComparisonWidget = dynamic(() => import("./demo/CompetitiveComparisonWidget"), {
   loading: () => <div className="skeleton" style={{ height: 300, borderRadius: 8 }} />,
@@ -48,8 +48,10 @@ import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import PIQRDashboardWidget from "@/components/dashboard/PIQRDashboardWidget";
 import AIVModal from "@/components/AIVModal";
 import AIVForecastPanelWrapper from "@/components/dashboard/AIVForecastPanelWrapper";
+import { dAIQuoteFetcher } from "@/lib/dAIQuoteFetcher";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { ADIModal } from "@/components/dashboard/ADIModal";
+import VoiceOrb from "@/components/VoiceOrb";
 import dynamic from "next/dynamic";
 
 // Types for modal content
@@ -306,7 +308,14 @@ const DealershipAIDashboardLA: React.FC = () => {
   // Show error toast when data fails to load
   useEffect(() => {
     if (dataError) {
-      showToast('error', `Failed to load dashboard data: ${dataError.message}`, {
+      const defaultErrorText = `Failed to load dashboard data: ${dataError.message}`;
+      const errorMessage = dAIQuoteFetcher({
+        contextTag: 'Error/Failure, System Limitation',
+        defaultText: defaultErrorText,
+        minSubtlety: 3
+      });
+
+      showToast('error', errorMessage, {
         duration: 10000, // Show for 10 seconds
         action: {
           label: 'Retry',
@@ -320,12 +329,20 @@ const DealershipAIDashboardLA: React.FC = () => {
   }, [dataError, showToast, refreshData]);
 
   // Show success toast when data refreshes successfully (manual refresh only)
+  // *** Integration Point C: Manual Refresh Success Toast ***
   useEffect(() => {
     if (dataRefreshing === false && dashboardData && !dataError) {
       // Only show if it was a manual refresh, not initial load
       const wasRefreshing = typeof window !== 'undefined' ? sessionStorage.getItem('wasRefreshing') === 'true' : false;
       if (wasRefreshing) {
-        showToast('success', 'Dashboard data updated', { duration: 3000 });
+        // *** START dAIQuoteFetcher Integration ***
+        const successQuoteText = dAIQuoteFetcher({
+          contextTag: 'Achievement',
+          defaultText: 'Dashboard data updated'
+        });
+        showToast('success', successQuoteText, { duration: 3000 }); // Use the witty quote here
+        // *** END dAIQuoteFetcher Integration ***
+
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('wasRefreshing');
         }
@@ -340,6 +357,22 @@ const DealershipAIDashboardLA: React.FC = () => {
     }
     refreshData();
   };
+
+  // Generate Easter Egg quote for GEO Visibility card when critical
+  // *** Integration Point B: Critical GEO Visibility KPI ***
+  const geoVisibilityQuote = useMemo(() => {
+    const geoScore = dashboardData?.visibility?.geo || 65.2;
+    if (geoScore < 70) { // Critical threshold
+      // *** START dAIQuoteFetcher Integration: Conditional Replacement ***
+      return dAIQuoteFetcher({
+        contextTag: 'Urgency',
+        defaultText: 'CRITICAL',
+        minSubtlety: 2 // Use a slightly less subtle quote for emergencies
+      });
+      // *** END dAIQuoteFetcher Integration ***
+    }
+    return 'NEEDS ATTENTION';
+  }, [dashboardData?.visibility?.geo]);
 
   // Show loading skeleton while auth, profile, or data is loading
   if (authLoading || profileLoading || (dataLoading && !dashboardData)) {
@@ -655,8 +688,9 @@ const DealershipAIDashboardLA: React.FC = () => {
                       fontSize: 10,
                       fontWeight: 600
                     }}
+                    title={geoVisibilityQuote !== 'CRITICAL' ? geoVisibilityQuote : undefined}
                   >
-                    CRITICAL
+                    {geoVisibilityQuote}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 15 }}>
@@ -936,6 +970,9 @@ const DealershipAIDashboardLA: React.FC = () => {
           }}
         />
       )}
+
+      {/* Voice Orb - PG-safe Pop Culture Agent */}
+      <VoiceOrb />
     </ErrorBoundary>
   );
 };

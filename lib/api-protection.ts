@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getWorkOSUser } from '@/lib/workos';
+import { auth } from '@clerk/nextjs/server';
 import { apiRateLimit, getClientIP, checkRateLimit } from '@/lib/rate-limit';
 
 /**
@@ -17,22 +17,22 @@ export interface AuthResult {
 }
 
 /**
- * Get authenticated user ID using WorkOS
+ * Get authenticated user ID using Clerk
  */
 export async function getAuthenticatedUser(req: NextRequest): Promise<AuthResult> {
   try {
-    const authResult = await getWorkOSUser(req);
+    const { userId } = await auth();
     
-    if (!authResult.isAuthenticated || !authResult.userId) {
+    if (!userId) {
       return {
         userId: null,
         isAuthenticated: false,
-        error: authResult.error || 'Authentication required',
+        error: 'Authentication required',
       };
     }
 
     return {
-      userId: authResult.userId,
+      userId,
       isAuthenticated: true,
     };
   } catch (error) {
