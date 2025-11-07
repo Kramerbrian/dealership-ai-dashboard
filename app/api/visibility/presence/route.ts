@@ -8,7 +8,6 @@ type VisibilityPresence = {
   domain: string;
   engines: Array<{ name: "ChatGPT" | "Perplexity" | "Gemini" | "Copilot"; presencePct: number }>;
   lastCheckedISO: string;
-  connected: boolean;
 };
 
 export const GET = withAuth(async ({ req, tenantId }) => {
@@ -46,7 +45,7 @@ export const GET = withAuth(async ({ req, tenantId }) => {
       return synthetic;
     });
 
-    return NextResponse.json(data, {
+    return NextResponse.json(synthetic, {
       headers: { "Cache-Control": "s-maxage=120, stale-while-revalidate=600" },
     });
   } catch (e: any) {

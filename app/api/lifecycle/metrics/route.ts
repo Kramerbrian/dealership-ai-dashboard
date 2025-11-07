@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { lifecycleMetrics } from '@/lib/lifecycle/metrics';
+// Dynamic import to avoid build-time errors
 import { enforceTenantIsolation } from '@/lib/api-protection/tenant-isolation';
 
 export const dynamic = 'force-dynamic';
@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Dynamic import to avoid build-time Supabase initialization
+    const { lifecycleMetrics } = await import('@/lib/lifecycle/metrics');
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId') || isolation.tenantId;
     
@@ -43,6 +45,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Dynamic import to avoid build-time Supabase initialization
+    const { lifecycleMetrics } = await import('@/lib/lifecycle/metrics');
     const body = await req.json();
     const { event, value, metadata } = body;
     const userId = body.userId || isolation.tenantId;
