@@ -1,108 +1,158 @@
-import { NextResponse } from "next/server";
-import { withAuth } from "../../_utils/withAuth";
-import { enqueue } from "@/backend/engine/queue";
-import { storeTelemetry } from "@/lib/telemetry/storage";
-import { redis } from "@/lib/cache";
-
 /**
- * Apply a fix from a pulse
- * Idempotent: requires Idempotency-Key header
+ * Fix Apply API Route
+ * 
+ * Execute a Tier-2 fix with idempotency, undo support, and dry-run mode
  */
-export const POST = withAuth(async ({ req, tenantId }) => {
+
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { applyFix as applyFixAPI, postReceipt } from '@/components/i2e/api-client';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+// In-memory idempotency store (use Redis in production)
+const idempotencyStore = new Map<string, { result: any; timestamp: number }>();
+const UNDO_TTL = 10 * 60 * 1000; // 10 minutes
+
+interface FixRequest {
+  pulseId: string;
+  tier: 'preview' | 'apply' | 'autopilot';
+  idempotencyKey?: string;
+  simulate?: boolean;
+}
+
+export async function POST(req: NextRequest) {
   try {
-    const idempotencyKey = req.headers.get("Idempotency-Key");
-    if (!idempotencyKey) {
+    // Auth check
+    const session = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json(
-        { error: "Idempotency-Key header required" },
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body: FixRequest = await req.json();
+    const { pulseId, tier, idempotencyKey, simulate } = body;
+
+    // Validation
+    if (!pulseId || !tier) {
+      return NextResponse.json(
+        { error: 'pulseId and tier are required' },
         { status: 400 }
       );
     }
 
-    // Check if already processed (idempotency)
-    if (redis) {
-      const existing = await redis.get(`fix:${tenantId}:${idempotencyKey}`);
-      if (existing) {
-        return NextResponse.json(JSON.parse(existing as string));
+    if (!['preview', 'apply', 'autopilot'].includes(tier)) {
+      return NextResponse.json(
+        { error: 'Invalid tier. Must be preview, apply, or autopilot' },
+        { status: 400 }
+      );
+    }
+
+    // Idempotency check
+    if (idempotencyKey) {
+      const existing = idempotencyStore.get(idempotencyKey);
+      if (existing && Date.now() - existing.timestamp < 60000) {
+        return NextResponse.json(existing.result, {
+          headers: {
+            'X-Idempotent-Replay': 'true'
+          }
+        });
       }
     }
 
-    const body = await req.json();
-    const { pulseId, tier, simulate = false } = body;
-
-    if (!pulseId) {
-      return NextResponse.json(
-        { error: "pulseId required" },
-        { status: 400 }
-      );
-    }
-
-    // TODO: Load pulse details from snapshot/ledger
-    // For now, synthetic structure
-    const fix = {
-      pulseId,
-      tier: tier || "manual",
-      simulate,
-      tenantId,
-      timestamp: new Date().toISOString()
-    };
-
+    // Dry-run mode
     if (simulate) {
-      // Dry-run: return diff only
+      const diff = await generateDiff(pulseId, tier);
       return NextResponse.json({
-        simulated: true,
-        diff: {
-          action: "inject_schema",
-          target: "/inventory/vehicle-123",
-          field: "offers.availability",
-          value: "InStock"
-        },
-        estimatedImpactUSD: 8200,
-        estimatedTimeMin: 17
+        simulate: true,
+        diff,
+        message: 'This is a dry-run. No changes were applied.'
       });
     }
 
-    // Enqueue fix job
-    const { id: jobId } = await enqueue({
-      type: "schema-fix",
-      data: {
-        tenantId,
-        pulseId,
-        ...fix
-      }
-    });
+    // Apply fix
+    const startTime = Date.now();
+    await applyFixAPI({ pulseId, tier });
 
-    const receipt = {
-      fixId: jobId,
+    const result = {
+      success: true,
       pulseId,
-      tenantId,
-      appliedAt: new Date().toISOString(),
-      status: "queued",
-      undoWindowMinutes: 10
+      tier,
+      timestamp: new Date().toISOString(),
+      undoToken: generateUndoToken(pulseId, tier)
     };
 
-    // Store idempotency result
-    if (redis) {
-      await redis.set(
-        `fix:${tenantId}:${idempotencyKey}`,
-        JSON.stringify(receipt),
-        { ex: 600 } // 10 minutes
-      );
+    // Store for idempotency
+    if (idempotencyKey) {
+      idempotencyStore.set(idempotencyKey, {
+        result,
+        timestamp: Date.now()
+      });
+      // Clean up after 1 hour
+      setTimeout(() => idempotencyStore.delete(idempotencyKey), 3600000);
     }
 
-    // Log telemetry
-    await storeTelemetry({
-      event_type: "fix.apply_success",
-      tenant_id: tenantId,
-      metadata: { pulseId, jobId, tier }
-    }).catch(() => {});
+    // Store undo token
+    if (result.undoToken) {
+      storeUndoToken(result.undoToken, { pulseId, tier, timestamp: Date.now() });
+    }
 
-    return NextResponse.json(receipt, { status: 202 });
+    // Log receipt (async, don't wait)
+    const resolutionTime = Date.now() - startTime;
+    postReceipt({
+      pulseId,
+      deltaUSD: 0, // Will be updated when actual impact is measured
+      success: true,
+      notes: `Fix applied via ${tier} tier`
+    }).catch(err => console.error('Failed to log receipt:', err));
+
+    return NextResponse.json(result);
+
   } catch (error) {
-    console.error("Fix apply error:", error);
+    console.error('Fix apply error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to apply fix" },
+      { error: 'Failed to apply fix', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
-});
+}
 
+async function generateDiff(pulseId: string, tier: string) {
+  // Generate a diff showing what would change
+  return {
+    pulseId,
+    tier,
+    changes: [
+      { type: 'schema', action: 'add', field: 'autodealer', value: 'true' },
+      { type: 'metadata', action: 'update', field: 'last_updated', value: new Date().toISOString() }
+    ],
+    estimatedImpact: '$8,200/month'
+  };
+}
+
+function generateUndoToken(pulseId: string, tier: string): string {
+  return Buffer.from(`${pulseId}:${tier}:${Date.now()}`).toString('base64');
+}
+
+// In-memory undo store (use Redis in production)
+const undoStore = new Map<string, { pulseId: string; tier: string; timestamp: number }>();
+
+function storeUndoToken(token: string, data: { pulseId: string; tier: string; timestamp: number }) {
+  undoStore.set(token, data);
+  // Auto-expire after TTL
+  setTimeout(() => undoStore.delete(token), UNDO_TTL);
+}
+
+export function getUndoData(token: string): { pulseId: string; tier: string } | null {
+  const data = undoStore.get(token);
+  if (!data) return null;
+  if (Date.now() - data.timestamp > UNDO_TTL) {
+    undoStore.delete(token);
+    return null;
+  }
+  return { pulseId: data.pulseId, tier: data.tier };
+}

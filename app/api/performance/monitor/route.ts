@@ -232,4 +232,4 @@ async function getPerformanceData(req: NextRequest): Promise<NextResponse> {
 }
 
 // Apply caching middleware
-export const GET = withCache(getPerformanceData, CACHE_KEYS?.PERFORMANCE_MONITOR || 'performance_monitor');
+export const GET = withCache(getPerformanceData, CACHE_KEYS.PERFORMANCE_MONITOR);

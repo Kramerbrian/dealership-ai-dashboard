@@ -7,11 +7,6 @@
     { "path": "/api/reports/delta-brief", "schedule": "0 23 * * *" },
     { "path": "/api/reports/model-nutrition", "schedule": "0 23 * * 0" }
   ],
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",

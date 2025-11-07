@@ -1,125 +1,66 @@
-/**
- * Rate Limiting Utilities
- * Uses Upstash Redis for distributed rate limiting
- */
+import { redis } from "./cache";
 
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+export interface RateLimitOptions {
+  windowSeconds: number;
+  maxRequests: number;
+  identifier: string; // tenantId or IP
+}
 
-// Initialize Redis client (with fallback for development)
-let redis: Redis | null = null;
-
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+export interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetAt: number;
+  retryAfter?: number;
 }
 
 /**
- * AI API Rate Limiter
- * 50 requests per day per IP (for expensive AI calls)
- */
-export const aiRateLimit = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(50, "1 d"),
-      analytics: true,
-      prefix: "@ratelimit:ai",
-    })
-  : null;
-
-/**
- * General API Rate Limiter
- * 100 requests per hour per IP
- */
-export const apiRateLimit = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(100, "1 h"),
-      analytics: true,
-      prefix: "@ratelimit:api",
-    })
-  : null;
-
-/**
- * Strict Rate Limiter (for sensitive operations)
- * 10 requests per minute per IP
- */
-export const strictRateLimit = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(10, "1 m"),
-      analytics: true,
-      prefix: "@ratelimit:strict",
-    })
-  : null;
-
-/**
- * Helper to get client IP from request
- */
-export function getClientIP(request: Request): string {
-  // Check various headers for real IP (handles proxies)
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  
-  const realIP = request.headers.get("x-real-ip");
-  if (realIP) {
-    return realIP;
-  }
-  
-  // Fallback for development
-  return "127.0.0.1";
-}
-
-/**
- * Check rate limit and return response if exceeded
+ * Rate limiting using Redis
+ * Returns 429 with Retry-After if exceeded
  */
 export async function checkRateLimit(
-  limiter: Ratelimit | null,
-  identifier: string
-): Promise<{ success: boolean; limit?: number; remaining?: number; reset?: number; response?: Response }> {
-  if (!limiter) {
-    // No rate limiting in development (when Upstash not configured)
-    return { success: true };
+  options: RateLimitOptions
+): Promise<RateLimitResult> {
+  const { windowSeconds, maxRequests, identifier } = options;
+  const key = `rate_limit:${identifier}`;
+
+  if (!redis) {
+    // No Redis: allow all (fallback for development)
+    return {
+      allowed: true,
+      remaining: maxRequests,
+      resetAt: Date.now() + windowSeconds * 1000
+    };
   }
 
   try {
-    const { success, limit, remaining, reset } = await limiter.limit(identifier);
-    
-    if (!success) {
-      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+    const current = await redis.get<number>(key) || 0;
+
+    if (current >= maxRequests) {
+      const ttl = await redis.ttl(key);
       return {
-        success: false,
-        limit,
-        remaining,
-        reset,
-        response: new Response(
-          JSON.stringify({
-            error: "Rate limit exceeded",
-            message: "Too many requests. Please try again later.",
-            retryAfter,
-          }),
-          {
-            status: 429,
-            headers: {
-              "Content-Type": "application/json",
-              "Retry-After": String(retryAfter),
-              "X-RateLimit-Limit": String(limit),
-              "X-RateLimit-Remaining": "0",
-              "X-RateLimit-Reset": String(reset),
-            },
-          }
-        ),
+        allowed: false,
+        remaining: 0,
+        resetAt: Date.now() + (ttl > 0 ? ttl * 1000 : windowSeconds * 1000),
+        retryAfter: ttl > 0 ? ttl : windowSeconds
       };
     }
 
-    return { success: true, limit, remaining, reset };
+    // Increment counter
+    const newCount = current + 1;
+    await redis.set(key, newCount, { ex: windowSeconds });
+
+    return {
+      allowed: true,
+      remaining: maxRequests - newCount,
+      resetAt: Date.now() + windowSeconds * 1000
+    };
   } catch (error) {
-    // If rate limiting fails, allow the request (fail open)
-    console.error("[RateLimit] Error checking rate limit:", error);
-    return { success: true };
+    console.error("Rate limit error:", error);
+    // Fail open (allow request) if Redis fails
+    return {
+      allowed: true,
+      remaining: maxRequests,
+      resetAt: Date.now() + windowSeconds * 1000
+    };
   }
 }
