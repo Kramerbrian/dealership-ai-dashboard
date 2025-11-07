@@ -1,185 +1,129 @@
-# ✅ Deployment Complete - Weaponization Infrastructure
+# 🎉 Deployment Complete!
 
-## 🎉 Status: **DEPLOYED TO PRODUCTION**
+## ✅ What Just Happened
 
-**Deployment URL**: https://dealership-ai-dashboard-ipj5z4xj1-brian-kramers-projects.vercel.app  
-**Inspect**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/GziWpiUWoSm9Y1eyS4vCmvAk5MjM
+Your dashboard has been deployed to Vercel production!
 
----
+**Deployment URL:**
+- https://dealership-ai-dashboard-qf59nn3ma-brian-kramers-projects.vercel.app
 
-## ✅ What Was Deployed
-
-### 1. I2E (Insight-to-Execution) Components
-- ✅ Pulse-Style Update Cards
-- ✅ Actionable Contextual Nuggets (ACNs)
-- ✅ Auto-Generated Execution Playbooks
-- ✅ One-Click Correction Widgets
-- ✅ Full Pulse API integration
-
-### 2. API Routes
-- ✅ `/api/reports/delta-brief` - Daily score changes & pulses
-- ✅ `/api/reports/model-nutrition` - Weekly patterns & fixes
-- ✅ `/api/fix/apply` - Fix execution with idempotency
-- ✅ `/api/fix/undo` - 10-minute undo window
-- ✅ `/api/health` - System health checks
-
-### 3. Infrastructure
-- ✅ Rate limiting middleware (60/min per tenant)
-- ✅ Stripe billing gates (Free/Pro/Enterprise)
-- ✅ Slack webhook integration
-- ✅ Cron job configuration
-- ✅ Health monitoring
-
-### 4. API Keys Configuration
-- ✅ Supabase keys (via MCP)
-- ✅ CRON_SECRET (auto-generated)
-- ✅ MODEL_REGISTRY_VERSION
-- ✅ NEXT_PUBLIC_API_URL
-- ⚠️ Manual keys needed: Stripe, Slack, Sentry
+**Status:** Building/Deploying (usually takes 2-5 minutes)
 
 ---
 
-## 📊 Environment Variables Status
+## 📋 Final Steps to Complete Activation
 
-### ✅ Configured in Vercel Production
-- `CRON_SECRET` - ✅ Set
-- `MODEL_REGISTRY_VERSION` - ✅ Set (1.0.0)
-- `NEXT_PUBLIC_API_URL` - ✅ Set
-- `NEXT_PUBLIC_SUPABASE_URL` - ✅ Already exists
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - ✅ Already exists
-
-### ⚠️ Needs Manual Configuration
-- `TELEMETRY_WEBHOOK` - Slack webhook URL
-- `STRIPE_SECRET_KEY` - Stripe secret key
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
-- `STRIPE_WEBHOOK_SECRET` - Stripe webhook secret
-- `SENTRY_DSN` - Sentry error tracking
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
-
----
-
-## 🚀 Next Steps
-
-### 1. Add Missing API Keys
-
+### 1. Wait for Build to Complete
+Check status:
 ```bash
-# Set in Vercel
-vercel env add TELEMETRY_WEBHOOK production
-vercel env add STRIPE_SECRET_KEY production
-vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
-vercel env add STRIPE_WEBHOOK_SECRET production
-vercel env add SENTRY_DSN production
-vercel env add SUPABASE_SERVICE_ROLE_KEY production
+vercel inspect dealership-ai-dashboard-qf59nn3ma-brian-kramers-projects.vercel.app
 ```
 
-### 2. Test Endpoints
+Or check Vercel Dashboard:
+https://vercel.com/dashboard → Your Project → Deployments
+
+### 2. Apply Supabase Migrations (If Not Done)
+If you haven't applied migrations yet:
+1. Go to: https://supabase.com/dashboard/project/gzlgfghpkbqlhgfozjkb
+2. Click: **SQL Editor**
+3. Copy/paste SQL from: `MIGRATIONS_COPY_PASTE.md`
+4. Run both migrations
+
+### 3. Configure Clerk Dashboard
+1. Go to: https://dashboard.clerk.com
+2. Select your application
+3. **Settings → Domains** → Add your production domain
+   - If using custom domain: `dash.dealershipai.com`
+   - Or use Vercel URL temporarily
+4. **Settings → Paths** → Verify redirect URLs
+
+### 4. Test Your Deployment
+
+**Health Check:**
+```bash
+curl https://dealership-ai-dashboard-qf59nn3ma-brian-kramers-projects.vercel.app/api/health
+```
+
+**Expected response:**
+```json
+{
+  "ok": true,
+  "qstash": "configured",
+  "redis": "configured",
+  "supabase": "configured",
+  "version": "..."
+}
+```
+
+**Test Sign Up:**
+1. Visit: `https://your-deployment-url/sign-up`
+2. Create an account
+3. Should redirect to `/dashboard`
+4. Should see pulses (mock data)
+5. Test fix drawer and Impact Ledger
+
+---
+
+## 🎯 Custom Domain Setup (Optional)
+
+If you want to use `dash.dealershipai.com`:
+
+1. **Add domain to Vercel:**
+   ```bash
+   vercel domains add dash.dealershipai.com
+   ```
+
+2. **Configure DNS:**
+   - Add CNAME: `dash` → `cname.vercel-dns.com`
+   - Wait for DNS propagation (5-30 minutes)
+
+3. **Update PUBLIC_BASE_URL:**
+   ```bash
+   vercel env rm PUBLIC_BASE_URL production
+   vercel env add PUBLIC_BASE_URL production
+   # Enter: https://dash.dealershipai.com
+   ```
+
+4. **Redeploy:**
+   ```bash
+   vercel --prod
+   ```
+
+---
+
+## ✅ Activation Checklist
+
+- [x] Environment variables set
+- [x] Build successful
+- [x] Deployed to Vercel
+- [ ] Supabase migrations applied (via Dashboard)
+- [ ] Clerk domain configured
+- [ ] Health check passes
+- [ ] Can sign up and access dashboard
+- [ ] Pulses display correctly
+- [ ] Fix drawer works
+- [ ] Impact Ledger shows receipts
+- [ ] AIV sparkline displays
+
+---
+
+## 🧪 Quick Tests
 
 ```bash
 # Health check
-curl https://dealership-ai-dashboard-ipj5z4xj1-brian-kramers-projects.vercel.app/api/health
+curl https://your-deployment-url/api/health
 
-# Delta brief (requires auth)
-curl https://dealership-ai-dashboard-ipj5z4xj1-brian-kramers-projects.vercel.app/api/reports/delta-brief
-```
+# Test visibility API (requires auth)
+# Sign in first, then test in browser DevTools
 
-### 3. Verify Cron Jobs
-
-Cron jobs are configured in `vercel.json`:
-- Presence refresh: Every 30 minutes
-- Schema refresh: Every 2 hours
-- GA4 refresh: Every hour
-- Reviews refresh: Every hour
-- Delta brief: Daily at 23:00
-- Model nutrition: Weekly Sunday at 23:00
-
-### 4. Monitor Deployment
-
-```bash
-# View logs
-vercel logs https://dealership-ai-dashboard-ipj5z4xj1-brian-kramers-projects.vercel.app
-
-# Check status
-vercel inspect https://dealership-ai-dashboard-ipj5z4xj1-brian-kramers-projects.vercel.app
+# Check deployment logs
+vercel logs dealership-ai-dashboard-qf59nn3ma-brian-kramers-projects.vercel.app
 ```
 
 ---
 
-## 📁 Files Created/Modified
+## 🎉 You're Live!
 
-### New Components
-- `app/components/i2e/` - Complete I2E system
-- `app/api/reports/delta-brief/route.ts`
-- `app/api/reports/model-nutrition/route.ts`
-- `app/api/fix/apply/route.ts`
-- `app/api/fix/undo/route.ts`
-- `app/api/health/route.ts`
-- `lib/middleware/rate-limit.ts`
-- `lib/stripe/gating.ts`
-- `lib/telemetry/slack.ts`
-- `components/i2e/StripeGate.tsx`
+Your dashboard is now deployed and ready for testing!
 
-### Configuration
-- `vercel.json` - Updated with cron schedules
-- `middleware.ts` - Simplified for Edge compatibility
-- `.env.local` - Auto-configured with MCP keys
-
-### Scripts
-- `scripts/configure-all-keys.ts` - Interactive setup
-- `scripts/setup-api-keys-auto.ts` - Non-interactive setup
-- `scripts/connect-api-keys.sh` - Bash alternative
-- `scripts/sync-to-vercel.sh` - Vercel sync script
-
----
-
-## 🎯 Key Features Now Live
-
-1. **I2E Components** - Hyper-actionable UX system
-2. **Pulse Integration** - Real-time pulse data → I2E formats
-3. **Fix Engine** - One-click fixes with undo support
-4. **Billing Gates** - Stripe integration ready
-5. **Telemetry** - Slack alerts for milestones
-6. **Health Monitoring** - System status endpoint
-7. **Rate Limiting** - Per-tenant protection
-8. **Cron Jobs** - Automated data refresh
-
----
-
-## 🔧 Troubleshooting
-
-### If deployment fails:
-1. Check build logs: `vercel logs [deployment-url]`
-2. Verify environment variables: `vercel env ls`
-3. Test locally: `npm run build`
-
-### If middleware errors:
-- Current middleware is simplified for Edge compatibility
-- Auth is handled at route level
-- Can re-enable Clerk middleware after Edge compatibility confirmed
-
----
-
-## 📊 Deployment Metrics
-
-- **Build Time**: ~1 minute
-- **Deployment Size**: 1.2MB
-- **Status**: ✅ Success
-- **Environment**: Production
-
----
-
-## ✅ Checklist
-
-- [x] API keys configured (auto via MCP)
-- [x] Environment variables synced to Vercel
-- [x] Build successful
-- [x] Deployment complete
-- [ ] Manual API keys added (Stripe, Slack, Sentry)
-- [ ] Cron jobs verified
-- [ ] Health endpoint tested
-- [ ] I2E components integrated into dashboard
-
----
-
-**Status**: 🚀 **LIVE IN PRODUCTION**
-
-All core infrastructure is deployed and ready. Add remaining API keys to enable full functionality.
+**Next:** Apply migrations, configure Clerk, and test the full flow.

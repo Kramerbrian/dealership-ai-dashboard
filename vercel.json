@@ -9,15 +9,20 @@
   ],
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' https://js.stripe.com https://clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://js.clerk.com https://js.clerk.dev https://*.clerk.com https://*.clerk.dev https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://*.sentry.io https://vercel.live https://*.vercel.live; worker-src 'self' blob: https://*.clerk.com https://*.clerk.dev https://clerk.accounts.dev https://clerk.dealershipai.com https://js.clerk.com https://js.clerk.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai; connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://*.clerk.dealershipai.com https://clerk.dealershipai.com https://*.clerk.com https://*.clerk.dev https://www.google-analytics.com https://analytics.google.com https://va.vercel-scripts.com https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://api.workos.com wss: https://api.openai.com https://api.anthropic.com https://*.upstash.io; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.com https://*.clerk.dev; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
       "source": "/api/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, s-maxage=60, stale-while-revalidate=300"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://clerk.*.clerk.accounts.dev; frame-src 'self' https://js.stripe.com https://clerk.*.clerk.accounts.dev;"
         }
       ]
     }

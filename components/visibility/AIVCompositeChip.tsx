@@ -113,7 +113,20 @@ export default function AIVCompositeChip({
           </div>
           {history && history.length >= 2 && (
             <div className="mt-3 border-t border-white/10 pt-3">
-              <div className="text-xs text-white/60 mb-1">AIV 7-day trend</div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-xs text-white/60">AIV 7-day trend</div>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Trigger drawer open (parent component should handle)
+                    window.dispatchEvent(new CustomEvent('open-visibility-drawer', { detail: { domain } }));
+                  }}
+                  className="text-xs text-blue-400 hover:text-blue-300"
+                >
+                  View full history →
+                </a>
+              </div>
               <Sparkline values={history} width={260} height={50} />
             </div>
           )}

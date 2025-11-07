@@ -13,8 +13,9 @@ export type IntegrationRow = {
 };
 
 export async function getIntegration(tenantId: string, kind: string): Promise<IntegrationRow | null> {
-  if (!supabaseAdmin) throw new Error("Supabase not configured");
-  const { data, error } = await supabaseAdmin
+  const admin = supabaseAdmin as any;
+  if (!admin || !admin.from) throw new Error("Supabase not configured");
+  const { data, error } = await admin
     .from("integrations")
     .select("*")
     .eq("tenant_id", tenantId)
@@ -32,10 +33,11 @@ export async function upsertIntegration(params: {
   expiresAt?: string | null;
   metadata?: any;
 }): Promise<void> {
-  if (!supabaseAdmin) throw new Error("Supabase not configured");
+  const admin = supabaseAdmin as any;
+  if (!admin || !admin.from) throw new Error("Supabase not configured");
   const { tenantId, kind, accessToken, refreshToken, expiresAt, metadata } = params;
 
-  const { error } = await supabaseAdmin
+  const { error } = await admin
     .from("integrations")
     .upsert({
       tenant_id: tenantId,

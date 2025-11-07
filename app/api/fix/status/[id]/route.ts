@@ -23,20 +23,23 @@ export async function GET(
 
     const receiptId = params.id;
 
-    // TODO: Load from database
-    // For now, return synthetic data
-    // In production, this would query your receipts table:
-    // const receipt = await db.receipts.findOne({ id: receiptId, tenant_id: isolation.tenantId });
+    // Load from database
+    const { getReceipt } = await import('@/lib/db/receipts');
+    const receipt = await getReceipt(receiptId, isolation.tenantId);
 
-    // Simulate pending → finalized transition
-    const isFinalized = Math.random() > 0.3; // 70% chance of being finalized
+    if (!receipt) {
+      return NextResponse.json(
+        { error: 'Receipt not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
-      id: receiptId,
-      deltaUSD: isFinalized ? Math.floor(Math.random() * 10000) + 2000 : undefined,
-      undone: false,
-      finalized: isFinalized,
-      timestamp: new Date().toISOString()
+      id: receipt.id,
+      deltaUSD: receipt.delta_usd,
+      undone: receipt.undone,
+      finalized: receipt.finalized,
+      timestamp: receipt.updated_at
     });
   } catch (error: any) {
     console.error('Fix status error:', error);

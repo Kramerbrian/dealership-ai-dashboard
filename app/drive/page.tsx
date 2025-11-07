@@ -25,6 +25,8 @@ const ImpactLedgerPro = dynamic(() => import('@/components/pulse/ImpactLedgerPro
 
 const ZeroClickHeat = dynamic(() => import('@/components/pulse/ZeroClickHeat'), { ssr: false });
 
+const VisibilityDrawer = dynamic(() => import('@/components/visibility/VisibilityDrawer'), { ssr: false });
+
 
 
 type Pulse = {
@@ -60,6 +62,8 @@ export default function DrivePage() {
   const [preview, setPreview] = useState<any>(null);
 
   const [ledger, setLedger] = useState<any[]>([]);
+
+  const [visibilityDrawerOpen, setVisibilityDrawerOpen] = useState(false);
 
   function patchReceipt(id: string, patch: Partial<any>) {
     setLedger((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -115,6 +119,15 @@ export default function DrivePage() {
 
     })();
 
+  }, []);
+
+  // Listen for visibility drawer open event
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      setVisibilityDrawerOpen(true);
+    };
+    window.addEventListener('open-visibility-drawer', handler as EventListener);
+    return () => window.removeEventListener('open-visibility-drawer', handler as EventListener);
   }, []);
 
 
@@ -376,6 +389,13 @@ export default function DrivePage() {
         </aside>
 
       </section>
+
+      {/* Visibility Drawer */}
+      <VisibilityDrawer
+        domain={sessionStorage.getItem('dai:analyzer') ? JSON.parse(sessionStorage.getItem('dai:analyzer') || '{}')?.domain : undefined}
+        open={visibilityDrawerOpen}
+        onClose={() => setVisibilityDrawerOpen(false)}
+      />
 
     </main>
 

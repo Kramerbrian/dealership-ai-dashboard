@@ -1,179 +1,101 @@
-# 🌐 DealershipAI Domain Configuration Guide
+# Domain Setup Guide - PUBLIC_BASE_URL
 
-## Current Deployment Status
-- **Production URL**: https://dealershipai-dashboard-77fe0bcs5-brian-kramers-projects.vercel.app
-- **Project**: dealershipai-dashboard
-- **Team**: brian-kramers-projects
+## 🎯 Quick Answer
 
-## Domain Configuration Steps
+**Use: `https://dash.dealershipai.com`**
 
-### 1. Main Domain: main.dealershipai.com
-
-#### Option A: Through Vercel Dashboard (Recommended)
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Select your `dealershipai-dashboard` project
-3. Go to **Settings** → **Domains**
-4. Click **Add Domain**
-5. Enter `main.dealershipai.com`
-6. Follow the DNS configuration instructions
-
-#### Option B: Through CLI (Alternative)
-```bash
-vercel domains add main.dealershipai.com
-```
-
-### 2. Dashboard Subdomain: dash.dealershipai.com
-
-Since `dash.dealershipai.com` is already assigned to another project, you have two options:
-
-#### Option A: Transfer from Existing Project
-1. Go to the existing project that owns `dash.dealershipai.com`
-2. Remove the domain from that project
-3. Add it to `dealershipai-dashboard` project
-
-#### Option B: Use Different Subdomain
-```bash
-vercel domains add dashboard.dealershipai.com
-# or
-vercel domains add app.dealershipai.com
-# or
-vercel domains add analytics.dealershipai.com
-```
-
-### 3. DNS Configuration
-
-For each domain you add, Vercel will provide DNS records to add:
-
-#### Typical DNS Records:
-```
-Type: A
-Name: @
-Value: 76.76.19.61
-
-Type: CNAME
-Name: www
-Value: cname.vercel-dns.com
-
-Type: CNAME
-Name: dash (or your chosen subdomain)
-Value: cname.vercel-dns.com
-```
-
-### 4. Routing Configuration
-
-The current `vercel.json` already handles routing:
-
-```json
-{
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/dashboard",
-      "destination": "/intelligence"
-    }
-  ]
-}
-```
-
-### 5. SSL Certificate
-
-Vercel automatically provides SSL certificates for custom domains:
-- **Automatic**: SSL certificates are provisioned automatically
-- **Verification**: Domain ownership must be verified first
-- **Renewal**: Certificates auto-renew
-
-## Verification Steps
-
-### 1. Domain Ownership Verification
-1. Add the domain in Vercel dashboard
-2. Vercel will provide DNS records to add
-3. Add the records to your DNS provider
-4. Wait for verification (usually 5-10 minutes)
-
-### 2. Test the Configuration
-```bash
-# Test main domain
-curl -I https://main.dealershipai.com
-
-# Test dashboard subdomain
-curl -I https://dash.dealershipai.com
-```
-
-## Current Application Structure
-
-### Landing Page (main.dealershipai.com)
-- **Route**: `/`
-- **Component**: `app/(site)/landing/page.tsx`
-- **Features**: 
-  - Glass morphism design
-  - Theme toggle
-  - Interactive dashboard preview
-  - Pricing and features
-
-### Intelligence Dashboard (dash.dealershipai.com)
-- **Route**: `/intelligence`
-- **Component**: `app/(dashboard)/intelligence/page.tsx`
-- **Features**:
-  - Tabbed interface
-  - Export/share functionality
-  - Theme-aware design
-  - Analytics views
-
-## Troubleshooting
-
-### Common Issues:
-
-1. **403 Forbidden**: Domain ownership not verified
-   - Solution: Complete DNS verification process
-
-2. **Domain already assigned**: Subdomain in use by another project
-   - Solution: Transfer domain or use different subdomain
-
-3. **SSL Certificate Issues**: 
-   - Solution: Wait for automatic provisioning (up to 24 hours)
-
-### Support Commands:
-```bash
-# Check domain status
-vercel domains ls
-
-# Inspect deployment
-vercel inspect [deployment-url]
-
-# Check logs
-vercel logs [deployment-url]
-```
-
-## Next Steps After Domain Setup
-
-1. **Analytics Integration**
-   - Add Google Analytics
-   - Configure conversion tracking
-   - Set up custom events
-
-2. **Performance Monitoring**
-   - Enable Vercel Analytics
-   - Set up Core Web Vitals monitoring
-   - Configure error tracking
-
-3. **SEO Optimization**
-   - Add meta tags
-   - Configure sitemap
-   - Set up structured data
-
-4. **Security Headers**
-   - Already configured in `next.config.js`
-   - Consider adding CSP headers
-   - Enable HSTS
-
-## Contact Information
-
-For domain-related issues:
-- **Vercel Support**: https://vercel.com/help
-- **DNS Provider**: Contact your domain registrar
-- **Project Owner**: brian-kramers-projects
+This is the recommended subdomain for your dashboard application.
 
 ---
 
-**Last Updated**: $(date)
-**Deployment URL**: https://dealershipai-dashboard-77fe0bcs5-brian-kramers-projects.vercel.app
+## 📋 Two Options
+
+### Option 1: Use Custom Domain (Recommended)
+
+**If you have `dash.dealershipai.com` set up:**
+```bash
+PUBLIC_BASE_URL=https://dash.dealershipai.com
+```
+
+**To set it up:**
+1. Add domain in Vercel:
+   ```bash
+   vercel domains add dash.dealershipai.com
+   ```
+2. Configure DNS:
+   - Add CNAME record: `dash` → `cname.vercel-dns.com`
+   - Or use Vercel's nameservers if managing DNS through Vercel
+3. Wait for DNS propagation (5-30 minutes)
+4. Use: `https://dash.dealershipai.com`
+
+### Option 2: Use Vercel URL (Temporary)
+
+**If you haven't set up custom domain yet:**
+```bash
+PUBLIC_BASE_URL=https://dealership-ai-dashboard-[hash].vercel.app
+```
+
+**⚠️ Note:** Vercel URLs change with each deployment, so this is only good for testing. For production, use a custom domain.
+
+---
+
+## 🔍 How to Find Your Current Deployment URL
+
+```bash
+# List recent deployments
+vercel ls
+
+# Or check Vercel Dashboard
+# https://vercel.com/dashboard → Your Project → Deployments
+```
+
+---
+
+## 💡 Why `dash.dealershipai.com`?
+
+- ✅ Standard subdomain pattern for dashboards
+- ✅ Keeps `dealershipai.com` free for marketing/landing page
+- ✅ Matches your existing documentation
+- ✅ Professional and clear
+- ✅ Stable URL for QStash callbacks
+
+---
+
+## 🚀 Setup Steps
+
+1. **Add domain to Vercel:**
+   ```bash
+   vercel domains add dash.dealershipai.com
+   ```
+
+2. **Configure DNS:**
+   - Go to your DNS provider (where `dealershipai.com` is managed)
+   - Add CNAME: `dash` → `cname.vercel-dns.com`
+   - Or use Vercel's nameservers
+
+3. **Wait for DNS propagation** (5-30 minutes)
+
+4. **Set environment variable:**
+   ```bash
+   vercel env add PUBLIC_BASE_URL production
+   # Enter: https://dash.dealershipai.com
+   ```
+
+5. **Verify:**
+   ```bash
+   curl https://dash.dealershipai.com/api/health
+   ```
+
+---
+
+## 📝 Summary
+
+**For production:** Use `https://dash.dealershipai.com`  
+**For testing:** Use your Vercel deployment URL temporarily
+
+The `PUBLIC_BASE_URL` is used for:
+- QStash callbacks (async fix jobs)
+- Internal API calls
+- Webhook URLs
+
+So it needs to be a **stable, accessible URL**.

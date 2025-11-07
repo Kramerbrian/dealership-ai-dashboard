@@ -20,28 +20,30 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     const domain = url.searchParams.get("domain") || "example.com";
+    const days = parseInt(url.searchParams.get("days") || "7");
 
-    // TODO: replace with your presence history (store last N presence snapshots)
-    // This would query your database:
-    // const history = await db.presence_history
-    //   .find({ tenant_id: isolation.tenantId, domain })
-    //   .orderBy('date', 'desc')
-    //   .limit(7);
-
-    const today = new Date();
-    const days = [...Array(7)].map((_,i)=> {
-      const d = new Date(today.getTime() - (6 - i) * 24 * 3600 * 1000);
-      return d.toISOString().slice(0,10);
-    });
-
-    // synthetic AIV: 80..92 with gentle wiggle
-    const base = 86;
-    const series = days.map((_,i)=> base + Math.round(Math.sin(i)*4));
+    // Load from database
+    const { getPresenceHistory, getAIVSeries, getEngineSeries } = await import('@/lib/db/presence-history');
+    
+    const history = await getPresenceHistory(isolation.tenantId, domain, days);
+    const aivSeries = await getAIVSeries(isolation.tenantId, domain, days);
+    const engineSeries = {
+      ChatGPT: await getEngineSeries(isolation.tenantId, domain, 'ChatGPT', days),
+      Perplexity: await getEngineSeries(isolation.tenantId, domain, 'Perplexity', days),
+      Gemini: await getEngineSeries(isolation.tenantId, domain, 'Gemini', days),
+      Copilot: await getEngineSeries(isolation.tenantId, domain, 'Copilot', days)
+    };
 
     return NextResponse.json({ 
       domain, 
-      days, 
-      aiv: series 
+      days: history.map(h => h.date),
+      aiv: aivSeries,
+      engines: engineSeries,
+      history: history.map(h => ({
+        date: h.date,
+        aiv: h.aiv_composite,
+        engines: h.engines
+      }))
     }, {
       headers: {
         'Cache-Control': 's-maxage=300, stale-while-revalidate=600'

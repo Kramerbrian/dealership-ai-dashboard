@@ -6,9 +6,17 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Lazy initialization to avoid build-time errors
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration missing for telemetry');
+  }
+  
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 export interface TelemetryEvent {
   event_type: string;
@@ -22,6 +30,7 @@ export interface TelemetryEvent {
 
 export async function storeTelemetry(event: TelemetryEvent): Promise<void> {
   try {
+    const supabase = getSupabaseClient();
     const { error } = await supabase.from('telemetry_events').insert({
       event_type: event.event_type,
       tenant_id: event.tenant_id,
@@ -48,6 +57,7 @@ export async function getTelemetryStats(
   endDate: Date
 ) {
   try {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('telemetry_events')
       .select('*')
@@ -70,6 +80,7 @@ export async function getTelemetryByEventType(
   limit: number = 100
 ) {
   try {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('telemetry_events')
       .select('*')
@@ -88,6 +99,7 @@ export async function getTelemetryByEventType(
 
 export async function getTelemetrySummary(tenantId: string, days: number = 7) {
   try {
+    const supabase = getSupabaseClient();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 

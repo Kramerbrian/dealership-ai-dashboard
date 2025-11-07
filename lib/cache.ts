@@ -2,9 +2,25 @@
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 
-const url = process.env.UPSTASH_REDIS_REST_URL;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-export const redis = url && token ? new Redis({ url, token }) : null;
+// Lazy initialization to avoid build-time errors and trim whitespace
+function getRedis() {
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  
+  if (!url || !token) {
+    return null;
+  }
+  
+  // Validate URL format
+  if (!url.startsWith('https://')) {
+    console.warn('Invalid Redis URL format');
+    return null;
+  }
+  
+  return new Redis({ url, token });
+}
+
+export const redis = getRedis();
 
 export async function cacheJSON<T>(
   key: string,

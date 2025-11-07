@@ -53,8 +53,13 @@ export default function ImpactLedgerPro({
               {r.undone ? (
                 <span className="text-amber-400 font-medium">Undone</span>
               ) : (typeof r.deltaUSD === "number") ? (
-                <span className={`font-medium ${r.deltaUSD>=0 ? "text-green-400" : "text-red-400"}`}>
-                  {r.deltaUSD>=0 ? "+" : "-"}${Math.abs(r.deltaUSD).toLocaleString()}
+                <span className="flex items-center gap-2">
+                  <span className={`font-medium ${r.deltaUSD>=0 ? "text-green-400" : "text-red-400"}`}>
+                    {r.deltaUSD>=0 ? "+" : "-"}${Math.abs(r.deltaUSD).toLocaleString()}
+                  </span>
+                  <span className="text-green-400" title="Finalized">
+                    ✓
+                  </span>
                 </span>
               ) : (
                 <span className="flex items-center gap-2 text-white/60">

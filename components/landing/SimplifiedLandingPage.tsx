@@ -1015,6 +1015,7 @@ export default function SimplifiedLandingPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Pricing */}
       <section className="py-24 px-4 bg-gradient-to-b from-gray-50 to-white" id="pricing" data-funnel-step="pricing_view">
