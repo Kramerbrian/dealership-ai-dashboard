@@ -1,0 +1,45 @@
+name: Deploy GPT Updates
+
+on:
+  push:
+    paths:
+      - 'lib/gpt/**'
+      - 'app/api/gpt/**'
+      - 'components/gpt/**'
+      - 'lib/db/schemas/gpt-*.sql'
+      - 'prompts/**'
+      - 'schemas/gpt-*.json'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel deploy --prod --token $VERCEL_TOKEN --yes
+
+      - name: Run database migrations
+        run: |
+          # In production, run Supabase migrations
+          # supabase db push
+
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "✅ GPT system deployed successfully"
+

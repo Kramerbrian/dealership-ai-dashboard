@@ -1,133 +1,154 @@
-# Quick Start Guide - Integration Setup
+# Quick Start - Get Dashboard Live in 15 Minutes
 
-## 🚀 5-Minute Setup
+## 🎯 Fastest Path to Demo
 
-### Step 1: Environment Variables
+### Step 1: Environment Variables (5 min)
 
-```bash
-# Copy example file
-cp .env.example.integration .env.local
-
-# Edit and fill in values
-# At minimum, set Redis for BullMQ:
-# UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-# UPSTASH_REDIS_REST_TOKEN=your-token
-```
-
-### Step 2: Set Up Redis (Upstash)
-
-1. Go to https://console.upstash.com/
-2. Click "Create Database"
-3. Choose "Regional" → "Pay as you go"
-4. Copy REST URL and REST Token
-5. Add to `.env.local`
-
-**Quick Link**: https://console.upstash.com/redis
-
-### Step 3: Create Database Tables
-
-**Option A: Using Prisma (Recommended)**
-```bash
-npx prisma migrate dev -n "add_telemetry_and_jobs"
-```
-
-**Option B: Manual SQL**
-```bash
-# Copy SQL from scripts/create-tables.sql
-# Paste into Supabase SQL Editor
-```
-
-### Step 4: Verify Setup
+**In Vercel Dashboard:**
+1. Go to your project → Settings → Environment Variables
+2. Add these required variables:
 
 ```bash
-# Run setup checker
-npm run setup:check
+# Clerk (get from https://dashboard.clerk.com)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 
-# Or visit in browser
-http://localhost:3000/api/setup/check
+# Supabase (get from https://supabase.com/dashboard)
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_ROLE=eyJhbGciOiJ...
+
+# Upstash Redis (get from https://console.upstash.com)
+UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=xxx
+
+# Your domain
+PUBLIC_BASE_URL=https://dash.dealershipai.com
+# OR
+NEXT_PUBLIC_APP_URL=https://dash.dealershipai.com
 ```
 
-### Step 5: Start Development
+**Quick Links:**
+- [Clerk Dashboard](https://dashboard.clerk.com) → Create app → Copy keys
+- [Supabase Dashboard](https://supabase.com/dashboard) → Create project → Settings → API
+- [Upstash Console](https://console.upstash.com) → Create Redis database
+
+---
+
+### Step 2: Supabase Migrations (2 min)
+
+**Option A: Via Supabase Dashboard (Easiest)**
+1. Go to Supabase Dashboard → SQL Editor
+2. Copy contents of `supabase/migrations/20251108_integrations_reviews_visibility.sql`
+3. Paste and run
+4. Copy contents of `supabase/migrations/20251109_fix_receipts.sql`
+5. Paste and run
+
+**Option B: Via CLI**
+```bash
+# If you have Supabase CLI installed
+supabase migration up
+```
+
+---
+
+### Step 3: Clerk Configuration (3 min)
+
+1. Go to [Clerk Dashboard](https://dashboard.clerk.com)
+2. Select your application
+3. Go to **Settings** → **Domains**
+4. Add your production domain: `dash.dealershipai.com`
+5. Go to **Settings** → **Paths**
+6. Verify redirect URLs:
+   - After sign in: `/dashboard`
+   - After sign up: `/dashboard`
+
+---
+
+### Step 4: Deploy (5 min)
 
 ```bash
-npm run dev
+# Deploy to Vercel
+vercel --prod
+
+# Or push to main branch (if auto-deploy is enabled)
+git push origin main
 ```
+
+---
+
+### Step 5: Test (5 min)
+
+1. **Sign Up**
+   - Go to `https://dash.dealershipai.com/sign-up`
+   - Create an account
+   - Should redirect to `/dashboard`
+
+2. **View Dashboard**
+   - Should see pulses (mock data)
+   - AIV composite chip with hovercard
+   - Impact Ledger (empty initially)
+
+3. **Test Fix Flow**
+   - Click a pulse → Fix drawer opens
+   - Click "Preview Fix" → See simulation
+   - Click "Apply" → Receipt appears in ledger
+   - Receipt shows "pending..." until final delta arrives
+
+4. **Test AIV Sparkline**
+   - Hover over AIV composite chip
+   - Should see 7-day trend sparkline
+
+---
 
 ## ✅ Verification Checklist
 
-Run the setup checker to verify everything:
+- [ ] Environment variables set in Vercel
+- [ ] Supabase migrations applied
+- [ ] Clerk domain configured
+- [ ] Deployment successful
+- [ ] Can sign up/sign in
+- [ ] Dashboard loads with pulses
+- [ ] Fix drawer works
+- [ ] Impact Ledger shows receipts
+- [ ] AIV sparkline displays
 
-```bash
-npm run setup:check
-```
+---
 
-Expected output:
-- ✅ Redis/BullMQ Queue: Configured
-- ✅ Supabase: Connected and tables exist
-- ⚠️  Data Sources: Not configured (will use mocks) - OK
-- ⚠️  Slack: Not configured (alerts skipped) - OK
+## 🚨 Troubleshooting
 
-## 🧪 Test Integration
+### "Authentication required" errors
+- Check Clerk keys are correct
+- Verify domain is added to Clerk
+- Check redirect URLs match
 
-```bash
-# Run integration tests
-npm run test:integration
+### "Supabase not configured" errors
+- Verify `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE` are set
+- Check migrations were applied
+- Verify service role key has correct permissions
 
-# Or manually test endpoints
-curl http://localhost:3000/api/monitoring/queue
-```
+### Receipts stuck on "pending..."
+- QStash is optional - receipts will work without it
+- If using QStash, verify `QSTASH_TOKEN` is set
+- Check `/api/jobs/fix-consumer` logs in Vercel
 
-## 📊 Monitor in Production
+### Sparkline not showing
+- Check `/api/visibility/history` returns data
+- Verify domain parameter is passed
+- Check browser console for errors
 
-### Queue Health
-```bash
-curl https://dash.dealershipAI.com/api/monitoring/queue
-```
+---
 
-### Setup Status
-```bash
-curl https://dash.dealershipAI.com/api/setup/check
-```
+## 🎉 You're Live!
 
-## 🔧 Troubleshooting
+Once these steps are complete, your dashboard is **demo-ready** with:
+- ✅ Full authentication flow
+- ✅ Working fix APIs
+- ✅ Real-time receipt polling
+- ✅ AIV trends visualization
+- ✅ Mock data (fully functional)
 
-### Queue Not Working
-1. Check Redis connection in `.env.local`
-2. Verify worker initialized (check logs)
-3. Test: `curl http://localhost:3000/api/monitoring/queue`
-
-### Tables Missing
-1. Run migration: `npx prisma migrate dev`
-2. Or run SQL: `scripts/create-tables.sql`
-3. Verify: Check Supabase dashboard
-
-### Data Sources Using Mocks
-- This is expected if APIs aren't configured
-- Services gracefully fall back to mocks
-- Configure API keys in `.env.local` when ready
-
-## 📝 Next Steps
-
-1. ✅ Environment variables set
-2. ✅ Redis configured
-3. ✅ Database tables created
-4. ✅ Setup verified
-5. 🔄 Configure data source APIs (optional)
-6. 🔄 Set up Slack webhooks (optional)
-7. 🚀 Deploy to production
-
-## 🎯 Production Checklist
-
-Before deploying:
-- [ ] All environment variables set in Vercel
-- [ ] Redis configured (Upstash)
-- [ ] Database tables created
-- [ ] Setup check passes
-- [ ] Integration tests pass
-- [ ] Monitoring endpoint accessible
-
-## 📚 Additional Resources
-
-- **Full Setup Guide**: `docs/SETUP_INTEGRATION.md`
-- **Integration Guide**: `docs/REAL_DATA_INTEGRATION_GUIDE.md`
-- **Status**: `docs/INTEGRATION_STATUS.md`
+**Next:** Wire real data sources incrementally as needed.

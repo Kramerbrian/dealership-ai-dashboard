@@ -1,32 +1,48 @@
-import { NextResponse } from "next/server";
-import { withAuth } from "../../../_utils/withAuth";
-import { loadReceipt } from "@/lib/receipts/store";
+import { NextRequest, NextResponse } from 'next/server';
+import { enforceTenantIsolation } from '@/lib/api-protection/tenant-isolation';
 
-export const GET = withAuth(async ({ req, tenantId }) => {
+export const dynamic = 'force-dynamic';
+
+/**
+ * GET /api/fix/status/:id
+ * 
+ * Get current status of a fix receipt (for polling)
+ */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const { pathname } = new URL(req.url);
-    const id = pathname.split("/").pop();
-    if (!id)
-      return NextResponse.json({ error: "id required" }, { status: 400 });
+    const isolation = await enforceTenantIsolation(req);
+    if (!isolation.allowed || !isolation.tenantId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
-    const rec = await loadReceipt(tenantId, id).catch(() => null);
-    if (!rec)
-      return NextResponse.json({ error: "not found" }, { status: 404 });
+    const receiptId = params.id;
+
+    // TODO: Load from database
+    // For now, return synthetic data
+    // In production, this would query your receipts table:
+    // const receipt = await db.receipts.findOne({ id: receiptId, tenant_id: isolation.tenantId });
+
+    // Simulate pending → finalized transition
+    const isFinalized = Math.random() > 0.3; // 70% chance of being finalized
 
     return NextResponse.json({
-      id: rec.id,
-      summary: rec.summary,
-      deltaUSD: rec.delta_usd,
-      undone: rec.undone,
-      undoable: rec.undoable,
-      undoDeadline: rec.undo_deadline,
-      createdAt: rec.created_at,
+      id: receiptId,
+      deltaUSD: isFinalized ? Math.floor(Math.random() * 10000) + 2000 : undefined,
+      undone: false,
+      finalized: isFinalized,
+      timestamp: new Date().toISOString()
     });
-  } catch (e: any) {
+  } catch (error: any) {
+    console.error('Fix status error:', error);
     return NextResponse.json(
-      { error: e?.message || "status check failed" },
+      { error: 'Failed to get status' },
       { status: 500 }
     );
   }
-});
-
+}

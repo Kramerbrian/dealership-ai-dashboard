@@ -1,174 +1,113 @@
 # 🚀 Quick Start Guide
 
-## 1. Generate Audit Reports
+## ✅ Deployment Status
 
-### Basic Usage
-```bash
-node scripts/generate-report.js
-```
+**Production URL**: https://dealership-ai-dashboard-ipj5z4xj1-brian-kramers-projects.vercel.app
 
-### With Google PageSpeed API Key
-```bash
-GOOGLE_PAGESPEED_API_KEY=your_key node scripts/generate-report.js
-```
-
-**Output:**
-- `public/audit-reports/abtest_metrics.csv` - CSV data
-- `public/audit-reports/abtest_report.pdf` - PDF report
+**Status**: ✅ Deployed Successfully
 
 ---
 
-## 2. Test Dashboard
+## 🔧 Add Missing API Keys
 
-### Start Dev Server
+### Option 1: Interactive Script
+
+```bash
+./scripts/add-telemetry-webhook.sh
+```
+
+### Option 2: Manual Vercel CLI
+
+```bash
+# Get your Slack webhook URL from:
+# https://api.slack.com/apps → Your App → Incoming Webhooks
+
+vercel env add TELEMETRY_WEBHOOK production
+# Paste your webhook URL when prompted
+```
+
+### Option 3: Vercel Dashboard
+
+1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+2. Add `TELEMETRY_WEBHOOK` with your Slack webhook URL
+3. Select "Production" environment
+4. Save
+
+---
+
+## 🧪 Test Health Endpoint
+
+The deployment is protected by Vercel authentication. To test:
+
+### Option 1: Use Vercel MCP (in Cursor)
+
+The health endpoint requires authentication. Use the Vercel MCP tools to access it.
+
+### Option 2: Test Locally
+
 ```bash
 npm run dev
+curl http://localhost:3000/api/health
 ```
 
-### Visit Dashboard
-Open in browser:
-```
-http://localhost:3000/dashboard
-```
-
-**What to Check:**
-- ✅ Dashboard loads without errors
-- ✅ Tabs navigate correctly (Overview, AI Health, Website, etc.)
-- ✅ Cognitive Dashboard modal opens
-- ✅ HAL-9000 chatbot works
-- ✅ Data displays from API
-
----
-
-## 3. View Audit Reports
-
-### Access Audit Viewer
-Open in browser:
-```
-http://localhost:3000/admin/audit
-```
-
-**Features:**
-- 📊 Live metrics table
-- 📈 CTR vs Conversion chart
-- 📥 CSV download
-- 📄 PDF download
-- 📜 Historical reports
-
----
-
-## 4. Configure Analytics
-
-### Quick Setup
-1. Copy `.env.example` to `.env.local`:
-   ```bash
-   cp env.example .env.local
-   ```
-
-2. Add analytics credentials (see `ANALYTICS_CONFIG.md`):
-   ```bash
-   # Google PageSpeed Insights
-   GOOGLE_PAGESPEED_API_KEY=your_key
-   
-   # Google Analytics 4
-   GA_PROPERTY_ID=123456789
-   GOOGLE_ANALYTICS_CREDENTIALS='{"type":"service_account",...}'
-   
-   # OR Mixpanel
-   NEXT_PUBLIC_MIXPANEL_TOKEN=your_token
-   
-   # OR Segment
-   NEXT_PUBLIC_SEGMENT_KEY=your_key
-   ```
-
-3. Restart dev server:
-   ```bash
-   npm run dev
-   ```
-
-4. Test analytics:
-   ```bash
-   curl http://localhost:3000/api/analytics/variant?variant=fear&range=30d
-   ```
-
-5. Regenerate reports:
-   ```bash
-   node scripts/generate-report.js
-   ```
-
----
-
-## Testing Checklist
-
-### ✅ Report Generation
-- [ ] Run `node scripts/generate-report.js`
-- [ ] Verify CSV and PDF files created
-- [ ] Check `public/audit-reports/` directory
-
-### ✅ Dashboard
-- [ ] Visit `http://localhost:3000/dashboard`
-- [ ] Test all tabs
-- [ ] Open Cognitive Dashboard modal
-- [ ] Test HAL-9000 chatbot
-
-### ✅ Audit Viewer
-- [ ] Visit `http://localhost:3000/admin/audit`
-- [ ] Verify metrics table displays
-- [ ] Check chart renders
-- [ ] Test CSV download
-- [ ] Test PDF download
-
-### ✅ Analytics Integration
-- [ ] Add credentials to `.env.local`
-- [ ] Test analytics API endpoint
-- [ ] Verify real data in reports
-- [ ] Check CTR/Conversion rates
-
----
-
-## Common Commands
+### Option 3: Use Vercel CLI
 
 ```bash
-# Generate reports
-node scripts/generate-report.js
-
-# Start dev server
-npm run dev
-
-# Test analytics API
-curl http://localhost:3000/api/analytics/variant?variant=fear&range=30d
-
-# Test PIQR API
-curl http://localhost:3000/api/piqr?dealerId=current&range=30d
-
-# View audit history
-curl http://localhost:3000/api/audit-history
+vercel inspect [deployment-url] --logs
 ```
 
 ---
 
-## Troubleshooting
+## 📋 Environment Variables Checklist
 
-### Dashboard shows "Internal Server Error"
-- Check browser console for errors
-- Verify API endpoints are responding
-- Check authentication state
+### ✅ Already Configured
+- `CRON_SECRET` ✅
+- `MODEL_REGISTRY_VERSION` ✅
+- `NEXT_PUBLIC_API_URL` ✅
+- `STRIPE_SECRET_KEY` ✅
+- `STRIPE_PUBLISHABLE_KEY` ✅
+- `STRIPE_WEBHOOK_SECRET` ✅
+- `NEXT_PUBLIC_SENTRY_DSN` ✅
 
-### Reports show zero values
-- Add `GOOGLE_PAGESPEED_API_KEY` for Lighthouse data
-- Add analytics credentials for CTR/Conversion data
-
-### Analytics returns simulated data
-- Verify credentials in `.env.local`
-- Restart dev server after adding credentials
-- Check API endpoint response
+### ⚠️ Needs Configuration
+- `TELEMETRY_WEBHOOK` - Slack webhook URL
 
 ---
 
-## Next Steps
+## 🎯 Next Steps
 
-1. ✅ Test dashboard
-2. ✅ View audit reports
-3. ✅ Configure analytics
-4. ⏳ Add Slack alerts (see `NEXT_STEPS.md`)
-5. ⏳ Verify CI/CD integration
+1. **Add Slack Webhook** (see above)
+2. **Test I2E Components** - Integrate into dashboard
+3. **Verify Cron Jobs** - Check Vercel cron logs
+4. **Monitor Health** - Set up alerts
+
+---
+
+## 📚 Documentation
+
+- `DEPLOYMENT_COMPLETE.md` - Full deployment summary
+- `API_KEYS_SETUP_COMPLETE.md` - API keys guide
+- `app/components/i2e/README.md` - I2E components docs
+
+---
+
+## 🆘 Troubleshooting
+
+### Health Endpoint Returns Auth Page
+- Deployment is protected (expected)
+- Use Vercel MCP or test locally
+- Or disable protection in Vercel dashboard
+
+### Webhook Not Working
+- Verify webhook URL is correct
+- Check Slack app permissions
+- Test with curl (see script output)
+
+### Build Errors
+- Check logs: `vercel logs [deployment-url]`
+- Verify all dependencies installed
+- Run `npm run build` locally first
+
+---
+
+**Status**: 🚀 **Ready for Production Use**

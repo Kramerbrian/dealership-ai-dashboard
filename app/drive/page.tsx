@@ -160,7 +160,7 @@ export default function DrivePage() {
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || "apply failed");
 
-    // Optimistic add to ledger
+    // Optimistic add to ledger (deltaUSD undefined = pending until final delta arrives)
     setLedger((prev) => [
       {
         id: json.receiptId,
@@ -168,7 +168,7 @@ export default function DrivePage() {
         actor: "human",
         action: preview.summary,
         context: "dashboard",
-        deltaUSD: preview.projectedDeltaUSD,
+        deltaUSD: undefined, // Will be updated by polling when final delta arrives
         undoable: true,
       },
       ...prev,

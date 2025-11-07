@@ -46,5 +46,8 @@ export async function upsertIntegration(params: {
       metadata: metadata ?? null
     }, { onConflict: "tenant_id,kind" });
 
-  if (error) throw error;
+  if (error) {
+    const errorMessage = error.message || error.code || JSON.stringify(error);
+    throw new Error(`Supabase error: ${errorMessage}`);
+  }
 }

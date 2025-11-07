@@ -8,6 +8,13 @@
  */
 
 import fetch from 'node-fetch';
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load .env.local if it exists
+config({ path: resolve(process.cwd(), '.env.local') });
+// Also try .env as fallback
+config({ path: resolve(process.cwd(), '.env') });
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 const TEST_TENANT_ID = process.env.TEST_TENANT_ID || 'test-tenant-123';
