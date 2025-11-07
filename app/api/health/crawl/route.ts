@@ -4,9 +4,17 @@ import { createClient } from "@supabase/supabase-js";
 
 export const revalidate = 60;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+// Lazy initialization to avoid build-time errors
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration missing');
+  }
+  
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 export async function GET(request: Request) {
   // Enforce tenant isolation
@@ -22,7 +30,7 @@ export async function GET(request: Request) {
 
   try {
     // Try to fetch real data from CrawlIssue table
-    const { data: issues, error } = await supabaseAdmin
+    const { data: issues, error } = await getSupabaseAdmin()
       .from("CrawlIssue")
       .select("code, url, frequency, lastSeen, impact")
       .eq("tenant_id", tenantId)

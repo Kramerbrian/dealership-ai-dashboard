@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand: linear-gradient(90deg, #2563eb, #06b6d4);
+}
+
+html, body {
+  scroll-behavior: smooth;
+}
+
 /* Import Design System */
 @import './styles/design-system.css';
 @import './styles/design-tokens.css';
@@ -491,8 +499,13 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Canonized Apple Light Mode Colors */
+    --background: 0 0% 100%;        /* #FFFFFF - Pure white */
+    --foreground: 0 0% 3.9%;       /* Near black text */
+    --apple-bg: #FFFFFF;
+    --apple-secondary: #F5F5F7;
+    --apple-border: #D2D2D7;
+    --apple-blue: #007AFF;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -507,7 +520,7 @@ body {
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
+    --border: 0 0% 82.4%;         /* #D2D2D7 - Apple border (0.5px precision) */
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --chart-1: 12 76% 61%;
@@ -518,8 +531,13 @@ body {
     --radius: 0.5rem;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Canonized Apple Dark Mode Colors */
+    --background: 0 0% 0%;         /* #000000 - True black */
+    --foreground: 0 0% 98%;       /* Near white text */
+    --apple-bg: #000000;
+    --apple-secondary: #1C1C1E;
+    --apple-border: #38383A;
+    --apple-blue: #0A84FF;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
@@ -534,7 +552,7 @@ body {
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
+    --border: 0 0% 22%;           /* #38383A - Apple dark mode border */
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
     --chart-1: 220 70% 50%;

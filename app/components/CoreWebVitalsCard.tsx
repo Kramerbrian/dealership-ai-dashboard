@@ -34,8 +34,8 @@ export default function CoreWebVitalsCard({ data }: { data: CoreWebVitals }) {
         <div className="text-gray-700">{clsStatus} ({data.cls})</div>
 
         <div className="text-gray-700">Response (INP)</div>
-        <div className="text-gray-700">Reacts in {(data.inp_ms/1000).toFixed(2)} seconds</div>
-        <div className="text-gray-600">How quickly the site responds when someone taps or clicks. < 0.2 s = feels instant.</div>
+        <div className="text-gray-700">Reacts in {(data.inp_ms / 1000).toFixed(2)} seconds</div>
+        <div className="text-gray-600">How quickly the site responds when someone taps or clicks. &lt; 0.2 s = feels instant.</div>
         <div className="text-gray-700">{inpStatus}</div>
       </div>
     </div>

@@ -7,11 +7,27 @@ import { createClient } from '@supabase/supabase-js';
  * Ensures multi-tenant data isolation across all API routes
  */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Lazy initialization to avoid build-time errors
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration missing. NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
+  }
+  
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 // Service role client for admin operations (bypasses RLS)
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+// Created lazily to avoid build-time errors
+let supabaseAdmin: ReturnType<typeof createClient> | null = null;
+function getSupabaseAdmin() {
+  if (!supabaseAdmin) {
+    supabaseAdmin = getSupabaseClient();
+  }
+  return supabaseAdmin;
+}
 
 /**
  * Get authenticated user's tenant_id from Clerk
@@ -22,7 +38,7 @@ export async function getUserTenantId(): Promise<string | null> {
     if (!userId) return null;
 
     // Look up tenant_id from users table
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('users')
       .select('tenant_id')
       .eq('clerk_user_id', userId)
@@ -55,7 +71,7 @@ export async function validateTenantAccess(
   }
 
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from(tableName)
       .select('tenant_id')
       .eq(idColumn, resourceId)
@@ -131,7 +147,12 @@ export async function enforceTenantIsolation(
  */
 export async function createTenantSupabaseClient() {
   const tenantId = await getUserTenantId();
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration missing');
+  }
 
   const client = createClient(supabaseUrl, supabaseAnonKey, {
     global: {
@@ -172,7 +193,7 @@ export async function logTenantAccessViolation(
   attemptedTenantId: string | null
 ) {
   try {
-    await supabaseAdmin.from('audit_logs').insert({
+    await getSupabaseAdmin().from('audit_logs').insert({
       user_id: userId,
       tenant_id: tenantId,
       action: 'TENANT_ACCESS_VIOLATION',

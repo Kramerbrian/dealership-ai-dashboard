@@ -77,20 +77,44 @@
      TYPOGRAPHY TOKENS
      ======================================== */
 
-  /* Font Families */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  /* Font Families - Canonized Apple Typography */
+  --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-text: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: var(--font-text);  /* Fallback */
   --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Droid Sans Mono', 'Source Code Pro', monospace;
 
-  /* Font Sizes - 8pt Scale */
-  --font-size-xs: 0.75rem;       /* 12px */
+  /* Canonized Typography Scale - dAI Projects */
+  --font-hero: 72px;              /* Hero: 72px/-4% SF Pro Display Bold */
+  --font-hero-tracking: -0.04em;  /* -4% letter spacing */
+  --font-hero-weight: 700;        /* Bold */
+  --font-hero-line-height: 1.2;   /* Auto line height for hero */
+
+  --font-subhead: 21px;            /* Subhead: 21px/1.4 SF Pro Text Regular */
+  --font-subhead-line-height: 1.4;
+  --font-subhead-weight: 400;     /* Regular */
+
+  --font-body: 17px;               /* Body: 17px/1.5 SF Pro Text Regular */
+  --font-body-line-height: 1.5;
+  --font-body-weight: 400;        /* Regular */
+
+  --font-caption: 13px;            /* Caption: 13px/1.4 SF Pro Text Medium */
+  --font-caption-line-height: 1.4;
+  --font-caption-weight: 500;     /* Medium */
+
+  --font-micro: 12px;              /* Micro: 12px/1.3 SF Pro Text Semibold */
+  --font-micro-line-height: 1.3;
+  --font-micro-weight: 600;       /* Semibold */
+
+  /* Legacy Font Sizes (for backward compatibility) */
+  --font-size-xs: 0.75rem;        /* 12px */
   --font-size-sm: 0.875rem;      /* 14px */
   --font-size-base: 1rem;        /* 16px */
   --font-size-lg: 1.125rem;      /* 18px */
-  --font-size-xl: 1.25rem;       /* 20px */
-  --font-size-2xl: 1.5rem;       /* 24px */
-  --font-size-3xl: 1.875rem;     /* 30px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
   --font-size-4xl: 2.25rem;      /* 36px */
-  --font-size-5xl: 3rem;         /* 48px */
+  --font-size-5xl: 3rem;        /* 48px */
   --font-size-6xl: 3.75rem;      /* 60px */
   --font-size-7xl: 4.5rem;       /* 72px */
 

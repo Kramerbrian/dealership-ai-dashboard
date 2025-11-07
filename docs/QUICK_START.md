@@ -1,94 +1,133 @@
-# 🚀 Quick Start - Connect Real Data & AI Features
+# Quick Start Guide - Integration Setup
 
-## Step 1: Add Anthropic API Key
+## 🚀 5-Minute Setup
 
-Add to `.env.local` (create if it doesn't exist):
-
-```bash
-ANTHROPIC_API_KEY=sk-ant-your-key-here
-```
-
-**Get your key:** [console.anthropic.com](https://console.anthropic.com)
-
-## Step 2: Restart Dev Server
+### Step 1: Environment Variables
 
 ```bash
-npm run dev
+# Copy example file
+cp .env.example.integration .env.local
+
+# Edit and fill in values
+# At minimum, set Redis for BullMQ:
+# UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
+# UPSTASH_REDIS_REST_TOKEN=your-token
 ```
 
-## Step 3: Test the Dashboard
+### Step 2: Set Up Redis (Upstash)
 
-Visit: **http://localhost:3000/example-dashboard**
+1. Go to https://console.upstash.com/
+2. Click "Create Database"
+3. Choose "Regional" → "Pay as you go"
+4. Copy REST URL and REST Token
+5. Add to `.env.local`
 
-### What to Expect:
+**Quick Link**: https://console.upstash.com/redis
 
-**Without API Key:**
-- ✅ Dashboard loads with real/mock data
-- ✅ AI Copilot shows rule-based insights
-- ✅ Easter Eggs are static
+### Step 3: Create Database Tables
 
-**With API Key:**
-- ✅ Dashboard loads with real data
-- ✅ AI Copilot shows AI-generated insights (Pro/Enterprise tier)
-- ✅ Dynamic Easter Eggs appear (Pro/Enterprise tier)
+**Option A: Using Prisma (Recommended)**
+```bash
+npx prisma migrate dev -n "add_telemetry_and_jobs"
+```
 
-## Step 4: Test API Routes
+**Option B: Manual SQL**
+```bash
+# Copy SQL from scripts/create-tables.sql
+# Paste into Supabase SQL Editor
+```
+
+### Step 4: Verify Setup
 
 ```bash
-# Test dashboard data
-curl http://localhost:3000/api/example-dashboard/data?dealerId=demo
+# Run setup checker
+npm run setup:check
 
-# Test AI Copilot (requires ANTHROPIC_API_KEY)
-curl -X POST http://localhost:3000/api/ai/copilot-insights \
-  -H "Content-Type: application/json" \
-  -d '{
-    "trustScore": 78,
-    "scoreDelta": 5,
-    "pillars": {"seo": 85, "aeo": 72, "geo": 90, "qai": 65},
-    "criticalIssues": 2,
-    "recentActivity": ["Schema fixed"]
-  }'
-
-# Test Easter Egg (requires ANTHROPIC_API_KEY)
-curl -X POST http://localhost:3000/api/ai/easter-egg \
-  -H "Content-Type: application/json" \
-  -d '{
-    "trustScore": 88,
-    "dealershipName": "Test Dealership",
-    "currentTime": "2025-01-02T12:00:00Z",
-    "trigger": "score-88"
-  }'
+# Or visit in browser
+http://localhost:3000/api/setup/check
 ```
 
-## Features Status
+### Step 5: Start Development
 
-| Feature | Status | Requires API Key |
-|---------|--------|------------------|
-| Dashboard Data | ✅ Working | ❌ No |
-| AI Copilot (Pro+) | ✅ Working | ✅ Yes |
-| Easter Eggs (Pro+) | ✅ Working | ✅ Yes |
-| Competitor Radar | ✅ Working | ❌ No |
-| Anomaly Detection | ✅ Working | ❌ No |
-| Achievements | ✅ Working | ❌ No |
-
-## Troubleshooting
-
-**Server not running?**
 ```bash
 npm run dev
 ```
 
-**API key not working?**
-- Check `.env.local` has `ANTHROPIC_API_KEY` (no `NEXT_PUBLIC_` prefix)
-- Restart server after adding key
-- Verify key at console.anthropic.com
+## ✅ Verification Checklist
 
-**Components not showing?**
-- Check browser console for errors
-- Verify user tier is `'pro'` or `'enterprise'` for AI features
-- Check network tab for API calls
+Run the setup checker to verify everything:
 
----
+```bash
+npm run setup:check
+```
 
-**Ready!** Your dashboard is now connected to real data sources and ready for AI features! 🎉
+Expected output:
+- ✅ Redis/BullMQ Queue: Configured
+- ✅ Supabase: Connected and tables exist
+- ⚠️  Data Sources: Not configured (will use mocks) - OK
+- ⚠️  Slack: Not configured (alerts skipped) - OK
 
+## 🧪 Test Integration
+
+```bash
+# Run integration tests
+npm run test:integration
+
+# Or manually test endpoints
+curl http://localhost:3000/api/monitoring/queue
+```
+
+## 📊 Monitor in Production
+
+### Queue Health
+```bash
+curl https://dash.dealershipAI.com/api/monitoring/queue
+```
+
+### Setup Status
+```bash
+curl https://dash.dealershipAI.com/api/setup/check
+```
+
+## 🔧 Troubleshooting
+
+### Queue Not Working
+1. Check Redis connection in `.env.local`
+2. Verify worker initialized (check logs)
+3. Test: `curl http://localhost:3000/api/monitoring/queue`
+
+### Tables Missing
+1. Run migration: `npx prisma migrate dev`
+2. Or run SQL: `scripts/create-tables.sql`
+3. Verify: Check Supabase dashboard
+
+### Data Sources Using Mocks
+- This is expected if APIs aren't configured
+- Services gracefully fall back to mocks
+- Configure API keys in `.env.local` when ready
+
+## 📝 Next Steps
+
+1. ✅ Environment variables set
+2. ✅ Redis configured
+3. ✅ Database tables created
+4. ✅ Setup verified
+5. 🔄 Configure data source APIs (optional)
+6. 🔄 Set up Slack webhooks (optional)
+7. 🚀 Deploy to production
+
+## 🎯 Production Checklist
+
+Before deploying:
+- [ ] All environment variables set in Vercel
+- [ ] Redis configured (Upstash)
+- [ ] Database tables created
+- [ ] Setup check passes
+- [ ] Integration tests pass
+- [ ] Monitoring endpoint accessible
+
+## 📚 Additional Resources
+
+- **Full Setup Guide**: `docs/SETUP_INTEGRATION.md`
+- **Integration Guide**: `docs/REAL_DATA_INTEGRATION_GUIDE.md`
+- **Status**: `docs/INTEGRATION_STATUS.md`

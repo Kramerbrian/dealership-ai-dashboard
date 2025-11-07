@@ -25,24 +25,58 @@ export async function POST(req: Request) {
     );
   }
 
+  // Validate URL format
+  try {
+    new URL(url);
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid URL", message: "URL must be a valid URL format" },
+      { status: 400 }
+    );
+  }
+
+  // Validate field name (basic sanitization)
+  if (typeof field !== 'string' || field.length === 0 || field.length > 200) {
+    return NextResponse.json(
+      { error: "Invalid field", message: "Field must be a non-empty string (max 200 chars)" },
+      { status: 400 }
+    );
+  }
+
   try {
     // Enqueue schema fix job
-    const { id: jobId } = await enqueue({
-      type: "schema-fix",
-      data: {
-        tenantId,
-        url,
-        field,
-        value,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    let jobId: string;
+    try {
+      const result = await enqueue({
+        type: "schema-fix",
+        data: {
+          tenantId,
+          url,
+          field,
+          value,
+          timestamp: new Date().toISOString(),
+        },
+      });
+      jobId = result.id;
+    } catch (error) {
+      console.error('Failed to enqueue job:', error);
+      return NextResponse.json(
+        { 
+          error: "Queue error", 
+          message: "Failed to queue schema fix job. Please try again." 
+        },
+        { status: 503 }
+      );
+    }
 
-    // Log telemetry
-    await storeTelemetry({
+    // Log telemetry (non-blocking)
+    storeTelemetry({
       event_type: 'schema_fix_queued',
       tenant_id: tenantId,
       metadata: { url, field, value, jobId },
+    }).catch(err => {
+      console.error('Failed to log telemetry:', err);
+      // Don't fail the request if telemetry fails
     });
 
     return NextResponse.json(
@@ -57,7 +91,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Failed to queue schema fix:', error);
     return NextResponse.json(
-      { error: "Failed to queue schema fix", message: String(error) },
+      { 
+        error: "Internal server error", 
+        message: error instanceof Error ? error.message : "Unknown error occurred" 
+      },
       { status: 500 }
     );
   }

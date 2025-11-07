@@ -72,7 +72,7 @@ export default function VoiceOrb() {
       say(line, { title: 'Coach • Boost', level: 'low' });
     } else {
       // graceful fallback: confident coach tone, no pop refs
-      line = 'You're closer than you think. One fix, then the next.';
+      line = "You're closer than you think. One fix, then the next.";
       showToastUI('info', 'Keeping it subtle today.', { duration: 3000 });
       say(line, { title: 'Coach • Boost', level: 'low' });
     }
