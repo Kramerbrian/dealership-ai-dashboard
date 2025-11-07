@@ -30,15 +30,17 @@ Idempotent Fix APIs with async job processing via QStash.
 
 ### 4. QStash Integration
 - ✅ `lib/queue/qstash.ts`
-  - `qstashPublish()` - Publish jobs to QStash
-  - `verifyQStashSignature()` - Verify QStash requests (placeholder)
+  - `qstashPublish()` - Publish jobs to QStash with DLQ and retry strategy
+  - Uses official `@upstash/qstash` SDK
 
 ### 5. API Routes
 - ✅ `POST /api/fix/apply` - Apply fix (idempotent, enqueues job)
 - ✅ `POST /api/fix/apply?simulate=true` - Preview fix (no write)
 - ✅ `POST /api/fix/undo` - Undo fix (10-minute window)
-- ✅ `POST /api/jobs/fix-consumer` - QStash consumer (executes fix)
+- ✅ `POST /api/jobs/fix-consumer` - QStash consumer (executes fix, verified)
+- ✅ `POST /api/jobs/fix-dlq` - Dead-letter queue (handles failures)
 - ✅ `GET /api/fix/status/[id]` - Check receipt status
+- ✅ `GET /api/health` - Health check with QStash/Redis/Supabase status
 
 ### 6. Client Integration
 - ✅ Updated `app/drive/page.tsx` with:
@@ -177,29 +179,34 @@ const res = await fetch('/api/fix/status/[receiptId]');
 
 ## 📝 Next Steps
 
-1. **Run Migration:**
+1. ✅ **Run Migration:**
    ```bash
    supabase migration up 20251109_fix_receipts
    ```
 
-2. **Set QStash Environment Variables:**
+2. ✅ **Install QStash SDK:**
+   ```bash
+   npm install @upstash/qstash
+   ```
+
+3. ✅ **Set QStash Environment Variables:**
    - Get QStash token from Upstash dashboard
    - Set `PUBLIC_BASE_URL` to your production domain
    - Add signing keys for production verification
 
-3. **Install QStash SDK (Optional):**
-   ```bash
-   npm install @upstash/qstash
-   ```
-   Then update `verifyQStashSignature()` to use official SDK
+4. ✅ **Production-Grade Verification:**
+   - Consumer uses `verifySignature` from `@upstash/qstash/nextjs`
+   - DLQ route added for failed job handling
+   - Retry strategy (5 attempts) configured
 
-4. **Wire Real Fix Logic:**
+5. **Wire Real Fix Logic:**
    - Replace synthetic delta calculation in consumer
    - Add actual schema injection, review batch processing, etc.
 
-5. **Add Dead Letter Queue (DLQ):**
-   - Configure QStash DLQ URL
-   - Handle failed jobs
+6. ✅ **Dead Letter Queue (DLQ):**
+   - `/api/jobs/fix-dlq` route created
+   - Automatically configured in `qstashPublish()`
+   - Logs failures and sends Slack alerts
 
 ---
 

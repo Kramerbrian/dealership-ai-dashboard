@@ -7,6 +7,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { rankPulse } from '@/components/pulse/PulseEngine';
+import TierGate from '@/components/gates/TierGate';
+import UpgradeButton from '@/components/billing/UpgradeButton';
+import { usePlan } from '@/hooks/usePlan';
 
 
 
@@ -57,6 +60,8 @@ export default function DrivePage() {
   const [preview, setPreview] = useState<any>(null);
 
   const [ledger, setLedger] = useState<any[]>([]);
+
+  const { plan } = usePlan();
 
 
 
@@ -233,6 +238,14 @@ export default function DrivePage() {
 
           <AIVCompositeChip weights={{ ChatGPT:0.35, Perplexity:0.25, Gemini:0.25, Copilot:0.15 }} />
 
+          <TierGate plan={plan} min="pro">
+            <button className="px-4 py-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-colors">
+              Autopilot
+            </button>
+          </TierGate>
+
+          {plan === "free" && <UpgradeButton plan="pro" currentPlan={plan} />}
+
         </div>
 
       </header>
@@ -271,9 +284,13 @@ export default function DrivePage() {
 
                   <button onClick={()=>openFix(p)} className="px-4 py-2 rounded-full bg-white text-black font-medium">Fix</button>
 
-                  <button className="px-4 py-2 rounded-full border border-white/20">Explain</button>
+                  <TierGate plan={plan} min="pro">
+                    <button className="px-4 py-2 rounded-full border border-white/20">Explain</button>
+                  </TierGate>
 
-                  <button className="px-4 py-2 rounded-full border border-white/20">Compare</button>
+                  <TierGate plan={plan} min="pro">
+                    <button className="px-4 py-2 rounded-full border border-white/20">Compare</button>
+                  </TierGate>
 
                 </div>
 
@@ -327,7 +344,13 @@ export default function DrivePage() {
 
             onApply={onApply}
 
-            onAutopilot={async()=>({ok:true})}
+            onAutopilot={async()=>{
+              if (plan !== "pro" && plan !== "enterprise") {
+                alert("Autopilot requires Pro or Enterprise plan");
+                return {ok:false, error: "Plan required"};
+              }
+              return {ok:true};
+            }}
 
             onUndo={async()=>{
               if (!preview?.receiptId) return {ok:false, error: "No receipt ID"};

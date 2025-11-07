@@ -2,6 +2,9 @@
 
 import useSWR from 'swr';
 import { useState } from 'react';
+import TierGate from '@/components/gates/TierGate';
+import UpgradeButton from '@/components/billing/UpgradeButton';
+import { usePlan } from '@/hooks/usePlan';
 
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
