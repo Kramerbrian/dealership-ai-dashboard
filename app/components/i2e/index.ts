@@ -15,3 +15,11 @@ export { ActionableContextualNugget, ACNContainer } from './ActionableContextual
 export { ExecutionPlaybook } from './ExecutionPlaybook';
 export { OneClickCorrection, OneClickCorrectionList } from './OneClickCorrection';
 
+// API Client
+export * from './api-client';
+
+// Integration Utilities
+export * from './pulse-integration';
+export { usePulseIntegration } from './usePulseIntegration';
+export { useI2EIntegration, generatePlaybookFromInsight } from './useI2EIntegration';
+

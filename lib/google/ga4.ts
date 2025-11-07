@@ -1,40 +1,34 @@
 type GA4RunReportResponse = {
-  rows?: Array<{
-    dimensionValues?: Array<{value?: string}>;
-    metricValues?: Array<{value?: string}>;
-  }>;
+  rows?: Array<{ dimensionValues?: Array<{ value?: string }>; metricValues?: Array<{ value?: string }> }>;
+  // ...
 };
 
 export async function ga4RunReport({
   accessToken,
-  propertyId
+  propertyId,
 }: {
   accessToken: string;
-  propertyId: string;
+  propertyId: string; // e.g. 'properties/12345678'
 }): Promise<GA4RunReportResponse> {
   const body = {
-    dateRanges: [{startDate: '7daysAgo', endDate: 'today'}],
+    dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
     metrics: [
-      {name: 'sessions'},
-      {name: 'screenPageViews'},
-      {name: 'averageSessionDuration'},
-      {name: 'bounceRate'}
-    ]
+      { name: "sessions" },
+      { name: "screenPageViews" },
+      { name: "averageSessionDuration" },
+      { name: "bounceRate" }
+    ],
+    // add dimensions if needed
   };
-  
-  const res = await fetch(
-    `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    }
-  );
-  
+
+  const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
   if (!res.ok) throw new Error(`GA4 runReport failed: ${res.status}`);
   return res.json();
 }
-

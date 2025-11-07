@@ -1,0 +1,28 @@
+version: "2025.11.08"
+
+formulas:
+  # Existing formulas (AIV/ATI/CVI, REV_RISK, etc.) would go here
+  # Placeholder structure for future expansion
+
+visibility_thresholds:
+  # Presence % below which a pulse should be created for that engine
+  ChatGPT:
+    warn: 80
+    critical: 70
+  Perplexity:
+    warn: 75
+    critical: 65
+  Gemini:
+    warn: 75
+    critical: 70
+  Copilot:
+    warn: 72
+    critical: 65
+
+visibility_weights:
+  # For AIV calculation blending (override/align with your formulas.formulas.AIV_1 if desired)
+  ChatGPT: 0.35
+  Perplexity: 0.25
+  Gemini: 0.25
+  Copilot: 0.15
+
