@@ -1,73 +1,65 @@
+import { NextResponse } from "next/server";
+import { withAuth } from "../../_utils/withAuth";
+import { loadReceipt, markUndone } from "@/lib/receipts/store";
+
 /**
- * Fix Undo API Route
- * 
- * Revert a fix within 10-minute window
+ * Body: { receiptId: string }
+ * Only allowed if undoable and within undo_deadline.
  */
-
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { getUndoData } from '../apply/route';
-
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
-
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async ({ req, tenantId }) => {
   try {
-    // Auth check
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const body = await req.json().catch(() => null);
+    if (!body?.receiptId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { undoToken } = await req.json();
-
-    if (!undoToken) {
-      return NextResponse.json(
-        { error: 'undoToken is required' },
+        { error: "receiptId required" },
         { status: 400 }
       );
     }
+    const rec = await loadReceipt(tenantId, body.receiptId);
 
-    // Get undo data
-    const undoData = getUndoData(undoToken);
-    if (!undoData) {
+    if (!rec)
+      return NextResponse.json({ error: "not found" }, { status: 404 });
+    if (rec.undone)
+      return NextResponse.json({ error: "already undone" }, { status: 409 });
+    if (!rec.undoable || !rec.undo_deadline) {
+      return NextResponse.json({ error: "not undoable" }, { status: 409 });
+    }
+
+    const now = Date.now();
+    const deadline = new Date(rec.undo_deadline).getTime();
+    if (now > deadline) {
       return NextResponse.json(
-        { error: 'Undo token expired or invalid. 10-minute window has passed.' },
-        { status: 410 } // Gone
+        { error: "undo window expired" },
+        { status: 409 }
       );
     }
 
-    // Revert the fix
-    // In production, this would call your revert logic
-    const result = await revertFix(undoData.pulseId, undoData.tier);
+    // Perform reverse op here (e.g., revert schema change)
+    const updated = await markUndone(tenantId, rec.id);
+
+    // Optional: Slack alert
+    try {
+      if (process.env.TELEMETRY_WEBHOOK) {
+        await fetch(process.env.TELEMETRY_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: `Fix undone • ${rec.summary} • tenant ${tenantId}`,
+          }),
+        });
+      }
+    } catch {}
 
     return NextResponse.json({
-      success: true,
-      message: 'Fix reverted successfully',
-      pulseId: undoData.pulseId,
-      timestamp: new Date().toISOString()
+      ok: true,
+      receiptId: updated.id,
+      undone: true,
     });
-
-  } catch (error) {
-    console.error('Fix undo error:', error);
+  } catch (e: any) {
+    const status = e?.status || 500;
     return NextResponse.json(
-      { error: 'Failed to undo fix' },
-      { status: 500 }
+      { error: e?.message || "undo failed" },
+      { status }
     );
   }
-}
-
-async function revertFix(pulseId: string, tier: string) {
-  // Implement your revert logic here
-  // This would typically:
-  // 1. Restore previous state
-  // 2. Remove applied changes
-  // 3. Log the revert
-  
-  console.log(`Reverting fix for ${pulseId} (tier: ${tier})`);
-  return { reverted: true };
-}
+});

@@ -49,3 +49,6 @@ export function checkUsageLimit(
   };
 }
 
+// Re-export from plan.ts for convenience
+export { getPlan, gate } from "./plan";
+

@@ -1,23 +1,22 @@
-import {authMiddleware} from '@clerk/nextjs';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-export default authMiddleware({
-  publicRoutes: [
-    "/",
-    "/(mkt)(.*)",
-    "/api/v1/analyze",
-    "/.well-known/ai-plugin.json",
-    "/api/gpt/(.*)",
-    "/robots.txt",
-    "/sitemap.xml",
-    "/sign-in(.*)",
-    "/sign-up(.*)",
-    "/sso-callback(.*)"
-  ],
-  ignoredRoutes: [
-    "/_next(.*)",
-    "/favicon.ico",
-    "/og-image.png"
-  ]
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/(mkt)(.*)",
+  "/api/v1/analyze",
+  "/.well-known/ai-plugin.json",
+  "/api/gpt/(.*)",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/sso-callback(.*)"
+]);
+
+export default clerkMiddleware((auth, req) => {
+  if (!isPublicRoute(req)) {
+    auth().protect();
+  }
 });
 
 export const config = {

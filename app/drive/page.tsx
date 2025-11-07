@@ -290,7 +290,12 @@ export default function DrivePage() {
 
             onAutopilot={async()=>({ok:true})}
 
-            onUndo={async()=>({ok:true})}
+            onUndo={async()=>{
+              if (!preview?.receiptId) return {ok:false, error: "No receipt ID"};
+              return await onUndo(preview.receiptId);
+            }}
+
+            onSimulate={onSimulate}
 
           />
 
