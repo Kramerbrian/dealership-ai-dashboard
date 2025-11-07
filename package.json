@@ -81,7 +81,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.66.0",
-    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/nextjs": "^6.34.5",
     "@google-analytics/data": "^5.2.1",
     "@heroicons/react": "^2.2.0",
