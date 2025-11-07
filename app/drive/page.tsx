@@ -61,6 +61,10 @@ export default function DrivePage() {
 
   const [ledger, setLedger] = useState<any[]>([]);
 
+  function patchReceipt(id: string, patch: Partial<any>) {
+    setLedger((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  }
+
   const { plan } = usePlan();
 
 
