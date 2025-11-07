@@ -141,33 +141,80 @@ export default function DrivePage() {
 
 
   async function onApply() {
+    const idempo = crypto.randomUUID();
+    const res = await fetch("/api/fix/apply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempo,
+      },
+      body: JSON.stringify({
+        pulseId: preview.pulseId || preview.summary,
+        tier: "apply",
+        summary: preview.summary,
+        projectedDeltaUSD: preview.projectedDeltaUSD,
+        context: { diff: preview.diff },
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || "apply failed");
 
-    // Optimistic receipt log
+    // Optimistic add to ledger
+    setLedger((prev) => [
+      {
+        id: json.receiptId,
+        ts: new Date().toISOString(),
+        actor: "human",
+        action: preview.summary,
+        context: "dashboard",
+        deltaUSD: preview.projectedDeltaUSD,
+        undoable: true,
+      },
+      ...prev,
+    ]);
 
-    const rec = {
+    // Store receiptId in preview for undo
+    setPreview((p: any) => ({ ...p, receiptId: json.receiptId }));
 
-      id: crypto.randomUUID(),
+    // Optionally poll for final delta
+    // setTimeout(() => checkStatus(json.receiptId), 60000);
 
-      ts: new Date().toISOString(),
+    return { ok: true, receiptId: json.receiptId };
+  }
 
-      actor: 'human',
+  async function onUndo(receiptId: string) {
+    const res = await fetch("/api/fix/undo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiptId }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || "undo failed");
+    setLedger((prev) =>
+      prev.map((r) =>
+        r.id === receiptId ? { ...r, deltaUSD: 0, undone: true } : r
+      )
+    );
+    return { ok: true };
+  }
 
-      action: preview.summary,
-
-      context: 'dashboard',
-
-      deltaUSD: preview.projectedDeltaUSD,
-
-      undoable: true
-
-    };
-
-    setLedger(prev => [rec, ...prev]);
-
-    // TODO: call /api/fix/apply for real
-
-    return { ok: true, receiptId: rec.id };
-
+  async function onSimulate() {
+    const res = await fetch("/api/fix/apply?simulate=true", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pulseId: preview.pulseId || preview.summary,
+        tier: "apply",
+        summary: `Simulate ${preview.summary}`,
+        projectedDeltaUSD: preview.projectedDeltaUSD,
+        context: { diff: preview.diff },
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || "simulate failed");
+    // Show json.plan.diff / ETA in the drawer
+    console.log("Simulation", json.plan);
+    return json.plan;
   }
 
 
