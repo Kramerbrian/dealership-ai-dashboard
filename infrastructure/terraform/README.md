@@ -15,19 +15,42 @@ The infrastructure includes:
 - **API Gateway + Lambda**: Public API endpoints
 - **CloudTrail + Config**: Compliance and audit logging
 
+## ⚠️ SECURITY WARNING - READ BEFORE PROCEEDING
+
+**CRITICAL**: Before committing or deploying:
+
+1. **Review `SECURITY_CHECKLIST.md`** - Complete security checklist
+2. **Never commit**:
+   - `terraform.tfvars` (contains sensitive values)
+   - `*.tfstate` files (contain infrastructure state)
+   - `backend.hcl` (may contain bucket names)
+   - Any `.env` or credential files
+3. **Configure backend** - Update backend configuration before deploying
+4. **Use example files** - Copy `terraform.tfvars.example` and `backend.hcl.example`
+
+See `SECURITY_CHECKLIST.md` for complete security guidelines.
+
 ## Prerequisites
 
 1. AWS CLI configured with appropriate credentials
 2. Terraform >= 1.5.0
 3. kubectl (for EKS access)
-4. S3 bucket for Terraform state (configure in `main.tf` backend)
+4. S3 bucket for Terraform state (see Backend Configuration below)
 
 ## Deployment Steps
 
 ### 1. Configure Backend
 
-Edit `main.tf` to configure your Terraform backend:
+**IMPORTANT**: The backend is commented out in `main.tf` for security. Choose one option:
 
+**Option A: Use backend.hcl (Recommended - Not committed to git)**
+```bash
+cp backend.hcl.example backend.hcl
+# Edit backend.hcl with your values
+terraform init -backend-config=backend.hcl
+```
+
+**Option B: Uncomment and configure in main.tf**
 ```hcl
 backend "s3" {
   bucket         = "your-terraform-state-bucket"
@@ -38,9 +61,41 @@ backend "s3" {
 }
 ```
 
+**Option C: Use CLI flags**
+```bash
+terraform init \
+  -backend-config="bucket=your-bucket" \
+  -backend-config="key=auction-intelligence-mesh/terraform.tfstate" \
+  -backend-config="region=us-east-1" \
+  -backend-config="dynamodb_table=your-table"
+```
+
+**Create Required Resources First:**
+```bash
+# Create S3 bucket for state
+aws s3 mb s3://your-terraform-state-bucket --region us-east-1
+aws s3api put-bucket-versioning \
+  --bucket your-terraform-state-bucket \
+  --versioning-configuration Status=Enabled
+
+# Create DynamoDB table for locks
+aws dynamodb create-table \
+  --table-name your-terraform-locks-table \
+  --attribute-definitions AttributeName=LockID,AttributeType=S \
+  --key-schema AttributeName=LockID,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST
+```
+
 ### 2. Create terraform.tfvars
 
-Create a `terraform.tfvars` file:
+**IMPORTANT**: Copy the example file (never commit the actual file):
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your values
+```
+
+Create a `terraform.tfvars` file (this file is in .gitignore):
 
 ```hcl
 aws_region              = "us-east-1"
@@ -173,13 +228,23 @@ terraform output redshift_cluster_endpoint
 terraform output msk_bootstrap_brokers
 ```
 
-## Security Notes
+## Security
 
+### Infrastructure Security
 - All data is encrypted at rest using KMS
 - Secrets are stored in Secrets Manager with automatic rotation
 - Network policies isolate Kubernetes namespaces
 - CloudTrail logs all API calls
 - Config monitors compliance rules
+
+### Code Security (Before Committing)
+- ✅ Review `SECURITY_CHECKLIST.md` before every commit
+- ✅ Never commit `terraform.tfvars` or `.tfstate` files
+- ✅ Use `terraform.tfvars.example` as a template
+- ✅ Use `backend.hcl.example` for backend configuration
+- ✅ Verify `.gitignore` is working: `git status`
+
+See `SECURITY_CHECKLIST.md` for complete security guidelines.
 
 ## Cost Estimation
 

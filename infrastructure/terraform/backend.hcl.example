@@ -1,0 +1,21 @@
+# Terraform Backend Configuration Example
+#
+# IMPORTANT: Copy this file to backend.hcl and fill in your values
+# backend.hcl is in .gitignore and will NOT be committed
+#
+# cp backend.hcl.example backend.hcl
+# Then edit backend.hcl with your actual values
+#
+# Initialize with: terraform init -backend-config=backend.hcl
+
+bucket         = "your-terraform-state-bucket"
+key            = "auction-intelligence-mesh/terraform.tfstate"
+region         = "us-east-1"
+encrypt        = true
+dynamodb_table = "your-terraform-locks-table"
+
+# Optional: Use AWS profile
+# profile = "your-aws-profile"
+
+# Optional: Use KMS key for encryption
+# kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"

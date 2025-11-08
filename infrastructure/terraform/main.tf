@@ -16,14 +16,21 @@ terraform {
     }
   }
   
-  backend "s3" {
-    # Configure backend in terraform.tfvars or via environment
-    bucket         = "aim-terraform-state"
-    key            = "auction-intelligence-mesh/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "aim-terraform-locks"
-  }
+  # Backend configuration - UPDATE THESE VALUES BEFORE DEPLOYING
+  # Option 1: Uncomment and configure backend here
+  # backend "s3" {
+  #   bucket         = "your-terraform-state-bucket"
+  #   key            = "auction-intelligence-mesh/terraform.tfstate"
+  #   region         = "us-east-1"
+  #   encrypt        = true
+  #   dynamodb_table = "your-terraform-locks-table"
+  # }
+  
+  # Option 2: Use partial backend configuration via CLI
+  # terraform init -backend-config="bucket=your-bucket" -backend-config="key=path/to/state"
+  
+  # Option 3: Use backend config file (backend.hcl - NOT tracked in git)
+  # terraform init -backend-config=backend.hcl
 }
 
 provider "aws" {
