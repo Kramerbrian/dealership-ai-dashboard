@@ -1,95 +1,72 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
 
-// Define protected routes (exclude root path for public landing page)
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/dash(.*)',
-  '/intelligence(.*)',
-  '/api/ai(.*)',
-  '/api/parity(.*)',
-  '/api/intel(.*)',
-  '/api/compliance(.*)',
-  '/api/audit(.*)'
-]);
-
-// Define public routes that should never require authentication
+// Public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
   '/',
-  '/sign-in',
-  '/sign-up',
-  '/signin',
-  '/signup',
-  '/pricing',
-  '/privacy',
-  '/terms'
+  '/(marketing)(.*)',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/v1/analyze',
+  '/.well-known/ai-plugin.json',
+  '/api/gpt/(.*)',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/api/scan/quick',
+  '/api/telemetry',
+  '/api/pulse/(.*)',
+  '/api/schema/validate',
+  '/api/visibility/presence',
+  '/api/ai-scores',
+  '/api/formulas/weights',
 ]);
 
-export default clerkMiddleware((auth, req) => {
-  const url = new URL(req.url);
-  const hostname = req.headers.get('host') || '';
+// Protected routes that require authentication
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/onboarding(.*)',
+  '/admin(.*)',
+  '/api/admin(.*)',
+  '/api/user(.*)',
+]);
 
-  // Domain-based routing: route dash.dealershipai.com to /dash
-  if (hostname.includes('dash.dealershipai.com') && url.pathname === '/') {
-    const rewriteUrl = url.clone();
-    rewriteUrl.pathname = '/dash';
-    return NextResponse.rewrite(rewriteUrl);
-  }
+// Onboarding route - authenticated but doesn't require completion
+const isOnboardingRoute = createRouteMatcher([
+  '/onboarding(.*)',
+]);
 
-  // Domain-based routing: route dashboard.dealershipai.com to /dashboard
-  if (hostname.includes('dashboard.dealershipai.com') && url.pathname === '/') {
-    const rewriteUrl = url.clone();
-    rewriteUrl.pathname = '/dashboard';
-    return NextResponse.rewrite(rewriteUrl);
-  }
-
-  // Skip authentication for public routes
-  if (isPublicRoute(req)) {
-    return NextResponse.next();
-  }
-  
+export default clerkMiddleware(async (auth, req) => {
   // Protect routes that require authentication
   if (isProtectedRoute(req)) {
-    auth.protect();
-  }
-
-  // Example: read tenant from cookie or path; adjust to your auth
-  const cookieTenant = req.cookies.get("tenant_id")?.value;
-  const headerTenant = req.headers.get("x-tenant-id");
-  const tenantId = headerTenant || cookieTenant || url.searchParams.get("tenant");
-
-  if (!tenantId && url.pathname.startsWith("/api/audit")) {
-    return new NextResponse(JSON.stringify({ error: "Missing x-tenant-id" }), { 
-      status: 400,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-  
-  // Add tenant header to all audit API requests
-  if (tenantId && url.pathname.startsWith("/api/audit")) {
-    const response = NextResponse.next();
-    response.headers.set("x-tenant-id", tenantId);
-    return response;
-  }
-
-  // Cognitive Ops Platform: Attach Orchestrator Role header
-  // This identifies all API calls as part of the AI CSO system
-  const response = NextResponse.next();
-  
-  // Set orchestrator role for all API routes (except public ones)
-  if (url.pathname.startsWith("/api/") && !url.pathname.startsWith("/api/analyze") && !url.pathname.startsWith("/api/health")) {
-    response.headers.set("X-Orchestrator-Role", "AI_CSO");
+    await auth.protect();
+    
+    // Check onboarding completion for dashboard routes
+    if (req.nextUrl.pathname.startsWith('/dashboard')) {
+      const user = await currentUser();
+      if (user) {
+        const onboardingComplete = 
+          (user.publicMetadata as any)?.onboarding_complete === true ||
+          (user.publicMetadata as any)?.onboarding_complete === 'true';
+        
+        if (!onboardingComplete) {
+          // Redirect to onboarding if not completed
+          const onboardingUrl = new URL('/onboarding', req.url);
+          return NextResponse.redirect(onboardingUrl);
+        }
+      }
+    }
   }
   
-  return response;
+  // Onboarding route - allow authenticated users
+  if (isOnboardingRoute(req)) {
+    await auth.protect();
+  }
+  
+  // Public routes are accessible without authentication
+  // No action needed for public routes
 });
 
 export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
-  ],
+  matcher: ['/((?!_next|.*\\..*|favicon.ico|og-image.png).*)'],
 };

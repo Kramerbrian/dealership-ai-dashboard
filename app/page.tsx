@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "./globals.lean.css";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import FreeAuditWidget from "@/components/landing/FreeAuditWidget";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface ScanPreview {
   domain: string;
@@ -23,6 +25,36 @@ export default function Page() {
   const [msg, setMsg] = useState<string | null>(null);
   const [preview, setPreview] = useState<ScanPreview | null>(null);
   const [exitIntentShown, setExitIntentShown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.mobile-menu') && !target.closest('.mobile-menu-toggle')) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on escape key
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen]);
 
   // Exit-intent detection (high-impact enhancement)
   useEffect(() => {
@@ -56,77 +88,226 @@ export default function Page() {
     };
   }, [exitIntentShown, preview]);
 
+  /**
+   * Client-side URL validation helper
+   */
+  function validateUrlClient(input: string): { valid: boolean; error?: string; normalized?: string } {
+    if (!input || input.trim().length === 0) {
+      return { valid: false, error: 'URL is required' };
+    }
+
+    if (input.length > 2048) {
+      return { valid: false, error: 'URL is too long (max 2048 characters)' };
+    }
+
+    try {
+      let normalized = input.trim().toLowerCase();
+      
+      // Add protocol if missing
+      if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+        normalized = `https://${normalized}`;
+      }
+
+      const urlObj = new URL(normalized);
+      const hostname = urlObj.hostname.toLowerCase();
+
+      // Basic validation
+      if (hostname.length === 0 || hostname.length > 253) {
+        return { valid: false, error: 'Invalid domain name' };
+      }
+
+      // Block localhost
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return { valid: false, error: 'Please enter a valid website URL' };
+      }
+
+      return { valid: true, normalized: urlObj.origin };
+    } catch {
+      return { valid: false, error: 'Invalid URL format. Please enter a valid website URL' };
+    }
+  }
+
   async function onScan(e: React.FormEvent) {
     e.preventDefault();
-    if (!url) return;
+    
+    // Validate URL before sending request
+    const validation = validateUrlClient(url.trim());
+    if (!validation.valid) {
+      setMsg(validation.error || 'Invalid URL');
+      return;
+    }
 
     setSubmitting(true);
     setMsg(null);
     setPreview(null);
 
     try {
+      // Use validated/normalized URL
+      const urlToSend = validation.normalized || url.trim();
       const response = await fetch('/api/scan/quick', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: urlToSend }),
       });
 
       if (!response.ok) {
-        throw new Error('Scan failed');
+        // Handle rate limiting
+        if (response.status === 429) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
+        }
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Scan failed');
       }
 
       const data = await response.json();
       setPreview(data);
       setMsg("Preview ready! Sign in to view your full report.");
-    } catch (error) {
-      setMsg("Scan failed. Please try again.");
+      
+      // Auto-scroll to preview results
+      setTimeout(() => {
+        const previewElement = document.querySelector('[data-preview-results]');
+        if (previewElement) {
+          previewElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    } catch (error: any) {
+      // Enhanced error messages
+      let errorMessage = "Scan failed. Please try again.";
+      
+      if (error?.message) {
+        if (error.message.includes('rate limit') || error.message.includes('429')) {
+          errorMessage = "Too many requests. Please wait a moment and try again.";
+        } else if (error.message.includes('invalid') || error.message.includes('Invalid URL')) {
+          errorMessage = "Please enter a valid website URL (e.g., exampledealer.com)";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setMsg(errorMessage);
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <main className="wrapper">
-      {/* Exit-Intent Modal */}
-      {exitIntentShown && (
-        <div className="exit-modal-overlay" onClick={() => setExitIntentShown(false)}>
-          <div className="exit-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="exit-close" onClick={() => setExitIntentShown(false)} aria-label="Close">×</button>
-            <h3>Wait! Before you go...</h3>
-            <p>Get your first AI visibility report 100% free. No credit card required.</p>
-            <button className="cta" onClick={() => {
-              setExitIntentShown(false);
-              document.querySelector<HTMLElement>('.input')?.focus();
-            }}>Get Free Report</button>
+    <>
+      {/* Skip to content link for accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
+      <header className="wrapper" style={{paddingBottom: 0}}>
+        {/* Exit-Intent Modal */}
+        {exitIntentShown && (
+          <div 
+            className="exit-modal-overlay" 
+            onClick={() => setExitIntentShown(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="exit-modal-title"
+          >
+            <div className="exit-modal" onClick={(e) => e.stopPropagation()}>
+              <button 
+                className="exit-close" 
+                onClick={() => setExitIntentShown(false)} 
+                aria-label="Close exit intent modal"
+              >
+                ×
+              </button>
+              <h3 id="exit-modal-title">Wait! Before you go...</h3>
+              <p>Get your first AI visibility report 100% free. No credit card required.</p>
+              <button 
+                className="cta" 
+                onClick={() => {
+                  setExitIntentShown(false);
+                  document.querySelector<HTMLElement>('.input')?.focus();
+                }}
+              >
+                Get Free Report
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Nav */}
-      <nav className="nav">
-        <div className="logo">
-          <span className="logo-dot" />
-          DealershipAI
-        </div>
-        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#learn">Learn</a>
-          <button className="ghost" onClick={() => (window.location.href = "/sign-in")}>Sign in</button>
-          <button className="cta" onClick={() => (window.location.href = "/onboarding")}>Get started</button>
-        </div>
-      </nav>
+        {/* Navigation */}
+        <nav className="nav" aria-label="Main navigation">
+          <Link href="/" className="logo" aria-label="DealershipAI Home">
+            <span className="logo-dot" aria-hidden="true" />
+            DealershipAI
+          </Link>
+          
+          {/* Mobile menu button */}
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
+            aria-label="Toggle navigation menu"
+            aria-controls="mobile-menu"
+          >
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+          </button>
 
-      {/* Hero */}
-      <section className="hero">
+          {/* Desktop Navigation */}
+          <div className="nav-desktop">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#how-it-works">How it works</a>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="ghost">Sign in</button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="cta">Get Your Free Report</button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Link href="/dashboard" className="ghost">Dashboard</Link>
+              <Link href="/onboarding" className="cta">Complete Setup</Link>
+            </SignedIn>
+          </div>
+        </nav>
+
+        {/* Mobile Navigation */}
+        <div 
+          id="mobile-menu"
+          className={`mobile-menu ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}
+          aria-hidden={!mobileMenuOpen}
+        >
+          <a href="#features" onClick={() => setMobileMenuOpen(false)}>Features</a>
+          <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+          <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How it works</a>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="ghost" onClick={() => setMobileMenuOpen(false)}>Sign in</button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="cta" onClick={() => setMobileMenuOpen(false)}>Get Your Free Report</button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="ghost">Dashboard</Link>
+            <Link href="/onboarding" onClick={() => setMobileMenuOpen(false)} className="cta">Complete Setup</Link>
+          </SignedIn>
+        </div>
+      </header>
+
+      <main id="main-content" className="wrapper">
+
+      {/* Hero Section */}
+      <section className="hero" aria-labelledby="hero-title">
         <div>
-          <div className="badge"><span className="dot" /> Agent-Ready • Real KPIs</div>
-          <h1 className="h-title">See how trusted your dealership looks to AI.</h1>
+          <div className="badge" aria-label="Status badge"><span className="dot" aria-hidden="true" /> Agent-Ready • Real KPIs</div>
+          <h1 id="hero-title" className="h-title">See how trusted your dealership looks to AI.</h1>
           <p className="h-kicker">Run a free scan, view your Trust Score, and get instant, fix-ready insights for schema, content freshness, and zero-click visibility.</p>
 
           {/* Preview Results */}
           {preview && (
-            <div className="panel" style={{marginBottom: 16, animation: "fadeIn 0.3s"}}>
+            <div className="panel" style={{marginBottom: 16, animation: "fadeIn 0.3s"}} data-preview-results>
               <h4 style={{margin: "0 0 12px"}}>Preview Results</h4>
               <div className="gauges" style={{position: "static", margin: 0}}>
                 <div className="g">
@@ -143,7 +324,7 @@ export default function Page() {
                 </div>
               </div>
               {preview.insights.length > 0 && (
-                <div style={{marginTop: 12, paddingTop: 12, borderTop: "1px solid #1a2430"}}>
+                <div style={{marginTop: 12, paddingTop: 12, borderTop: "1px solid #1a1a1a"}}>
                   <p className="small" style={{margin: "0 0 6px"}}>Key Insights:</p>
                   <ul style={{margin: 0, paddingLeft: 18, color: "var(--muted)", fontSize: 13}}>
                     {preview.insights.slice(0, 3).map((insight, i) => (
@@ -153,9 +334,17 @@ export default function Page() {
                 </div>
               )}
               <div style={{marginTop: 12}}>
-                <button className="cta" onClick={() => (window.location.href = "/sign-in")}>
+                <SignedOut>
+                  <SignUpButton mode="modal">
+                    <button className="cta">
+                      Get Your Free Report
+                    </button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <Link href="/dashboard" className="cta">
                   View Full Report
-                </button>
+                </Link>
               </div>
             </div>
           )}
@@ -177,7 +366,12 @@ export default function Page() {
                 disabled={submitting}
               />
               <button className="cta" aria-label="Run scan" disabled={submitting || !url}>
-                {submitting ? "Scanning…" : "Run Free Scan"}
+                {submitting ? (
+                  <>
+                    <span className="spinner" aria-hidden="true"></span>
+                    <span>Scanning…</span>
+                  </>
+                ) : "Run Free Scan"}
               </button>
             </div>
             <div className="kpis">
@@ -215,8 +409,9 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Benefits */}
-      <section id="features" className="grid">
+      {/* Features Section */}
+      <section id="features" className="grid" aria-labelledby="features-heading">
+        <h2 id="features-heading" className="sr-only">Features</h2>
         <article className="card">
           <h4>Clarity, not guesswork</h4>
           <p>We score what AI actually reads: schema, freshness, and entity trust—no vanity metrics.</p>
@@ -231,25 +426,49 @@ export default function Page() {
         </article>
       </section>
 
-      {/* Slim pricing teaser */}
-      <section id="pricing" className="panel">
-        <h3 style={{margin:"0 0 6px"}}>Simple pricing</h3>
+      {/* How It Works Section */}
+      <section id="how-it-works" className="panel" aria-labelledby="how-it-works-heading" style={{marginTop: 48}}>
+        <h2 id="how-it-works-heading" style={{margin:"0 0 12px"}}>How it works</h2>
+        <div className="grid" style={{gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, marginTop: 20}}>
+          <div className="card">
+            <h4 style={{margin:"0 0 8px"}}>1. Enter your website</h4>
+            <p style={{margin:0, color:"var(--muted)", fontSize:14}}>Paste your dealership website URL to get started</p>
+          </div>
+          <div className="card">
+            <h4 style={{margin:"0 0 8px"}}>2. Get instant analysis</h4>
+            <p style={{margin:0, color:"var(--muted)", fontSize:14}}>Our AI scans your site and provides a comprehensive Trust Score</p>
+          </div>
+          <div className="card">
+            <h4 style={{margin:"0 0 8px"}}>3. View your report</h4>
+            <p style={{margin:0, color:"var(--muted)", fontSize:14}}>See detailed insights on schema, freshness, and AI visibility</p>
+          </div>
+          <div className="card">
+            <h4 style={{margin:"0 0 8px"}}>4. Take action</h4>
+            <p style={{margin:0, color:"var(--muted)", fontSize:14}}>Get fix-ready recommendations to improve your AI visibility</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="panel" aria-labelledby="pricing-heading">
+        <h2 id="pricing-heading" style={{margin:"0 0 6px"}}>Simple pricing</h2>
         <p className="small">Free scan. Tier 2 from $499/mo. Tier 3 from $999/mo. Cancel anytime.</p>
         <div style={{display:"flex",gap:10,marginTop:10,flexWrap:"wrap"}}>
-          <button className="cta" onClick={()=>(window.location.href = "/onboarding")}>Start free</button>
-          <button className="ghost" onClick={()=>(window.location.href = "/learn")}>See how it works</button>
+          <Link href="/onboarding" className="cta">Get Your Free Report</Link>
+          <a href="#how-it-works" className="ghost">See how it works</a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="footer">
+      <footer className="footer" role="contentinfo">
         <div className="small">© {new Date().getFullYear()} DealershipAI</div>
-        <div className="links">
-          <a href="/legal">Legal</a>
-          <a href="/status">Status</a>
-          <a href="/sign-in">Sign in</a>
-        </div>
+        <nav className="links" aria-label="Footer navigation">
+          <Link href="/legal">Legal</Link>
+          <Link href="/status">Status</Link>
+          <Link href="/sign-in">Sign in</Link>
+        </nav>
       </footer>
     </main>
+    </>
   );
 }

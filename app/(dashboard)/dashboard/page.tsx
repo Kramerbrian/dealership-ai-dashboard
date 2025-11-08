@@ -2,16 +2,22 @@
 
 import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import IntelligenceShell from '@/components/cognitive/IntelligenceShell';
 import OrchestratorView from '@/components/cognitive/OrchestratorView';
 import ZeroClickCard from '@/components/zero-click/ZeroClickCard';
 import AiriCard from '@/components/zero-click/AiriCard';
+import QaiModal from '@/app/(dashboard)/components/metrics/QaiModal';
+import EEATDrawer from '@/app/(dashboard)/components/metrics/EEATDrawer';
+import ConversationalAgent from '@/components/elevenlabs/ConversationalAgent';
 
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
+  const [showQai, setShowQai] = useState(false);
+  const [showEEAT, setShowEEAT] = useState(false);
+  const domain = 'demo-dealership.com'; // In production, get from user metadata
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -49,10 +55,13 @@ export default function DashboardPage() {
           <p className="text-gray-400 mt-2 text-sm">Your current AI visibility score</p>
         </div>
         
-        <div className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Competitors Tracked</h2>
-          <div className="text-3xl font-bold text-blue-400">12</div>
-          <p className="text-gray-400 mt-2 text-sm">Active competitor monitoring</p>
+        <div 
+          className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-6 cursor-pointer hover:bg-gray-900/70 transition-colors"
+          onClick={() => setShowQai(true)}
+        >
+          <h2 className="text-lg font-semibold text-white mb-4">Quality Authority Index</h2>
+          <div className="text-3xl font-bold text-blue-400">87</div>
+          <p className="text-gray-400 mt-2 text-sm">Click to view QAI breakdown</p>
         </div>
         
         <div className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-6">
@@ -60,6 +69,11 @@ export default function DashboardPage() {
           <div className="text-3xl font-bold text-purple-400">24</div>
           <p className="text-gray-400 mt-2 text-sm">AI scans completed this month</p>
         </div>
+      </div>
+
+      {/* ElevenLabs Conversational Agent */}
+      <div className="mb-8">
+        <ConversationalAgent />
       </div>
 
       {/* Zero-Click Rate Intelligence Section */}
@@ -70,6 +84,23 @@ export default function DashboardPage() {
           <AiriCard tenantId={dealerId} />
         </div>
       </div>
+
+      {/* QAI Modal and EEAT Drawer */}
+      {showQai && (
+        <QaiModal
+          domain={domain}
+          open={showQai}
+          onClose={() => setShowQai(false)}
+          onOpenEEAT={() => setShowEEAT(true)}
+        />
+      )}
+      {showEEAT && (
+        <EEATDrawer
+          domain={domain}
+          open={showEEAT}
+          onClose={() => setShowEEAT(false)}
+        />
+      )}
     </IntelligenceShell>
   );
 }
