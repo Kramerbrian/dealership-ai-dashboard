@@ -15,6 +15,8 @@
  */
 
 import React, { useState, useEffect } from "react";
+import RaRModal from "@/app/(dashboard)/components/metrics/RaRModal";
+import { useRar } from "@/app/(dashboard)/hooks/useRar";
 
 // Types for modal content
 interface ModalContent {
@@ -455,13 +457,18 @@ const DealershipAIDashboardLA: React.FC = () => {
                 </div>
                 <div className="text-sm" style={{ color: '#666' }}>Across all platforms</div>
               </div>
-              <div className="card success">
-                <div className="metric-label">Revenue Impact</div>
+              <div 
+                className="card success"
+                onClick={() => setShowRarModal(true)}
+                style={{ cursor: 'pointer' }}
+                title="Click to view Revenue at Risk details"
+              >
+                <div className="metric-label">Revenue at Risk</div>
                 <div className="metric-value" style={{ color: '#388E3C' }}>$367K</div>
                 <div className="metric-progress">
                   <div className="metric-progress-bar" style={{ width: '75%' }} />
                 </div>
-                <div className="text-sm" style={{ color: '#4CAF50' }}>+$45K from last month</div>
+                <div className="text-sm" style={{ color: '#4CAF50' }}>Monthly exposure • Click to analyze</div>
               </div>
               <div className="card warning">
                 <div className="metric-label">Opportunities Found</div>
@@ -579,6 +586,13 @@ const DealershipAIDashboardLA: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Revenue at Risk Modal */}
+      <RaRModal 
+        domain={domain} 
+        open={showRarModal} 
+        onClose={() => setShowRarModal(false)} 
+      />
     </>
   );
 };
