@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install --legacy-peer-deps && NEXT_TELEMETRY_DISABLED=1 next build",
+  "buildCommand": "npm install --legacy-peer-deps && prisma generate && NEXT_TELEMETRY_DISABLED=1 next build",
   "framework": "nextjs",
   "rewrites": [
     {
