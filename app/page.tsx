@@ -3,8 +3,8 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { JsonLd } from '@/components/seo/JsonLd'
-import { SoftwareApplicationLd, FaqLd, HowToLd } from '@/components/seo/SeoBlocks'
+import { JsonLd } from '@/components/SEO/JsonLd'
+import { SoftwareApplicationLd, FaqLd, HowToLd } from '@/components/SEO/SeoBlocks'
 // Load weights from API instead of direct file access (client-side safe)
 async function getVisibilityWeights() {
   try {
