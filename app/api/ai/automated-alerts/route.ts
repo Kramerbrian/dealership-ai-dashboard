@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db as prisma } from '@/lib/db';
+
+// Optional Prisma import - gracefully handle if not available
+let prisma: any = null;
+try {
+  const dbModule = require('@/lib/db');
+  prisma = dbModule.db;
+} catch (error) {
+  console.warn('[automated-alerts] Prisma not available:', error);
+}
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
