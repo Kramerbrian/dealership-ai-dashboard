@@ -1,0 +1,40 @@
+# Terraform Variables Example
+# 
+# IMPORTANT: Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore and will NOT be committed
+#
+# cp terraform.tfvars.example terraform.tfvars
+# Then edit terraform.tfvars with your actual values
+
+# AWS Configuration
+aws_region = "us-east-1"
+environment = "prod"  # or "dev", "staging"
+
+# EKS Configuration
+cluster_name = "aim-cluster"
+eks_version = "1.28"
+node_instance_types = ["m5.xlarge", "m5.2xlarge"]
+node_desired_size = 3
+node_min_size = 2
+node_max_size = 10
+
+# MSK Configuration
+msk_instance_type = "kafka.m5.large"
+msk_broker_count = 3
+
+# Redshift Configuration
+redshift_node_type = "dc2.large"
+redshift_node_count = 2
+# IMPORTANT: Use a strong password and store it securely
+# Consider using AWS Secrets Manager or environment variables
+redshift_master_password = "CHANGE_THIS_TO_STRONG_PASSWORD_123!"
+
+# Data Retention
+data_retention_days = 180
+audit_log_retention_days = 365
+secrets_rotation_days = 30
+
+# Backend Configuration (if using backend.hcl file)
+# terraform_backend_bucket = "your-terraform-state-bucket"
+# terraform_backend_region = "us-east-1"
+# terraform_backend_dynamodb_table = "your-terraform-locks-table"
