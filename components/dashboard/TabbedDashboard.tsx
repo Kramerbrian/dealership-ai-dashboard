@@ -55,6 +55,7 @@ import SEOModal from '../modals/SEOModal';
 import AEOModal from '../modals/AEOModal';
 import GEOModal from '../modals/GEOModal';
 import { userManager } from '@/lib/user-management';
+import AIVStrip from '@/components/visibility/AIVStrip';
 
 interface TabData {
   id: string;
@@ -1212,6 +1213,9 @@ export default function TabbedDashboard() {
             </div>
             
             <div className="flex items-center gap-4">
+              {/* AIV Strip */}
+              <AIVStrip domain={undefined} className="opacity-90" />
+              
               {/* Time Range Selector */}
               <select
                 value={selectedTimeRange}

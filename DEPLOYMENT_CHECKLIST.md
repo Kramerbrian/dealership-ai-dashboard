@@ -1,199 +1,191 @@
-# 🚀 Cognitive Ops Platform - Deployment Checklist
+# 🚀 Production Deployment Checklist
 
-## Pre-Deployment Setup
+## Pre-Deployment Testing
 
-### 1. Database Environment Variables
+### ✅ Build Test
+- [x] `npm run build` completes successfully
+- [x] No critical errors (warnings about optional deps are OK)
 
-**Required for Prisma migrations:**
+### ✅ Code Quality
+- [x] No linter errors
+- [x] TypeScript types correct
+- [x] Middleware properly configured
 
-```env
-DATABASE_URL="postgresql://user:password@host:5432/dealershipai"
-DIRECT_URL="postgresql://user:password@host:5432/dealershipai"
+---
+
+## Environment Variables (Vercel)
+
+### Required Variables
+```bash
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Supabase
+SUPABASE_URL=https://...
+SUPABASE_SERVICE_KEY=eyJ...
+
+# Upstash Redis (Optional but recommended)
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+
+# Admin Access
+ADMIN_EMAILS=admin@dealershipai.com,brian@dealershipai.com
+NEXT_PUBLIC_ADMIN_EMAILS=admin@dealershipai.com,brian@dealershipai.com
+
+# Slack (Optional - for DriftGuard notifications)
+SLACK_WEBHOOK_URL=https://hooks.slack.com/...
+
+# ElevenLabs (Optional)
+ELEVENLABS_API_KEY=...
+
+# Backend (Optional - for probe verification)
+BACKEND_BASE_URL=https://...
 ```
 
-**Note:** `DIRECT_URL` is required for migrations when using connection pooling. Set it to the same value as `DATABASE_URL` or your direct database connection string.
+### Set in Vercel
+```bash
+# Check existing variables
+vercel env ls
 
-### 2. Cognitive Ops Platform Variables
-
-Add to `.env.local` and Vercel:
-
-```env
-PLATFORM_MODE=CognitiveOps
-ORCHESTRATOR_ROLE=AI_CSO
-AUTONOMY_INTERVAL_HOURS=6
+# Add missing variables
+vercel env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production
+vercel env add CLERK_SECRET_KEY production
+# ... repeat for all required variables
 ```
 
 ---
 
-## Migration Steps
+## Clerk Configuration
 
-### Step 1: Generate Prisma Client
-```bash
-npx prisma generate
-```
+### Dashboard Settings
+1. Go to https://dashboard.clerk.com
+2. Navigate to **Configure → Paths**
+3. Set redirect URLs:
+   - **After Sign In:** `/onboarding`
+   - **After Sign Up:** `/onboarding`
+   - **After Onboarding:** `/dashboard`
 
-### Step 2: Create Migration
-```bash
-npx prisma migrate dev --name add_orchestrator_state
-```
-
-This will:
-- Create migration file in `prisma/migrations/`
-- Apply migration to development database
-- Generate updated Prisma client
-
-### Step 3: Verify Migration
-```bash
-npx prisma studio
-```
-
-Check that `orchestrator_state` table exists with correct schema.
+### Webhooks (Optional)
+If using Clerk webhooks:
+1. Go to **Webhooks** in Clerk dashboard
+2. Add endpoint: `https://your-domain.com/api/webhooks/clerk`
+3. Subscribe to: `user.created`, `user.updated`
 
 ---
 
-## Production Deployment
+## Deployment Steps
 
-### Step 1: Push Migration to Production
-
-**Option A: Using Prisma Migrate (Recommended)**
+### 1. Verify Local Build
 ```bash
-npx prisma migrate deploy
+npm run build
+# Should complete without errors
 ```
 
-**Option B: Manual SQL (if needed)**
-```sql
-CREATE TABLE IF NOT EXISTS orchestrator_state (
-  id TEXT PRIMARY KEY,
-  dealer_id TEXT UNIQUE NOT NULL,
-  confidence FLOAT DEFAULT 0.0,
-  autonomy_enabled BOOLEAN DEFAULT true,
-  current_mode TEXT DEFAULT 'AI_CSO',
-  active_agents TEXT[] DEFAULT ARRAY[]::TEXT[],
-  last_orchestration TIMESTAMPTZ,
-  orchestration_count INTEGER DEFAULT 0,
-  last_scan TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT orchestrator_state_dealer_id_fkey 
-    FOREIGN KEY (dealer_id) REFERENCES dealers(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS orchestrator_state_dealer_id_idx 
-  ON orchestrator_state(dealer_id);
-CREATE INDEX IF NOT EXISTS orchestrator_state_autonomy_enabled_idx 
-  ON orchestrator_state(autonomy_enabled);
-```
-
-### Step 2: Set Vercel Environment Variables
-
-Go to: https://vercel.com/dashboard → Your Project → Settings → Environment Variables
-
-Add:
-- `PLATFORM_MODE=CognitiveOps`
-- `ORCHESTRATOR_ROLE=AI_CSO`
-- `AUTONOMY_INTERVAL_HOURS=6`
-
-(Plus all your existing vars: DATABASE_URL, CLERK keys, etc.)
-
-### Step 3: Deploy
+### 2. Deploy to Vercel
 ```bash
-npx vercel --prod
+# If not already linked
+vercel link
+
+# Deploy to production
+vercel --prod
+
+# Or push to main branch (if auto-deploy enabled)
+git push origin main
 ```
+
+### 3. Post-Deployment Verification
+
+#### Test Landing Page
+- [ ] Visit `/` - Should load without errors
+- [ ] Test URL validation
+- [ ] Test mobile menu
+- [ ] Test exit intent modal
+
+#### Test Authentication
+- [ ] Sign up new user → Should redirect to `/onboarding`
+- [ ] Sign in existing user → Should redirect based on onboarding status
+- [ ] Sign out → Should redirect to `/`
+
+#### Test Onboarding Flow
+- [ ] Access `/onboarding` → Requires authentication
+- [ ] Complete onboarding form
+- [ ] Verify data saved to Clerk metadata
+- [ ] Verify redirect to `/dashboard` after completion
+
+#### Test Middleware
+- [ ] Try accessing `/dashboard` without onboarding → Should redirect to `/onboarding`
+- [ ] Complete onboarding → Should allow access to `/dashboard`
+- [ ] Test protected routes require authentication
+
+#### Test API Endpoints
+- [ ] `/api/user/onboarding-complete` - POST saves metadata
+- [ ] `/api/user/onboarding-complete` - GET checks status
+- [ ] `/api/scan/quick` - Returns preview results
+- [ ] `/api/visibility/presence` - Returns visibility data
 
 ---
 
-## Post-Deployment Verification
+## Monitoring
 
-### 1. Test Dashboard
-Visit: `https://dash.dealershipai.com/dashboard`
+### Vercel Analytics
+- Check deployment logs for errors
+- Monitor function execution times
+- Check error rates
 
-**Expected:**
-- ✅ IntelligenceShell with dark glass aesthetic
-- ✅ Cognition Bar showing confidence level
-- ✅ OrchestratorView panel visible
-- ✅ Zero-Click cards loading
+### Clerk Dashboard
+- Monitor sign-ups and sign-ins
+- Check user metadata updates
+- Verify webhook deliveries (if configured)
 
-### 2. Test Orchestrator APIs
-
-**Status API:**
-```bash
-curl https://your-domain.com/api/orchestrator/status?dealerId=test
-```
-
-Should return:
-```json
-{
-  "confidence": 0.92,
-  "autonomyEnabled": true,
-  "activeAgents": [],
-  "currentMode": "AI_CSO"
-}
-```
-
-**Run Orchestration:**
-```bash
-curl -X POST https://your-domain.com/api/orchestrator/run \
-  -H "Content-Type: application/json" \
-  -d '{"dealerId": "test"}'
-```
-
-### 3. Verify Scoring API
-
-```bash
-curl -X POST https://your-domain.com/api/ai/compute \
-  -H "Content-Type: application/json" \
-  -d '{
-    "seo": {"cwv": 0.76, "crawlIndex": 0.68, "contentQuality": 0.72},
-    "aeo": {"paaShare": 0.41, "faqSchema": 0.62, "localCitations": 0.55},
-    "geo": {"csgv": 0.58, "hallucinationRisk": 0.12},
-    "qai": {"lambdaPIQR": 1.08, "vdpQuality": 0.82},
-    "eeat": {"eeatMultiplier": 0.74}
-  }'
-```
-
----
-
-## Troubleshooting
-
-### Migration Fails
-- Check `DATABASE_URL` and `DIRECT_URL` are set correctly
-- Verify database connection with `npx prisma db pull`
-- Check if `dealers` table exists (orchestrator_state has foreign key)
-
-### OrchestratorView Not Loading
-- Check browser console for errors
-- Verify `/api/orchestrator/status` endpoint is accessible
+### Application Logs
 - Check Vercel function logs
-
-### Cognition Bar Shows 0%
-- Default confidence is 0.92, but may show as 0 if API fails
-- Check network tab for failed requests
-- Verify dealerId is passed correctly
+- Monitor API endpoint responses
+- Track onboarding completion rates
 
 ---
 
-## Next Enhancements
+## Rollback Plan
 
-Once deployed and verified:
+If issues occur:
+```bash
+# Rollback to previous deployment
+vercel rollback
 
-1. **Add Cron Job** - Auto-orchestration every 6 hours
-   ```json
-   {
-     "crons": [
-       {
-         "path": "/api/orchestrator/cron",
-         "schedule": "0 */6 * * *"
-       }
-     ]
-   }
-   ```
-
-2. **Agentic Tiles** - Make KPI cards clickable → trigger analysis
-
-3. **ASR Audit Log** - Track all autonomous decisions
-
-4. **β-Calibration** - Implement self-training loop
+# Or redeploy specific version
+vercel --prod --force
+```
 
 ---
 
-**Status:** ✅ Ready for deployment after database migration
+## Post-Deployment Tasks
+
+1. **Test End-to-End Flow**
+   - Create test user account
+   - Complete onboarding
+   - Verify dashboard access
+
+2. **Monitor for 24 Hours**
+   - Check error rates
+   - Monitor performance
+   - Verify user flows
+
+3. **Update Documentation**
+   - Document any issues found
+   - Update runbooks if needed
+
+---
+
+## Success Criteria
+
+✅ Landing page loads without errors
+✅ Authentication works (sign up/in/out)
+✅ Onboarding flow completes successfully
+✅ Middleware redirects work correctly
+✅ Clerk metadata updates persist
+✅ Dashboard accessible after onboarding
+✅ All API endpoints respond correctly
+
+---
+
+**Status: Ready for Deployment** 🚀

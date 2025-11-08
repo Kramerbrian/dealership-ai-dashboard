@@ -3,7 +3,12 @@
  * Centralized analytics for Vercel Analytics, PostHog, and custom events
  */
 
-import posthog from 'posthog-js';
+let posthog: any = null;
+try {
+  posthog = require('posthog-js');
+} catch {
+  // PostHog is optional
+}
 
 let posthogInitialized = false;
 

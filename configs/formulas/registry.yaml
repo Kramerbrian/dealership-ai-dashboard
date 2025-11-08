@@ -1,0 +1,44 @@
+version: "2025.11.08"
+
+aiv_label: "AIV – Algorithmic Visibility Index"
+
+# Presence % below which a pulse should be created for that engine
+visibility_thresholds:
+  ChatGPT:
+    warn: 80
+    critical: 70
+  Perplexity:
+    warn: 75
+    critical: 65
+  Gemini:
+    warn: 75
+    critical: 70
+  Copilot:
+    warn: 72
+    critical: 65
+
+# For AIV calculation blending (override/align with formulas.formulas.AIV_1 if desired)
+visibility_weights:
+  ChatGPT: 0.35
+  Perplexity: 0.25
+  Gemini: 0.25
+  Copilot: 0.15
+
+formulas:
+  - name: "AIV"
+    description: "Algorithmic Visibility Index - Weighted sum of engine presence"
+    formula: "Σ(weight × presence%)"
+    engines:
+      - ChatGPT
+      - Perplexity
+      - Gemini
+      - Copilot
+  - name: "AIV_1"
+    description: "AIV using visibility_weights from registry"
+    formula: "Σ(visibility_weights[engine] × presence[engine])"
+    engines:
+      - ChatGPT
+      - Perplexity
+      - Gemini
+      - Copilot
+

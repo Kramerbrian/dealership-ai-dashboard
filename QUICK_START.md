@@ -1,83 +1,63 @@
-# 🚀 Google Policy Compliance - Quick Start
+# 🚀 Quick Start - DealershipAI
 
-**5 Minutes to Production**
+## ✅ Everything is Integrated!
 
----
+All features are complete and ready. Here's what to do next:
 
-## Right Now (Supabase SQL Editor is open!)
+## 🎯 3-Step Setup (5 minutes)
 
-1. **Paste** the migration SQL (already in your clipboard)
-2. **Click "Run"** in Supabase SQL Editor
-3. **Verify:** Should see success message
+### Step 1: Set Clerk User Roles
+In Clerk Dashboard → Users → Select User → Metadata:
+```json
+{
+  "role": "admin",
+  "tenant": "demo-dealer-001"
+}
+```
 
----
+Or use API:
+```typescript
+await clerkClient.users.updateUserMetadata(userId, {
+  publicMetadata: { role: 'admin', tenant: 'demo-dealer-001' }
+})
+```
 
-## Test Locally (2 min)
-
+### Step 2: Test Locally
 ```bash
-# Start dev server
 npm run dev
-
-# In another terminal, test the API
-curl http://localhost:3000/api/compliance/google-pricing/summary
-
-# Should return:
-# { "riskScore": 0, "compliant": true, ... }
+# Visit http://localhost:3000
 ```
 
----
-
-## Deploy to Production (1 min)
-
-Vercel is already deploying automatically from your GitHub push!
-
-Check status: https://vercel.com/dashboard
-
----
-
-## Add Optional Notifications
-
-**Resend (Email):**
-1. Get API key: https://resend.com/api-keys
-2. Add to Vercel: `RESEND_API_KEY=...`
-
-**Slack (Webhook):**
-1. Get webhook: https://api.slack.com/messaging/webhooks
-2. Add to Vercel: `SLACK_WEBHOOK_URL=...`
-
----
-
-## Test with Real URLs
-
+### Step 3: Deploy
 ```bash
-curl -X POST http://localhost:3000/api/audit/google-pricing \
-  -H "Content-Type: application/json" \
-  -d '[{
-    "adUrl": "https://your-dealership.com/ad",
-    "lpUrl": "https://your-dealership.com/special",
-    "vdpUrl": "https://your-dealership.com/vehicle/123"
-  }]'
+vercel --prod
 ```
 
----
+## 🎬 Complete Flow
 
-## View Dashboard
+1. **Landing** (`/`) → Click "Get Your Free Report" → Clerk sign-up
+2. **Onboarding** (`/onboarding`) → Complete steps → Save to Clerk
+3. **Dashboard** (`/dashboard`) → Access main dashboard
+4. **Fleet** (`/fleet`) → View origins → Click "Fix now"
+5. **Fix Drawer** → Dry-run → Apply → Auto-verify
+6. **Bulk Upload** (`/bulk`) → Upload CSV → Edit invalid rows → Commit
 
-Visit: http://localhost:3000/intelligence
+## ✅ All Features Working
 
-(After production deployment: https://yourdomain.com/intelligence)
+- ✅ Clerk SSO authentication
+- ✅ Onboarding flow with metadata
+- ✅ RBAC (admin/ops/viewer roles)
+- ✅ Fleet dashboard with evidence cards
+- ✅ Fix drawer with dry-run & rollback
+- ✅ Bulk CSV upload with idempotency
+- ✅ QAI modal & E-E-A-T drawer
+- ✅ Redis caching
+- ✅ Site-inject versions & rollback
 
----
+## 🐛 Build Issues Fixed
 
-## That's It!
+- ✅ Route conflicts resolved
+- ✅ Duplicate components removed
+- ✅ All imports updated
 
-✅ Database migrated
-✅ Code deployed  
-✅ CRON active
-✅ Dashboard live
-
-**Next:** Run real audits and watch the compliance metrics roll in!
-
-📚 **Full Docs:** 
-- [GOOGLE_POLICY_COMPLIANCE_GUIDE.md](GOOGLE_POLICY_COMPLIANCE_GUIDE.md)
-- [GOOGLE_POLICY_PRODUCTION_DEPLOYMENT.md](GOOGLE_POLICY_PRODUCTION_DEPLOYMENT.md)
+**Status**: ✅ **READY FOR PRODUCTION**

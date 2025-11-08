@@ -1,0 +1,553 @@
+{
+  "version": "1.0.0",
+  "name": "Cognitive Ops Platform Master Blueprint",
+  "date": "2025-01-15",
+  "status": "locked",
+  "description": "Complete architecture specification for DealershipAI Cognitive Ops Platform with SDK Marketplace, Multi-Product Platform, and ChatGPT Pulse-Inspired Dashboard",
+  
+  "platform": {
+    "name": "DealershipAI",
+    "tagline": "DealershipAI is the Cognitive Ops Platform that gives every dealership its own AI Chief Strategy Officer.",
+    "taglineShort": "Your AI Chief Strategy Officer",
+    "taglineLong": "The Cognitive Ops Platform that gives every dealership its own AI Chief Strategy Officer, continuously auditing, predicting, fixing, and explaining decisions.",
+    "positioning": "Command Center for Dealerships",
+    "metaphor": "Air Traffic Control Tower"
+  },
+
+  "architecture": {
+    "brain": {
+      "type": "hybrid",
+      "coreLogic": "internal",
+      "inferenceLayer": "remote_gpt",
+      "implementation": {
+        "orchestratorBridge": "lib/orchestrator/gpt-bridge.ts",
+        "fallbackCalculations": ["QAI", "PIQR", "OCI"],
+        "asyncQueues": ["Supabase", "Redis"],
+        "embeddingsCache": "local"
+      }
+    },
+    "agentHierarchy": {
+      "hal": {
+        "role": "supervisor",
+        "responsibilities": ["personality", "decision_routing", "intent_parsing"],
+        "personalityEvolution": {
+          "days_1_7": "formal_instructional",
+          "days_8_30": "professional_dry_razor_sharp_wit",
+          "days_31_plus": "full_dai_personality"
+        }
+      },
+      "orchestrator_3_0": {
+        "role": "inference_engine",
+        "functions": ["compute_qai", "calculate_piqr", "calculate_oci", "generate_asr", "analyze_visibility", "analyze_ugc"]
+      },
+      "subAgents": {
+        "schema_king": {
+          "role": "schema_audit_injection",
+          "endpoint": "/api/agents/schema-king"
+        },
+        "mystery_shop": {
+          "role": "customer_journey_evaluation",
+          "endpoint": "/api/agents/mystery-shop"
+        },
+        "auto_fix_engine": {
+          "role": "execution_layer",
+          "endpoint": "/api/ai/autofix"
+        }
+      },
+      "validationLayer": {
+        "role": "beta_calibration_feedback",
+        "frequency": {
+          "mini_reweight": "7_days",
+          "full_calibration": "90_days"
+        }
+      }
+    },
+    "dataFlow": {
+      "stages": ["Signal", "Inference", "Autonomy", "Execution", "Validation"],
+      "mapping": {
+        "Signal": "Scan",
+        "Inference": "Diagnose",
+        "Autonomy": "Prescribe",
+        "Execution": "Deploy",
+        "Validation": "Validate"
+      }
+    },
+    "memory": {
+      "perSession": {
+        "type": "volatile",
+        "storage": ["React_state", "in_memory_cache"]
+      },
+      "perDealer": {
+        "type": "persistent",
+        "storage": "Supabase_JSONB",
+        "field": "dealer_context",
+        "retention": "30_days"
+      },
+      "globalAnonymized": {
+        "type": "cross_dealer_patterns",
+        "storage": "Supabase_GlobalPatterns",
+        "retention": "90_days",
+        "gdprCompliant": true
+      }
+    }
+  },
+
+  "kpiCanon": {
+    "metrics": [
+      {
+        "id": "aiv",
+        "name": "AI Visibility",
+        "priority": 1,
+        "description": "Primary metric"
+      },
+      {
+        "id": "qai",
+        "name": "Quality Authority Index",
+        "priority": 2,
+        "description": "Core trust score"
+      },
+      {
+        "id": "piqr",
+        "name": "Performance Impact Quality Risk",
+        "priority": 3,
+        "description": "Risk assessment"
+      },
+      {
+        "id": "oci",
+        "name": "Opportunity Cost of Inaction",
+        "priority": 4,
+        "description": "Revenue at risk"
+      },
+      {
+        "id": "ati",
+        "name": "Algorithmic Trust Index",
+        "priority": 5,
+        "description": "Cross-platform trust"
+      },
+      {
+        "id": "asr_roi",
+        "name": "Autonomous Strategy Recommendation ROI",
+        "priority": 6,
+        "description": "Action value"
+      }
+    ],
+    "confidenceRibbon": {
+      "displayFormat": "horizontal_bar",
+      "colorCoding": {
+        "green": ">=85%",
+        "amber": "65-84%",
+        "red": "<65%"
+      },
+      "calculation": "weighted_average_all_metrics"
+    }
+  },
+
+  "executionGuardrails": {
+    "defaultMode": "preview_simulation",
+    "tieredApproval": {
+      "lowRisk": {
+        "impactThreshold": 500,
+        "confidenceThreshold": 0.85,
+        "action": "auto_deploy_with_notification"
+      },
+      "mediumRisk": {
+        "impactThreshold": 2000,
+        "confidenceThreshold": 0.70,
+        "action": "preview_one_click_approve"
+      },
+      "highRisk": {
+        "impactThreshold": 2000,
+        "confidenceThreshold": 0.70,
+        "action": "manual_review_required"
+      }
+    },
+    "autoFixToggle": {
+      "availableIn": "boss_mode",
+      "default": false
+    }
+  },
+
+  "interfaceParadigm": {
+    "primary": "mission_board",
+    "secondary": "hal_chat",
+    "components": {
+      "missionBoard": {
+        "features": ["scan_diagnose_prescribe_deploy_validate", "visual_progress", "evidence_panel", "category_filtering"],
+        "categories": ["quick_win", "strategic", "maintenance"]
+      },
+      "halChat": {
+        "features": ["conversational_queries", "inline_cards", "natural_language"],
+        "examples": ["What's my AI visibility?", "Calculate OCI", "Generate ASRs"]
+      },
+      "confidenceRibbon": {
+        "type": "adaptive_hud",
+        "position": "top_dashboard",
+        "alwaysVisible": true
+      },
+      "orchestratorView": {
+        "type": "3d_visualization",
+        "optional": true
+      }
+    }
+  },
+
+  "repositoryStructure": {
+    "type": "monorepo",
+    "root": "dealershipai-monorepo",
+    "workspace": {
+      "apps": {
+        "web": {
+          "path": "apps/web",
+          "type": "nextjs_14",
+          "description": "Main marketing site + calculators",
+          "routes": {
+            "marketing": {
+              "landing": "app/(marketing)/page.tsx",
+              "pricing": "app/(marketing)/pricing/page.tsx",
+              "about": "app/(marketing)/about/page.tsx",
+              "demo": "app/(marketing)/demo/page.tsx"
+            },
+            "calculators": {
+              "base": "app/calculators",
+              "dtriMaximus": "app/calculators/dtri-maximus/page.tsx",
+              "adWasteAudit": "app/calculators/ad-waste-audit/page.tsx",
+              "roiSimulator": "app/calculators/roi-simulator/page.tsx",
+              "results": "app/calculators/results/[session]/page.tsx"
+            },
+            "api": {
+              "calculators": "app/api/calculators/route.ts",
+              "leads": "app/api/leads/route.ts",
+              "webhookClerk": "app/api/webhook/clerk/route.ts"
+            }
+          },
+          "components": {
+            "landing": "components/landing",
+            "calculators": {
+              "DTRIMaximus": "components/calculators/DTRIMaximus.tsx",
+              "ConversationalForm": "components/calculators/ConversationalForm.tsx",
+              "ResultsVisualization": "components/calculators/ResultsVisualization.tsx"
+            }
+          }
+        },
+        "dashboard": {
+          "path": "apps/dashboard",
+          "type": "nextjs_14",
+          "description": "Authenticated dashboard (Pulse-inspired)",
+          "routes": {
+            "auth": {
+              "layout": "app/(auth)/layout.tsx",
+              "overview": "app/(auth)/page.tsx",
+              "insights": "app/(auth)/insights/page.tsx",
+              "competitive": "app/(auth)/competitive/page.tsx",
+              "priorities": "app/(auth)/priorities/page.tsx",
+              "integrations": "app/(auth)/integrations/page.tsx",
+              "settings": "app/(auth)/settings/page.tsx"
+            },
+            "onboarding": {
+              "page": "app/onboarding/page.tsx",
+              "steps": "app/onboarding/steps"
+            },
+            "api": {
+              "aiScores": "app/api/ai-scores/route.ts",
+              "competitiveIntel": "app/api/competitive-intel/route.ts",
+              "priorities": "app/api/priorities/route.ts",
+              "integrations": "app/api/integrations"
+            }
+          },
+          "components": {
+            "pulse": {
+              "InsightsFeed": "components/pulse/InsightsFeed.tsx",
+              "MetricCard": "components/pulse/MetricCard.tsx",
+              "CompetitiveAlert": "components/pulse/CompetitiveAlert.tsx",
+              "ActionStack": "components/pulse/ActionStack.tsx"
+            },
+            "missions": {
+              "MissionBoard": "components/missions/MissionBoard.tsx",
+              "MissionCard": "components/missions/MissionCard.tsx",
+              "EvidencePanel": "components/missions/EvidencePanel.tsx"
+            },
+            "orchestrator": {
+              "HALChat": "components/orchestrator/HALChat.tsx",
+              "ConfidenceRibbon": "components/orchestrator/ConfidenceRibbon.tsx",
+              "OrchestratorView": "components/orchestrator/OrchestratorView.tsx"
+            }
+          }
+        }
+      },
+      "packages": {
+        "shared": {
+          "path": "packages/shared",
+          "description": "Shared types, utilities, constants"
+        },
+        "orchestrator": {
+          "path": "packages/orchestrator",
+          "description": "Orchestrator 3.0 core logic"
+        },
+        "agents": {
+          "path": "packages/agents",
+          "description": "Agent SDK and implementations"
+        },
+        "ui": {
+          "path": "packages/ui",
+          "description": "Shared UI components"
+        }
+      }
+    },
+    "github": {
+      "workflows": {
+        "ci": ".github/workflows/ci.yml",
+        "deployProduction": ".github/workflows/deploy-production.yml",
+        "deployMarketplace": ".github/workflows/deploy-marketplace.yml"
+      }
+    }
+  },
+
+  "apiEndpoints": {
+    "orchestrator": {
+      "path": "/api/orchestrator",
+      "methods": ["POST", "GET"],
+      "description": "Main inference endpoint",
+      "actions": ["analyze_visibility", "compute_qai", "calculate_oci", "generate_asr", "analyze_ugc"]
+    },
+    "autofix": {
+      "path": "/api/ai/autofix",
+      "methods": ["POST"],
+      "description": "Auto-Fix execution"
+    },
+    "asr": {
+      "path": "/api/ai/asr",
+      "methods": ["POST"],
+      "description": "ASR generation"
+    },
+    "schemaKing": {
+      "path": "/api/agents/schema-king",
+      "methods": ["POST", "GET"],
+      "description": "Schema agent"
+    },
+    "mysteryShop": {
+      "path": "/api/agents/mystery-shop",
+      "methods": ["POST", "GET"],
+      "description": "Journey agent"
+    },
+    "aiScores": {
+      "path": "/api/ai-scores",
+      "methods": ["POST", "GET"],
+      "description": "AI scoring calculations"
+    },
+    "competitiveIntel": {
+      "path": "/api/competitive-intel",
+      "methods": ["GET"],
+      "description": "Competitive intelligence"
+    },
+    "priorities": {
+      "path": "/api/priorities",
+      "methods": ["GET", "POST"],
+      "description": "Action priorities"
+    },
+    "integrations": {
+      "path": "/api/integrations",
+      "methods": ["GET", "POST", "DELETE"],
+      "description": "SDK installation and management"
+    }
+  },
+
+  "databaseSchema": {
+    "tables": {
+      "DealerContext": {
+        "fields": {
+          "dealerId": "String @id",
+          "context": "Json",
+          "lastUpdated": "DateTime",
+          "personalityLevel": "String",
+          "userTenure": "Int"
+        }
+      },
+      "GlobalPatterns": {
+        "fields": {
+          "id": "String @id @default(uuid())",
+          "patternType": "String",
+          "anonymizedData": "Json",
+          "createdAt": "DateTime",
+          "expiresAt": "DateTime"
+        }
+      },
+      "OrchestratorUsage": {
+        "fields": {
+          "dealerId": "String",
+          "action": "String",
+          "timestamp": "DateTime",
+          "cost": "Float",
+          "tier": "String",
+          "overage": "Boolean"
+        }
+      },
+      "Missions": {
+        "fields": {
+          "id": "String @id",
+          "dealerId": "String",
+          "agentId": "String",
+          "status": "String",
+          "confidence": "Float",
+          "startedAt": "DateTime",
+          "completedAt": "DateTime",
+          "evidence": "Json"
+        }
+      },
+      "OrchestratorState": {
+        "fields": {
+          "dealerId": "String @id",
+          "confidence": "Float",
+          "autonomyEnabled": "Boolean",
+          "currentMode": "String",
+          "activeAgents": "String[]",
+          "lastOrchestration": "DateTime",
+          "orchestrationCount": "Int"
+        }
+      }
+    }
+  },
+
+  "pricing": {
+    "tiers": {
+      "testDrive": {
+        "name": "Test Drive",
+        "price": 0,
+        "asrRuns": 5,
+        "features": ["basic_dashboard", "limited_missions"]
+      },
+      "intelligence": {
+        "name": "Intelligence",
+        "price": 299,
+        "asrRuns": 50,
+        "features": ["full_dashboard", "mission_board", "hal_chat", "confidence_ribbon"]
+      },
+      "bossMode": {
+        "name": "Boss Mode",
+        "price": 999,
+        "asrRuns": "unlimited",
+        "features": ["all_intelligence", "auto_fix", "sdk_marketplace", "priority_support"]
+      }
+    },
+    "apiMetering": {
+      "tracking": "orchestrator_usage_table",
+      "metrics": ["asr_runs", "qai_calculations", "oci_analyses"],
+      "overagePricing": 0.50,
+      "futureApiProduct": {
+        "external": {
+          "price": 99,
+          "runs": 10
+        },
+        "enterprise": {
+          "price": "custom",
+          "runs": "unlimited"
+        }
+      }
+    }
+  },
+
+  "sdkMarketplace": {
+    "enabled": true,
+    "revenueShare": true,
+    "agentTypes": ["schema", "mystery_shop", "competitive", "custom"],
+    "installation": {
+      "endpoint": "/api/integrations/install",
+      "method": "POST"
+    },
+    "management": {
+      "endpoint": "/api/integrations",
+      "methods": ["GET", "POST", "DELETE"]
+    }
+  },
+
+  "pulseDashboard": {
+    "inspiration": "ChatGPT_Pulse",
+    "components": {
+      "insightsFeed": {
+        "type": "real_time_ai_insights",
+        "updateFrequency": "realtime"
+      },
+      "metricCard": {
+        "type": "live_kpi_cards",
+        "metrics": ["aiv", "qai", "piqr", "oci", "ati", "asr_roi"]
+      },
+      "competitiveAlert": {
+        "type": "market_movements",
+        "triggers": ["competitor_changes", "market_shifts"]
+      },
+      "actionStack": {
+        "type": "prioritized_actions",
+        "source": "asr_generator"
+      }
+    }
+  },
+
+  "feedbackLoops": {
+    "miniReweight": {
+      "frequency": "7_days",
+      "scope": "per_dealer",
+      "type": "lightweight_parameter_adjustments"
+    },
+    "fullCalibration": {
+      "frequency": "90_days",
+      "scope": "global_anonymized",
+      "type": "complete_model_retraining"
+    }
+  },
+
+  "deployment": {
+    "target": "vercel",
+    "environments": ["production", "staging", "development"],
+    "ciCd": {
+      "provider": "github_actions",
+      "workflows": ["ci.yml", "deploy-production.yml", "deploy-marketplace.yml"]
+    }
+  },
+
+  "techStack": {
+    "frontend": {
+      "framework": "Next.js 14",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS",
+      "stateManagement": "React Context + SWR",
+      "animations": "Framer Motion"
+    },
+    "backend": {
+      "api": "Next.js API Routes",
+      "database": "PostgreSQL (Supabase)",
+      "cache": "Redis (Upstash)",
+      "auth": "Clerk",
+      "payments": "Stripe"
+    },
+    "ai": {
+      "orchestrator": "OpenAI GPT-4 / Anthropic Claude",
+      "embeddings": "OpenAI / Local Cache",
+      "fallback": "Internal Calculations"
+    }
+  },
+
+  "brandVoice": {
+    "archetype": "Confident Wit with Sharp Intelligence",
+    "traits": {
+      "witty": "Self-aware humor that doesn't try too hard — clever without being desperate",
+      "honest": "Transparent about what we can and can't do — no false promises, no marketing fluff",
+      "smart": "Technical depth without jargon overload — intelligence that serves, not shows off",
+      "approachable": "Enterprise power with consumer-friendly UX — serious capability, zero pretension"
+    },
+    "personalityEvolution": {
+      "days_1_7": "Formal, instructional",
+      "days_8_30": "Professional with dry razor sharp wit",
+      "days_31_plus": "Full dAI personality (subtle humor, light sarcasm)"
+    }
+  },
+
+  "nextSteps": {
+    "immediate": [
+      "Generate repo scaffolds",
+      "Create API route implementations",
+      "Build component skeletons",
+      "Document integration points"
+    ],
+    "eta": "24_hours_from_blueprint_completion"
+  }
+}
+

@@ -1,255 +1,237 @@
-# Testing Guide - Fleet Agent Integration
+# 🧪 End-to-End Testing Guide
 
-Complete testing checklist for all fleet agent components.
+## Pre-Deployment Testing
 
-## 1. Test Free Audit Widget
-
-### Add to Landing Page
-The `FreeAuditWidget` component has been created. To integrate it:
-
-**Option A: Replace existing scan form**
-```tsx
-// app/page.tsx
-import FreeAuditWidget from '@/components/landing/FreeAuditWidget';
-
-// Replace the existing form section with:
-<FreeAuditWidget />
-```
-
-**Option B: Add as additional section**
-```tsx
-// Add after the hero section
-<section className="my-16">
-  <FreeAuditWidget />
-</section>
-```
-
-### Test Steps
-1. Navigate to landing page: `https://dealershipai.com`
-2. Enter a test domain: `https://www.exampledealer.com`
-3. Click "Run Audit"
-4. Verify:
-   - Loading state appears
-   - Results display with scores
-   - CTAs are clickable
-   - Error handling works (try invalid URL)
-
-### Expected Behavior
-- Widget loads without errors
-- API call to `/api/ai-scores` succeeds
-- Results show:
-  - AI Visibility (OCI) percentage
-  - Zero-Click Inclusion rate
-  - Schema/Trust Signals
-  - Recommended fixes list
-
-## 2. Test Fleet Dashboard
-
-### Access Dashboard
-1. Sign in via Clerk: `/sign-in`
-2. Navigate to: `/fleet`
-
-### Verify
-- Page loads without errors
-- Table structure displays correctly
-- If no data: Shows "No rooftops found" message
-- If data exists: Shows origin, metrics, and actions
-- "Refresh" buttons work (will require fleet API)
-
-### Expected Columns
-- Origin (website URL)
-- AI Vis % (AI visibility score)
-- Schema % (Schema coverage)
-- UGC (User-generated content health)
-- Revenue-at-Risk (financial impact)
-- Last Refresh (timestamp)
-- Actions (Refresh button)
-
-## 3. Test Cron Jobs
-
-### Manual Trigger
+### 1. Local Development Server
 ```bash
-# Replace with your actual values
-curl -X GET \
-  -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  https://your-app.vercel.app/api/cron/fleet-refresh
+npm run dev
 ```
 
-### Expected Response
-```json
-{
-  "ok": true,
-  "queued": 150,
-  "total": 150,
-  "when": "2025-01-15T12:00:00.000Z"
-}
-```
+### 2. Test Landing Page (`http://localhost:3000`)
 
-### Error Cases
-- **401 Unauthorized:** Check `CRON_SECRET` matches
-- **500 Error:** Verify `FLEET_API_BASE` is set
-- **Empty origins:** Normal if fleet API has no data
+#### Basic Functionality
+- [ ] Page loads without errors
+- [ ] Navigation menu works (desktop & mobile)
+- [ ] "Get Your Free Report" button visible
+- [ ] Features section displays correctly
+- [ ] Pricing section displays correctly
 
-### Verify in Vercel Dashboard
-1. Go to **Settings** → **Cron Jobs**
-2. Verify three jobs are scheduled:
-   - `/api/cron/fleet-refresh` at 08:00 ET
-   - `/api/cron/fleet-refresh` at 12:00 ET
-   - `/api/cron/fleet-refresh` at 16:00 ET
+#### URL Validation
+- [ ] Enter invalid URL → Shows error message
+- [ ] Enter valid URL → Accepts input
+- [ ] Submit form → Shows preview results
 
-## 4. Test Bulk Origins Ingestion
+#### Exit Intent Modal
+- [ ] Move mouse to top of page → Modal appears
+- [ ] Wait 45 seconds → Modal appears
+- [ ] Click "Get Free Report" → Focuses input field
 
-### Create Sample CSV
-Create `data/dealers.csv`:
-```csv
-https://www.dealer1.com
-https://www.dealer2.com
-https://www.dealer3.com
-dealer4.com
-dealer5.com
-```
+#### Last AIV Badge
+- [ ] First visit → No badge
+- [ ] After scan → Badge appears on next visit
 
-### Run Seed Script
+---
+
+### 3. Test Authentication Flow
+
+#### Sign Up
+1. Click "Get Your Free Report" or "Sign Up"
+2. Complete Clerk sign-up form
+3. **Expected:** Redirected to `/onboarding`
+
+#### Sign In
+1. Click "Sign In"
+2. Enter credentials
+3. **Expected:** 
+   - If onboarding incomplete → `/onboarding`
+   - If onboarding complete → `/dashboard`
+
+#### Sign Out
+1. Click user menu → Sign Out
+2. **Expected:** Redirected to `/`
+
+---
+
+### 4. Test Onboarding Flow (`http://localhost:3000/onboarding`)
+
+#### Access Control
+- [ ] Signed-out user → Redirected to sign-in
+- [ ] Signed-in user → Can access onboarding
+
+#### Step 1: Welcome
+- [ ] Page loads with welcome message
+- [ ] Progress bar shows 20%
+- [ ] "Next" button works
+
+#### Step 2: Website URL
+- [ ] Input field accepts URL
+- [ ] Invalid URL → Shows error (red border)
+- [ ] Valid URL → Error clears
+- [ ] Can skip (if optional)
+- [ ] "Next" button enabled when valid
+
+#### Step 3: Google Business Profile
+- [ ] Input field accepts URL
+- [ ] Can skip
+- [ ] "Connect" button works
+
+#### Step 4: Google Analytics
+- [ ] Checkbox toggles
+- [ ] Can skip
+- [ ] "Continue" button works
+
+#### Step 5: Complete
+- [ ] Shows success message
+- [ ] "Go to Dashboard" button works
+- [ ] Clicking button:
+  - Saves to localStorage
+  - Calls `/api/user/onboarding-complete`
+  - Redirects to `/dashboard`
+
+#### Data Persistence
+- [ ] Check browser console → No errors
+- [ ] Check Network tab → API call succeeds
+- [ ] Check Clerk dashboard → Metadata updated:
+  ```json
+  {
+    "onboarding_complete": true,
+    "domain": "example.com",
+    "dealershipUrl": "https://example.com"
+  }
+  ```
+
+---
+
+### 5. Test Middleware Redirects
+
+#### Scenario 1: Incomplete Onboarding
+1. Sign in as new user
+2. Try to access `http://localhost:3000/dashboard`
+3. **Expected:** Redirected to `/onboarding`
+
+#### Scenario 2: Complete Onboarding
+1. Complete onboarding flow
+2. Access `http://localhost:3000/dashboard`
+3. **Expected:** Dashboard loads successfully
+
+#### Scenario 3: Public Routes
+1. Sign out
+2. Access `http://localhost:3000/`
+3. **Expected:** Landing page loads
+
+#### Scenario 4: Protected Routes
+1. Sign out
+2. Try to access `http://localhost:3000/dashboard`
+3. **Expected:** Redirected to sign-in
+
+---
+
+### 6. Test API Endpoints
+
+#### `/api/user/onboarding-complete` (POST)
 ```bash
-# Ensure environment variables are set in .env.local
-node scripts/seed-origins.mjs ./data/dealers.csv
+curl -X POST http://localhost:3000/api/user/onboarding-complete \
+  -H "Content-Type: application/json" \
+  -H "Cookie: __session=..." \
+  -d '{
+    "websiteUrl": "https://example.com",
+    "googleBusinessProfile": "https://maps.google.com/...",
+    "googleAnalytics": true
+  }'
 ```
+- [ ] Returns `{ ok: true, metadata: {...} }`
+- [ ] Clerk metadata updated
 
-### Verify
-- Script executes without errors
-- Origins are normalized (http:// added if missing)
-- API call to `/api/origins/bulk` succeeds
-- Check fleet dashboard to see new origins
-
-### Expected Output
-```
-📋 Found 5 origins to seed
-✅ Bulk ingest complete: { ok: true, ... }
-```
-
-## 5. Test AI Scores Proxy
-
-### Direct API Test
+#### `/api/user/onboarding-complete` (GET)
 ```bash
-curl "https://your-app.vercel.app/api/ai-scores?origin=https://example.com"
+curl http://localhost:3000/api/user/onboarding-complete \
+  -H "Cookie: __session=..."
 ```
+- [ ] Returns `{ ok: true, completed: true/false }`
 
-### Expected Response
-```json
-{
-  "timestamp": "2025-01-15T12:00:00.000Z",
-  "dealerId": "",
-  "model_version": "3.0.0",
-  "kpi_scoreboard": {
-    "QAI_star": 0.78,
-    "VAI_Penalized": 0.85,
-    "PIQR": 0.92,
-    "HRP": 0.12,
-    "OCI": 0.73
-  },
-  "platform_breakdown": [...],
-  "zero_click_inclusion_rate": 0.42
-}
-```
-
-### Cache Verification
-- First request: Hits fleet API
-- Subsequent requests (within 3 min): Returns cached data
-- Check response headers for cache status
-
-## 6. Test Auto-Fix Engine
-
-### Manual Test
-Create a test script `test-auto-fix.ts`:
-```typescript
-import { runAutoFix } from '@/lib/auto-fix/engine';
-
-const result = await runAutoFix({
-  origin: 'https://test-dealer.com',
-  kind: 'AutoDealer',
-  schemaData: {
-    name: 'Test Dealer',
-    address: '123 Main St',
-  },
-});
-
-console.log(result);
-```
-
-### Expected Output
-```json
-{
-  "ok": true,
-  "version_id": "v123456"
-}
-```
-
-### Verification Hooks (Future)
-- Perplexity probe to verify schema visibility
-- Rich Results Test API validation
-- Audit log entry creation
-
-## 7. Test Status Endpoint
-
+#### `/api/scan/quick` (POST)
 ```bash
-curl https://your-app.vercel.app/api/status
+curl -X POST http://localhost:3000/api/scan/quick \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com"}'
 ```
+- [ ] Returns preview results
+- [ ] No authentication required
 
-### Expected Response
-```json
-{
-  "ok": true,
-  "ts": "2025-01-15T12:00:00.000Z",
-  "service": "dealershipAI_fleet_agent",
-  "version": "3.0.0",
-  "platform": "CognitiveOps"
-}
-```
+---
 
-## 8. Integration Testing Checklist
+## Post-Deployment Testing
 
-- [ ] Free Audit Widget renders on landing page
-- [ ] Widget can scan a domain successfully
-- [ ] Fleet dashboard loads after authentication
-- [ ] Fleet dashboard shows data (or graceful empty state)
-- [ ] Cron job can be manually triggered
-- [ ] Cron job authenticates correctly
-- [ ] Bulk origins script executes successfully
-- [ ] AI scores proxy returns cached data
-- [ ] Redis connection works (check logs)
-- [ ] All API routes return proper headers
-- [ ] Error handling works for all edge cases
+### Production URL Testing
 
-## Troubleshooting
+1. **Landing Page**
+   - Visit `https://your-domain.com`
+   - Test all features from local testing
 
-### Common Issues
+2. **Authentication**
+   - Sign up new user
+   - Verify redirect to `/onboarding`
+   - Complete onboarding
+   - Verify redirect to `/dashboard`
 
-**Widget doesn't load:**
-- Check browser console for errors
-- Verify `/api/ai-scores` route exists
-- Check network tab for failed requests
+3. **Middleware**
+   - Test all redirect scenarios
+   - Verify protected routes work
 
-**Fleet dashboard empty:**
-- Verify `FLEET_API_BASE` is set
-- Check `X_API_KEY` is correct
-- Look for CORS errors in console
+4. **API Endpoints**
+   - Test all endpoints with production URLs
+   - Verify CORS headers (if applicable)
 
-**Cron job fails:**
-- Verify `CRON_SECRET` matches exactly
-- Check Vercel cron configuration
-- Review deployment logs
+---
 
-**Redis errors:**
-- Verify Upstash credentials
-- Check Redis instance is active
-- Ensure correct region
+## Common Issues & Solutions
 
-## Next Steps
+### Issue: Onboarding not redirecting
+**Solution:** Check middleware.ts - ensure `onboarding_complete` check is correct
 
-After successful testing:
-1. Add FreeAuditWidget to production landing page
-2. Monitor cron job executions in Vercel
-3. Set up alerts for cron job failures
-4. Configure auto-scaling for fleet API if needed
-5. Set up monitoring dashboard for fleet metrics
+### Issue: Metadata not saving
+**Solution:** 
+- Check Clerk API key permissions
+- Verify `updateUserMetadata` function
+- Check Vercel logs for errors
 
+### Issue: Build fails
+**Solution:**
+- Check for missing dependencies
+- Verify environment variables
+- Check Next.js version compatibility
+
+### Issue: Middleware redirect loop
+**Solution:**
+- Ensure `/onboarding` is in protected routes
+- Check onboarding completion check logic
+- Verify Clerk session is valid
+
+---
+
+## Performance Testing
+
+### Lighthouse Scores (Target)
+- Performance: > 80
+- Accessibility: > 90
+- Best Practices: > 90
+- SEO: > 90
+
+### Load Testing
+- Test with multiple concurrent users
+- Monitor API response times
+- Check Vercel function execution times
+
+---
+
+## Security Testing
+
+- [ ] Authentication required for protected routes
+- [ ] Onboarding completion enforced
+- [ ] API endpoints properly secured
+- [ ] No sensitive data in client-side code
+- [ ] Environment variables not exposed
+
+---
+
+**Status: Ready for Testing** ✅

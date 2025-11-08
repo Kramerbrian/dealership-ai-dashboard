@@ -71,6 +71,10 @@ const DealershipAIDashboardLA: React.FC = () => {
   const [formName, setFormName] = useState<string>("");
   const [formLocation, setFormLocation] = useState<string>("");
   const [inputMethod, setInputMethod] = useState<string>("manual");
+  const [showRarModal, setShowRarModal] = useState<boolean>(false);
+  
+  // Get domain from profile or use default
+  const domain = profile.name.toLowerCase().replace(/\s+/g, "") + ".com";
 
   // Update the clock once per minute
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import SchemaKingPanel from "@/components/dashboard/SchemaKingPanel";
 import AgenticCommercePanel from "@/components/dashboard/AgenticCommercePanel";
+import CognitiveControlCenter from "./cognitive-control-center";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,12 @@ export default function CommandCenterPage() {
 
   const showSchemaKing = flags.schema_king_panel?.enabled !== false;
   const showAgenticCommerce = flags.agentic_commerce_panel?.enabled !== false;
+  const showCognitiveControl = flags.cognitive_control_center?.enabled !== false;
+
+  // If cognitive control center is enabled, show that instead
+  if (showCognitiveControl) {
+    return <CognitiveControlCenter />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">

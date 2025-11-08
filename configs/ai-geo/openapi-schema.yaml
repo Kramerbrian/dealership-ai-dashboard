@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: DealershipAI - Automotive AI Visibility API
+  description: |
+    Comprehensive AI visibility analysis for automotive dealerships.
+    
+    Returns visibility scores across ChatGPT, Claude, Perplexity, 
+    Gemini, and Copilot. Includes competitive positioning, revenue 
+    impact calculations, and actionable optimization recommendations.
+    
+    Used by 500+ dealerships to optimize their AI search presence 
+    and recover lost revenue from poor visibility.
+  version: 1.0.0
+  contact:
+    name: DealershipAI Support
+    url: https://dealershipai.com/support
+
+servers:
+  - url: https://dealershipai.com/api/v1
+    description: Production server
+
+tags:
+  - name: Automotive AI Visibility
+    description: AI search visibility analysis for dealerships
+  - name: Dealership Analytics
+    description: Comprehensive dealership performance metrics
+  - name: Competitive Intelligence
+    description: Competitive positioning and market analysis
+
+paths:
+  /analyze:
+    get:
+      operationId: analyzeDealershipAIVisibility
+      summary: Analyze automotive dealership AI search visibility
+      description: |
+        Comprehensive AI visibility analysis for automotive dealerships.
+        
+        Returns visibility scores across ChatGPT, Claude, Perplexity, 
+        Gemini, and Copilot. Includes competitive positioning, revenue 
+        impact calculations, and actionable optimization recommendations.
+        
+        Used by 500+ dealerships to optimize their AI search presence 
+        and recover lost revenue from poor visibility.
+      tags:
+        - Automotive AI Visibility
+        - Dealership Analytics
+        - Competitive Intelligence
+      parameters:
+        - name: domain
+          in: query
+          required: true
+          description: |
+            Dealership website domain (e.g., "terryreidhyundai.com")
+            
+            The primary online presence for the automotive dealership 
+            to be analyzed for AI search visibility.
+          schema:
+            type: string
+          examples:
+            terry_reid:
+              summary: Terry Reid Hyundai example
+              value: terryreidhyundai.com
+      responses:
+        '200':
+          description: |
+            Successful AI visibility analysis complete.
+            
+            Returns comprehensive dealership visibility scores, competitive 
+            positioning, identified optimization opportunities, and revenue 
+            impact calculations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIVisibilityAnalysis'
+        '400':
+          description: Invalid domain provided
+        '404':
+          description: Dealership not found
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    AIVisibilityAnalysis:
+      type: object
+      properties:
+        domain:
+          type: string
+          example: terryreidhyundai.com
+        overallScore:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 82
+        marketPosition:
+          type: string
+          example: "#2 of 8 in Cape Coral"
+        platformScores:
+          type: object
+          properties:
+            chatgpt:
+              type: number
+              example: 94
+            claude:
+              type: number
+              example: 89
+            perplexity:
+              type: number
+              example: 82
+            gemini:
+              type: number
+              example: 78
+            copilot:
+              type: number
+              example: 71
+        criticalIssues:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriticalIssue'
+        revenueAtRisk:
+          type: object
+          properties:
+            monthly:
+              type: number
+              example: 13700
+            annual:
+              type: number
+              example: 164400
+    CriticalIssue:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Missing AutoDealer Schema"
+        impact:
+          type: number
+          example: 8200
+        fixTime:
+          type: string
+          example: "2 hours"
+        description:
+          type: string
+          example: "Add JSON-LD structured data"
+

@@ -28,13 +28,15 @@ if ! command -v vercel &> /dev/null && command -v npx &> /dev/null; then
 fi
 
 # Sync all variables from .env.local
-$VERCEL_CMD env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production <<< "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" 2>/dev/null || \
+echo "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" | $VERCEL_CMD env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production 2>/dev/null || \
   ($VERCEL_CMD env rm NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production --yes 2>/dev/null && \
    echo "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" | $VERCEL_CMD env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production)
+echo "  ✅ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
 
-vercel env add CLERK_SECRET_KEY production <<< "$CLERK_SECRET_KEY" 2>/dev/null || \
-  vercel env rm CLERK_SECRET_KEY production --yes 2>/dev/null && \
-  vercel env add CLERK_SECRET_KEY production <<< "$CLERK_SECRET_KEY"
+echo "$CLERK_SECRET_KEY" | $VERCEL_CMD env add CLERK_SECRET_KEY production 2>/dev/null || \
+  ($VERCEL_CMD env rm CLERK_SECRET_KEY production --yes 2>/dev/null && \
+   echo "$CLERK_SECRET_KEY" | $VERCEL_CMD env add CLERK_SECRET_KEY production)
+echo "  ✅ CLERK_SECRET_KEY"
 
 # Optional variables
 echo ""

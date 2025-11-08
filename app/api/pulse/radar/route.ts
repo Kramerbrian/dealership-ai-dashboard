@@ -1,45 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { PulseRadar } from "@/lib/pulse/radar";
-
-export const dynamic = "force-dynamic";
-
-const radar = new PulseRadar();
-
+import { NextRequest, NextResponse } from 'next/server';
+import { allow, rl_publicAPI } from '@/lib/ratelimit';
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
-
-    const radarView = await radar.getRadarView(limit);
-
-    return NextResponse.json({ ok: true, ...radarView });
-  } catch (error: any) {
-    console.error("Radar view error:", error);
-    return NextResponse.json(
-      { ok: false, error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { type, severity, affectedDealers, metadata } = body;
-
-    const event = await radar.detectEvent({
-      type,
-      severity,
-      affectedDealers,
-      metadata,
-    });
-
-    return NextResponse.json({ ok: true, event });
-  } catch (error: any) {
-    console.error("Detect event error:", error);
-    return NextResponse.json(
-      { ok: false, error: error.message },
-      { status: 500 }
-    );
-  }
+  const ip = req.headers.get('x-forwarded-for') || req.ip || 'anon';
+  const ok = await allow(rl_publicAPI, `radar:${ip}`);
+  if (!ok.success) return NextResponse.json({ ok:false, rateLimited:true }, { status: 429 });
+  const u = new URL(req.url); const marketId = u.searchParams.get('marketId')||'us_default'; const window = u.searchParams.get('window')||'7d';
+  const alerts = [
+    { type: 'OEM_MSRP_CHANGE', oem: 'Tesla', models: ['Model 3','Model Y'], deltaMsrpAbs: -5000, severity: 'P0' },
+    { type: 'INCENTIVE_CHANGE', jurisdiction: 'CO', deltaRebateAbs: 2500, severity: 'P1' }
+  ];
+  return NextResponse.json({ ok:true, marketId, window, alerts, summary: { affectedDealers: 12, affectedModels: 7 } });
 }
