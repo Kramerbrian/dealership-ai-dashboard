@@ -3,21 +3,30 @@
 import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import IntelligenceShell from '@/components/cognitive/IntelligenceShell';
 import OrchestratorView from '@/components/cognitive/OrchestratorView';
 import ZeroClickCard from '@/components/zero-click/ZeroClickCard';
 import AiriCard from '@/components/zero-click/AiriCard';
 import QaiModal from '@/app/(dashboard)/components/metrics/QaiModal';
 import EEATDrawer from '@/app/(dashboard)/components/metrics/EEATDrawer';
-import ConversationalAgent from '@/components/elevenlabs/ConversationalAgent';
+import AIGEOSchema from '@/components/SEO/AIGEOSchema';
+import SocialShareButtons from '@/components/dashboard/SocialShareButtons';
+import DealershipAIScoreCard from '@/components/dashboard/DealershipAIScoreCard';
+import { OelCard } from '@/app/(dashboard)/components/metrics/OelCard';
+import OelModal from '@/app/(dashboard)/components/metrics/OelModal';
 
 export const dynamic = 'force-dynamic';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, isLoaded } = useUser();
   const [showQai, setShowQai] = useState(false);
   const [showEEAT, setShowEEAT] = useState(false);
-  const domain = 'demo-dealership.com'; // In production, get from user metadata
+  const [showOel, setShowOel] = useState(false);
+  // Get domain from user metadata or fallback
+  const domain = (user.publicMetadata?.domain as string) || 
+                 (user.publicMetadata?.dealershipUrl as string)?.replace(/^https?:\/\//, '') || 
+                 'demo-dealership.com';
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -39,12 +48,52 @@ export default function DashboardPage() {
 
   // Use dealerId from user metadata or default
   const dealerId = (user.publicMetadata?.dealerId as string) || user.id || 'demo-tenant';
+  const dealershipName = (user.publicMetadata?.dealershipName as string) || user.firstName || 'Your Dealership';
 
   return (
-    <IntelligenceShell dealerId={dealerId} showCognitionBar={true}>
-      {/* Orchestrator View - AI CSO Status */}
+    <>
+      <AIGEOSchema 
+        mode="dashboard" 
+        dealership={{
+          name: dealershipName,
+          url: `https://${domain}`,
+          rating: 4.5,
+          reviewCount: 100
+        }}
+      />
+      <IntelligenceShell dealerId={dealerId} showCognitionBar={true}>
+        {/* Header with Social Share */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">{dealershipName}</h1>
+            <p className="text-gray-400 mt-1">{domain}</p>
+          </div>
+          <SocialShareButtons 
+            dealership={{
+              name: dealershipName,
+              domain,
+              scores: {
+                vai: 87.3,
+                qai: 87,
+                trust: 92
+              }
+            }}
+          />
+        </div>
+
+        {/* Orchestrator View - AI CSO Status */}
+        <div className="mb-8">
+          <OrchestratorView dealerId={dealerId} />
+        </div>
+
+      {/* AIVATI AI Visibility Metrics */}
       <div className="mb-8">
-        <OrchestratorView dealerId={dealerId} />
+        <DealershipAIScoreCard 
+          origin={`https://${domain}`}
+          dealerId={dealerId}
+          autoRefresh={true}
+          refreshInterval={300000}
+        />
       </div>
 
       {/* Core Metrics Grid */}
@@ -64,17 +113,9 @@ export default function DashboardPage() {
           <p className="text-gray-400 mt-2 text-sm">Click to view QAI breakdown</p>
         </div>
         
-        <div className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Monthly Scans</h2>
-          <div className="text-3xl font-bold text-purple-400">24</div>
-          <p className="text-gray-400 mt-2 text-sm">AI scans completed this month</p>
-        </div>
+        <OelCard domain={domain} onOpen={() => setShowOel(true)} />
       </div>
 
-      {/* ElevenLabs Conversational Agent */}
-      <div className="mb-8">
-        <ConversationalAgent />
-      </div>
 
       {/* Zero-Click Rate Intelligence Section */}
       <div className="mt-8">
@@ -101,6 +142,22 @@ export default function DashboardPage() {
           onClose={() => setShowEEAT(false)}
         />
       )}
+      {showOel && (
+        <OelModal
+          domain={domain}
+          open={showOel}
+          onClose={() => setShowOel(false)}
+        />
+      )}
     </IntelligenceShell>
+    </>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ErrorBoundary>
+      <DashboardContent />
+    </ErrorBoundary>
   );
 }

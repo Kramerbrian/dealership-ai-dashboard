@@ -1,240 +1,59 @@
-import { kv } from '@vercel/kv';
-import { Redis } from 'redis';
+import {Redis} from '@upstash/redis';
 
-// Vercel KV (Recommended for Vercel deployments)
-export class VercelKVCache {
-  private static instance: VercelKVCache;
-  private prefix = 'dealershipai:';
+const url=process.env.UPSTASH_REDIS_REST_URL;
+const token=process.env.UPSTASH_REDIS_REST_TOKEN;
 
-  static getInstance(): VercelKVCache {
-    if (!VercelKVCache.instance) {
-      VercelKVCache.instance = new VercelKVCache();
-    }
-    return VercelKVCache.instance;
+// Only initialize Redis if we have valid URL and token (not placeholders)
+let redis: Redis | null = null;
+try {
+  if (url && token && url.startsWith('https://') && !url.includes('...') && token !== '...') {
+    redis = new Redis({url, token});
   }
-
-  async get<T>(key: string): Promise<T | null> {
-    try {
-      const value = await kv.get(`${this.prefix}${key}`);
-      return value as T | null;
-    } catch (error) {
-      console.error('Vercel KV get error:', error);
-      return null;
-    }
-  }
-
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    try {
-      if (ttlSeconds) {
-        await kv.setex(`${this.prefix}${key}`, ttlSeconds, JSON.stringify(value));
-      } else {
-        await kv.set(`${this.prefix}${key}`, JSON.stringify(value));
-      }
-    } catch (error) {
-      console.error('Vercel KV set error:', error);
-    }
-  }
-
-  async del(key: string): Promise<void> {
-    try {
-      await kv.del(`${this.prefix}${key}`);
-    } catch (error) {
-      console.error('Vercel KV delete error:', error);
-    }
-  }
-
-  async exists(key: string): Promise<boolean> {
-    try {
-      const result = await kv.exists(`${this.prefix}${key}`);
-      return result === 1;
-    } catch (error) {
-      console.error('Vercel KV exists error:', error);
-      return false;
-    }
-  }
+} catch (e) {
+  // Redis initialization failed, continue without cache
+  console.warn('[Cache] Redis not available:', e);
 }
 
-// Redis (For self-hosted or other deployments)
-export class RedisCache {
-  private static instance: RedisCache;
-  private client: Redis;
-  private prefix = 'dealershipai:';
-
-  constructor() {
-    this.client = new Redis({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false,
-      maxRetriesPerRequest: null,
-    });
-
-    this.client.on('error', (error) => {
-      console.error('Redis connection error:', error);
-    });
-  }
-
-  static getInstance(): RedisCache {
-    if (!RedisCache.instance) {
-      RedisCache.instance = new RedisCache();
-    }
-    return RedisCache.instance;
-  }
-
-  async get<T>(key: string): Promise<T | null> {
-    try {
-      const value = await this.client.get(`${this.prefix}${key}`);
-      return value ? JSON.parse(value) : null;
-    } catch (error) {
-      console.error('Redis get error:', error);
-      return null;
-    }
-  }
-
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    try {
-      const serialized = JSON.stringify(value);
-      if (ttlSeconds) {
-        await this.client.setex(`${this.prefix}${key}`, ttlSeconds, serialized);
-      } else {
-        await this.client.set(`${this.prefix}${key}`, serialized);
-      }
-    } catch (error) {
-      console.error('Redis set error:', error);
-    }
-  }
-
-  async del(key: string): Promise<void> {
-    try {
-      await this.client.del(`${this.prefix}${key}`);
-    } catch (error) {
-      console.error('Redis delete error:', error);
-    }
-  }
-
-  async exists(key: string): Promise<boolean> {
-    try {
-      const result = await this.client.exists(`${this.prefix}${key}`);
-      return result === 1;
-    } catch (error) {
-      console.error('Redis exists error:', error);
-      return false;
-    }
-  }
-
-  async disconnect(): Promise<void> {
-    await this.client.quit();
-  }
+export async function cacheJSON<T>(key:string,ttlSec:number,fetcher:()=>Promise<T>):Promise<T>{
+  if(!redis)return fetcher();
+  const hit=await redis.get<T>(key);
+  if(hit)return hit;
+  const fresh=await fetcher();
+  await redis.set(key,fresh,{ex:ttlSec});
+  return fresh;
 }
 
-// Cache Manager - Automatically chooses the best available cache
+// Cache manager for compatibility
 export class CacheManager {
-  private static instance: CacheManager;
-  private cache: VercelKVCache | RedisCache;
-
-  constructor() {
-    // Prefer Vercel KV for Vercel deployments, fallback to Redis
-    if (process.env.KV_URL || process.env.VERCEL) {
-      this.cache = VercelKVCache.getInstance();
-    } else {
-      this.cache = RedisCache.getInstance();
-    }
+  static async get<T>(key: string): Promise<T | null> {
+    if (!redis) return null;
+    return await redis.get<T>(key);
   }
 
-  static getInstance(): CacheManager {
-    if (!CacheManager.instance) {
-      CacheManager.instance = new CacheManager();
-    }
-    return CacheManager.instance;
+  static async set<T>(key: string, value: T, ttlSec: number): Promise<void> {
+    if (!redis) return;
+    await redis.set(key, value, { ex: ttlSec });
   }
 
-  async get<T>(key: string): Promise<T | null> {
-    return this.cache.get<T>(key);
-  }
-
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    return this.cache.set<T>(key, value, ttlSeconds);
-  }
-
-  async del(key: string): Promise<void> {
-    return this.cache.del(key);
-  }
-
-  async exists(key: string): Promise<boolean> {
-    return this.cache.exists(key);
+  static async delete(key: string): Promise<void> {
+    if (!redis) return;
+    await redis.del(key);
   }
 }
 
-// Cache decorator for API routes
-export function withCache<T extends any[], R>(
-  fn: (...args: T) => Promise<R>,
-  keyGenerator: (...args: T) => string,
-  ttlSeconds: number = 300 // 5 minutes default
-) {
-  return async (...args: T): Promise<R> => {
-    const cache = CacheManager.getInstance();
-    const cacheKey = keyGenerator(...args);
-    
-    // Try to get from cache first
-    const cached = await cache.get<R>(cacheKey);
-    if (cached) {
-      console.log(`Cache hit for key: ${cacheKey}`);
-      return cached;
-    }
-
-    // Execute function and cache result
-    console.log(`Cache miss for key: ${cacheKey}`);
-    const result = await fn(...args);
-    await cache.set(cacheKey, result, ttlSeconds);
-    
-    return result;
-  };
-}
-
-// Cache keys for different data types
+// Cache keys
 export const CACHE_KEYS = {
-  SEO_DATA: (domain: string, timeRange: string) => `seo:${domain}:${timeRange}`,
-  AEO_DATA: (domain: string, timeRange: string) => `aeo:${domain}:${timeRange}`,
-  GEO_DATA: (domain: string, timeRange: string) => `geo:${domain}:${timeRange}`,
-  DASHBOARD_OVERVIEW: (timeRange: string) => `dashboard:overview:${timeRange}`,
-  AI_HEALTH_DATA: (timeRange: string) => `ai-health:${timeRange}`,
-  WEBSITE_DATA: (domain: string, timeRange: string) => `website:${domain}:${timeRange}`,
-  REVIEWS_DATA: (domain: string, timeRange: string) => `reviews:${domain}:${timeRange}`,
-  SCHEMA_DATA: (domain: string, timeRange: string) => `schema:${domain}:${timeRange}`,
-  MYSTERY_SHOP_DATA: (domain: string, timeRange: string) => `mystery-shop:${domain}:${timeRange}`,
-  PREDICTIVE_DATA: (domain: string, timeRange: string) => `predictive:${domain}:${timeRange}`,
-  GEO_SGE_DATA: (domain: string, timeRange: string) => `geo-sge:${domain}:${timeRange}`,
-  USER_SESSION: (userId: string) => `user:session:${userId}`,
-  USER_SUBSCRIPTION: (userId: string) => `user:subscription:${userId}`,
-  USAGE_STATS: (userId: string, feature?: string) => 
-    feature ? `usage:${userId}:${feature}` : `usage:${userId}`,
-  ANALYTICS_EVENTS: (userId: string, days: number) => `analytics:${userId}:${days}d`,
-  API_RESPONSE: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
-  ONBOARDING_ANALYSIS: (domain: string) => `onboarding:analysis:${domain}`,
-  ONBOARDING_PROFILE: (domain: string) => `onboarding:profile:${domain}`,
-  ONBOARDING_PROGRESS: (userId: string) => `onboarding:progress:${userId}`,
-  PERSONALIZED_MESSAGES: (userId: string, step: string) => `personalized:${userId}:${step}`,
+  VISIBILITY_AEO: 'visibility:aeo',
+  VISIBILITY_GEO: 'visibility:geo',
+  VISIBILITY_SEO: 'visibility:seo',
+  AI_SCORES: 'ai:scores',
+  PRESENCE: 'visibility:presence',
 } as const;
 
-// Cache TTL constants (in seconds)
+// Cache TTL (in seconds)
 export const CACHE_TTL = {
-  SEO_DATA: 300, // 5 minutes
-  AEO_DATA: 300, // 5 minutes
-  GEO_DATA: 300, // 5 minutes
-  DASHBOARD_OVERVIEW: 60, // 1 minute
-  AI_HEALTH_DATA: 120, // 2 minutes
-  WEBSITE_DATA: 300, // 5 minutes
-  REVIEWS_DATA: 600, // 10 minutes
-  SCHEMA_DATA: 1800, // 30 minutes
-  MYSTERY_SHOP_DATA: 3600, // 1 hour
-  PREDICTIVE_DATA: 1800, // 30 minutes
-  GEO_SGE_DATA: 300, // 5 minutes
-  USER_SESSION: 1800, // 30 minutes
-  USER_SUBSCRIPTION: 300, // 5 minutes
-  USAGE_STATS: 60, // 1 minute
-  ANALYTICS_EVENTS: 300, // 5 minutes
-  API_RESPONSE: 300, // 5 minutes
-  ONBOARDING_ANALYSIS: 1800, // 30 minutes
-  ONBOARDING_PROFILE: 3600, // 1 hour
-  ONBOARDING_PROGRESS: 300, // 5 minutes
-  PERSONALIZED_MESSAGES: 600, // 10 minutes
+  SHORT: 300, // 5 minutes
+  MEDIUM: 1800, // 30 minutes
+  LONG: 3600, // 1 hour
+  DAY: 86400, // 24 hours
 } as const;

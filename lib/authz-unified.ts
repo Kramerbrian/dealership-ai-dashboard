@@ -393,7 +393,7 @@ export function requireAnyPermission(
 }
 
 /**
- * Require specific role
+ * Require specific role (legacy wrapper)
  */
 export function requireRole(
   roles: UserRole[],
@@ -417,6 +417,33 @@ export function requireRole(
 
     return handler(req, user)
   }
+}
+
+/**
+ * Require role - returns user context or NextResponse (patch signature)
+ * Usage: const gate = requireRole(req, ['admin','ops']);
+ *        if (gate instanceof NextResponse) return gate;
+ */
+export function requireRoleSimple(
+  req: NextRequest,
+  roles: string[]
+): UserContext | NextResponse {
+  const user = getUserContext(req)
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized', message: 'Authentication required' },
+      { status: 401 }
+    )
+  }
+
+  if (!roles.includes(user.role)) {
+    return NextResponse.json(
+      { error: 'Forbidden', message: `Requires role: ${roles.join(' or ')}` },
+      { status: 403 }
+    )
+  }
+
+  return user
 }
 
 /**
@@ -549,5 +576,5 @@ export function createAuditData(
 // =====================================================
 
 // ROLE_PERMISSIONS already exported above as const (line 80)
-export { UPLOAD_LIMITS }
+// UPLOAD_LIMITS already exported above as const (line 147)
 export type { AuditEvent }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ElevenLabsClient } from '@elevenlabs/client';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 interface ConversationalAgentProps {
   agentId?: string;

@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { sbAdmin } from '@/lib/supabase';
+import { getSbAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -113,7 +113,7 @@ export async function GET() {
       throw error;
     }
 
-    // Get table stats
+    // Get table stats (reuse sbAdmin from above)
     const { count } = await sbAdmin
       .from('telemetry_events')
       .select('*', { count: 'exact', head: true });

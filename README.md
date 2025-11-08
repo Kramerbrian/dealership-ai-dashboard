@@ -1,320 +1,167 @@
-# 🚀 DealershipAI Cognitive Ops Platform
+# DealershipAI Visibility Dashboard
 
-## 🎯 **Doctrine**
+**Version:** 1.4.0-p13n (Part 2 + Personalization)
 
-> **DealershipAI is a Cognitive Ops Platform — each rooftop operates with an embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains its own decisions.**
+## Overview
+DealershipAI is a comprehensive AI visibility platform for automotive dealerships. It monitors presence across ChatGPT, Claude, Perplexity, Gemini, and Copilot while providing actionable insights to recover revenue at risk.
 
-**Core Philosophy:**
-- **Stop designing pages. Design conversations.**
-- **Stop showing data. Show decisions.**
-- **Stop optimizing screens. Optimize cognition.**
+## Features
 
-**Version:** 3.0.0  
-**Status:** 🟢 **PRODUCTION READY** - All systems operational  
-**Date:** January 31, 2025
+### Core Capabilities
+- **AI Visibility Tracking**: Monitor 5 AI platforms
+- **Pulse Engine**: Identify→Solve→Actionable framework
+- **Competitor Analysis**: Radius-based segmentation (10→25mi)
+- **Schema Validation**: JSON-LD audit for Product, FAQPage, AutoDealer
+- **GA4 Integration**: OAuth + token refresh + traffic analysis
+- **Reviews Management**: GBP integration with reply latency tracking
+- **Personalization Engine**: Role-based UI + easter eggs
 
----
+### Integrations
+- ✅ Clerk Authentication (tenant-scoped)
+- ✅ Supabase (token persistence)
+- ✅ Upstash Redis (caching layer)
+- ✅ Google OAuth (GA4 + future GBP)
+- ✅ GA4 Data API (auto-refresh tokens)
 
-## 🏆 **System Overview**
+## Quick Start
 
-DealershipAI is a **Cognitive Ops Platform** where every dealership operates with an embedded **AI Chief Strategy Officer** that continuously audits, predicts, fixes, and explains its own decisions. This self-governing algorithmic dealership OS powers autonomous strategy recommendations (ASRs), real-time visibility tracking, and predictive market intelligence.
-
-### **🧠 Hyper-Intelligence Core Features**
-- **Advanced ML Pipeline** - Bandit auto-healing with UCB1 algorithm
-- **Inventory Intelligence** - Freshness scoring & retail readiness analytics
-- **Policy Compliance** - Google Ads compliance monitoring & audit automation
-- **OEM Integration** - Brand-specific compliance templates
-- **Explainable AI** - SHAP attribution for transparency
-- **Drift Monitoring** - Automatic model performance tracking
-
-### **📊 Advanced Analytics Suite (14 APIs)**
-- **Predictive Analytics** - ML-driven pricing optimization & demand forecasting
-- **Competitor Intelligence** - Market analysis & strategic recommendations
-- **Customer Behavior Analysis** - AI-powered segmentation & engagement optimization
-- **Market Trends Analysis** - Real-time trend analysis & actionable insights
-- **Real-Time Monitoring** - Live metrics and performance tracking
-- **Automated Alerts** - Smart notification system with multi-channel support
-- **Enhanced Analytics** - Advanced business insights and recommendations
-- **Performance Monitoring** - System health and optimization tracking
-
----
-
-## 🌐 **Live Production System**
-
-### **🚀 Production URLs**
-- **Main Application**: [https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app](https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app)
-- **Calculator**: [https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/calculator](https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/calculator)
-- **Intelligence Dashboard**: [https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/intelligence](https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/intelligence)
-- **Health Check**: [https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/api/health](https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/api/health)
-- **System Status**: [https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/api/system/status](https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/api/system/status)
-
-### **🔧 Local Development**
-- **Main App**: `http://localhost:3000`
-- **Calculator**: `http://localhost:3000/calculator`
-- **Intelligence**: `http://localhost:3000/intelligence`
-- **Health Check**: `http://localhost:3000/api/health`
-
----
-
-## 📊 **API Endpoints (14 Total)**
-
-### **🧠 Core Intelligence APIs**
-1. **AI Offer Validation** - `/api/ai/offer/validate`
-2. **Parity Ingestion** - `/api/parity/ingest`
-3. **Intelligence Simulation** - `/api/intel/simulate`
-
-### **📈 Advanced Analytics APIs**
-4. **Predictive Analytics** - `/api/ai/predictive-analytics`
-5. **Competitor Intelligence** - `/api/ai/competitor-intelligence`
-6. **Customer Behavior Analysis** - `/api/ai/customer-behavior`
-7. **Market Trends Analysis** - `/api/ai/market-trends`
-
-### **🔍 Monitoring & Alerts APIs**
-8. **Real-Time Monitoring** - `/api/ai/real-time-monitoring`
-9. **Automated Alerts** - `/api/ai/automated-alerts`
-10. **Enhanced Analytics** - `/api/ai/enhanced-analytics`
-11. **Performance Monitoring** - `/api/ai/performance-monitoring`
-
-### **🛡️ Compliance & System APIs**
-12. **Google Policy Compliance Summary** - `/api/compliance/google-pricing/summary`
-13. **Google Policy Compliance Export** - `/api/compliance/google-pricing/export`
-14. **System Health Check** - `/api/health`
-
----
-
-## 🎯 **Key Features**
-
-### **🧠 Hyper-Intelligence System**
-- **Bandit Auto-Healing**: UCB1 algorithm for intelligent problem resolution
-- **Inventory Freshness**: Real-time data quality assessment
-- **Retail Readiness**: Comprehensive readiness scoring for digital retail
-- **Predictive Analytics**: ML-driven pricing and demand forecasting
-- **Competitor Intelligence**: Market positioning and strategic insights
-- **Customer Behavior**: AI-powered segmentation and engagement optimization
-- **Market Intelligence**: Trend analysis and economic indicators
-- **Compliance Monitoring**: Automated policy violation detection
-
-### **📊 Advanced Analytics**
-- **Real-Time Monitoring**: Live system performance tracking
-- **Automated Alerts**: Smart notification system with multi-channel support
-- **Enhanced Analytics**: Advanced business insights and recommendations
-- **Performance Monitoring**: System health and optimization tracking
-- **Predictive Analytics**: ML-driven pricing optimization & demand forecasting
-- **Competitor Intelligence**: Market analysis & strategic recommendations
-- **Customer Behavior Analysis**: AI-powered segmentation & engagement optimization
-- **Market Trends Analysis**: Real-time trend analysis & actionable insights
-
-### **🛡️ Enterprise Security**
-- **Clerk Authentication**: Modern authentication system
-- **Role-Based Access Control**: Granular permission control
-- **API Key Authentication**: Secure API access
-- **Security Monitoring**: Comprehensive security tracking
-- **Performance Optimization**: Fast and reliable authentication
-
----
-
-## 📚 **Documentation**
-
-### **📖 Comprehensive Documentation Suite**
-- **[User Guide](HYPER_INTELLIGENCE_USER_GUIDE.md)** - Complete system overview & usage instructions
-- **[API Reference](HYPER_INTELLIGENCE_API_REFERENCE.md)** - Detailed API docs with examples & integration guides
-- **[Integration Guide](HYPER_INTELLIGENCE_INTEGRATION_GUIDE.md)** - Step-by-step DMS/CRM/marketing platform integration
-- **[Advanced Features Guide](ADVANCED_FEATURES_GUIDE.md)** - Complete overview of new intelligence capabilities
-- **[Authentication Setup Guide](AUTHENTICATION_SETUP_GUIDE.md)** - Enterprise-grade security configuration
-- **[Performance Monitoring Guide](PERFORMANCE_MONITORING_GUIDE.md)** - Real-time monitoring and optimization
-
-### **📊 Production Documentation**
-- **[Final Production Deployment](FINAL_PRODUCTION_DEPLOYMENT.md)** - Complete production deployment overview
-- **[Production Ready Checklist](PRODUCTION_READY_CHECKLIST.md)** - Comprehensive production verification checklist
-
----
-
-## 🚀 **Quick Start**
-
-### **1. Local Development**
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/dealership-ai-dashboard.git
-
-# Install dependencies
+# Clone and install
 npm install
 
-# Set up environment variables
+# Copy environment template
 cp .env.example .env.local
 
-# Run development server
+# Add your keys to .env.local
+# - Clerk (auth)
+# - Supabase (persistence)
+# - Upstash (cache)
+# - Google OAuth (GA4)
+
+# Run migrations
+cd supabase
+supabase migration up
+
+# Start dev server
 npm run dev
 ```
 
-### **2. Production Deployment**
+## Architecture
+
+### Clay Principles
+1. **Identify**: Pulse cards surface issues with $ impact
+2. **Solve**: FixTierDrawer shows preview, ETA, expected ROI
+3. **Actionable**: One-click Fix→Apply→Undo with Impact Ledger
+
+### File Structure
+```
+app/
+  api/
+    competitors/       # Radius-based ranking
+    pulse/snapshot/    # Feed merger (all adapters)
+    ga4/summary/       # OAuth + auto-refresh
+    reviews/summary/   # GBP place_id
+    visibility/        # 4-engine presence
+    schema/validate/   # JSON-LD audit
+    oauth/ga4/         # Google OAuth flow
+lib/
+  adapters/           # Schema, GA4, Reviews, Visibility
+  auth/               # Clerk tenant gating
+  cache.ts            # Upstash Redis
+  db/                 # Supabase admin client
+  integrations/       # Token store helpers
+  google/             # OAuth + GA4 API
+  p13n/               # Personalization + easter eggs
+configs/
+  dealer_segment_table.json
+  onboardingFlow.json
+```
+
+### Personalization Engine
+
+#### Easter Eggs (Film References)
+- **Deep Insight**: "You mustn't be afraid to dream a little bigger." (Inception)
+- **Auto-Remediation**: "Come with me if you want to fix this." (Terminator)
+- **Self-Healing**: "Hasta la vista, error." (Terminator 2)
+- **Mission Complete**: "Are you not entertained?" (Gladiator)
+- **Aggressive Pull**: "I drink your milkshake." (There Will Be Blood)
+
+**Rules:**
+- Context-triggered (not random)
+- Max 1 per user per 24h
+- Never blocks task completion
+- Dry wit, never slapstick
+
+#### Cognitive Modes
+- `standard`: Default experience
+- `reducedMotion`: Accessibility mode
+- `lowContrast`: Focus-friendly palette
+
+## Deployment
+
+### Vercel (Recommended)
 ```bash
-# Deploy to Vercel
 vercel --prod
-
-# Configure environment variables in Vercel dashboard
-# Set up authentication with Clerk
-# Configure database connection
 ```
 
-### **3. API Usage**
-```bash
-# Test health check
-curl https://your-domain.com/api/health
+Add environment variables in Vercel dashboard.
 
-# Test system status
-curl https://your-domain.com/api/system/status
+### Environment Variables
+```env
+# Required
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE=
 
-# Test intelligence APIs
-curl -X POST https://your-domain.com/api/ai/predictive-analytics \
-  -H "Content-Type: application/json" \
-  -d '{"dealerId": "dealer_123", "inventoryData": []}'
+# Optional (enables features)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+GOOGLE_OAUTH_CLIENT_ID=
+GOOGLE_OAUTH_CLIENT_SECRET=
+GOOGLE_OAUTH_REDIRECT_URI=
+GA4_PROPERTY_ID=
 ```
 
----
+## API Routes
 
-## 🎯 **Business Impact**
+### Tenant-Gated (Clerk)
+- `GET /api/competitors?brand=Toyota` - Radius ranking
+- `GET /api/pulse/snapshot?domain=example.com` - Full feed
+- `GET /api/ga4/summary?domain=example.com` - GA4 metrics
+- `GET /api/reviews/summary?placeId=ChIJ...` - Review stats
+- `GET /api/visibility/presence?domain=example.com` - 4 engines
 
-### **📈 Proven Results**
-- **ROI Improvement**: 2,000%+ average ROI
-- **Lead Generation**: +25% qualified leads
-- **Sales Velocity**: +20% faster sales
-- **Profit Margins**: +15% margin improvement
-- **Customer Satisfaction**: +30% satisfaction scores
+### Public
+- `GET /api/schema/validate?domain=example.com` - JSON-LD audit
+- `GET /robots.txt` - AI-friendly crawl rules
+- `GET /sitemap.xml` - Dynamic sitemap
 
-### **⚡ Performance Metrics**
-- **Average Response Time**: 125ms (Target: <200ms ✅)
-- **Peak Response Time**: 320ms
-- **Total Requests Processed**: 125,000+
-- **Error Rate**: 0.08% (Target: <0.1% ✅)
-- **System Uptime**: 99.92% (Target: 99.9% ✅)
+## Development
 
----
+### Add New Adapter
+1. Create `lib/adapters/yourAdapter.ts`
+2. Export `yourAdapterToPulses()` function
+3. Import in `app/api/pulse/snapshot/route.ts`
+4. Add to `Promise.all()` array
 
-## 🔧 **Technical Stack**
+### Add New Integration
+1. Add OAuth route in `app/api/oauth/[provider]/`
+2. Store tokens via `upsertIntegration()`
+3. Create summary route in `app/api/[provider]/summary/`
+4. Wire adapter to snapshot
 
-### **Frontend**
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **TailwindCSS** - Utility-first CSS framework
-- **Framer Motion** - Animation library
-- **Lucide React** - Icon library
+## Telemetry
 
-### **Backend**
-- **Node.js** - JavaScript runtime
-- **Prisma** - Database ORM
-- **PostgreSQL** - Primary database
-- **Supabase** - Database hosting
-- **Redis** - Caching layer
+All routes log:
+- Tenant ID
+- Route path
+- Latency (ms)
+- Cache hit/miss
+- Error states
 
-### **Authentication & Security**
-- **Clerk** - Authentication provider
-- **Role-Based Access Control** - Granular permissions
-- **API Key Authentication** - Secure API access
-- **HTTPS** - Encrypted communication
+## License
+Proprietary - DealershipAI © 2025
 
-### **Deployment & Monitoring**
-- **Vercel** - Hosting platform
-- **Custom Performance Monitoring** - Real-time metrics
-- **Health Checks** - System monitoring
-- **Automated Alerts** - Smart notifications
-
----
-
-## 🎯 **Use Cases**
-
-### **1. Inventory Management**
-- **Real-Time Freshness Monitoring**: Track inventory data freshness
-- **Automated Alerts**: Get notified when data becomes stale
-- **Optimization Recommendations**: AI-powered inventory optimization
-- **Performance Tracking**: Monitor inventory turnover rates
-
-### **2. Pricing Strategy**
-- **Dynamic Pricing**: AI-driven pricing optimization
-- **Market Analysis**: Competitor pricing intelligence
-- **Revenue Optimization**: Maximize revenue through smart pricing
-- **Trend Analysis**: Identify pricing trends and opportunities
-
-### **3. Customer Engagement**
-- **Behavior Analysis**: Understand customer preferences
-- **Personalization**: Tailored experiences for each customer
-- **Engagement Optimization**: Improve customer interaction
-- **Conversion Tracking**: Monitor and optimize conversion rates
-
-### **4. Compliance Management**
-- **Policy Monitoring**: Track compliance with Google Ads policies
-- **Automated Audits**: Regular compliance checking
-- **Violation Detection**: Identify and resolve compliance issues
-- **Performance Tracking**: Monitor compliance metrics
-
----
-
-## 🏆 **Achievements**
-
-### **✅ Development Metrics**
-- **Files Created/Modified**: 28 files
-- **Lines of Code**: ~7,000+ additions
-- **API Endpoints**: 14 total
-- **Database Tables**: 11 tables
-- **Documentation**: 6 comprehensive guides (300+ pages)
-- **Integration Examples**: 20+ code examples
-- **Use Cases**: 10+ documented scenarios
-
-### **✅ Performance Metrics**
-- **Development Time**: ~10 hours
-- **Response Time**: <200ms average
-- **Error Rate**: 0.08%
-- **Uptime**: 99.92%
-- **Throughput**: 1,200+ requests/minute
-
----
-
-## 🚀 **Getting Started**
-
-### **For Dealerships**
-1. **Visit the Calculator**: [Calculate Your AI Opportunity](https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/calculator)
-2. **Explore the Intelligence Dashboard**: [View Intelligence Features](https://dealership-ai-dashboard-og74zl052-brian-kramers-projects.vercel.app/intelligence)
-3. **Contact Sales**: Get in touch for enterprise deployment
-
-### **For Developers**
-1. **Read the Documentation**: Start with the [User Guide](HYPER_INTELLIGENCE_USER_GUIDE.md)
-2. **Explore the APIs**: Check out the [API Reference](HYPER_INTELLIGENCE_API_REFERENCE.md)
-3. **Integration Guide**: Follow the [Integration Guide](HYPER_INTELLIGENCE_INTEGRATION_GUIDE.md)
-
----
-
-## 🎉 **Status**
-
-**Status**: 🟢 **PRODUCTION COMPLETE** - All systems operational and ready for enterprise use!
-
-The DealershipAI Hyper-Intelligence System is now the most advanced AI platform available for automotive dealerships, featuring:
-
-✅ **14 API Endpoints** - Complete intelligence suite  
-✅ **Enterprise Security** - Clerk authentication with RBAC  
-✅ **Real-Time Monitoring** - Live performance tracking  
-✅ **Advanced Analytics** - AI-powered business insights  
-✅ **Comprehensive Documentation** - 300+ pages of guides  
-✅ **Production Performance** - <200ms response times, 99.9% uptime  
-✅ **Scalable Architecture** - Ready for enterprise deployment  
-
-**Ready to help dealerships maximize their AI visibility and close more deals!** 🚀
-
----
-
-## 📞 **Support**
-
-- **Documentation**: Comprehensive guides available in the repository
-- **API Reference**: Complete API documentation with examples
-- **Integration Support**: Step-by-step integration guides
-- **Performance Monitoring**: Real-time system health tracking
-
----
-
-**Total Investment**:  
-- **Development Time**: ~10 hours  
-- **Lines of Code**: ~7,000+  
-- **Documentation**: 300+ pages  
-- **API Endpoints**: 14 total  
-- **Database Tables**: 11 tables  
-- **Integration Examples**: 20+  
-
-**Status**: 🟢 **PRODUCTION COMPLETE** - Ready for Enterprise Use! 🎯
+## Support
+For questions: support@dealershipai.com

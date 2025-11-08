@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 interface AVIDataPoint {
   date: string;
@@ -17,6 +17,9 @@ interface AVIDataPoint {
 
 export async function GET(req: NextRequest) {
   try {
+    // Lazy import to avoid build-time Prisma errors
+    const { db } = await import('@/lib/db');
+    
     const { searchParams } = new URL(req.url);
     const tenantId = searchParams.get('tenantId');
     const days = Number(searchParams.get('days') || 30);

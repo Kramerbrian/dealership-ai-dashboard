@@ -1,5 +1,6 @@
+'use client';
+
 import {
-  ClerkProvider,
   SignInButton,
   SignUpButton,
   SignedIn,
@@ -8,6 +9,7 @@ import {
 } from '@clerk/nextjs'
 import { CommandPalette } from '@/components/ui/command-palette'
 import { AIChatWidget } from '@/components/ui/ai-chat-widget'
+import OnboardingGuard from '@/components/onboarding/OnboardingGuard'
 
 export const dynamic = 'force-dynamic';
 
@@ -16,13 +18,10 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // ClerkProvider is already in root layout, no need to duplicate here
   return (
-      <ClerkProvider
-        signInFallbackRedirectUrl="/dashboard"
-        signUpFallbackRedirectUrl="/dashboard"
-        signInUrl="/auth/signin"
-        signUpUrl="/auth/signup"
-      >
+    <OnboardingGuard>
+      <>
       <header className="flex justify-end items-center p-4 gap-4 h-16 bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
         <SignedOut>
           <SignInButton />
@@ -52,6 +51,7 @@ export default function DashboardLayout({
           recentActivity: ['Completed audit', 'Added competitor', 'Fixed schema']
         }}
       />
-    </ClerkProvider>
+      </>
+    </OnboardingGuard>
   )
 }

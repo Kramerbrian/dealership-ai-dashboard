@@ -1,4 +1,10 @@
-import { BetaAnalyticsDataClient } from '@google-analytics/data';
+// Optional Google Analytics import - gracefully fail if not installed
+let BetaAnalyticsDataClient: any;
+try {
+  BetaAnalyticsDataClient = require('@google-analytics/data').BetaAnalyticsDataClient;
+} catch (e) {
+  // Google Analytics not installed - client will handle gracefully
+}
 
 export interface AnalyticsDateRange {
   startDate: string;

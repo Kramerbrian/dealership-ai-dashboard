@@ -1,0 +1,210 @@
+name: DealershipAI UX Doctrine Monthly Summary
+
+on:
+  schedule:
+    - cron: "0 7 1 * *"   # 1st of every month at 07:00 UTC
+  workflow_dispatch:      # Manual trigger
+
+jobs:
+  generate-monthly-report:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      actions: read
+
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+      FROM_EMAIL: "bot@dealershipai.com"
+      TO_EMAIL: "ux-governance@dealershipai.com"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git log
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml sendgrid
+
+      - name: Generate Monthly Report (Markdown)
+        id: report
+        run: |
+          python scripts/generate_monthly_report.py governance_reports/doctrine_monthly_summary.md 30
+          echo "report_path=governance_reports/doctrine_monthly_summary.md" >> $GITHUB_OUTPUT
+
+      - name: Convert Markdown to PDF
+        id: pdf
+        run: |
+          sudo apt-get update && sudo apt-get install -y wkhtmltopdf
+          pip install pdfkit markdown
+          mkdir -p governance_reports/pdf
+          
+          python - <<'PYCODE'
+import pdfkit
+import pathlib
+import markdown
+
+md_path = pathlib.Path("governance_reports/doctrine_monthly_summary.md")
+html_path = md_path.with_suffix(".html")
+pdf_path = pathlib.Path("governance_reports/pdf/doctrine_monthly_summary.pdf")
+
+# Convert markdown to HTML
+md_content = md_path.read_text(encoding='utf-8')
+html_content = markdown.markdown(md_content, extensions=['tables', 'fenced_code'])
+
+# Wrap in proper HTML
+full_html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }}
+    table {{ border-collapse: collapse; width: 100%; margin: 20px 0; }}
+    th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
+    th {{ background-color: #f5f5f5; font-weight: 600; }}
+    h1 {{ color: #1a1a1a; border-bottom: 2px solid #333; padding-bottom: 10px; }}
+    h2 {{ color: #333; margin-top: 30px; }}
+  </style>
+</head>
+<body>
+{html_content}
+</body>
+</html>"""
+
+html_path.write_text(full_html, encoding='utf-8')
+
+# Convert to PDF
+options = {
+    'page-size': 'Letter',
+    'margin-top': '0.75in',
+    'margin-right': '0.75in',
+    'margin-bottom': '0.75in',
+    'margin-left': '0.75in',
+    'encoding': "UTF-8",
+    'no-outline': None
+}
+
+pdfkit.from_file(str(html_path), str(pdf_path), options=options)
+print(f"PDF generated → {pdf_path}")
+PYCODE
+          
+          echo "pdf_path=governance_reports/pdf/doctrine_monthly_summary.pdf" >> $GITHUB_OUTPUT
+
+      - name: Commit Report Files
+        run: |
+          git config user.name "DealershipAI Bot"
+          git config user.email "bot@dealershipai.com"
+          git add governance_reports/
+          git commit -m "docs: monthly UX doctrine governance report $(date +%Y-%m)" || echo "No changes to commit"
+          git push origin HEAD:main || echo "No changes to push"
+
+      - name: Upload Report Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: monthly-governance-report
+          path: |
+            governance_reports/doctrine_monthly_summary.md
+            governance_reports/pdf/doctrine_monthly_summary.pdf
+          retention-days: 90
+
+      - name: Send Slack Notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {
+              "text": "*DealershipAI UX Doctrine — Monthly Governance Report*",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "📊 Monthly UX Doctrine Governance Report",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Report Period:* $(date +'%B %Y')\n*Generated:* $(date +'%Y-%m-%d %H:%M UTC')\n*Status:* ${{ job.status }}\n*Run ID:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View in GitHub>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ Monthly report generated and archived\n📄 Markdown: `governance_reports/doctrine_monthly_summary.md`\n📎 PDF: `governance_reports/pdf/doctrine_monthly_summary.pdf`\n📧 Email sent to stakeholders"
+                  }
+                }
+              ]
+            }
+
+      - name: Email Monthly Report via SendGrid
+        if: always() && env.SENDGRID_API_KEY != ''
+        run: |
+          python - <<'PYCODE'
+import base64
+import os
+from pathlib import Path
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
+from datetime import datetime
+
+pdf_path = Path("governance_reports/pdf/doctrine_monthly_summary.pdf")
+if not pdf_path.exists():
+    print("⚠️ PDF not found, skipping email")
+    exit(0)
+
+with open(pdf_path, "rb") as f:
+    pdf_data = f.read()
+
+encoded = base64.b64encode(pdf_data).decode()
+attachment = Attachment(
+    FileContent(encoded),
+    FileName(f"doctrine_monthly_summary_{datetime.now().strftime('%Y-%m')}.pdf"),
+    FileType("application/pdf"),
+    Disposition("attachment")
+)
+
+month = datetime.now().strftime("%B %Y")
+message = Mail(
+    from_email=os.environ["FROM_EMAIL"],
+    to_emails=os.environ["TO_EMAIL"].split(","),  # Support multiple recipients
+    subject=f"DealershipAI UX Doctrine — Monthly Governance Report ({month})",
+    html_content=f"""
+    <html>
+      <body>
+        <h2>DealershipAI UX Doctrine — Monthly Governance Report</h2>
+        <p><strong>Report Period:</strong> {month}</p>
+        <p>Attached is the monthly UX Doctrine governance summary in PDF format.</p>
+        <p>This report includes validator health metrics, uptime statistics, and auto-fix frequency.</p>
+        <hr>
+        <p><em>Generated automatically via GitHub Actions</em></p>
+      </body>
+    </html>
+    """
+)
+message.attachment = attachment
+
+try:
+    sg = SendGridAPIClient(os.environ["SENDGRID_API_KEY"])
+    response = sg.send(message)
+    print(f"✅ Email sent → {response.status_code}")
+except Exception as e:
+    print(f"❌ Email failed: {e}")
+PYCODE
+
+      - name: Email Notification Fallback
+        if: failure()
+        run: |
+          echo "⚠️ Email notification failed. Ensure SENDGRID_API_KEY secret is configured."

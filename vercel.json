@@ -1,5 +1,5 @@
 {
-  "buildCommand": "NEXT_TELEMETRY_DISABLED=1 next build",
+  "buildCommand": "npm install --legacy-peer-deps && NEXT_TELEMETRY_DISABLED=1 next build",
   "framework": "nextjs",
   "rewrites": [
     {
@@ -51,6 +51,17 @@
     {
       "path": "/api/cron/fleet-refresh",
       "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/nurture",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/www",
+      "destination": "https://dealershipai.com",
+      "permanent": true
     }
   ]
 }

@@ -1,162 +1,169 @@
-# 🚀 DealershipAI - Next Steps for Production
+# 🚀 Next Steps - DealershipAI Complete Integration
 
-## ✅ What's Already Complete
+## ✅ What's Complete
 
-- ✅ Authentication system (Clerk) fully configured
-- ✅ Landing page with all CTAs activated
-- ✅ Dashboard protected and functional
-- ✅ Sign-in/Sign-up pages created
-- ✅ Pricing page accessible
-- ✅ Payment routes ready
-- ✅ **Deployed to production** ✅
+1. **RBAC System** - Clerk-based role/tenant auth
+2. **Site-Inject APIs** - Versions & rollback
+3. **Fix Action Drawer** - Dry-run, diff, auto-verify
+4. **CSV Editor** - Invalid row editing
+5. **Bulk Upload Panel** - Complete upload flow
+6. **Redis Idempotency** - Duplicate prevention
+7. **E2E Tests** - Playwright tests ready
 
-**Live URL**: `https://dealership-ai-dashboard-o4qfxoqm4-brian-kramer-dealershipai.vercel.app`
+## 🔧 Immediate Fixes Needed
 
----
-
-## ⏳ Action Required: DNS Configuration
-
-### Step 1: Configure DNS (5 minutes)
-
-**At your DNS provider** (GoDaddy, Namecheap, Cloudflare, etc.):
-
-1. Log into DNS management for `dealershipai.com`
-2. Add **CNAME record**:
-   ```
-   Type: CNAME
-   Name: dash
-   Value: cname.vercel-dns.com
-   TTL: 3600
-   ```
-3. Save and wait 5-30 minutes for propagation
-
-### Step 2: Add Domain to Vercel (2 minutes)
-
-After DNS propagates:
-
+### 1. **Fix Route Conflict** (CRITICAL)
+Build error: `/sign-in` route conflict
 ```bash
-npx vercel domains add dash.dealershipai.com
+# Check for duplicate sign-in routes
+find app -name "*sign-in*" -type f
+# Remove one of the conflicting routes
 ```
 
-### Step 3: Update Clerk Origins (2 minutes)
+### 2. **Update FixActionDrawer Import**
+✅ Already fixed - FleetTable now uses `@/components/FixActionDrawer`
 
-```bash
-# Load your Clerk secret key
-export CLERK_SECRET_KEY=sk_live_46lFcR07X8wbGi0k6nXBVTYUXaE5djeCsoqyuyiubl
+### 3. **Update Origins Route to RBAC**
+✅ Already fixed - Now uses `requireRBAC`
 
-# Run the update script
-./update-clerk-origins-direct.sh
+## 📋 Remaining Tasks
+
+### Priority 1: Clerk Setup
+1. **Set User Roles in Clerk Dashboard**:
+   - Go to Clerk Dashboard → Users
+   - For each user, set `publicMetadata.role` = `'admin'`, `'ops'`, or `'viewer'`
+   - Set `publicMetadata.tenant` = tenant ID
+
+2. **Or use API to set roles**:
+```typescript
+// Run once to set up user roles
+import { clerkClient } from '@clerk/nextjs/server'
+
+await clerkClient.users.updateUserMetadata(userId, {
+  publicMetadata: {
+    role: 'admin',
+    tenant: 'demo-dealer-001'
+  }
+})
 ```
 
-Or manually:
-- Clerk Dashboard → Configure → Paths → Frontend API
-- Add: `https://dash.dealershipai.com`
-- Save
+### Priority 2: Component Integration
+1. **Wire FixActionDrawer to Fleet Table**:
+   - ✅ Already imported in FleetTable
+   - ✅ Button already exists
+   - ⚠️ Need to update to use new drawer with dry-run
 
----
+2. **Update Bulk Upload Page**:
+   - `/app/(dashboard)/bulk/page.tsx` exists
+   - Add to navigation menu
+
+### Priority 3: API Routes
+1. **Update Remaining Routes to RBAC**:
+   - `/api/origins/bulk-csv` - Still uses `requirePermission` (complex, may need to keep)
+   - Check for any other routes using old auth
+
+2. **Create `/api/probe/verify-bulk`** (if missing):
+```typescript
+import { requireRBAC, rbacHeaders } from '@/lib/rbac'
+
+export async function POST(req: NextRequest) {
+  const rbac = await requireRBAC(req, ['admin','ops'])
+  if (rbac instanceof NextResponse) return rbac
+  
+  const { origins } = await req.json()
+  // Bulk verify logic
+}
+```
+
+### Priority 4: UX Polish
+1. **Status Chips in Fleet Rows**:
+   - Add "Verified", "Needs Fix", "Probe Failed" badges
+   - Color-code by last probe age
+
+2. **Version Count in Evidence Cards**:
+   - Show version count from `/api/site-inject/versions`
+   - Display last rollback timestamp
+
+3. **Export CSV**:
+   - Add "Export CSV" button to Fleet table
+   - Include: origin, tenant, verified, schemaCount, cwvScore, etc.
 
 ## 🧪 Testing Checklist
 
-Once DNS is configured, test:
+### Manual Testing:
+- [ ] Sign in with Clerk
+- [ ] Check user role is set correctly
+- [ ] Access Fleet dashboard
+- [ ] Click "Fix now" on an origin
+- [ ] Test dry-run mode
+- [ ] Test apply fix
+- [ ] Test auto-verify
+- [ ] Test rollback
+- [ ] Upload CSV file
+- [ ] Edit invalid rows
+- [ ] Commit fixed rows
 
-### Authentication Flow
-- [ ] Visit `dealershipai.com` → Click "Get Free Account" → Should go to `/sign-up`
-- [ ] Sign up with email → Should redirect to `/dash`
-- [ ] Sign out → Visit `/dash` → Should redirect to `/sign-in`
-- [ ] Sign in → Should redirect to `/dash`
-
-### CTAs
-- [ ] "Analyze Free" button → Triggers instant analysis
-- [ ] "Get Free Account" → Goes to `/sign-up`
-- [ ] "Stop The Bleeding" → Goes to `/sign-up`
-- [ ] Share-to-unlock modals → Work correctly
-
-### Protected Routes
-- [ ] `/dash` requires authentication ✅
-- [ ] `/pricing` is public ✅
-- [ ] `/` (landing) is public ✅
-
----
-
-## 💰 Payment Setup (When Ready)
-
-### Stripe Configuration
-
-1. **Create Products in Stripe Dashboard**:
-   - Pro Plan: $499/month
-   - Enterprise Plan: $999/month
-
-2. **Add Environment Variables to Vercel**:
-   ```
-   STRIPE_SECRET_KEY=sk_live_...
-   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
-   STRIPE_WEBHOOK_SECRET=whsec_...
-   ```
-
-3. **Test Checkout Flow**:
-   - Visit `/pricing`
-   - Click "Start Professional Trial"
-   - Complete Stripe checkout
-   - Verify redirect to dashboard
-
----
-
-## 📊 Current Status
-
-### ✅ Working
-- Landing page (`/`)
-- Authentication (`/sign-in`, `/sign-up`)
-- Dashboard (`/dash`) - protected
-- Pricing page (`/pricing`)
-- All CTAs functional
-
-### ⏳ Pending
-- DNS configuration for `dash.dealershipai.com`
-- Domain verification in Vercel
-- Clerk origins update
-
-### 📅 Future (Optional)
-- Onboarding flow
-- Session limits
-- Email automation
-- Advanced analytics
-
----
-
-## 🎯 Revenue Readiness
-
-**Status**: ✅ **Ready** (pending DNS)
-
-**Once DNS is configured**:
-- ✅ Full landing page at `dealershipai.com`
-- ✅ Protected dashboard at `dash.dealershipai.com`
-- ✅ Complete auth flow
-- ✅ Payment-ready infrastructure
-
-**Estimated time to revenue**: **5 minutes** (after DNS setup)
-
----
-
-## 📞 Quick Commands
-
+### E2E Testing:
 ```bash
-# Check DNS propagation
-dig dash.dealershipai.com CNAME
-
-# Add domain to Vercel (after DNS)
-npx vercel domains add dash.dealershipai.com
-
-# Update Clerk origins
-export CLERK_SECRET_KEY=sk_live_...
-./update-clerk-origins-direct.sh
-
-# Deploy updates
-npx vercel --prod
-
-# Check deployment status
-npx vercel ls
+pnpm install
+pnpm dlx playwright install
+pnpm test:e2e
 ```
 
----
+## 🐛 Known Issues
 
-**You're 99% there!** Just need DNS configuration and you're live! 🚀
+1. **Route Conflict**: `/sign-in` has duplicate route definition
+2. **Old FixActionDrawer**: There's an old version in `components/fleet/` that should be removed
+3. **Bulk CSV Route**: Still uses `requirePermission` - may need to keep for compatibility
+
+## 📝 Quick Wins
+
+### 1. Add Navigation Link to Bulk Page
+```tsx
+// In dashboard layout or navigation
+<Link href="/bulk">Bulk Upload</Link>
+```
+
+### 2. Add Status Badges
+```tsx
+// In FleetTable row
+{row.evidence.verified ? (
+  <span className="px-2 py-1 bg-green-700/40 text-green-200 rounded">Verified</span>
+) : (
+  <span className="px-2 py-1 bg-amber-700/40 text-amber-200 rounded">Needs Fix</span>
+)}
+```
+
+### 3. Add Export CSV
+```tsx
+const exportCSV = () => {
+  const csv = rows.map(r => `${r.origin},${r.tenant},${r.evidence.verified}`).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'fleet-export.csv'
+  a.click()
+}
+```
+
+## 🎯 Deployment Checklist
+
+- [ ] Fix route conflict
+- [ ] Set Clerk user roles
+- [ ] Test RBAC with different roles
+- [ ] Run E2E tests
+- [ ] Verify all API routes work
+- [ ] Test bulk upload flow
+- [ ] Test fix drawer with dry-run
+- [ ] Test rollback functionality
+- [ ] Deploy to Vercel
+
+## 🚀 Ready to Deploy?
+
+Once you:
+1. ✅ Fix the route conflict
+2. ✅ Set Clerk user roles
+3. ✅ Test the flow
+
+You're ready to deploy! All core functionality is in place.
