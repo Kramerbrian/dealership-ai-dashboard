@@ -59,15 +59,22 @@ export async function POST(req: NextRequest) {
       estimatedAlertsPerDay: Math.floor(Math.random() * 20) + 5 // 5-25 alerts per day
     };
 
-    // Log alert configuration to database
-    await prisma.intelTask.create({
-      data: {
-        type: 'AUTOMATED_ALERTS',
-        status: 'COMPLETED',
-        payload: { alertType, threshold, dealerId, notificationChannels },
-        result: { alertConfig, alertResults },
-      },
-    });
+    // Log alert configuration to database (if Prisma is available)
+    if (prisma) {
+      try {
+        await prisma.intelTask.create({
+          data: {
+            type: 'AUTOMATED_ALERTS',
+            status: 'COMPLETED',
+            payload: { alertType, threshold, dealerId, notificationChannels },
+            result: { alertConfig, alertResults },
+          },
+        });
+      } catch (dbError) {
+        console.warn('[automated-alerts] Failed to save to database:', dbError);
+        // Continue without database logging
+      }
+    }
 
     return NextResponse.json({ 
       success: true, 
