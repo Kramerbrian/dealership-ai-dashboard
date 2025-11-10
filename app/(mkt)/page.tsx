@@ -46,15 +46,20 @@ export default function Landing(){
   // Note: User redirect logic moved to middleware for better reliability
   // The SignedIn/SignedOut components handle auth state without hooks
 
-  // Load last AIV for returning users
+  // Load last AIV for returning users (client-side only)
   useEffect(() => {
-    const snap = getLastAIV();
-    if (snap?.score) setLastAiv(snap.score);
+    if (typeof window === 'undefined') return; // Guard for SSR
+    try {
+      const snap = getLastAIV();
+      if (snap?.score) setLastAiv(snap.score);
+    } catch (error) {
+      console.error('Error loading last AIV:', error);
+    }
   }, []);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
-    if (!mobileMenuOpen) return;
+    if (typeof window === 'undefined' || !mobileMenuOpen) return;
     
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -69,7 +74,7 @@ export default function Landing(){
 
   // Close mobile menu on escape key
   useEffect(() => {
-    if (!mobileMenuOpen) return;
+    if (typeof window === 'undefined' || !mobileMenuOpen) return;
     
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -81,8 +86,10 @@ export default function Landing(){
     return () => document.removeEventListener('keydown', handleEscape);
   }, [mobileMenuOpen]);
 
-  // Exit-intent detection
+  // Exit-intent detection (client-side only)
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     let timer: NodeJS.Timeout;
     const handleMouseLeave = (e: MouseEvent) => {
       if (e.clientY <= 0 && !exitIntentShown && !preview) {
