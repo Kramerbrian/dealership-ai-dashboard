@@ -20,6 +20,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const sbAdmin = getSbAdmin();
+    if (!sbAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase client initialization failed' },
+        { status: 500 }
+      );
+    }
+
     // SQL to create the table
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS telemetry_events (
@@ -87,10 +95,18 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
+    // Check if Supabase is configured
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+      return NextResponse.json(
+        { tableExists: false, error: 'Supabase not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY.' },
+        { status: 503 }
+      );
+    }
+
     const sbAdmin = getSbAdmin();
     if (!sbAdmin) {
       return NextResponse.json(
-        { tableExists: false, error: 'Supabase not configured' },
+        { tableExists: false, error: 'Supabase client initialization failed' },
         { status: 503 }
       );
     }

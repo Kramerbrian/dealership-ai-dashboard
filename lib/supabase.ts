@@ -1,46 +1,36 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+let sbAdminInstance: SupabaseClient | null = null;
 
-// Lazy initialization to avoid build-time errors
-let _sbAdmin: ReturnType<typeof createClient> | null = null;
+export function getSbAdmin(): SupabaseClient | null {
+  // Return cached instance if available
+  if (sbAdminInstance) {
+    return sbAdminInstance;
+  }
 
-export function getSbAdmin() {
-  if (_sbAdmin) return _sbAdmin;
-  
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || SUPABASE_URL === '' || SUPABASE_SERVICE_KEY === '') {
-    // During build, return a safe mock that won't break
-    if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
-      // Build-time: return a minimal mock
-      _sbAdmin = {
-        from: () => ({
-          insert: () => Promise.resolve({ error: null, data: null }),
-          select: () => ({ order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) }) }),
-        }),
-      } as any;
-      return _sbAdmin;
+  // Check for environment variables
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // During build time, env vars may not be available - return null gracefully
+  if (!url || !serviceKey) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[supabase] Missing SUPABASE_URL or SUPABASE_SERVICE_KEY');
     }
-    
-    // Runtime: warn but don't break
-    // eslint-disable-next-line no-console
-    console.warn('[supabase] Missing SUPABASE_URL or SUPABASE_SERVICE_KEY - Supabase features disabled');
-    _sbAdmin = createClient('https://placeholder.supabase.co', 'placeholder-key', {
+    return null;
+  }
+
+  // Create and cache client
+  try {
+    sbAdminInstance = createClient(url, serviceKey, {
       auth: { persistSession: false }
     });
-    return _sbAdmin;
+    return sbAdminInstance;
+  } catch (error) {
+    console.error('[supabase] Failed to create client:', error);
+    return null;
   }
-  
-  _sbAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-    auth: { persistSession: false }
-  });
-  return _sbAdmin;
 }
 
-// Backward compatibility
-export const sbAdmin = new Proxy({} as ReturnType<typeof createClient>, {
-  get(_target, prop) {
-    return getSbAdmin()[prop as keyof ReturnType<typeof createClient>];
-  }
-});
-
+// Legacy export for backward compatibility
+export const sbAdmin = getSbAdmin();

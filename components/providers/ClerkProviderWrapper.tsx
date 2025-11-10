@@ -3,12 +3,15 @@
 import { ClerkProvider as Clerk } from '@clerk/nextjs';
 
 export function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
-  const publishableKey = typeof window !== 'undefined' 
-    ? process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-    : process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  // Get publishable key - Next.js makes NEXT_PUBLIC_ vars available on client
+  // In Next.js, NEXT_PUBLIC_ vars are available at build time and runtime
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  // Skip Clerk if no key (for public landing page)
-  if (!publishableKey) {
+  // Skip Clerk if no key (for public landing page without auth)
+  if (!publishableKey || publishableKey.trim() === '') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[ClerkProviderWrapper] No publishable key found, skipping ClerkProvider');
+    }
     return <>{children}</>;
   }
 

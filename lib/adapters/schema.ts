@@ -1,1 +1,58 @@
-export type Pulse={id:string;title:string;diagnosis:string;prescription:string;impactMonthlyUSD:number;etaSeconds:number;confidenceScore:number;recencyMinutes:number;kind:'schema'|'faq'};export async function schemaToPulses(domainOrUrl?:string):Promise<Pulse[]>{try{const qs=domainOrUrl?.startsWith('http')?`url=${encodeURIComponent(domainOrUrl)}`:`domain=${encodeURIComponent(domainOrUrl||'')}`;const res=await fetch(`/api/schema/validate?${qs}`,{cache:'no-store'});if(!res.ok)return[];const audit=await res.json();const pulses:Pulse[]=[];const missingProduct=audit.issues?.some((i:any)=>i.id==='missing_product');const missingFAQ=audit.issues?.some((i:any)=>i.id==='missing_faqpage');const missingDealer=audit.issues?.some((i:any)=>i.id==='missing_autodealer');if(missingProduct||missingDealer)pulses.push({id:'schema_missing_vdp',title:'Missing Product/AutoDealer schema',diagnosis:'AI can't extract pricing/specs.',prescription:'Inject JSON-LD Product+AutoDealer; revalidate.',impactMonthlyUSD:8200,etaSeconds:120,confidenceScore:0.85,recencyMinutes:6,kind:'schema'});if(missingFAQ)pulses.push({id:'faq_absent_service',title:'No FAQPage schema',diagnosis:'Gemini/Perplexity need FAQ for citations.',prescription:'Generate 6–10 Q&As; add FAQPage JSON-LD.',impactMonthlyUSD:2400,etaSeconds:150,confidenceScore:0.75,recencyMinutes:6,kind:'faq'});return pulses}catch{return[]}}
+import { apiFetch } from './utils';
+
+export type Pulse = {
+  id: string;
+  title: string;
+  diagnosis: string;
+  prescription: string;
+  impactMonthlyUSD: number;
+  etaSeconds: number;
+  confidenceScore: number;
+  recencyMinutes: number;
+  kind: 'schema' | 'faq';
+};
+
+export async function schemaToPulses(domainOrUrl?: string): Promise<Pulse[]> {
+  try {
+    const qs = domainOrUrl?.startsWith('http')
+      ? `url=${encodeURIComponent(domainOrUrl)}`
+      : `domain=${encodeURIComponent(domainOrUrl || '')}`;
+    const res = await apiFetch(`/api/schema/validate?${qs}`);
+    if (!res.ok) return [];
+    const audit = await res.json();
+    const pulses: Pulse[] = [];
+    const missingProduct = audit.issues?.some((i: any) => i.id === 'missing_product');
+    const missingFAQ = audit.issues?.some((i: any) => i.id === 'missing_faqpage');
+    const missingDealer = audit.issues?.some((i: any) => i.id === 'missing_autodealer');
+    if (missingProduct || missingDealer) {
+      pulses.push({
+        id: 'schema_missing_vdp',
+        title: 'Missing Product/AutoDealer schema',
+        diagnosis: "AI can't extract pricing/specs.",
+        prescription: 'Inject JSON-LD Product+AutoDealer; revalidate.',
+        impactMonthlyUSD: 8200,
+        etaSeconds: 120,
+        confidenceScore: 0.85,
+        recencyMinutes: 6,
+        kind: 'schema',
+      });
+    }
+    if (missingFAQ) {
+      pulses.push({
+        id: 'faq_absent_service',
+        title: 'No FAQPage schema',
+        diagnosis: 'Gemini/Perplexity need FAQ for citations.',
+        prescription: 'Generate 6–10 Q&As; add FAQPage JSON-LD.',
+        impactMonthlyUSD: 2400,
+        etaSeconds: 150,
+        confidenceScore: 0.75,
+        recencyMinutes: 6,
+        kind: 'faq',
+      });
+    }
+    return pulses;
+  } catch (error) {
+    console.error('[schemaToPulses] Error:', error);
+    return [];
+  }
+}

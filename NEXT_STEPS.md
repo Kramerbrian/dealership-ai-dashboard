@@ -1,169 +1,222 @@
-# 🚀 Next Steps - DealershipAI Complete Integration
+# 🚀 Next Steps After Deployment
 
-## ✅ What's Complete
+**Deployment Status:** ✅ **COMPLETE**  
+**Production URL:** https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app  
+**Deployed:** $(date)
 
-1. **RBAC System** - Clerk-based role/tenant auth
-2. **Site-Inject APIs** - Versions & rollback
-3. **Fix Action Drawer** - Dry-run, diff, auto-verify
-4. **CSV Editor** - Invalid row editing
-5. **Bulk Upload Panel** - Complete upload flow
-6. **Redis Idempotency** - Duplicate prevention
-7. **E2E Tests** - Playwright tests ready
+---
 
-## 🔧 Immediate Fixes Needed
+## ✅ Immediate Verification (5 minutes)
 
-### 1. **Fix Route Conflict** (CRITICAL)
-Build error: `/sign-in` route conflict
+### 1. Test Production Site
+Visit your production URL and verify:
+- [ ] Landing page loads correctly
+- [ ] No console errors (open DevTools: Cmd+Option+J)
+- [ ] Authentication buttons visible (Clerk)
+- [ ] Health endpoint working: `/api/health`
+
+**Quick Test:**
 ```bash
-# Check for duplicate sign-in routes
-find app -name "*sign-in*" -type f
-# Remove one of the conflicting routes
+curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
 ```
 
-### 2. **Update FixActionDrawer Import**
-✅ Already fixed - FleetTable now uses `@/components/FixActionDrawer`
+### 2. Check Environment Variables
+Your environment variables are already set in Vercel. Verify critical ones:
 
-### 3. **Update Origins Route to RBAC**
-✅ Already fixed - Now uses `requireRBAC`
-
-## 📋 Remaining Tasks
-
-### Priority 1: Clerk Setup
-1. **Set User Roles in Clerk Dashboard**:
-   - Go to Clerk Dashboard → Users
-   - For each user, set `publicMetadata.role` = `'admin'`, `'ops'`, or `'viewer'`
-   - Set `publicMetadata.tenant` = tenant ID
-
-2. **Or use API to set roles**:
-```typescript
-// Run once to set up user roles
-import { clerkClient } from '@clerk/nextjs/server'
-
-await clerkClient.users.updateUserMetadata(userId, {
-  publicMetadata: {
-    role: 'admin',
-    tenant: 'demo-dealer-001'
-  }
-})
-```
-
-### Priority 2: Component Integration
-1. **Wire FixActionDrawer to Fleet Table**:
-   - ✅ Already imported in FleetTable
-   - ✅ Button already exists
-   - ⚠️ Need to update to use new drawer with dry-run
-
-2. **Update Bulk Upload Page**:
-   - `/app/(dashboard)/bulk/page.tsx` exists
-   - Add to navigation menu
-
-### Priority 3: API Routes
-1. **Update Remaining Routes to RBAC**:
-   - `/api/origins/bulk-csv` - Still uses `requirePermission` (complex, may need to keep)
-   - Check for any other routes using old auth
-
-2. **Create `/api/probe/verify-bulk`** (if missing):
-```typescript
-import { requireRBAC, rbacHeaders } from '@/lib/rbac'
-
-export async function POST(req: NextRequest) {
-  const rbac = await requireRBAC(req, ['admin','ops'])
-  if (rbac instanceof NextResponse) return rbac
-  
-  const { origins } = await req.json()
-  // Bulk verify logic
-}
-```
-
-### Priority 4: UX Polish
-1. **Status Chips in Fleet Rows**:
-   - Add "Verified", "Needs Fix", "Probe Failed" badges
-   - Color-code by last probe age
-
-2. **Version Count in Evidence Cards**:
-   - Show version count from `/api/site-inject/versions`
-   - Display last rollback timestamp
-
-3. **Export CSV**:
-   - Add "Export CSV" button to Fleet table
-   - Include: origin, tenant, verified, schemaCount, cwvScore, etc.
-
-## 🧪 Testing Checklist
-
-### Manual Testing:
-- [ ] Sign in with Clerk
-- [ ] Check user role is set correctly
-- [ ] Access Fleet dashboard
-- [ ] Click "Fix now" on an origin
-- [ ] Test dry-run mode
-- [ ] Test apply fix
-- [ ] Test auto-verify
-- [ ] Test rollback
-- [ ] Upload CSV file
-- [ ] Edit invalid rows
-- [ ] Commit fixed rows
-
-### E2E Testing:
 ```bash
-pnpm install
-pnpm dlx playwright install
-pnpm test:e2e
+# View all env vars
+npx vercel env ls
+
+# Key variables to verify:
+# ✅ DATABASE_URL (Production)
+# ✅ SUPABASE_URL (Production)
+# ✅ SUPABASE_SERVICE_KEY (Production)
+# ✅ CLERK_SECRET_KEY (Production)
+# ✅ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Production)
+# ✅ UPSTASH_REDIS_REST_URL (Production)
+# ✅ UPSTASH_REDIS_REST_TOKEN (Production)
 ```
 
-## 🐛 Known Issues
+**Note:** Health check shows database as "disconnected" - this may need attention if you're using database features.
 
-1. **Route Conflict**: `/sign-in` has duplicate route definition
-2. **Old FixActionDrawer**: There's an old version in `components/fleet/` that should be removed
-3. **Bulk CSV Route**: Still uses `requirePermission` - may need to keep for compatibility
+---
 
-## 📝 Quick Wins
+## 🔍 Critical Path Testing (15 minutes)
 
-### 1. Add Navigation Link to Bulk Page
-```tsx
-// In dashboard layout or navigation
-<Link href="/bulk">Bulk Upload</Link>
+### Test User Flow
+
+1. **Landing Page** → `/`
+   - [ ] Page loads
+   - [ ] Sign up/Sign in buttons work
+   - [ ] No 404 errors for assets
+
+2. **Authentication** → `/sign-up` or `/sign-in`
+   - [ ] Clerk modal/form appears
+   - [ ] Can create account or sign in
+   - [ ] Redirects correctly after auth
+
+3. **Onboarding** → `/onboarding`
+   - [ ] Multi-step flow works
+   - [ ] Progress saves
+   - [ ] Completes successfully
+
+4. **Dashboard** → `/dashboard`
+   - [ ] Protected route works (requires auth)
+   - [ ] Metrics display correctly
+   - [ ] Navigation works
+
+5. **Fleet Dashboard** → `/fleet`
+   - [ ] Origins table loads
+   - [ ] Evidence cards display
+   - [ ] "Fix now" functionality works
+
+---
+
+## 🔧 Configuration Checks
+
+### Clerk Configuration
+Verify in [Clerk Dashboard](https://dashboard.clerk.com):
+- [ ] Redirect URLs configured:
+  - Sign-in: `/sign-in`
+  - Sign-up: `/sign-up`
+  - After sign-in: `/onboarding`
+  - After sign-up: `/onboarding`
+- [ ] Production keys match Vercel env vars
+
+### Database Connection
+If database shows "disconnected" in health check:
+- [ ] Verify `DATABASE_URL` in Vercel is correct
+- [ ] Check Supabase connection settings
+- [ ] Run database migrations if needed:
+  ```bash
+  npx prisma migrate deploy
+  ```
+
+### Redis Connection
+- [ ] Verify `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set
+- [ ] Health check shows Redis as "connected" ✅
+
+---
+
+## 📊 API Endpoint Testing
+
+Test critical API endpoints:
+
+```bash
+# Health check
+curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
+
+# Status check
+curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/status
+
+# Test other endpoints (may require auth)
+curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/metrics/qai
 ```
 
-### 2. Add Status Badges
-```tsx
-// In FleetTable row
-{row.evidence.verified ? (
-  <span className="px-2 py-1 bg-green-700/40 text-green-200 rounded">Verified</span>
-) : (
-  <span className="px-2 py-1 bg-amber-700/40 text-amber-200 rounded">Needs Fix</span>
-)}
+---
+
+## 🎯 Performance & Monitoring
+
+### Vercel Dashboard
+- [ ] Check deployment logs for errors
+- [ ] Monitor function execution times
+- [ ] Review analytics (if configured)
+
+### Set Up Monitoring (Optional)
+- [ ] Configure error tracking (Sentry is already integrated)
+- [ ] Set up uptime monitoring
+- [ ] Configure alerts for critical errors
+
+---
+
+## 🚨 Troubleshooting
+
+### Issue: Database Disconnected
+**Fix:**
+1. Verify `DATABASE_URL` in Vercel matches your database
+2. Check database connection string format
+3. Ensure database allows connections from Vercel IPs
+4. Run migrations: `npx prisma migrate deploy`
+
+### Issue: Authentication Not Working
+**Fix:**
+1. Verify Clerk keys in Vercel match Clerk Dashboard
+2. Check redirect URLs in Clerk Dashboard
+3. Ensure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set
+4. Check browser console for errors
+
+### Issue: API Endpoints Returning Errors
+**Fix:**
+1. Check Vercel function logs
+2. Verify environment variables are set for Production
+3. Check API route authentication requirements
+4. Review error messages in browser console
+
+---
+
+## 📝 Post-Deployment Tasks
+
+### Immediate (Today)
+- [ ] Test complete user flow end-to-end
+- [ ] Verify all critical features work
+- [ ] Check for console errors
+- [ ] Test on mobile device
+
+### Short-term (This Week)
+- [ ] Monitor error logs daily
+- [ ] Test with real users (if applicable)
+- [ ] Review performance metrics
+- [ ] Set up monitoring alerts
+
+### Long-term (This Month)
+- [ ] Review analytics data
+- [ ] Optimize based on usage patterns
+- [ ] Plan feature enhancements
+- [ ] Document any issues found
+
+---
+
+## 🎉 Success Criteria
+
+Your deployment is successful when:
+- ✅ Site loads without errors
+- ✅ Authentication works
+- ✅ Core features functional
+- ✅ No critical console errors
+- ✅ API endpoints responding
+- ✅ Performance acceptable (< 3s load time)
+
+---
+
+## 📞 Resources
+
+- **Vercel Dashboard:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
+- **Deployment Logs:** `npx vercel logs production`
+- **Health Check:** https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
+- **Project Docs:** See `DEPLOYMENT_CONFIDENCE_CHECKLIST.md` and `POST-DEPLOYMENT-CHECKLIST.md`
+
+---
+
+## ✅ Quick Command Reference
+
+```bash
+# View deployment logs
+npx vercel logs production
+
+# Check environment variables
+npx vercel env ls
+
+# Redeploy if needed
+npx vercel --prod
+
+# Test health endpoint
+curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
+
+# View project in Vercel
+npx vercel inspect
 ```
 
-### 3. Add Export CSV
-```tsx
-const exportCSV = () => {
-  const csv = rows.map(r => `${r.origin},${r.tenant},${r.evidence.verified}`).join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'fleet-export.csv'
-  a.click()
-}
-```
+---
 
-## 🎯 Deployment Checklist
-
-- [ ] Fix route conflict
-- [ ] Set Clerk user roles
-- [ ] Test RBAC with different roles
-- [ ] Run E2E tests
-- [ ] Verify all API routes work
-- [ ] Test bulk upload flow
-- [ ] Test fix drawer with dry-run
-- [ ] Test rollback functionality
-- [ ] Deploy to Vercel
-
-## 🚀 Ready to Deploy?
-
-Once you:
-1. ✅ Fix the route conflict
-2. ✅ Set Clerk user roles
-3. ✅ Test the flow
-
-You're ready to deploy! All core functionality is in place.
+**Status:** ✅ Deployment Complete - Ready for Testing  
+**Next Action:** Test the production site and verify all features work correctly

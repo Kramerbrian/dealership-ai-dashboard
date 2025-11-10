@@ -1,10 +1,13 @@
 import { Redis } from '@upstash/redis'
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+// Initialize Redis client with trimmed env vars
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+
+const redis = redisUrl && redisToken ? new Redis({
+  url: redisUrl,
+  token: redisToken,
+}) : null as any
 
 export interface RateLimitConfig {
   windowMs: number // Time window in milliseconds

@@ -19,9 +19,7 @@ const nextConfig = {
   },
   // External packages for server components (Next.js 15+)
   serverExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
-  experimental: {
-    instrumentationHook: true, // Enable Sentry instrumentation
-  },
+  // Note: instrumentationHook is now default in Next.js 15, no need to specify
   // Disable static export to allow Clerk to work
   output: 'standalone',
   

@@ -1,209 +1,252 @@
-# 🧪 Manual Testing Checklist - Intelligence Dashboard
+# 🧪 Manual Testing Checklist
 
-## 🚀 **Quick Start Testing**
-
-### **Prerequisites**
-- Development server running on `http://localhost:3001`
-- Browser with developer tools open
-- Network tab open to monitor API calls
+## Production URL
+**https://dealership-ai-dashboard-qkaslz71g-brian-kramer-dealershipai.vercel.app**
 
 ---
 
-## 📋 **Testing Checklist**
+## 1️⃣ Landing Page Testing
 
-### **1. Authentication Flow** ⏳
-- [ ] Navigate to `http://localhost:3001/intelligence`
-- [ ] **Expected**: Redirected to `/auth/signin`
-- [ ] **Check**: OAuth buttons are visible (Google, GitHub)
-- [ ] **Test**: Click Google OAuth button
-- [ ] **Expected**: OAuth flow initiates
-- [ ] **Test**: Complete OAuth sign-in
-- [ ] **Expected**: Redirected back to `/intelligence`
+### URL: `/` (Root)
 
-### **2. Header Section** ⏳
-- [ ] **Sign Out Button**
-  - [ ] Click "Sign Out" button
-  - [ ] **Expected**: Redirected to sign-out endpoint
-  - [ ] **Expected**: Session cleared
-  - [ ] **Expected**: Redirected to sign-in page
+#### URL Validation
+- [ ] Enter invalid URL (e.g., "not-a-url") → Should show error message
+- [ ] Enter valid URL without protocol (e.g., "example.com") → Should accept
+- [ ] Enter valid URL with protocol (e.g., "https://example.com") → Should accept
+- [ ] Submit invalid URL → Should not proceed
+- [ ] Submit valid URL → Should show "Analyzing..." state
 
-### **3. Quick Actions Section** ⏳
-- [ ] **Run Full Audit Button**
-  - [ ] Click button
-  - [ ] **Check**: Loading state appears
-  - [ ] **Check**: API call made to `/api/audit/full`
-  - [ ] **Expected**: Success/error feedback
+#### Mobile Menu
+- [ ] On mobile/tablet view, hamburger menu appears
+- [ ] Click hamburger → Menu opens
+- [ ] Click outside menu → Menu closes
+- [ ] Press Escape key → Menu closes
+- [ ] All menu links work correctly
 
-- [ ] **AI Health Check Button**
-  - [ ] Click button
-  - [ ] **Check**: Health check process starts
-  - [ ] **Expected**: Results display
+#### Exit Intent Modal
+- [ ] Move mouse to top of page (exit intent) → Modal appears
+- [ ] Wait 45 seconds without interaction → Modal appears
+- [ ] Click "Get Free Report" in modal → Focuses input field
+- [ ] Click close (×) → Modal closes
+- [ ] Modal doesn't appear if already shown
 
-- [ ] **Competitor Analysis Button**
-  - [ ] Click button
-  - [ ] **Check**: Competitor data loads
-  - [ ] **Expected**: Comparison charts appear
+#### Last AIV Badge
+- [ ] First visit → No badge shown
+- [ ] After completing a scan → Badge appears on next visit
+- [ ] Badge shows correct last AIV score
 
-- [ ] **Get Recommendations Button**
-  - [ ] Click button
-  - [ ] **Check**: Recommendations generated
-  - [ ] **Expected**: Actionable items display
-
-### **4. Dashboard Controls** ⏳
-- [ ] **Auto Refresh Toggle**
-  - [ ] Click toggle
-  - [ ] **Expected**: Toggle state changes
-  - [ ] **Expected**: Auto-refresh behavior changes
-
-- [ ] **Manual Refresh Button**
-  - [ ] Click refresh button
-  - [ ] **Check**: Data reloads
-  - [ ] **Check**: Loading indicator appears
-
-- [ ] **Theme Toggle Button**
-  - [ ] Click theme button
-  - [ ] **Expected**: Theme changes
-  - [ ] **Expected**: Change persists on refresh
-
-- [ ] **Settings Button**
-  - [ ] Click settings button
-  - [ ] **Expected**: Settings panel opens
-
-### **5. Error Handling** ⏳
-- [ ] **Network Error Simulation**
-  - [ ] Open DevTools → Network tab
-  - [ ] Set to "Offline" mode
-  - [ ] Click various buttons
-  - [ ] **Expected**: Error messages appear
-  - [ ] **Expected**: Retry mechanisms work
-
-### **6. Loading States** ⏳
-- [ ] **Button Loading Indicators**
-  - [ ] Click each button
-  - [ ] **Check**: Loading spinners appear
-  - [ ] **Check**: Buttons disabled during loading
-  - [ ] **Check**: Loading states clear properly
-
-### **7. Responsive Design** ⏳
-- [ ] **Mobile View (375px)**
-  - [ ] Resize browser to mobile width
-  - [ ] **Check**: All buttons accessible
-  - [ ] **Check**: Touch targets adequate (44px+)
-
-- [ ] **Tablet View (768px)**
-  - [ ] Resize browser to tablet width
-  - [ ] **Check**: Layout adapts properly
-
-- [ ] **Desktop View (1920px)**
-  - [ ] Resize browser to desktop width
-  - [ ] **Check**: All elements visible
+#### Other Features
+- [ ] Preview results display after scan
+- [ ] "Get Your Free Report" button works
+- [ ] Navigation links work (Features, Pricing, How it works)
+- [ ] Page loads without console errors
 
 ---
 
-## 🔍 **Current Issues to Fix**
+## 2️⃣ Sign Up Flow
 
-### **Critical Issues** 🚨
-- [ ] **Quick Action buttons have no onClick handlers**
-  - **Location**: `app/intelligence/page.tsx` lines 264-276
-  - **Fix**: Add click handlers for each action
+### Steps:
+1. Click "Get Your Free Report" or "Sign Up"
+2. Complete Clerk sign-up form
+3. Verify redirect
 
-- [ ] **Settings button has no functionality**
-  - **Location**: `components/dashboard/EnhancedDealershipDashboard.tsx` line 355
-  - **Fix**: Add settings panel/modal
+### Expected Behavior
+- [ ] Clerk sign-up modal/page appears
+- [ ] Can enter email and password
+- [ ] Email verification works (if enabled)
+- [ ] After sign-up completion → **Redirected to `/onboarding`**
+- [ ] URL shows: `https://...vercel.app/onboarding`
+- [ ] User is authenticated (can see user menu/profile)
 
-- [ ] **View All button has no destination**
-  - **Location**: `components/dashboard/EnhancedDealershipDashboard.tsx` line 513
-  - **Fix**: Add navigation or modal
-
-### **Medium Priority** ⚠️
-- [ ] **Error handling is incomplete**
-  - **Fix**: Add try-catch blocks and error states
-
-- [ ] **Loading states are missing for some actions**
-  - **Fix**: Add loading indicators
-
-- [ ] **No success feedback for completed actions**
-  - **Fix**: Add toast notifications or success states
+### If Issues
+- Check browser console for errors
+- Verify Clerk redirect URL is set to `/onboarding`
+- Check Vercel logs for authentication errors
 
 ---
 
-## 🛠️ **Quick Fixes to Implement**
+## 3️⃣ Onboarding Flow
 
-### **1. Add Click Handlers to Quick Actions**
-```typescript
-// Add to app/intelligence/page.tsx
-const [actionLoading, setActionLoading] = useState({
-  audit: false,
-  health: false,
-  competitors: false,
-  recommendations: false
-});
+### URL: `/onboarding`
 
-const handleQuickAction = async (action: string) => {
-  setActionLoading(prev => ({ ...prev, [action]: true }));
-  try {
-    // API call logic here
-    console.log(`Executing ${action}...`);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  } catch (error) {
-    console.error(`Error in ${action}:`, error);
-  } finally {
-    setActionLoading(prev => ({ ...prev, [action]: false }));
-  }
-};
-```
+### Step 1: Welcome
+- [ ] Page loads with welcome message
+- [ ] Progress bar shows 20% (Step 1 of 5)
+- [ ] "Next" button works
 
-### **2. Add Loading States to Buttons**
-```typescript
-// Update button JSX
-<motion.button
-  key={action.title}
-  onClick={() => handleQuickAction(action.title.toLowerCase().replace(' ', ''))}
-  disabled={actionLoading[action.title.toLowerCase().replace(' ', '')]}
-  className={`p-4 ${action.bgColor} border ${action.borderColor} rounded-xl text-left transition-all duration-200 hover:bg-opacity-30 group disabled:opacity-50`}
->
-  <div className={`${action.color} flex items-center gap-2 mb-2`}>
-    {actionLoading[action.title.toLowerCase().replace(' ', '')] ? (
-      <Loader2 className="w-5 h-5 animate-spin" />
-    ) : (
-      action.icon
-    )}
-    <span className="font-semibold text-sm">{action.title}</span>
-  </div>
-  <p className="text-xs text-white/70 leading-relaxed">{action.description}</p>
-</motion.button>
-```
+### Step 2: Website URL
+- [ ] Input field accepts URL
+- [ ] Invalid URL → Shows red border + error message
+- [ ] Valid URL → Error clears, green state
+- [ ] Can skip (if optional)
+- [ ] "Next" button enabled when valid URL entered
 
----
+### Step 3: Google Business Profile
+- [ ] Input field accepts URL
+- [ ] Can skip
+- [ ] "Connect" button works (if URL provided)
 
-## 📊 **Testing Results**
+### Step 4: Google Analytics
+- [ ] Checkbox toggles
+- [ ] Can skip
+- [ ] "Continue" button works
 
-| Test Category | Status | Notes |
-|---------------|--------|-------|
-| Authentication Flow | ⏳ Pending | - |
-| Header Section | ⏳ Pending | - |
-| Quick Actions | ⏳ Pending | - |
-| Dashboard Controls | ⏳ Pending | - |
-| Error Handling | ⏳ Pending | - |
-| Loading States | ⏳ Pending | - |
-| Responsive Design | ⏳ Pending | - |
+### Step 5: Complete
+- [ ] Shows success message
+- [ ] "Go to Dashboard" button visible
+- [ ] Clicking button:
+  - [ ] Shows loading state
+  - [ ] **Redirects to `/dashboard`**
+  - [ ] No console errors
+
+### Data Persistence
+- [ ] Open browser DevTools → Network tab
+- [ ] Complete onboarding
+- [ ] Verify API call to `/api/user/onboarding-complete` succeeds (200)
+- [ ] Check response contains `{ ok: true, metadata: {...} }`
+- [ ] Verify Clerk metadata updated:
+  - Go to Clerk Dashboard → Users → Select your user
+  - Check `publicMetadata` contains:
+    ```json
+    {
+      "onboarding_complete": true,
+      "domain": "example.com",
+      "dealershipUrl": "https://example.com"
+    }
+    ```
 
 ---
 
-## 🎯 **Success Criteria**
+## 4️⃣ Sign In Flow
 
-- [ ] All buttons respond to clicks
-- [ ] Loading states display correctly
-- [ ] Error messages appear for failures
-- [ ] Success feedback is provided
-- [ ] Navigation works as expected
-- [ ] Responsive design works on all devices
-- [ ] No console errors
-- [ ] All API calls complete successfully
+### Test Case 1: User with Incomplete Onboarding
+1. Sign out (if signed in)
+2. Sign in with user that hasn't completed onboarding
+3. **Expected:** Redirected to `/onboarding`
+
+### Test Case 2: User with Complete Onboarding
+1. Sign out
+2. Sign in with user that has completed onboarding
+3. **Expected:** Redirected to `/dashboard` (or allowed access)
+
+### Verification
+- [ ] Sign in modal/page appears
+- [ ] Can enter credentials
+- [ ] After sign in → Redirects based on onboarding status
+- [ ] Middleware correctly enforces onboarding requirement
 
 ---
 
-**Last Updated:** $(date)  
-**Status:** Ready for Testing  
-**Next Action:** Run manual tests and implement fixes
+## 5️⃣ Dashboard Access
+
+### Test Case 1: Without Onboarding
+1. Sign in as user without onboarding
+2. Try to access `/dashboard` directly
+3. **Expected:** Redirected to `/onboarding`
+
+### Test Case 2: With Onboarding
+1. Complete onboarding
+2. Access `/dashboard`
+3. **Expected:** Dashboard loads successfully
+4. [ ] Can see dashboard content
+5. [ ] User data displays correctly
+6. [ ] No console errors
+
+---
+
+## 6️⃣ Middleware Testing
+
+### Protected Routes
+- [ ] `/dashboard` requires authentication
+- [ ] `/dashboard` requires onboarding completion
+- [ ] `/admin` requires authentication
+- [ ] `/onboarding` requires authentication (but not completion)
+
+### Public Routes
+- [ ] `/` accessible without auth
+- [ ] `/sign-in` accessible without auth
+- [ ] `/sign-up` accessible without auth
+- [ ] API endpoints work as expected
+
+---
+
+## 7️⃣ Clerk Configuration Verification
+
+### In Clerk Dashboard (https://dashboard.clerk.com)
+
+#### Paths Configuration
+- [ ] Navigate to **Configure → Paths**
+- [ ] **After Sign In:** Set to `/onboarding`
+- [ ] **After Sign Up:** Set to `/onboarding`
+- [ ] **Fallback URLs:** Set appropriately
+
+#### Environment Variables (Vercel)
+- [ ] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Set
+- [ ] `CLERK_SECRET_KEY` - Set
+- [ ] `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL` - Set to `/onboarding`
+- [ ] `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL` - Set to `/onboarding`
+
+---
+
+## 8️⃣ Error Handling
+
+### Test Error Scenarios
+- [ ] Invalid URL in onboarding → Shows error
+- [ ] Network error → Shows appropriate message
+- [ ] API failure → Graceful fallback
+- [ ] Missing environment variables → Appropriate error
+
+---
+
+## 📊 Testing Results Summary
+
+### Landing Page
+- Status: ⬜ Not Tested / ✅ Pass / ❌ Fail
+- Notes: _________________________
+
+### Sign Up Flow
+- Status: ⬜ Not Tested / ✅ Pass / ❌ Fail
+- Notes: _________________________
+
+### Onboarding Flow
+- Status: ⬜ Not Tested / ✅ Pass / ❌ Fail
+- Notes: _________________________
+
+### Sign In Flow
+- Status: ⬜ Not Tested / ✅ Pass / ❌ Fail
+- Notes: _________________________
+
+### Clerk Configuration
+- Status: ⬜ Not Tested / ✅ Pass / ❌ Fail
+- Notes: _________________________
+
+---
+
+## 🐛 Issues Found
+
+### Issue 1
+- **Description:** _________________________
+- **Steps to Reproduce:** _________________________
+- **Expected:** _________________________
+- **Actual:** _________________________
+- **Severity:** 🔴 Critical / 🟡 Medium / 🟢 Low
+
+### Issue 2
+- **Description:** _________________________
+- **Steps to Reproduce:** _________________________
+- **Expected:** _________________________
+- **Actual:** _________________________
+- **Severity:** 🔴 Critical / 🟡 Medium / 🟢 Low
+
+---
+
+## ✅ Sign-Off
+
+- [ ] All critical tests passed
+- [ ] Clerk configuration verified
+- [ ] User flows working end-to-end
+- [ ] No blocking issues found
+
+**Tester:** _________________________  
+**Date:** _________________________  
+**Status:** ⬜ Ready for Production / ⬜ Needs Fixes
