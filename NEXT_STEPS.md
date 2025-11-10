@@ -1,222 +1,193 @@
-# 🚀 Next Steps After Deployment
+# 🚀 Next Steps - DealershipAI Setup
 
-**Deployment Status:** ✅ **COMPLETE**  
-**Production URL:** https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app  
-**Deployed:** $(date)
+**Current Status:** Clerk domain restriction complete ✅  
+**Server Status:** Running but returning 500 errors (needs fix)
 
 ---
 
-## ✅ Immediate Verification (5 minutes)
+## ✅ Completed
 
-### 1. Test Production Site
-Visit your production URL and verify:
-- [ ] Landing page loads correctly
-- [ ] No console errors (open DevTools: Cmd+Option+J)
-- [ ] Authentication buttons visible (Clerk)
-- [ ] Health endpoint working: `/api/health`
+1. ✅ **Clerk CSP Fix** - Added `https://*.clerk.accounts.dev` to CSP
+2. ✅ **Clerk Domain Restriction** - Only active on `dash.dealershipai.com`
+3. ✅ **ClerkProviderWrapper** - Domain-aware, skips Clerk on landing page
+4. ✅ **Middleware** - Only protects routes on dashboard subdomain
 
-**Quick Test:**
+---
+
+## 🔧 Immediate Fixes Needed
+
+### 1. Fix Server 500 Error
+
+**Issue:** Server returning 500 on initial load
+
+**Check server logs:**
 ```bash
-curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
+tail -f /tmp/nextjs-ultra-clean.log
 ```
 
-### 2. Check Environment Variables
-Your environment variables are already set in Vercel. Verify critical ones:
+**Common causes:**
+- Middleware import issue
+- Missing environment variables
+- TypeScript compilation error
 
+**Fix:**
 ```bash
-# View all env vars
-npx vercel env ls
-
-# Key variables to verify:
-# ✅ DATABASE_URL (Production)
-# ✅ SUPABASE_URL (Production)
-# ✅ SUPABASE_SERVICE_KEY (Production)
-# ✅ CLERK_SECRET_KEY (Production)
-# ✅ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Production)
-# ✅ UPSTASH_REDIS_REST_URL (Production)
-# ✅ UPSTASH_REDIS_REST_TOKEN (Production)
+# Clear cache and restart
+pkill -f "next dev"
+rm -rf .next
+npm run dev
 ```
 
-**Note:** Health check shows database as "disconnected" - this may need attention if you're using database features.
+### 2. Fix CSP for Vercel Analytics & Clerk Workers
 
----
+**Issues:**
+- `va.vercel-scripts.com` blocked by CSP
+- Clerk workers blocked (needs `worker-src` directive)
 
-## 🔍 Critical Path Testing (15 minutes)
-
-### Test User Flow
-
-1. **Landing Page** → `/`
-   - [ ] Page loads
-   - [ ] Sign up/Sign in buttons work
-   - [ ] No 404 errors for assets
-
-2. **Authentication** → `/sign-up` or `/sign-in`
-   - [ ] Clerk modal/form appears
-   - [ ] Can create account or sign in
-   - [ ] Redirects correctly after auth
-
-3. **Onboarding** → `/onboarding`
-   - [ ] Multi-step flow works
-   - [ ] Progress saves
-   - [ ] Completes successfully
-
-4. **Dashboard** → `/dashboard`
-   - [ ] Protected route works (requires auth)
-   - [ ] Metrics display correctly
-   - [ ] Navigation works
-
-5. **Fleet Dashboard** → `/fleet`
-   - [ ] Origins table loads
-   - [ ] Evidence cards display
-   - [ ] "Fix now" functionality works
-
----
-
-## 🔧 Configuration Checks
-
-### Clerk Configuration
-Verify in [Clerk Dashboard](https://dashboard.clerk.com):
-- [ ] Redirect URLs configured:
-  - Sign-in: `/sign-in`
-  - Sign-up: `/sign-up`
-  - After sign-in: `/onboarding`
-  - After sign-up: `/onboarding`
-- [ ] Production keys match Vercel env vars
-
-### Database Connection
-If database shows "disconnected" in health check:
-- [ ] Verify `DATABASE_URL` in Vercel is correct
-- [ ] Check Supabase connection settings
-- [ ] Run database migrations if needed:
-  ```bash
-  npx prisma migrate deploy
-  ```
-
-### Redis Connection
-- [ ] Verify `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set
-- [ ] Health check shows Redis as "connected" ✅
-
----
-
-## 📊 API Endpoint Testing
-
-Test critical API endpoints:
-
-```bash
-# Health check
-curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
-
-# Status check
-curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/status
-
-# Test other endpoints (may require auth)
-curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/metrics/qai
+**Update `next.config.js` CSP:**
+```javascript
+"script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com",
+"worker-src 'self' blob: https://*.clerk.accounts.dev",
 ```
 
 ---
 
-## 🎯 Performance & Monitoring
+## 📋 Testing Checklist
 
-### Vercel Dashboard
-- [ ] Check deployment logs for errors
-- [ ] Monitor function execution times
-- [ ] Review analytics (if configured)
+### Test 1: Landing Page (No Clerk)
+- [ ] Open `http://localhost:3000` (or `dealershipai.com` in production)
+- [ ] Verify page loads without Clerk errors
+- [ ] Check console: Should see `[ClerkProviderWrapper] Skipping ClerkProvider`
+- [ ] Verify no Clerk scripts loaded
+- [ ] Test "Get Your Free Report" button (should work)
 
-### Set Up Monitoring (Optional)
-- [ ] Configure error tracking (Sentry is already integrated)
-- [ ] Set up uptime monitoring
-- [ ] Configure alerts for critical errors
+### Test 2: Dashboard Domain (With Clerk)
+- [ ] Access via `dash.dealershipai.com` (or localhost in dev)
+- [ ] Verify ClerkProvider renders
+- [ ] Check console: Should see `[ClerkProviderWrapper] Rendering ClerkProvider`
+- [ ] Test sign-in flow
+- [ ] Verify protected routes require auth
 
----
-
-## 🚨 Troubleshooting
-
-### Issue: Database Disconnected
-**Fix:**
-1. Verify `DATABASE_URL` in Vercel matches your database
-2. Check database connection string format
-3. Ensure database allows connections from Vercel IPs
-4. Run migrations: `npx prisma migrate deploy`
-
-### Issue: Authentication Not Working
-**Fix:**
-1. Verify Clerk keys in Vercel match Clerk Dashboard
-2. Check redirect URLs in Clerk Dashboard
-3. Ensure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set
-4. Check browser console for errors
-
-### Issue: API Endpoints Returning Errors
-**Fix:**
-1. Check Vercel function logs
-2. Verify environment variables are set for Production
-3. Check API route authentication requirements
-4. Review error messages in browser console
+### Test 3: Authentication Flow
+- [ ] Click "Sign Up" or "Get Your Free Report"
+- [ ] Should redirect to Clerk sign-up
+- [ ] Complete sign-up
+- [ ] Should redirect to `/onboarding`
+- [ ] Complete onboarding
+- [ ] Should redirect to dashboard
 
 ---
 
-## 📝 Post-Deployment Tasks
+## ⚙️ Configuration Tasks
 
-### Immediate (Today)
-- [ ] Test complete user flow end-to-end
-- [ ] Verify all critical features work
-- [ ] Check for console errors
-- [ ] Test on mobile device
+### 1. Configure Clerk Redirects
 
-### Short-term (This Week)
-- [ ] Monitor error logs daily
-- [ ] Test with real users (if applicable)
-- [ ] Review performance metrics
-- [ ] Set up monitoring alerts
+**Go to:** https://dashboard.clerk.com/
 
-### Long-term (This Month)
-- [ ] Review analytics data
-- [ ] Optimize based on usage patterns
-- [ ] Plan feature enhancements
-- [ ] Document any issues found
+**Settings to configure:**
+1. **After Sign In:** `/onboarding` (or `/dashboard` if onboarding complete)
+2. **After Sign Up:** `/onboarding`
+3. **Allowed Origins:**
+   - `https://dash.dealershipai.com`
+   - `https://localhost:3000` (for dev)
+   - `https://*.vercel.app` (for previews)
 
----
-
-## 🎉 Success Criteria
-
-Your deployment is successful when:
-- ✅ Site loads without errors
-- ✅ Authentication works
-- ✅ Core features functional
-- ✅ No critical console errors
-- ✅ API endpoints responding
-- ✅ Performance acceptable (< 3s load time)
-
----
-
-## 📞 Resources
-
-- **Vercel Dashboard:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
-- **Deployment Logs:** `npx vercel logs production`
-- **Health Check:** https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
-- **Project Docs:** See `DEPLOYMENT_CONFIDENCE_CHECKLIST.md` and `POST-DEPLOYMENT-CHECKLIST.md`
-
----
-
-## ✅ Quick Command Reference
-
+**Or use script:**
 ```bash
-# View deployment logs
-npx vercel logs production
+./scripts/configure-clerk-redirects.sh
+```
 
-# Check environment variables
-npx vercel env ls
+### 2. Update CSP for Production
 
-# Redeploy if needed
+**Add to `next.config.js`:**
+- `worker-src` for Clerk workers
+- `https://va.vercel-scripts.com` for Vercel Analytics
+
+---
+
+## 🚀 Deployment Steps
+
+### 1. Pre-Deployment Checklist
+- [ ] Server returns 200 OK locally
+- [ ] No console errors
+- [ ] Authentication flow works
+- [ ] Landing page works without Clerk
+- [ ] Dashboard requires auth
+
+### 2. Deploy to Vercel
+```bash
+# Deploy
 npx vercel --prod
 
-# Test health endpoint
-curl https://dealership-ai-dashboard-q7vfh549z-brian-kramer-dealershipai.vercel.app/api/health
+# Or push to main branch (if auto-deploy enabled)
+git push origin main
+```
 
-# View project in Vercel
-npx vercel inspect
+### 3. Post-Deployment Verification
+- [ ] Test `https://dealershipai.com` (landing page, no Clerk)
+- [ ] Test `https://dash.dealershipai.com` (dashboard, with Clerk)
+- [ ] Verify Clerk redirects work
+- [ ] Test authentication flow end-to-end
+
+---
+
+## 🐛 Known Issues to Fix
+
+### 1. Server 500 Error
+**Status:** Investigating  
+**Action:** Check server logs, fix middleware/import issues
+
+### 2. CSP Blocking Vercel Analytics
+**Status:** Needs fix  
+**Action:** Add `https://va.vercel-scripts.com` to CSP
+
+### 3. CSP Blocking Clerk Workers
+**Status:** Needs fix  
+**Action:** Add `worker-src 'self' blob: https://*.clerk.accounts.dev`
+
+---
+
+## 📊 Current Status Summary
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| ClerkProviderWrapper | ✅ Working | Domain-aware, skips on landing page |
+| Middleware | ✅ Working | Only protects dashboard domain |
+| CSP Configuration | ⚠️ Partial | Needs worker-src and Vercel Analytics |
+| Server Status | ⚠️ 500 Error | Needs investigation |
+| Authentication Flow | ⏳ Pending | Needs testing after server fix |
+
+---
+
+## 🎯 Priority Order
+
+1. **Fix server 500 error** (blocking)
+2. **Fix CSP issues** (Vercel Analytics, Clerk workers)
+3. **Test authentication flow** (verify end-to-end)
+4. **Configure Clerk redirects** (production setup)
+5. **Deploy to production** (final step)
+
+---
+
+## 📝 Quick Commands
+
+```bash
+# Check server status
+curl -I http://localhost:3000
+
+# Check server logs
+tail -f /tmp/nextjs-ultra-clean.log
+
+# Restart server
+pkill -f "next dev" && rm -rf .next && npm run dev
+
+# Verify Clerk setup
+./scripts/verify-clerk-setup.sh
+
+# Configure Clerk redirects
+./scripts/configure-clerk-redirects.sh
 ```
 
 ---
 
-**Status:** ✅ Deployment Complete - Ready for Testing  
-**Next Action:** Test the production site and verify all features work correctly
+**Next immediate action: Fix server 500 error and CSP issues, then test the full flow!** 🚀

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { validateUrlClient } from '@/lib/utils/url-validation-client';
 import { getLastAIV } from '@/lib/client/aivStorage';
 import dynamic from 'next/dynamic';
+import { ClerkConditional } from "@/components/providers/ClerkConditional";
 
 // Lazy load visibility components
 const AIVStrip = dynamic(() => import('@/components/visibility/AIVStrip'), { ssr: false });
@@ -222,45 +223,75 @@ export default function Landing(){
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
-            <SignedIn>
-              <Link href="/dashboard" className="px-4 py-2 text-white/80 hover:text-white transition-colors">
-                Dashboard
-              </Link>
-              <UserButton afterSignOutUrl="/"/>
-            </SignedIn>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="px-4 py-2 text-white/80 hover:text-white transition-colors">Sign in</button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="px-4 py-2 rounded-full bg-white text-black font-medium hover:bg-gray-100 transition-colors">
+            <ClerkConditional>
+              <SignedIn>
+                <Link href="/dashboard" className="px-4 py-2 text-white/80 hover:text-white transition-colors">
+                  Dashboard
+                </Link>
+                <UserButton afterSignOutUrl="/"/>
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="px-4 py-2 text-white/80 hover:text-white transition-colors">Sign in</button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="px-4 py-2 rounded-full bg-white text-black font-medium hover:bg-gray-100 transition-colors">
+                    Get Your Free Report
+                  </button>
+                </SignUpButton>
+              </SignedOut>
+            </ClerkConditional>
+            {/* Fallback for non-dashboard domains */}
+            {typeof window !== 'undefined' && window.location.hostname !== 'dash.dealershipai.com' && 
+             !window.location.hostname.includes('localhost') && 
+             !window.location.hostname.includes('vercel.app') && (
+              <>
+                <Link href="https://dash.dealershipai.com/sign-in" className="px-4 py-2 text-white/80 hover:text-white transition-colors">
+                  Sign in
+                </Link>
+                <Link href="https://dash.dealershipai.com/sign-up" className="px-4 py-2 rounded-full bg-white text-black font-medium hover:bg-gray-100 transition-colors">
                   Get Your Free Report
-                </button>
-              </SignUpButton>
-            </SignedOut>
+                </Link>
+              </>
+            )}
           </div>
         </header>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="mobile-menu md:hidden fixed inset-0 z-40 bg-black pt-20 px-6">
-            <SignedIn>
-              <Link href="/dashboard" className="block py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
-                Dashboard
-              </Link>
-            </SignedIn>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="block w-full text-left py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
+            <ClerkConditional>
+              <SignedIn>
+                <Link href="/dashboard" className="block py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="block w-full text-left py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
+                    Sign in
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="block w-full text-left py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
+                    Get Your Free Report
+                  </button>
+                </SignUpButton>
+              </SignedOut>
+            </ClerkConditional>
+            {/* Fallback for non-dashboard domains */}
+            {typeof window !== 'undefined' && window.location.hostname !== 'dash.dealershipai.com' && 
+             !window.location.hostname.includes('localhost') && 
+             !window.location.hostname.includes('vercel.app') && (
+              <>
+                <Link href="https://dash.dealershipai.com/sign-in" className="block py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
                   Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="block w-full text-left py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
+                </Link>
+                <Link href="https://dash.dealershipai.com/sign-up" className="block py-3 border-b border-white/10" onClick={() => setMobileMenuOpen(false)}>
                   Get Your Free Report
-                </button>
-              </SignUpButton>
-            </SignedOut>
+                </Link>
+              </>
+            )}
           </div>
         )}
 
@@ -302,18 +333,28 @@ export default function Landing(){
                 <AIVCompositeChip domain={preview.domain} weights={weights} />
               </div>
               <div className="mt-4">
-                <SignedOut>
-                  <SignUpButton mode="modal">
-                    <button className="px-6 py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-100 transition-colors">
-                      Get Your Free Report
-                    </button>
-                  </SignUpButton>
-                </SignedOut>
-                <SignedIn>
-                  <Link href="/dashboard" className="inline-block px-6 py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-100 transition-colors">
-                    View Full Report
+                <ClerkConditional>
+                  <SignedOut>
+                    <SignUpButton mode="modal">
+                      <button className="px-6 py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-100 transition-colors">
+                        Get Your Free Report
+                      </button>
+                    </SignUpButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <Link href="/dashboard" className="inline-block px-6 py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-100 transition-colors">
+                      View Full Report
+                    </Link>
+                  </SignedIn>
+                </ClerkConditional>
+                {/* Fallback for non-dashboard domains */}
+                {typeof window !== 'undefined' && window.location.hostname !== 'dash.dealershipai.com' && 
+                 !window.location.hostname.includes('localhost') && 
+                 !window.location.hostname.includes('vercel.app') && (
+                  <Link href="https://dash.dealershipai.com/sign-up" className="inline-block px-6 py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-100 transition-colors">
+                    Get Your Free Report
                   </Link>
-                </SignedIn>
+                )}
               </div>
             </div>
           )}
