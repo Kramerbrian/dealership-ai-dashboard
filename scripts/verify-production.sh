@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Production URL (update to latest deployment)
-PROD_URL="https://dealership-ai-dashboard-bvt4d357i-brian-kramer-dealershipai.vercel.app"
+PROD_URL="https://dealership-ai-dashboard-qt0qfei8t-brian-kramer-dealershipai.vercel.app"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}  DealershipAI Production Verification${NC}"
