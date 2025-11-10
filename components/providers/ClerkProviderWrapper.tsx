@@ -4,20 +4,42 @@ import { ClerkProvider as Clerk } from '@clerk/nextjs';
 
 export function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
   // Get publishable key - Next.js makes NEXT_PUBLIC_ vars available on client
-  // In Next.js, NEXT_PUBLIC_ vars are available at build time and runtime
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  // Skip Clerk if no key (for public landing page without auth)
-  if (!publishableKey || publishableKey.trim() === '') {
+  // Get domain to check if we're on the dashboard subdomain
+  const domain = typeof window !== 'undefined' ? window.location.hostname : '';
+  
+  // Clerk should ONLY be enabled on dash.dealershipai.com (or localhost for dev)
+  const isDashboardDomain = 
+    domain === 'dash.dealershipai.com' || 
+    domain === 'localhost' || 
+    domain.startsWith('localhost:') ||
+    domain.includes('vercel.app'); // Allow Vercel preview URLs for testing
+
+  // Debug logging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[ClerkProviderWrapper] Domain:', domain);
+    console.log('[ClerkProviderWrapper] Is dashboard domain:', isDashboardDomain);
+    console.log('[ClerkProviderWrapper] publishableKey exists:', !!publishableKey);
+  }
+
+  // Skip Clerk if:
+  // 1. No publishable key
+  // 2. Not on dashboard domain (e.g., on main dealershipai.com landing page)
+  if (!publishableKey || publishableKey.trim() === '' || !isDashboardDomain) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[ClerkProviderWrapper] No publishable key found, skipping ClerkProvider');
+      console.log('[ClerkProviderWrapper] Skipping ClerkProvider - not on dashboard domain or no key');
     }
     return <>{children}</>;
   }
 
-  // Get domain for SSO configuration
-  const domain = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isCustomDomain = domain === 'dealershipai.com' || domain.includes('dealershipai.com');
+  // Log that we're rendering ClerkProvider
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[ClerkProviderWrapper] Rendering ClerkProvider with key on dashboard domain');
+  }
+
+  // Use custom domain for SSO if on production dashboard domain
+  const isCustomDomain = domain === 'dash.dealershipai.com';
 
   return (
     <Clerk

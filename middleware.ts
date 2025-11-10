@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 // Check if Clerk is configured
 const isClerkConfigured = !!(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
   process.env.CLERK_SECRET_KEY
 );
+
+// Check if we're on the dashboard subdomain (where Clerk should be active)
+function isDashboardDomain(hostname: string | null): boolean {
+  if (!hostname) return false;
+  
+  // Clerk should ONLY be active on dash.dealershipai.com
+  // Allow localhost for development and vercel.app for previews
+  return (
+    hostname === 'dash.dealershipai.com' ||
+    hostname === 'localhost' ||
+    hostname.startsWith('localhost:') ||
+    hostname.includes('vercel.app') // Allow Vercel preview URLs for testing
+  );
+}
 
 // Public routes that don't require authentication
 const publicRoutes = [
@@ -19,6 +34,22 @@ const publicRoutes = [
   '/sign-in',
   '/sign-up',
 ];
+
+// Protected routes that require authentication (only on dashboard domain)
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/dash(.*)',
+  '/intelligence(.*)',
+  '/onboarding(.*)',
+  '/api/ai(.*)',
+  '/api/parity(.*)',
+  '/api/intel(.*)',
+  '/api/compliance(.*)',
+  '/api/audit(.*)',
+  '/api/user(.*)',
+  '/api/pulse(.*)',
+  '/api/save-metrics',
+]);
 
 function isPublicRoute(pathname: string): boolean {
   return (
@@ -38,9 +69,10 @@ function isIgnoredRoute(pathname: string): boolean {
   );
 }
 
-// Simple passthrough middleware when Clerk is not configured
-export default function middleware(req: NextRequest) {
+// Middleware: Only apply Clerk on dashboard subdomain
+export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
+  const hostname = req.headers.get('host') || '';
 
   // Ignore static assets
   if (isIgnoredRoute(pathname)) {
@@ -52,16 +84,25 @@ export default function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // For Clerk-configured environments, we'll use a dynamic import
-  // This will be handled by the actual clerkMiddleware in production
-  // For now, allow public routes
+  // If NOT on dashboard domain (e.g., on main dealershipai.com landing page)
+  // Skip Clerk authentication entirely - allow all routes
+  if (!isDashboardDomain(hostname)) {
+    return NextResponse.next();
+  }
+
+  // We're on dashboard domain - apply Clerk authentication
+  // Public routes are accessible without authentication
   if (isPublicRoute(pathname)) {
     return NextResponse.next();
   }
 
-  // Protected routes will need Clerk - for now, allow in demo mode
+  // Protected routes require authentication
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
