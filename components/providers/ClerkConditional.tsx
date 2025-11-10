@@ -1,22 +1,30 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 
 /**
  * Conditional wrapper for Clerk components
  * Only renders children if we're on a domain where Clerk is active
  */
 export function ClerkConditional({ children }: { children: ReactNode }) {
-  // Check if we're on dashboard domain (where Clerk is active)
-  const isDashboardDomain = typeof window !== 'undefined' && (
-    window.location.hostname === 'dash.dealershipai.com' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname.startsWith('localhost:') ||
-    window.location.hostname.includes('vercel.app')
-  );
+  const [isDashboardDomain, setIsDashboardDomain] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Only render Clerk components on dashboard domain
-  if (!isDashboardDomain) {
+  useEffect(() => {
+    setMounted(true);
+    // Check if we're on dashboard domain (where Clerk is active)
+    const hostname = window.location.hostname;
+    const isDashboard = 
+      hostname === 'dash.dealershipai.com' ||
+      hostname === 'localhost' ||
+      hostname.startsWith('localhost:') ||
+      hostname.includes('vercel.app');
+    
+    setIsDashboardDomain(isDashboard);
+  }, []);
+
+  // Don't render during SSR or if not dashboard domain
+  if (!mounted || !isDashboardDomain) {
     return null;
   }
 
