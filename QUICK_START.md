@@ -1,63 +1,56 @@
-# 🚀 Quick Start - DealershipAI
+# ⚡ Claude Export - Quick Start
 
-## ✅ Everything is Integrated!
+## 🎯 3 Ways to Use (Pick One)
 
-All features are complete and ready. Here's what to do next:
+### Option 1: Use with Claude ⭐ (30 seconds)
 
-## 🎯 3-Step Setup (5 minutes)
+Copy & paste into Claude:
 
-### Step 1: Set Clerk User Roles
-In Clerk Dashboard → Users → Select User → Metadata:
-```json
-{
-  "role": "admin",
-  "tenant": "demo-dealer-001"
-}
+```
+Load project from https://dealership-ai-dashboard-pfkuf9x7p-brian-kramer-dealershipai.vercel.app/claude/dealershipai_claude_export.zip
+
+Manifest: /exports/manifest.json
+
+Build cinematic Next.js 14 interface with Clerk + Framer Motion.
+Use the cognitive interface patterns in components/cognitive/*.
+Maintain brand hue continuity using the useBrandHue hook.
 ```
 
-Or use API:
-```typescript
-await clerkClient.users.updateUserMetadata(userId, {
-  publicMetadata: { role: 'admin', tenant: 'demo-dealer-001' }
-})
-```
+Then ask Claude to help you build!
 
-### Step 2: Test Locally
+---
+
+### Option 2: Set Up Auto-Export (5 minutes)
+
+Your Vercel IDs:
+- ORG_ID: `team_bL2iJEcPCFg7kKTo6T2Ajwi4`
+- PROJECT_ID: `prj_OenY0LJkWxuHWo5aJk0RaaFndjg5`
+
+Steps:
+1. Get token: https://vercel.com/account/tokens
+2. Add 3 secrets: https://github.com/Kramerbrian/dealership-ai-dashboard/settings/secrets/actions
+   - VERCEL_TOKEN = [your token]
+   - VERCEL_ORG_ID = team_bL2iJEcPCFg7kKTo6T2Ajwi4
+   - VERCEL_PROJECT_ID = prj_OenY0LJkWxuHWo5aJk0RaaFndjg5
+3. Test: `git tag v3.0.1-test && git push origin v3.0.1-test`
+
+---
+
+### Option 3: Manual Export (3 minutes)
+
 ```bash
-npm run dev
-# Visit http://localhost:3000
+./scripts/export-for-claude.sh
+npx vercel --prod --yes
 ```
 
-### Step 3: Deploy
-```bash
-vercel --prod
-```
+---
 
-## 🎬 Complete Flow
+## 📚 Full Docs
 
-1. **Landing** (`/`) → Click "Get Your Free Report" → Clerk sign-up
-2. **Onboarding** (`/onboarding`) → Complete steps → Save to Clerk
-3. **Dashboard** (`/dashboard`) → Access main dashboard
-4. **Fleet** (`/fleet`) → View origins → Click "Fix now"
-5. **Fix Drawer** → Dry-run → Apply → Auto-verify
-6. **Bulk Upload** (`/bulk`) → Upload CSV → Edit invalid rows → Commit
+- CLAUDE_EXPORT_COMPLETE.md - Complete guide ⭐
+- GITHUB_ACTIONS_SETUP.md - Automation details
+- AUTOMATION_COMPLETE.md - Features overview
 
-## ✅ All Features Working
+---
 
-- ✅ Clerk SSO authentication
-- ✅ Onboarding flow with metadata
-- ✅ RBAC (admin/ops/viewer roles)
-- ✅ Fleet dashboard with evidence cards
-- ✅ Fix drawer with dry-run & rollback
-- ✅ Bulk CSV upload with idempotency
-- ✅ QAI modal & E-E-A-T drawer
-- ✅ Redis caching
-- ✅ Site-inject versions & rollback
-
-## 🐛 Build Issues Fixed
-
-- ✅ Route conflicts resolved
-- ✅ Duplicate components removed
-- ✅ All imports updated
-
-**Status**: ✅ **READY FOR PRODUCTION**
+🎊 Pick an option and start! Recommended: Try Claude prompt now! 🚀
