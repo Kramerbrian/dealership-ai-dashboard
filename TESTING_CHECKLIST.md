@@ -1,104 +1,176 @@
 # 🧪 Testing Checklist - DealershipAI
 
-## ✅ Complete Flow Test
+**Date:** 2025-11-09  
+**Status:** Ready for Testing ✅
 
-### 1. Authentication Flow
-- [ ] Visit landing page (`/`)
-- [ ] Click "Get Your Free Report"
-- [ ] Sign up with Clerk (email/password or OAuth)
-- [ ] Verify redirect to `/onboarding`
-- [ ] Complete onboarding steps
-- [ ] Verify redirect to `/dashboard`
+---
 
-### 2. Dashboard Access
-- [ ] Dashboard loads without errors
-- [ ] QAI card is visible and clickable
-- [ ] Click QAI card → Modal opens
-- [ ] Click "Open E-E-A-T" → Drawer opens
-- [ ] Verify all metrics display correctly
+## ✅ Pre-Testing Setup
 
-### 3. Fleet Dashboard
-- [ ] Navigate to `/fleet`
-- [ ] Verify origins table displays
-- [ ] Check evidence cards show data
-- [ ] Verify toggle works
-- [ ] Click "Fix now" on an origin
+- [x] Server running (200 OK)
+- [x] Clerk keys configured
+- [x] Domain restriction working
+- [x] Landing page works without Clerk
+- [x] Dashboard works with Clerk
 
-### 4. Fix Action Drawer
-- [ ] Drawer opens when clicking "Fix now"
-- [ ] Baseline JSON-LD loads from versions API
-- [ ] Dry-run checkbox is checked by default
-- [ ] Edit JSON-LD snippet
-- [ ] Click "Check diff" → Verify diff preview shows
-- [ ] Uncheck dry-run
-- [ ] Check "Auto-verify after apply"
-- [ ] Click "Apply fix" → Verify success
-- [ ] Check rollback panel shows versions
-- [ ] Click "Rollback" on a version → Verify success
+---
 
-### 5. Bulk CSV Upload
-- [ ] Navigate to `/bulk` or `/fleet/uploads`
-- [ ] Upload a CSV file with origins
-- [ ] Verify preview shows parsed rows
-- [ ] Check invalid rows are highlighted
-- [ ] Edit invalid rows in editor
-- [ ] Click "Commit fixed rows"
-- [ ] Verify success message
+## 🧪 Test 1: Landing Page (No Clerk)
 
-### 6. RBAC Testing
-- [ ] Test as `admin` role → All features accessible
-- [ ] Test as `ops` role → Fix features accessible
-- [ ] Test as `viewer` role → Read-only access
-- [ ] Verify forbidden errors for unauthorized actions
+### Test Steps:
+1. Open `http://localhost:3000` (or `https://dealershipai.com` in production)
+2. Verify page loads without errors
+3. Check browser console for Clerk errors
+4. Verify "Get Your Free Report" button appears
 
-## 🐛 Common Issues to Check
+### Expected Results:
+- ✅ Page loads (200 OK)
+- ✅ No Clerk errors in console
+- ✅ "Get Your Free Report" button visible
+- ✅ Clicking button redirects to `dash.dealershipai.com/sign-up`
 
-### Clerk Authentication
-- [ ] User metadata has `role` and `tenant` set
-- [ ] Redirects work correctly
-- [ ] Session persists after page refresh
+### Actual Results:
+- [ ] Page loads: Yes/No
+- [ ] Console errors: None/List errors
+- [ ] Button visible: Yes/No
+- [ ] Redirect works: Yes/No
 
-### API Routes
-- [ ] All routes return data (or demo data)
-- [ ] RBAC blocks unauthorized access
-- [ ] Error handling works gracefully
+---
 
-### Components
-- [ ] Modals/drawers open and close
-- [ ] Loading states display
-- [ ] Error states display
-- [ ] Forms submit correctly
+## 🧪 Test 2: Sign-Up Flow
 
-## 📝 Quick Test Commands
+### Test Steps:
+1. Click "Get Your Free Report" on landing page
+2. Should redirect to `dash.dealershipai.com/sign-up` (or `/sign-up` on localhost)
+3. Complete Clerk sign-up form
+4. Verify redirect to `/onboarding`
 
-```bash
-# Start dev server
-npm run dev
+### Expected Results:
+- ✅ Redirects to sign-up page
+- ✅ Clerk sign-up modal/form appears
+- ✅ Can complete sign-up
+- ✅ Redirects to `/onboarding` after sign-up
 
-# Run E2E tests
-pnpm dlx playwright install
-pnpm test:e2e
+### Actual Results:
+- [ ] Redirect works: Yes/No
+- [ ] Sign-up form appears: Yes/No
+- [ ] Can complete sign-up: Yes/No
+- [ ] Redirects to onboarding: Yes/No
 
-# Check environment variables
-npx tsx scripts/verify-setup.ts
+---
 
-# Set user role (if needed)
-npx tsx scripts/set-clerk-user-role.ts <userId> admin demo-dealer-001
-```
+## 🧪 Test 3: Onboarding Flow
 
-## ✅ Success Criteria
+### Test Steps:
+1. Land on `/onboarding` page
+2. Fill in dealership information
+3. Enter PVR (Parts, Vehicle, Repair) values
+4. Enter Ad Expense PVR values
+5. Submit onboarding form
+6. Verify redirect to dashboard
 
-- [ ] All pages load without errors
-- [ ] Authentication flow works end-to-end
-- [ ] Fix drawer with dry-run works
-- [ ] Bulk upload with editing works
-- [ ] RBAC enforces correct permissions
-- [ ] All API routes respond correctly
+### Expected Results:
+- ✅ Onboarding page loads
+- ✅ Can enter all required fields
+- ✅ Form validation works
+- ✅ Submits successfully
+- ✅ Redirects to `/dashboard` or `/preview`
 
-## 🚀 Ready for Production When
+### Actual Results:
+- [ ] Page loads: Yes/No
+- [ ] Can fill form: Yes/No
+- [ ] Validation works: Yes/No
+- [ ] Submit works: Yes/No
+- [ ] Redirects to dashboard: Yes/No
 
-- ✅ All tests pass
-- ✅ No console errors
-- ✅ RBAC working correctly
-- ✅ Clerk user roles set
-- ✅ Environment variables configured
+---
+
+## 🧪 Test 4: Dashboard Access
+
+### Test Steps:
+1. After onboarding, verify dashboard loads
+2. Check if cinematic sequence plays
+3. Verify dashboard data loads
+4. Test navigation
+
+### Expected Results:
+- ✅ Dashboard loads
+- ✅ Cinematic sequence plays (or can skip)
+- ✅ Data displays correctly
+- ✅ Navigation works
+
+### Actual Results:
+- [ ] Dashboard loads: Yes/No
+- [ ] Cinematic sequence: Plays/Skipped/Error
+- [ ] Data loads: Yes/No
+- [ ] Navigation works: Yes/No
+
+---
+
+## 🧪 Test 5: Sign-In Flow
+
+### Test Steps:
+1. Sign out from dashboard
+2. Click "Sign in" on landing page
+3. Complete sign-in
+4. Verify redirect to dashboard (skip onboarding if already completed)
+
+### Expected Results:
+- ✅ Sign-out works
+- ✅ Sign-in form appears
+- ✅ Can complete sign-in
+- ✅ Redirects correctly (onboarding if new, dashboard if returning)
+
+### Actual Results:
+- [ ] Sign-out works: Yes/No
+- [ ] Sign-in form appears: Yes/No
+- [ ] Can complete sign-in: Yes/No
+- [ ] Redirects correctly: Yes/No
+
+---
+
+## 🧪 Test 6: Domain Separation
+
+### Test Steps:
+1. Access `dealershipai.com` (or localhost)
+2. Verify no Clerk components render
+3. Access `dash.dealershipai.com` (or localhost)
+4. Verify Clerk components render
+
+### Expected Results:
+- ✅ Landing page: No Clerk, fallback links
+- ✅ Dashboard: Clerk components work
+
+### Actual Results:
+- [ ] Landing page: No Clerk/Yes Clerk
+- [ ] Dashboard: Clerk works/Doesn't work
+
+---
+
+## 🐛 Issues Found
+
+### Issue 1:
+- **Description:**
+- **Steps to reproduce:**
+- **Expected:**
+- **Actual:**
+- **Priority:** High/Medium/Low
+
+### Issue 2:
+- **Description:**
+- **Steps to reproduce:**
+- **Expected:**
+- **Actual:**
+- **Priority:** High/Medium/Low
+
+---
+
+## ✅ Testing Complete
+
+- [ ] All tests passed
+- [ ] Issues documented
+- [ ] Ready for production deployment
+
+---
+
+**Next:** Configure Clerk redirects → Deploy to production
