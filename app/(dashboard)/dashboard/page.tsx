@@ -96,23 +96,44 @@ function DashboardContent() {
         />
       </div>
 
-      {/* Core Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">AI Visibility Score</h2>
-          <div className="text-3xl font-bold text-emerald-400">87.3%</div>
-          <p className="text-gray-400 mt-2 text-sm">Your current AI visibility score</p>
+      {/* Clay UX: Primary Metric + Two Secondary */}
+      <div className="mb-8">
+        {/* Primary Metric - Hero */}
+        <div className="mb-6">
+          <div className="rounded-2xl border border-gray-700 bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl p-8 text-center">
+            <div className="text-sm font-medium text-gray-400 mb-2">AI Visibility Index</div>
+            <div className="text-6xl font-black text-emerald-400 mb-2 tabular-nums">87.3</div>
+            <div className="flex items-center justify-center gap-2 text-sm font-semibold text-green-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+              <span>+2.3% this month</span>
+            </div>
+            <p className="text-gray-400 mt-3 text-sm">Your dealership's AI search visibility score</p>
+          </div>
         </div>
-        
-        <div 
-          className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-6 cursor-pointer hover:bg-gray-900/70 transition-colors"
-          onClick={() => setShowQai(true)}
-        >
-          <h2 className="text-lg font-semibold text-white mb-4">Quality Authority Index</h2>
-          <div className="text-3xl font-bold text-blue-400">87</div>
-          <p className="text-gray-400 mt-2 text-sm">Click to view QAI breakdown</p>
+
+        {/* Secondary Metrics - Two Max (Clay Principle) */}
+        <div className="grid grid-cols-2 gap-4">
+          <div 
+            className="rounded-xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-5 cursor-pointer hover:bg-gray-900/70 transition-colors"
+            onClick={() => setShowQai(true)}
+          >
+            <div className="text-xs font-medium text-gray-400 mb-1">ChatGPT</div>
+            <div className="text-3xl font-bold text-blue-400 tabular-nums">94</div>
+            <div className="text-xs text-gray-500 mt-1">Click for details</div>
+          </div>
+          
+          <div className="rounded-xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl p-5">
+            <div className="text-xs font-medium text-gray-400 mb-1">Perplexity</div>
+            <div className="text-3xl font-bold text-purple-400 tabular-nums">82</div>
+            <div className="text-xs text-gray-500 mt-1">Good visibility</div>
+          </div>
         </div>
-        
+      </div>
+
+      {/* Additional Metrics - Collapsible (Progressive Disclosure) */}
+      <div className="mb-8">
         <OelCard domain={domain} onOpen={() => setShowOel(true)} />
       </div>
 

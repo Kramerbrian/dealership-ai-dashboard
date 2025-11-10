@@ -1,25 +1,25 @@
-import {Redis} from '@upstash/redis';
+import { Redis } from '@upstash/redis';
 
-const url=process.env.UPSTASH_REDIS_REST_URL;
-const token=process.env.UPSTASH_REDIS_REST_TOKEN;
+const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
 
 // Only initialize Redis if we have valid URL and token (not placeholders)
 let redis: Redis | null = null;
 try {
   if (url && token && url.startsWith('https://') && !url.includes('...') && token !== '...') {
-    redis = new Redis({url, token});
+    redis = new Redis({ url, token });
   }
 } catch (e) {
   // Redis initialization failed, continue without cache
   console.warn('[Cache] Redis not available:', e);
 }
 
-export async function cacheJSON<T>(key:string,ttlSec:number,fetcher:()=>Promise<T>):Promise<T>{
-  if(!redis)return fetcher();
-  const hit=await redis.get<T>(key);
-  if(hit)return hit;
-  const fresh=await fetcher();
-  await redis.set(key,fresh,{ex:ttlSec});
+export async function cacheJSON<T>(key: string, ttlSec: number, fetcher: () => Promise<T>): Promise<T> {
+  if (!redis) return fetcher();
+  const hit = await redis.get<T>(key);
+  if (hit) return hit;
+  const fresh = await fetcher();
+  await redis.set(key, fresh, { ex: ttlSec });
   return fresh;
 }
 

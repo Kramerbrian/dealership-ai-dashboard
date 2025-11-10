@@ -1,79 +1,77 @@
-# 🚀 Deploy Now - All Systems Ready!
+# 🚀 Deploy Now - Quick Guide
 
-## ✅ Pre-Flight Check Complete
+## Step 1: Add Environment Variables
 
-Your `.env.local` has:
-- ✅ Clerk keys ready
-- ✅ Upstash Redis configured
-- ✅ All scripts ready
-
-## 🎯 One-Command Deploy
+**These commands are interactive** - they will prompt you to paste values:
 
 ```bash
-./scripts/deploy-with-confidence.sh
+# 1. Add base URL (use your Vercel deployment URL)
+npx vercel env add NEXT_PUBLIC_BASE_URL production
+# When prompted, paste: https://dealership-ai-dashboard.vercel.app
+# (or your actual domain)
+
+# 2. Add admin emails
+npx vercel env add ADMIN_EMAILS production
+# When prompted, paste: admin@dealershipai.com,brian@dealershipai.com
+
+# 3. Add public admin emails
+npx vercel env add NEXT_PUBLIC_ADMIN_EMAILS production
+# When prompted, paste: admin@dealershipai.com,brian@dealershipai.com
 ```
 
-This will:
-1. ✅ Verify .env.local exists
-2. ✅ Check Clerk keys
-3. ✅ Sync env vars to Vercel
-4. ✅ Run build check
-5. ✅ Deploy to production
+**Alternative: Add via Vercel Dashboard**
+1. Go to: https://vercel.com/dashboard
+2. Select: `dealership-ai-dashboard`
+3. Navigate: **Settings** → **Environment Variables**
+4. Click **Add New**
+5. Add each variable with values above
+6. Select **Production** environment
 
-## 📋 Manual Deploy (If Preferred)
+---
 
-### Step 1: Sync Environment Variables
+## Step 2: Deploy
+
+**Option A: Automated Script**
 ```bash
-./scripts/sync-env-to-vercel.sh
+./scripts/deploy-production.sh
 ```
 
-This syncs from `.env.local`:
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
-- `FLEET_API_BASE` (if set)
-- `X_API_KEY` (if set)
-
-### Step 2: Deploy
+**Option B: Direct Vercel CLI**
 ```bash
-vercel --prod
+npx vercel --prod
 ```
 
-### Step 3: Set Clerk User Roles
-
-**Quick Method - Clerk Dashboard:**
-1. Go to https://dashboard.clerk.com
-2. Users → [Select User] → Metadata
-3. Add:
-```json
-{
-  "role": "admin",
-  "tenant": "demo-dealer-001"
-}
-```
-
-**Or Use CLI:**
+**Option C: Git Push (if connected to GitHub)**
 ```bash
-# With Clerk CLI
-clerk users update <userId> --metadata '{"role":"admin","tenant":"demo-dealer-001"}'
-
-# Or use our script
-./scripts/set-clerk-role-cli.sh <userId> admin demo-dealer-001
+git add .
+git commit -m "chore: production deployment"
+git push origin main
 ```
 
-## ✅ Post-Deployment Verification
+---
 
-After deployment, test these URLs:
-1. **Landing**: `https://your-app.vercel.app/`
-2. **Sign Up**: `https://your-app.vercel.app/sign-up`
-3. **Onboarding**: `https://your-app.vercel.app/onboarding`
-4. **Dashboard**: `https://your-app.vercel.app/dashboard`
-5. **Fleet**: `https://your-app.vercel.app/fleet`
-6. **Bulk**: `https://your-app.vercel.app/bulk`
+## Step 3: Verify
 
-## 🎉 Ready to Deploy!
+After deployment completes, get your URL and verify:
 
-**Status**: ✅ **ALL SYSTEMS GO**
+```bash
+# Get deployment URL
+npx vercel ls --prod | grep -o 'https://[^ ]*' | head -1
 
-Run `./scripts/deploy-with-confidence.sh` or `vercel --prod` now!
+# Run verification
+./scripts/verify-production.sh https://your-deployment-url.vercel.app
+```
+
+---
+
+## Quick Test URLs
+
+After deployment, test these:
+- Landing: `https://your-url.vercel.app`
+- Drive: `https://your-url.vercel.app/drive`
+- Onboarding: `https://your-url.vercel.app/onboarding`
+- Health: `https://your-url.vercel.app/api/health`
+
+---
+
+**Ready? Run the commands above!** 🚀

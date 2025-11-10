@@ -73,8 +73,8 @@ async function checkUpstashRateLimit(
   key: string,
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
-  const url = process.env.UPSTASH_REDIS_REST_URL!;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN!;
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim()!;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim()!;
 
   try {
     // Use Redis pipeline to increment and get TTL atomically

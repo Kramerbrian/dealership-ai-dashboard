@@ -28,12 +28,21 @@ export async function GET(req: NextRequest) {
   if (!supabaseUrl || !supabaseKey) {
     return NextResponse.json({ 
       ok: false, 
-      error: 'Supabase env missing. Set SUPABASE_URL and SUPABASE_SERVICE_KEY in Vercel environment variables' 
+      error: 'Supabase env missing. Set SUPABASE_URL and SUPABASE_SERVICE_KEY in Vercel environment variables',
+      note: 'This endpoint requires Supabase configuration'
     }, { status: 500 });
   }
 
   try {
-    const sbAdmin = getSbAdmin();
+    let sbAdmin;
+    try {
+      sbAdmin = getSbAdmin();
+    } catch (e) {
+      // Fallback: create client directly if getSbAdmin doesn't exist
+      const { createClient } = await import('@supabase/supabase-js');
+      sbAdmin = createClient(supabaseUrl, supabaseKey);
+    }
+    
     if (!sbAdmin) {
       return NextResponse.json({ 
         ok: false, 

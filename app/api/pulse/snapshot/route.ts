@@ -1,39 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { traced } from '@/lib/api-wrap';
+import { withAuth } from '@/app/api/_utils/withAuth';
 import { visibilityToPulses } from '@/lib/adapters/visibility';
+import { schemaToPulses } from '@/lib/adapters/schema';
+import { reviewsToPulses } from '@/lib/adapters/reviews';
+import { ga4ToPulses } from '@/lib/adapters/ga4';
+import { getIntegration } from '@/lib/integrations/store';
 
-export const GET = traced(async (req: NextRequest) => {
-  try {
-    const url = new URL(req.url);
-    const domain = url.searchParams.get('domain') || undefined;
+export const GET = withAuth(
+  traced(async ({ req, tenantId }) => {
+    try {
+      const url = new URL(req.url);
+      const domain = url.searchParams.get('domain') || undefined;
 
-    // Get visibility pulses
-    const visibilityPulses = await visibilityToPulses(domain);
+      // Get integration data for reviews (placeId)
+      const reviewsIntegration = await getIntegration(tenantId, 'reviews');
+      const placeId = reviewsIntegration?.metadata?.place_id;
 
-    // Combine with other pulse sources (schema, reviews, etc.)
-    const allPulses = [
-      ...visibilityPulses,
-      // Add other pulse sources here
-    ];
+      // Aggregate pulses from all adapters in parallel
+      const [visibilityPulses, schemaPulses, reviewsPulses, ga4Pulses] =
+        await Promise.all([
+          visibilityToPulses(domain),
+          schemaToPulses(domain),
+          reviewsToPulses({ placeId, domain }),
+          ga4ToPulses(domain),
+        ]);
 
-    // Sort by impact (highest first)
-    allPulses.sort((a, b) => b.impactMonthlyUSD - a.impactMonthlyUSD);
+      // Combine all pulses
+      const allPulses = [
+        ...visibilityPulses,
+        ...schemaPulses,
+        ...reviewsPulses,
+        ...ga4Pulses,
+      ];
 
-    return NextResponse.json({
-      ok: true,
-      snapshot: {
-        timestamp: new Date().toISOString(),
-        domain: domain || 'all',
-        pulses: allPulses,
-        total: allPulses.length,
-        totalImpact: allPulses.reduce((sum, p) => sum + p.impactMonthlyUSD, 0),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch pulse snapshot' },
-      { status: 500 }
-    );
-  }
-}, 'pulse.snapshot');
+      // Sort by impact score (impact / effort * confidence)
+      allPulses.sort(
+        (a, b) =>
+          (b.impactMonthlyUSD / b.etaSeconds) * b.confidenceScore -
+          (a.impactMonthlyUSD / a.etaSeconds) * a.confidenceScore
+      );
+
+      return NextResponse.json({
+        ok: true,
+        snapshot: {
+          timestamp: new Date().toISOString(),
+          domain: domain || 'all',
+          tenantId,
+          pulses: allPulses,
+          total: allPulses.length,
+          totalImpact: allPulses.reduce(
+            (sum, p) => sum + p.impactMonthlyUSD,
+            0
+          ),
+        },
+      });
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: error.message || 'Failed to fetch pulse snapshot' },
+        { status: 500 }
+      );
+    }
+  }, 'pulse.snapshot')
+);
 

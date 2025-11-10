@@ -1,409 +1,234 @@
-'use client';
+"use client";
 
-import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { validateUrlClient } from '@/lib/utils/url-validation-client';
-import { 
-  CheckCircle2, 
-  Globe, 
-  MapPin, 
-  BarChart3, 
-  Loader2,
-  ArrowRight,
-  Sparkles
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { useOnboarding } from '@/lib/store';
+import { motion } from 'framer-motion';
+import { Check, ChevronRight, Share2, Zap } from 'lucide-react';
+import Link from 'next/link';
 
-export default function OnboardingPage() {
-  const { user, isLoaded } = useUser();
-  const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
-  const [formData, setFormData] = useState({
-    websiteUrl: '',
-    googleBusinessProfile: '',
-    googleAnalytics: false,
-  });
-  const [urlError, setUrlError] = useState<string | null>(null);
+function StepShell({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-xl font-bold mb-3">{title}</h2>
+      {children}
+    </div>
+  );
+}
 
-  const steps = [
-    {
-      id: 'welcome',
-      title: 'Welcome to DealershipAI',
-      description: 'Let\'s get your AI visibility tracking set up in just a few minutes',
-      component: 'welcome'
-    },
-    {
-      id: 'website',
-      title: 'Connect Your Website',
-      description: 'Add your dealership website URL for AI visibility tracking',
-      component: 'website',
-      required: true
-    },
-    {
-      id: 'google-business',
-      title: 'Google Business Profile',
-      description: 'Connect your Google Business Profile for local AI search tracking',
-      component: 'google-business',
-      required: false
-    },
-    {
-      id: 'analytics',
-      title: 'Google Analytics (Optional)',
-      description: 'Connect GA4 for 87% more accurate traffic insights',
-      component: 'analytics',
-      required: false
-    },
-    {
-      id: 'complete',
-      title: 'You\'re All Set!',
-      description: 'Your AI visibility tracking is now active',
-      component: 'complete'
-    }
-  ];
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      // User should be signed in to access onboarding
-      return;
-    }
-  }, [isLoaded, user]);
-
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleComplete();
-    }
-  };
-
-  const handleSkip = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleComplete = async () => {
-    // Mark onboarding as complete in localStorage (for immediate client-side checks)
-    localStorage.setItem('onboarding_complete', 'true');
-    
-    // Save to user metadata in Clerk with form data
-    try {
-      const response = await fetch('/api/user/onboarding-complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          websiteUrl: formData.websiteUrl,
-          googleBusinessProfile: formData.googleBusinessProfile,
-          googleAnalytics: formData.googleAnalytics,
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to save onboarding status');
-      }
-      
-      const result = await response.json();
-      
-      // Update localStorage with saved metadata for immediate access
-      if (result.metadata) {
-        localStorage.setItem('user_metadata', JSON.stringify(result.metadata));
-      }
-    } catch (error: any) {
-      // Non-blocking: localStorage is set, so onboarding flow continues
-      console.warn('Failed to save onboarding status to server:', error);
-      // Still redirect to dashboard - localStorage will handle client-side checks
-    }
-    
-    // Redirect to dashboard
-    router.push('/dashboard');
-  };
-
-  const handleStepComplete = (stepId: string) => {
-    setCompletedSteps(new Set([...completedSteps, stepId]));
-  };
-
-  const renderStepContent = () => {
-    const step = steps[currentStep];
-    
-    switch (step.component) {
-      case 'welcome':
-        return (
-          <div className="text-center space-y-6">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mx-auto">
-              <Sparkles className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-3xl font-semibold text-gray-900">
-              Welcome{user?.firstName ? `, ${user.firstName}` : ''}!
-            </h2>
-            <p className="text-lg text-gray-600 max-w-md mx-auto">
-              We'll help you set up AI visibility tracking for your dealership in just a few minutes.
-            </p>
-            <div className="mt-8 space-y-4">
-              <div className="flex items-center gap-3 text-left bg-blue-50 p-4 rounded-lg">
-                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                <div>
-                  <div className="font-medium text-gray-900">87% More Accurate Data</div>
-                  <div className="text-sm text-gray-600">Connected platforms provide real-time insights</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-left bg-purple-50 p-4 rounded-lg">
-                <CheckCircle2 className="w-6 h-6 text-purple-600 flex-shrink-0" />
-                <div>
-                  <div className="font-medium text-gray-900">Track AI Search Visibility</div>
-                  <div className="text-sm text-gray-600">Monitor ChatGPT, Claude, Gemini, and Perplexity</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'website':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Globe className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Website URL</h3>
-                <p className="text-sm text-gray-600">Required for core AI visibility tracking</p>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Your Dealership Website
-              </label>
-              <input
-                type="url"
-                value={formData.websiteUrl}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData({ ...formData, websiteUrl: value });
-                  if (value) {
-                    const validation = validateUrlClient(value);
-                    if (!validation.valid) {
-                      setUrlError(validation.error || 'Invalid URL');
-                    } else {
-                      setUrlError(null);
-                    }
-                  } else {
-                    setUrlError(null);
-                  }
-                }}
-                placeholder="https://yourdealership.com"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  urlError ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              {urlError && (
-                <p className="mt-2 text-sm text-red-600">{urlError}</p>
-              )}
-              <p className="mt-2 text-sm text-gray-500">
-                We'll analyze your website to track AI visibility across platforms
-              </p>
-            </div>
-            {formData.websiteUrl && !urlError && (
-              <button
-                onClick={() => {
-                  handleStepComplete('website');
-                  handleNext();
-                }}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Continue
-              </button>
-            )}
-          </div>
-        );
-
-      case 'google-business':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Google Business Profile</h3>
-                <p className="text-sm text-gray-600">Optional - Track local AI search visibility</p>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Google Business Profile URL
-              </label>
-              <input
-                type="url"
-                value={formData.googleBusinessProfile}
-                onChange={(e) => setFormData({ ...formData, googleBusinessProfile: e.target.value })}
-                placeholder="https://maps.google.com/business/your-profile"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-              <p className="mt-2 text-sm text-gray-500">
-                Connect your Google Business Profile to track local AI search visibility
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleSkip}
-                className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-              >
-                Skip for Now
-              </button>
-              {formData.googleBusinessProfile && (
-                <button
-                  onClick={() => {
-                    handleStepComplete('google-business');
-                    handleNext();
-                  }}
-                  className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
-                >
-                  Connect
-                </button>
-              )}
-            </div>
-          </div>
-        );
-
-      case 'analytics':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Google Analytics 4</h3>
-                <p className="text-sm text-gray-600">Optional - Get 87% more accurate insights</p>
-              </div>
-            </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-700 mb-4">
-                Connect your Google Analytics 4 account to get more accurate traffic insights and better AI visibility tracking.
-              </p>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.googleAnalytics}
-                  onChange={(e) => setFormData({ ...formData, googleAnalytics: e.target.checked })}
-                  className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  I want to connect Google Analytics 4
-                </span>
-              </label>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleSkip}
-                className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-              >
-                Skip for Now
-              </button>
-              <button
-                onClick={() => {
-                  if (formData.googleAnalytics) {
-                    handleStepComplete('analytics');
-                  }
-                  handleNext();
-                }}
-                className="flex-1 bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
-              >
-                {formData.googleAnalytics ? 'Connect GA4' : 'Continue'} 
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        );
-
-      case 'complete':
-        return (
-          <div className="text-center space-y-6">
-            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10 text-green-600" />
-            </div>
-            <h2 className="text-3xl font-semibold text-gray-900">
-              You're All Set!
-            </h2>
-            <p className="text-lg text-gray-600 max-w-md mx-auto">
-              Your AI visibility tracking is now active. We'll start monitoring your presence across AI platforms.
-            </p>
-            <button
-              onClick={handleComplete}
-              className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 mx-auto"
-            >
-              Go to Dashboard
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+export default function Onboarding() {
+  const s = useOnboarding();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Step {currentStep + 1} of {steps.length}
-            </span>
-            <span className="text-sm text-gray-500">
-              {Math.round(((currentStep + 1) / steps.length) * 100)}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-        </div>
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <header className="flex items-center justify-between">
+          <div className="text-2xl font-black">DealershipAI · Onboarding</div>
+          <Link href="/" className="text-blue-600">Back</Link>
+        </header>
 
-        {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-              {steps[currentStep].title}
-            </h1>
-            <p className="text-gray-600">
-              {steps[currentStep].description}
+        {s.step === 1 && (
+          <StepShell title="Step 1 · Your dealership URL">
+            <p className="text-gray-600 mb-3">
+              Paste your website. We run a 3-second AI visibility + zero-click scan and build your starter plan.
             </p>
-          </div>
-          {renderStepContent()}
-        </div>
+            <div className="flex gap-2">
+              <input
+                className="flex-1 border rounded-xl px-4 py-3"
+                placeholder="https://yourdealership.com"
+                value={s.dealerUrl}
+                onChange={e => s.setUrl(e.target.value)}
+              />
+              <button
+                onClick={() => {
+                  s.decScan();
+                  s.setStep(2);
+                }}
+                disabled={!s.dealerUrl}
+                className="px-5 py-3 rounded-xl bg-blue-600 text-white flex items-center gap-2 disabled:opacity-40"
+              >
+                <Zap className="w-4 h-4" />
+                Scan
+              </button>
+            </div>
+            <div className="text-xs text-gray-500 mt-2">Free scans left: {s.scansLeft}</div>
+          </StepShell>
+        )}
 
-        {/* Step Indicators */}
-        <div className="flex items-center justify-center gap-2">
-          {steps.map((step, index) => (
-            <div
-              key={step.id}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentStep
-                  ? 'bg-blue-600 w-8'
-                  : index < currentStep
-                  ? 'bg-green-500'
-                  : 'bg-gray-300'
-              }`}
-            />
-          ))}
-        </div>
+        {s.step === 2 && (
+          <StepShell title="Step 2 · Unlock full report">
+            <p className="text-gray-600 mb-3">
+              Share your score to unlock the full details or enter email to receive the PDF.
+            </p>
+            <div className="grid md:grid-cols-2 gap-3">
+              <button
+                onClick={() => s.setStep(3)}
+                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl flex items-center gap-2 justify-center"
+              >
+                <Share2 className="w-4 h-4" />
+                Share to unlock
+              </button>
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 border rounded-xl px-4 py-3"
+                  placeholder="you@dealership.com"
+                  value={s.email}
+                  onChange={e => s.setEmail(e.target.value)}
+                />
+                <button
+                  onClick={() => s.setStep(3)}
+                  className="px-5 py-3 border rounded-xl"
+                >
+                  Email me
+                </button>
+              </div>
+            </div>
+          </StepShell>
+        )}
+
+        {s.step === 3 && (
+          <StepShell title="Step 3 · Pick 3–5 competitors (optional)">
+            <div className="grid grid-cols-2 gap-3">
+              {['Naples Honda', 'Terry Reid Hyundai', 'Germain Toyota of Naples', 'Crown Nissan', 'Classic Honda'].map(name => (
+                <label
+                  key={name}
+                  className={`px-4 py-3 rounded-xl border cursor-pointer ${
+                    s.competitors.includes(name)
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    checked={s.competitors.includes(name)}
+                    onChange={() => s.toggleCompetitor(name)}
+                  />
+                  {name}
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => s.setStep(4)}
+                className="px-5 py-3 bg-blue-600 text-white rounded-xl flex items-center gap-2"
+              >
+                Continue
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </StepShell>
+        )}
+
+        {s.step === 4 && (
+          <StepShell title="Step 4 · Business Metrics (PVR)">
+            <p className="text-gray-600 mb-4">
+              Help us personalize your dashboard by providing your monthly PVR (Parts, Vehicle, Repair) revenue and advertising expense.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Monthly PVR Revenue ($)
+                </label>
+                <input
+                  type="number"
+                  className="w-full border rounded-xl px-4 py-3"
+                  placeholder="e.g., 500000"
+                  value={s.pvr || ''}
+                  onChange={e => s.setPvr?.(e.target.value)}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Total monthly revenue from Parts, Vehicle sales, and Repair services
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Monthly Ad Expense PVR ($)
+                </label>
+                <input
+                  type="number"
+                  className="w-full border rounded-xl px-4 py-3"
+                  placeholder="e.g., 50000"
+                  value={s.adExpensePvr || ''}
+                  onChange={e => s.setAdExpensePvr?.(e.target.value)}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Monthly advertising spend across all channels
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={async () => {
+                  // Save metrics to API
+                  if (s.pvr && s.adExpensePvr) {
+                    try {
+                      const response = await fetch('/api/save-metrics', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          pvr: Number(s.pvr),
+                          adExpensePvr: Number(s.adExpensePvr),
+                        }),
+                      })
+
+                      const data = await response.json()
+
+                      if (!response.ok || !data.ok) {
+                        throw new Error(data.error || 'Failed to save metrics')
+                      }
+
+                      // Success - proceed to next step
+                      s.setStep(5)
+                    } catch (error: any) {
+                      console.error('Failed to save metrics:', error)
+                      // Show error but allow user to continue
+                      alert(`Failed to save metrics: ${error.message}. You can continue, but metrics won't be saved.`)
+                      s.setStep(5)
+                    }
+                  } else {
+                    s.setStep(5)
+                  }
+                }}
+                disabled={!s.pvr || !s.adExpensePvr}
+                className="px-5 py-3 bg-blue-600 text-white rounded-xl flex items-center gap-2 disabled:opacity-40"
+              >
+                Continue
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </StepShell>
+        )}
+
+        {s.step === 5 && (
+          <StepShell title="Step 5 · Complete">
+            <div className="flex items-center gap-2 text-green-700 mb-4">
+              <Check className="w-5 h-5" />
+              <span>Your metrics have been saved. Ready to launch the orchestrator?</span>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+              <p className="text-sm text-blue-900">
+                You'll experience a cinematic onboarding sequence: System Acknowledgment → Orchestrator Ready → Pulse Assimilation → Dashboard
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/dashboard/preview"
+                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl flex items-center gap-2"
+              >
+                Launch Orchestrator
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href={`/dashboard?dealer=${encodeURIComponent(s.dealerUrl || 'demo')}`}
+                className="px-5 py-3 border rounded-xl"
+              >
+                Skip to Dashboard
+              </Link>
+            </div>
+          </StepShell>
+        )}
       </div>
-    </div>
+    </main>
   );
 }
 
