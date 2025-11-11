@@ -26,7 +26,20 @@ const publicRoutes = [
   '/',
   '/api/v1/analyze',
   '/api/health',
+  '/api/status',
   '/api/v1/health',
+  '/api/ai/health',
+  '/api/system/status',
+  '/api/observability',
+  '/api/telemetry',
+  '/api/performance-test',
+  '/api/claude/stats',
+  '/api/claude/manifest',
+  '/api/claude/export',
+  '/api/schema/validate',
+  '/api/schema/status',
+  '/api/schema',
+  '/api/schema-validation',
   '/.well-known/ai-plugin.json',
   '/api/gpt',
   '/robots.txt',
@@ -55,9 +68,14 @@ function isPublicRoute(pathname: string): boolean {
   return (
     publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/')) ||
     pathname.startsWith('/(mkt)') ||
-    pathname.startsWith('/api/v1/analyze') ||
+    pathname.startsWith('/api/v1/') ||
+    pathname.startsWith('/api/claude/') ||
+    pathname.startsWith('/api/schema') ||
     pathname.startsWith('/.well-known/') ||
-    pathname.startsWith('/api/gpt/')
+    pathname.startsWith('/api/gpt/') ||
+    pathname.startsWith('/api/test') ||
+    pathname.startsWith('/pricing') ||
+    pathname.startsWith('/instant')
   );
 }
 
@@ -79,6 +97,12 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
+  // IMPORTANT: Check public routes FIRST, before any auth logic
+  // This ensures public endpoints always bypass auth
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next();
+  }
+
   // If Clerk is not configured, allow all routes (demo mode)
   if (!isClerkConfigured) {
     return NextResponse.next();
@@ -90,22 +114,13 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
-  // We're on dashboard domain - apply Clerk authentication
-  // Public routes are accessible without authentication
-  if (isPublicRoute(pathname)) {
-    return NextResponse.next();
-  }
-
-  // Protected routes require authentication
+  // We're on dashboard domain - apply Clerk authentication to protected routes
+  // Only protect routes that are explicitly marked as protected
   if (isProtectedRoute(req)) {
-    const { userId } = await auth();
-    if (!userId) {
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
-      return NextResponse.redirect(signInUrl);
-    }
+    await auth().protect();
   }
 
+  // Default: allow through (for routes that are neither explicitly public nor protected)
   return NextResponse.next();
 });
 
