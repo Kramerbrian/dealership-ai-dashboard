@@ -197,7 +197,7 @@ cp src/app/page.tsx src/app/page-dashboard.tsx
 Current Issue: Root directory misconfigured
 
 **Fix:**
-1. Visit: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
+1. Visit: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
 2. Find "Root Directory" setting
 3. Change from `~/dealership-ai-dashboard/apps/web` to `.` (or leave blank)
 4. Save and trigger redeploy
@@ -265,7 +265,7 @@ Track these KPIs:
 ## 🔗 Quick Links
 
 - **Supabase Dashboard:** https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw
-- **Vercel Dashboard:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
+- **Vercel Dashboard:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
 - **API Docs:** `/app/api/leads/route.ts`
 - **Form Component:** `/app/components/SmartForm.tsx`
 - **Migration SQL:** `/supabase/migrations/20250108_create_leads_table.sql`

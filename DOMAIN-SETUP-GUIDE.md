@@ -2,14 +2,14 @@
 
 ## 🎯 **Target Domains**
 
-Based on your Vercel project at [https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains](https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains), here's how to configure all domains and services:
+Based on your Vercel project at [https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains](https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains), here's how to configure all domains and services:
 
 ---
 
 ## 🔧 **1. Vercel Domain Configuration**
 
 ### **Go to Domain Settings:**
-Visit: [https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains](https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains)
+Visit: [https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains](https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains)
 
 ### **Add These Domains:**
 - `marketing.dealershipai.com` (Landing Page)
@@ -107,7 +107,7 @@ GOOGLE_CLIENT_SECRET=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
 ## 🔗 **5. GitHub Repository Configuration**
 
 ### **Repository Settings:**
-- **Repository:** `brian-kramers-projects/dealership-ai-dashboard`
+- **Repository:** `brian-kramer-dealershipai/dealership-ai-dashboard`
 - **Auto-deploy:** Enabled
 - **Branch:** `main`
 - **Build Command:** `npm run build`

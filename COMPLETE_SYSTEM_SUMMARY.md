@@ -155,7 +155,7 @@ git push origin main
 
 ```bash
 # Check cron jobs in Vercel dashboard
-open "https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/functions"
+open "https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/functions"
 
 # Test monitoring API
 curl https://dealership-ai-dashboard-brian-kramers-projects.vercel.app/api/monitoring/system-health?query=executive-summary | jq

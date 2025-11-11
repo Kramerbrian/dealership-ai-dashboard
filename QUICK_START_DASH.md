@@ -10,7 +10,7 @@ https://dealership-ai-dashboard-brian-kramers-projects.vercel.app/dash
 ## 🎯 Two Steps to Complete Setup
 
 ### STEP 1: Add Domain in Vercel
-**Already opened in browser**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+**Already opened in browser**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 1. Click "**Add Domain**" button
 2. Enter: `dash.dealershipai.com`
@@ -72,10 +72,10 @@ Once you access the dashboard, verify these work:
 
 ### Your Deployment
 - **Dashboard**: https://dealership-ai-dashboard-brian-kramers-projects.vercel.app/dash
-- **Vercel Project**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
+- **Vercel Project**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
 
 ### Domain Configuration (Opened)
-- **Add Domain**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+- **Add Domain**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 ### Testing Tools
 - **DNS Checker**: https://dnschecker.org

@@ -1,64 +1,127 @@
-# 🎉 Claude Export System - START HERE
+# 🚀 START HERE - Add Domains to DealershipAI
 
-## ✅ EVERYTHING IS READY!
-
-Your complete Claude Export System is deployed and operational.
+**Your application is 98% deployed!** Just add domains to reach 100%.
 
 ---
 
-## 🚀 LIVE NOW - Use Immediately
+## ✅ What's Done
 
-### Copy This Prompt Into Claude:
+- ✅ Application deployed and operational
+- ✅ All services connected (DB, Redis, AI, Auth)
+- ✅ DNS configured (nameservers pointing to Vercel)
+- ✅ Build passing with zero errors
 
+---
+
+## 🎯 What You Need to Do (3 Steps)
+
+### Step 1: Get Verification Token
+
+**The correct Vercel page is now open** (if not, click below):
+
+🔗 **https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains**
+
+On that page:
+1. Click **"Add Domain"**
+2. Type: `dealershipai.com`
+3. **Copy the verification token** (looks like: `vc-domain-verify=dealershipai.com,abc123...`)
+
+### Step 2: Add TXT Record to Squarespace
+
+1. Go to: **https://account.squarespace.com/domains**
+2. Click: **dealershipai.com** → **Advanced Settings** → **DNS Settings**
+3. Click: **Add Record**
+4. Fill in:
+   - **Type:** TXT
+   - **Host:** `_vercel`
+   - **Value:** [paste the token from Step 1]
+   - **TTL:** 3600
+5. Click: **Save**
+
+### Step 3: Run Automated Script
+
+Once you've saved the TXT record, run this command:
+
+```bash
+./scripts/complete-domain-setup.sh
 ```
-Load project from https://dealership-ai-dashboard-4snnve0ea-brian-kramer-dealershipai.vercel.app/claude/dealershipai_claude_export.zip
 
-Manifest: /exports/manifest.json
+**This script handles everything else:**
+- Monitors DNS propagation (waits automatically)
+- Adds all 3 domains via Vercel CLI
+- Guides you through WWW redirect
+- Tests all endpoints
+- Verifies SSL
 
-Build cinematic Next.js 14 interface with Clerk + Framer Motion.
-Use the cognitive interface patterns in components/cognitive/*.
-Maintain brand hue continuity using the useBrandHue hook.
+---
+
+## ⏱️ Timeline
+
+- Get token: **30 seconds**
+- Add TXT record: **2 minutes**
+- DNS propagation: **5-15 minutes** (automated by script)
+- Add domains: **1 minute** (automated by script)
+- SSL: **1-5 minutes** (automatic by Vercel)
+- **Total: ~20 minutes**
+
+---
+
+## 🔍 Check Progress Anytime
+
+```bash
+# Check if TXT record is live
+./scripts/check-domain-verification.sh
+
+# Manually add domains (after TXT record exists)
+./scripts/add-all-domains.sh
 ```
 
-Then ask Claude anything!
+---
+
+## 📚 More Information
+
+- [CORRECT_VERCEL_URLS.md](CORRECT_VERCEL_URLS.md) - All correct Vercel URLs
+- [QUICK_START_DOMAINS.md](QUICK_START_DOMAINS.md) - Quick reference guide
+- [DOMAIN_VERIFICATION_GUIDE.md](DOMAIN_VERIFICATION_GUIDE.md) - Detailed walkthrough
+- [README_DOMAIN_SETUP.md](README_DOMAIN_SETUP.md) - Complete documentation
 
 ---
 
-## 📥 All Live URLs
+## 🎉 After Setup
 
-**Export (2.08 MB)**: /claude/dealershipai_claude_export.zip
-**QR Code**: /claude/qr-code.png
-**Stats API**: /api/claude/stats
+Your app will be live at:
+- **https://dealershipai.com** - Marketing site
+- **https://dash.dealershipai.com** - Dashboard
+- **https://www.dealershipai.com** - Redirects to primary domain
 
-Base: https://dealership-ai-dashboard-4snnve0ea-brian-kramer-dealershipai.vercel.app
-
----
-
-## ⚡ 3 Quick Actions
-
-1. **Test with Claude** (30 sec) - Copy prompt & paste
-2. **Share with Team** (10 sec) - Send QR or ZIP URL
-3. **Auto-Export** (5 min) - Follow GITHUB_ACTIONS_SETUP.md
+Test with:
+```bash
+curl -I https://dealershipai.com
+curl -I https://dash.dealershipai.com
+curl https://dealershipai.com/api/health
+```
 
 ---
 
-## 📦 What You Built
+## 🚨 Important Notes
 
-**10 Files**: Workflow, landing page, APIs, QR, script, manifest, migration
-**6 Docs**: Complete guides for setup and usage
-**Size**: 2.08 MB export package
-**Status**: 100% operational
+### Correct Vercel URL Structure
+Your project is under the **`brian-kramer-dealershipai`** team:
+```
+https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
+```
 
----
-
-## 📚 Documentation
-
-- START_HERE.md (you are here) ⭐
-- QUICK_START.md
-- CLAUDE_EXPORT_COMPLETE.md
-- GITHUB_ACTIONS_SETUP.md
-- AUTOMATION_COMPLETE.md
+### Avoid These URLs (WRONG)
+- ❌ `vercel.com/brian-kramers-projects/...`
+- ❌ Any URL without `brian-kramer-dealershipai`
 
 ---
 
-🎉 Copy the Claude prompt above and start building! 🚀
+## 🎯 Ready?
+
+1. **Open this URL:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
+2. **Follow Step 1 above** to get your verification token
+3. **Add TXT record** in Squarespace
+4. **Run the script:** `./scripts/complete-domain-setup.sh`
+
+**That's it!** You'll be 100% live in ~20 minutes! 🚀

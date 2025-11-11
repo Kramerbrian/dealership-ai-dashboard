@@ -136,7 +136,7 @@ supabase db execute --file supabase/migrations/20250109_add_cron_monitoring_tabl
 Once migrations are applied:
 
 1. ✅ **Verify cron jobs are active** in Vercel Dashboard
-   - Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/crons
+   - Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/crons
    - Should see 6 active cron jobs
 
 2. ✅ **Test monitoring endpoints**

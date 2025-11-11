@@ -10,7 +10,7 @@ This needs to be changed to the actual project root: `.` (current directory)
 ### 1. Fix Vercel Project Settings
 
 Go to the Vercel project settings page:
-**https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings**
+**https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings**
 
 #### Navigate to General Settings
 1. Click on **Settings** in the top navigation
@@ -33,7 +33,7 @@ While in Settings, verify these build settings:
 
 ### 3. Configure Environment Variables
 
-Go to: **https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables**
+Go to: **https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables**
 
 Add these environment variables for production:
 
@@ -71,7 +71,7 @@ vercel --prod --yes
 
 ### 6. Configure Custom Domain: dash.dealershipai.com
 
-Go to: **https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains**
+Go to: **https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains**
 
 #### Add the Domain
 1. Click **Add Domain**
@@ -193,9 +193,9 @@ vercel domains inspect dash.dealershipai.com
 
 ## Support Links
 
-- Vercel Project Settings: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
-- Vercel Domains: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
-- Vercel Environment Variables: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+- Vercel Project Settings: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
+- Vercel Domains: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
+- Vercel Environment Variables: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 - DNS Checker: https://dnschecker.org
 - Vercel Documentation: https://vercel.com/docs
 
