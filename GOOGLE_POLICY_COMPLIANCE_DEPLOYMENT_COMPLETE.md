@@ -18,7 +18,7 @@
 ### ✅ **Production Deployment - SUCCESS**
 - **Build Status:** Completed with warnings (pre-existing, not blocking)
 - **Production URL:** https://dealership-ai-dashboard-nmth14jit-brian-kramers-projects.vercel.app
-- **Vercel Inspector:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/87CUCG7KtjmsEVCPLCvWwAuwUG9v
+- **Vercel Inspector:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/87CUCG7KtjmsEVCPLCvWwAuwUG9v
 - **Authentication:** Vercel SSO protection enabled (401 for unauthorized access)
 - **Deployment ID:** 87CUCG7KtjmsEVCPLCvWwAuwUG9v
 
@@ -347,7 +347,7 @@ SLACK_WEBHOOK_URL=https://...  # For Slack notifications
 ### Production
 - **Main App:** https://dealership-ai-dashboard-nmth14jit-brian-kramers-projects.vercel.app
 - **Intelligence:** https://dealership-ai-dashboard-nmth14jit-brian-kramers-projects.vercel.app/intelligence
-- **Vercel Dashboard:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
+- **Vercel Dashboard:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
 
 ### Documentation
 - **Implementation Guide:** `/GOOGLE_POLICY_COMPLIANCE_GUIDE.md`

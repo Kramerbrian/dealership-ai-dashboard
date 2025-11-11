@@ -11,7 +11,7 @@ set-cookie: _vercel_sso_nonce=33WJLhXadh21NmDZLPWq7DQa
 ### **Step 1: Disable Vercel SSO Protection**
 
 #### **Option A: Project-Level Settings**
-1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/general
+1. Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/general
 2. Look for **"Vercel Authentication"** or **"Password Protection"**
 3. If enabled, **DISABLE IT**
 4. Save changes
@@ -61,7 +61,7 @@ npx vercel env ls
 ### **Step 3: Configure Custom Domain**
 
 #### **Add Domain in Vercel**
-1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+1. Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 2. Click **"Add Domain"**
 3. Enter: `dash.dealershipai.com`
 4. Click **"Add"**

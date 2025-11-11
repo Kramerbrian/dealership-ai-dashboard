@@ -488,7 +488,7 @@ AND source = 'exit_intent';
 **Status:** 🟢 **ALL SYSTEMS GO**
 
 **Deployment URL:** https://dealershipai.com
-**Inspect:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/7E4zBPKXgsrWsge1nUmyEtMN1Dzo
+**Inspect:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/7E4zBPKXgsrWsge1nUmyEtMN1Dzo
 
 ---
 

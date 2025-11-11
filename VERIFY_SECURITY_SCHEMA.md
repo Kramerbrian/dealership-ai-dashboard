@@ -311,12 +311,12 @@ ORDER BY table_name;
 Once all tables are verified:
 
 1. **Check Vercel Deployment**
-   - https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
+   - https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
    - Verify build succeeded
    - Check deployment logs
 
 2. **Verify Cron Jobs Active**
-   - https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/crons
+   - https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/crons
    - Should see 6 active cron jobs
 
 3. **Test API Endpoints**

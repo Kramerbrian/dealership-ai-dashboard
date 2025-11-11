@@ -50,7 +50,7 @@ Transfer the domains from the old project to the new one.
 ### Step 2: Add Domains to New Project
 
 1. Go to the NEW project domains page:
-   https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+   https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 2. Click **"Add Domain"** for each:
    - Enter: `main.dealershipai.com` → Click Add
@@ -136,7 +136,7 @@ First, we need to check which project has the domains. You can do this via the w
 https://vercel.com/brian-kramers-projects/dealershipai-dashboard/settings/domains
 
 **New Project Domains:**
-https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 ---
 
@@ -261,11 +261,11 @@ curl -I https://dash.dealershipai.com/dash
 
 ### Vercel Project Pages
 - **Old Project**: https://vercel.com/brian-kramers-projects/dealershipai-dashboard
-- **New Project**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
+- **New Project**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
 
 ### Domain Settings
 - **Old Project Domains**: https://vercel.com/brian-kramers-projects/dealershipai-dashboard/settings/domains
-- **New Project Domains**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+- **New Project Domains**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 ### Vercel Documentation
 - **Domain Transfer**: https://vercel.com/docs/concepts/projects/domains/transferring-a-domain

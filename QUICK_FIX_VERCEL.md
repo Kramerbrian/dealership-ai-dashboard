@@ -11,13 +11,13 @@
 ## 🚀 **IMMEDIATE ACTION REQUIRED**
 
 ### **Step 1: Fix Vercel Root Directory (2 minutes)**
-1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/build-and-deployment
+1. Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/build-and-deployment
 2. Find "Root Directory" field
 3. Change to: `.` (single dot)
 4. Click "Save"
 
 ### **Step 2: Add Environment Variables (10 minutes)**
-1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+1. Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 2. Follow instructions in `VERCEL_ENV_SETUP.md`
 3. Add all 12 required variables
 

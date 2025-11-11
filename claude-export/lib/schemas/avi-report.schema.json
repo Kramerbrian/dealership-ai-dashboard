@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealershipai.com/schemas/avi_report.schema.json",
+  "title": "AviReport",
+  "type": "object",
+  "required": ["id","tenantId","asOf","windowWeeks","aivPct","atiPct","crsPct","elasticity","pillars","modifiers","clarity","ci95","regimeState","version"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "tenantId": { "type": "string", "format": "uuid" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "asOf": { "type": "string", "format": "date" },
+    "windowWeeks": { "type": "integer", "minimum": 4, "maximum": 16 },
+    "aivPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "atiPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "crsPct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "elasticity": {
+      "type": "object",
+      "required": ["usdPerPoint","r2"],
+      "properties": {
+        "usdPerPoint": { "type": "number", "minimum": 0 },
+        "r2": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "pillars": {
+      "type": "object",
+      "required": ["seo","aeo","geo","ugc","geoLocal"],
+      "properties": {
+        "seo": { "type": "number", "minimum": 0, "maximum": 100 },
+        "aeo": { "type": "number", "minimum": 0, "maximum": 100 },
+        "geo": { "type": "number", "minimum": 0, "maximum": 100 },
+        "ugc": { "type": "number", "minimum": 0, "maximum": 100 },
+        "geoLocal": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "modifiers": {
+      "type": "object",
+      "required": ["temporalWeight","entityConfidence","crawlBudgetMult","inventoryTruthMult"],
+      "properties": {
+        "temporalWeight": { "type": "number", "minimum": 0, "maximum": 2 },
+        "entityConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "crawlBudgetMult": { "type": "number", "minimum": 0, "maximum": 2 },
+        "inventoryTruthMult": { "type": "number", "minimum": 0, "maximum": 2 }
+      }
+    },
+    "clarity": {
+      "type": "object",
+      "required": ["scs","sis","adi","scr","selComposite"],
+      "properties": {
+        "scs": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sis": { "type": "number", "minimum": 0, "maximum": 1 },
+        "adi": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scr": { "type": "number", "minimum": 0, "maximum": 1 },
+        "selComposite": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "secondarySignals": {
+      "type": "object",
+      "properties": {
+        "engagementDepth": { "type": "number", "minimum": 0, "maximum": 100 },
+        "technicalHealth": { "type": "number", "minimum": 0, "maximum": 100 },
+        "localEntityAccuracy": { "type": "number", "minimum": 0, "maximum": 100 },
+        "brandSemanticFootprint": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "additionalProperties": false
+    },
+    "ci95": {
+      "type": "object",
+      "required": ["aiv","ati","crs","elasticity"],
+      "properties": {
+        "aiv": { "type": "object", "required": ["low","high"], "properties": { "low": { "type": "number" }, "high": { "type": "number" } } },
+        "ati": { "type": "object", "required": ["low","high"], "properties": { "low": { "type": "number" }, "high": { "type": "number" } } },
+        "crs": { "type": "object", "required": ["low","high"], "properties": { "low": { "type": "number" }, "high": { "type": "number" } } },
+        "elasticity": { "type": "object", "required": ["low","high"], "properties": { "low": { "type": "number" }, "high": { "type": "number" } } }
+      }
+    },
+    "regimeState": { "type": "string", "enum": ["Normal","ShiftDetected","Quarantine"] },
+    "counterfactual": {
+      "type": "object",
+      "properties": {
+        "rarObservedUsd": { "type": "number", "minimum": 0 },
+        "rarCounterfactualUsd": { "type": "number", "minimum": 0 },
+        "deltaUsd": { "type": "number" }
+      }
+    },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["metric","name","contribution"],
+        "properties": {
+          "metric": { "type": "string", "enum": ["AIV","ATI"] },
+          "name": { "type": "string" },
+          "contribution": { "type": "number" }
+        }
+      }
+    },
+    "anomalies": {
+      "type": "array",
+      "items": { "type": "object", "properties": { "signal": { "type": "string" }, "zScore": { "type": "number" }, "note": { "type": "string" } } }
+    },
+    "backlogSummary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "taskId": { "type": "string" },
+          "title": { "type": "string" },
+          "estDeltaAivLow": { "type": "number" },
+          "estDeltaAivHigh": { "type": "number" },
+          "projectedImpactLowUsd": { "type": "number" },
+          "projectedImpactHighUsd": { "type": "number" },
+          "effortPoints": { "type": "integer", "minimum": 1 },
+          "banditScore": { "type": "number" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

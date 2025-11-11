@@ -6,7 +6,7 @@ The deployment is **blocked** because Vercel has the wrong root directory config
 
 ### Step 1: Fix Root Directory (2 minutes)
 
-1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings (ALREADY OPEN)
+1. Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings (ALREADY OPEN)
 2. Scroll to **"Build & Development Settings"** section
 3. Find **"Root Directory"** field
 4. Click **"Edit"** next to Root Directory
@@ -18,7 +18,7 @@ The deployment is **blocked** because Vercel has the wrong root directory config
 
 ## Step 2: Add Environment Variables (10 minutes)
 
-Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 
 ### Method A: Use the Web Interface (Recommended)
 
@@ -135,7 +135,7 @@ echo "TVUtfzsVhO8ONGlq9W7wegT0wyI49VR/U2uHKgVxR1o=" | vercel env add NEXTAUTH_SE
 
 ## Need Help?
 
-- Vercel Settings: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
+- Vercel Settings: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
 - Supabase DB: https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw/settings/database
 - Ory Console: https://console.ory.sh/projects/360ebb8f-2337-48cd-9d25-fba49a262f9c
 

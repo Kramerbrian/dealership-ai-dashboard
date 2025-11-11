@@ -6,14 +6,14 @@ The Vercel project has a path configuration issue pointing to `~/dealership-ai-d
 ## 🔧 **Manual Setup Required**
 
 ### **1. Fix Vercel Project Settings**
-Go to: [https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings](https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings)
+Go to: [https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings](https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings)
 
 **Update Root Directory:**
 - Change from: `apps/web`
 - Change to: `.` (root directory)
 
 ### **2. Add Domains in Vercel Dashboard**
-Go to: [https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains](https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains)
+Go to: [https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains](https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains)
 
 **Add These Domains:**
 - `marketing.dealershipai.com`
