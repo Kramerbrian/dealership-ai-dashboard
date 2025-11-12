@@ -59,14 +59,11 @@ export async function callOrchestrator(
       action = 'analyze_visibility'; // Default fallback
     }
 
-    // Try internal API first (only if we have an action)
-    if (action) {
+    // Try internal API first (only if we have an action and we're on the client side)
+    // Note: On server side, this function is called FROM the API route, so we skip the API call
+    if (action && typeof window !== 'undefined') {
       try {
-        const apiUrl = typeof window !== 'undefined' 
-          ? '/api/orchestrator' 
-          : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/orchestrator`;
-        
-        const response = await fetch(apiUrl, {
+        const response = await fetch('/api/orchestrator', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
