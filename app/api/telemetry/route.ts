@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRedis } from '@/lib/redis';
+import { redis } from '@/lib/redis';
 import { logger } from '@/lib/logger';
 import { redact } from '@/lib/security/redact';
 
@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
     };
 
     // Store in Redis
-    const redis = getRedis();
     await redis.lpush('telemetry:events', JSON.stringify(sanitized));
     await redis.ltrim('telemetry:events', 0, 9999); // Keep last 10k events
 
