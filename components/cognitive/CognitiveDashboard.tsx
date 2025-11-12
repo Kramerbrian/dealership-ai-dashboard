@@ -1,17 +1,25 @@
 'use client';
 
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { ActionDrawer } from '@/components/cognitive/ActionDrawer';
+import { ActionDrawer } from '@/components/ActionDrawer';
 import { CognitiveHeader } from '@/components/cognitive/CognitiveHeader';
 import { VoiceOrb } from '@/components/cognitive/VoiceOrb';
 import { AutopilotMode } from '@/components/cognitive/modes/AutopilotMode';
-import { DriveMode } from '@/components/cognitive/modes/DriveMode';
+import { DriveMode } from '@/components/modes/DriveMode';
 import { InsightsMode } from '@/components/cognitive/modes/InsightsMode';
+import { PulseStream } from '@/components/modes/PulseStream';
 import { useCognitiveStore } from '@/lib/store/cognitive';
+import { loadSeedData } from '@/lib/data/seed-incidents';
 
 export function CognitiveDashboard() {
   const { mode, drawerOpen, closeDrawer } = useCognitiveStore();
+
+  // Load seed data on mount (for demo/development)
+  useEffect(() => {
+    loadSeedData();
+  }, []);
 
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-gradient-to-br from-neural-950 via-black to-neural-900 text-white">
@@ -59,11 +67,24 @@ export function CognitiveDashboard() {
               <InsightsMode />
             </motion.div>
           )}
+
+          {mode === 'pulse' && (
+            <motion.div
+              key="pulse"
+              initial={{ opacity: 0, x: -24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 24 }}
+              transition={{ duration: 0.32, ease: 'easeOut' }}
+              className="absolute inset-0"
+            >
+              <PulseStream />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
       <VoiceOrb />
-      <ActionDrawer open={drawerOpen} onClose={closeDrawer} />
+      <ActionDrawer />
     </div>
   );
 }
