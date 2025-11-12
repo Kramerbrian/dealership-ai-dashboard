@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOnboarding } from '@/lib/store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronRight, Share2, Zap, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { useUser, SignInButton } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import ShareUnlockModal from '@/components/share/ShareUnlockModal';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 function StepShell({ title, children, step }: { title: string; children: React.ReactNode; step: number }) {
   return (
@@ -70,21 +74,191 @@ function ProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSt
   );
 }
 
+// Telemetry tracking helper
+async function trackEvent(type: string, payload?: Record<string, any>) {
+  try {
+    await fetch('/api/telemetry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type,
+        payload: payload || {},
+        ts: Date.now()
+      })
+    });
+  } catch (e) {
+    console.warn('[Telemetry] Failed to track event:', e);
+  }
+}
+
 export default function CinematicOnboarding() {
   const s = useOnboarding();
+  const { user, isLoaded: userLoaded } = useUser();
+  const router = useRouter();
   const [isScanning, setIsScanning] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Track page view
+  useEffect(() => {
+    if (userLoaded) {
+      trackEvent('onboarding_viewed', {
+        step: s.step,
+        userId: user?.id || 'anonymous',
+        dealerUrl: s.dealerUrl || null
+      });
+      setIsLoading(false);
+    }
+  }, [userLoaded, user?.id, s.step, s.dealerUrl]);
+
+  // Track step changes
+  useEffect(() => {
+    if (userLoaded && !isLoading) {
+      trackEvent('onboarding_step_changed', {
+        step: s.step,
+        userId: user?.id || 'anonymous',
+        dealerUrl: s.dealerUrl || null
+      });
+    }
+  }, [s.step, userLoaded, user?.id, s.dealerUrl, isLoading]);
+
+  // Redirect to sign-in if not authenticated (optional - can be removed for public onboarding)
+  // Uncomment if you want to require authentication
+  // useEffect(() => {
+  //   if (userLoaded && !user) {
+  //     router.push('/sign-in?redirect_url=/onboarding');
+  //   }
+  // }, [userLoaded, user, router]);
 
   const handleScan = async () => {
+    if (!s.dealerUrl) return;
+    
     setIsScanning(true);
     s.decScan();
+    
+    // Track scan start
+    await trackEvent('onboarding_scan_started', {
+      dealerUrl: s.dealerUrl,
+      scansLeft: s.scansLeft - 1,
+      userId: user?.id || 'anonymous'
+    });
+
     // Simulate scanning animation
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
     setIsScanning(false);
+    
+    // Track scan complete
+    await trackEvent('onboarding_scan_completed', {
+      dealerUrl: s.dealerUrl,
+      scansLeft: s.scansLeft,
+      userId: user?.id || 'anonymous'
+    });
+    
     s.setStep(2);
   };
 
+  const handleShareUnlock = () => {
+    setShowShareModal(true);
+    trackEvent('onboarding_share_unlock_clicked', {
+      step: s.step,
+      userId: user?.id || 'anonymous'
+    });
+  };
+
+  const handleEmailSubmit = async () => {
+    if (!s.email) return;
+    
+    await trackEvent('onboarding_email_submitted', {
+      email: s.email,
+      step: s.step,
+      userId: user?.id || 'anonymous'
+    });
+    
+    s.setStep(3);
+  };
+
+  const handleCompetitorToggle = async (name: string) => {
+    const wasSelected = s.competitors.includes(name);
+    s.toggleCompetitor(name);
+    // Use setTimeout to ensure state has updated
+    setTimeout(async () => {
+      await trackEvent('onboarding_competitor_toggled', {
+        competitor: name,
+        selected: !wasSelected,
+        totalSelected: s.competitors.length + (wasSelected ? -1 : 1),
+        userId: user?.id || 'anonymous'
+      });
+    }, 0);
+  };
+
+  const handleMetricsSave = async () => {
+    if (!s.pvr || !s.adExpensePvr) return;
+    
+    await trackEvent('onboarding_metrics_saved', {
+      pvr: Number(s.pvr),
+      adExpensePvr: Number(s.adExpensePvr),
+      userId: user?.id || 'anonymous'
+    });
+    
+    try {
+      const response = await fetch('/api/save-metrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pvr: Number(s.pvr),
+          adExpensePvr: Number(s.adExpensePvr),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || 'Failed to save metrics');
+      }
+      s.setStep(5);
+    } catch (error: any) {
+      console.error('Failed to save metrics:', error);
+      await trackEvent('onboarding_metrics_save_failed', {
+        error: error.message,
+        userId: user?.id || 'anonymous'
+      });
+      alert(`Failed to save metrics: ${error.message}. You can continue, but metrics won't be saved.`);
+      s.setStep(5);
+    }
+  };
+
+  const handleComplete = async () => {
+    await trackEvent('onboarding_completed', {
+      dealerUrl: s.dealerUrl,
+      email: s.email,
+      competitorsCount: s.competitors.length,
+      hasPvr: !!s.pvr,
+      userId: user?.id || 'anonymous'
+    });
+    
+    // Mark onboarding as complete
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('onboarding_complete', 'true');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 flex items-center justify-center">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+            className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"
+          />
+          <p className="text-white text-lg">Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 relative overflow-hidden">
+    <ErrorBoundary>
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 relative overflow-hidden">
       {/* Animated background orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -178,7 +352,7 @@ export default function CinematicOnboarding() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => s.setStep(3)}
+                  onClick={handleShareUnlock}
                   className="px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl flex items-center gap-2 justify-center font-semibold shadow-lg hover:shadow-xl transition-shadow"
                 >
                   <Share2 className="w-5 h-5" />
@@ -188,19 +362,38 @@ export default function CinematicOnboarding() {
                   <input
                     className="flex-1 border-2 border-gray-200 focus:border-blue-500 rounded-2xl px-5 py-4 transition-all outline-none"
                     placeholder="you@dealership.com"
+                    type="email"
                     value={s.email}
                     onChange={e => s.setEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && s.email) {
+                        handleEmailSubmit();
+                      }
+                    }}
                   />
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => s.setStep(3)}
-                    className="px-6 py-4 border-2 border-blue-600 text-blue-600 font-semibold rounded-2xl hover:bg-blue-50 transition-colors"
+                    onClick={handleEmailSubmit}
+                    disabled={!s.email}
+                    className="px-6 py-4 border-2 border-blue-600 text-blue-600 font-semibold rounded-2xl hover:bg-blue-50 transition-colors disabled:opacity-40"
                   >
                     Email Me
                   </motion.button>
                 </div>
               </div>
+              {!user && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                  <p className="text-sm text-blue-800 mb-2">
+                    <strong>Want to save your progress?</strong> Sign in with Clerk SSO to sync your data across devices.
+                  </p>
+                  <SignInButton mode="modal">
+                    <button className="text-sm text-blue-600 font-semibold hover:underline">
+                      Sign in with SSO →
+                    </button>
+                  </SignInButton>
+                </div>
+              )}
             </StepShell>
           )}
 
@@ -227,7 +420,7 @@ export default function CinematicOnboarding() {
                       type="checkbox"
                       className="mr-3 w-5 h-5"
                       checked={s.competitors.includes(name)}
-                      onChange={() => s.toggleCompetitor(name)}
+                      onChange={() => handleCompetitorToggle(name)}
                     />
                     <span className="font-medium">{name}</span>
                   </motion.label>
@@ -288,31 +481,7 @@ export default function CinematicOnboarding() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={async () => {
-                    if (s.pvr && s.adExpensePvr) {
-                      try {
-                        const response = await fetch('/api/save-metrics', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            pvr: Number(s.pvr),
-                            adExpensePvr: Number(s.adExpensePvr),
-                          }),
-                        });
-                        const data = await response.json();
-                        if (!response.ok || !data.ok) {
-                          throw new Error(data.error || 'Failed to save metrics');
-                        }
-                        s.setStep(5);
-                      } catch (error: any) {
-                        console.error('Failed to save metrics:', error);
-                        alert(`Failed to save metrics: ${error.message}. You can continue, but metrics won't be saved.`);
-                        s.setStep(5);
-                      }
-                    } else {
-                      s.setStep(5);
-                    }
-                  }}
+                  onClick={handleMetricsSave}
                   disabled={!s.pvr || !s.adExpensePvr}
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl flex items-center gap-2 font-semibold disabled:opacity-40 shadow-lg shadow-purple-500/50"
                 >
@@ -338,6 +507,7 @@ export default function CinematicOnboarding() {
                 <Link
                   href="/dashboard/preview"
                   className="block"
+                  onClick={handleComplete}
                 >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -351,6 +521,7 @@ export default function CinematicOnboarding() {
                 <Link
                   href={`/dashboard?dealer=${encodeURIComponent(s.dealerUrl || 'demo')}`}
                   className="block"
+                  onClick={handleComplete}
                 >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -365,6 +536,20 @@ export default function CinematicOnboarding() {
           )}
         </AnimatePresence>
       </div>
-    </main>
+
+      {/* Share Unlock Modal */}
+      <ShareUnlockModal
+        open={showShareModal}
+        onClose={() => {
+          setShowShareModal(false);
+          // Auto-advance after sharing
+          if (s.step === 2) {
+            setTimeout(() => s.setStep(3), 500);
+          }
+        }}
+        featureName="Full Report"
+      />
+      </main>
+    </ErrorBoundary>
   );
 }

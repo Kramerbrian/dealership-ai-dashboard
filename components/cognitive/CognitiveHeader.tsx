@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Activity, BarChart3, Power, Settings, Zap } from 'lucide-react';
 
 import { useCognitiveStore } from '@/lib/store/cognitive';
+import { usePrefsStore } from '@/lib/store/prefs';
 import type { CognitiveMode } from '@/lib/types/cognitive';
 
 const MODES: Array<{ id: CognitiveMode; label: string; icon: typeof Power }> = [
@@ -15,6 +16,7 @@ const MODES: Array<{ id: CognitiveMode; label: string; icon: typeof Power }> = [
 
 export function CognitiveHeader() {
   const { mode, setMode, clarity, voice, toggleVoice } = useCognitiveStore();
+  const { setOpenSettings } = usePrefsStore();
 
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-neural-800 bg-neural-900/80 px-6 backdrop-blur-xl">
@@ -86,6 +88,7 @@ export function CognitiveHeader() {
           </button>
           <button
             type="button"
+            onClick={() => setOpenSettings(true)}
             className="flex h-10 w-10 items-center justify-center rounded-xl text-neural-400 transition-colors hover:bg-neural-800 hover:text-white"
             aria-label="Open settings"
           >
