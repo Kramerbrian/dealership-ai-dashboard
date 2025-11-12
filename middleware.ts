@@ -11,8 +11,13 @@ const isClerkConfigured = !!(
 function isDashboardDomain(hostname: string | null): boolean {
   if (!hostname) return false;
   
-  // Clerk should ONLY be active on dash.dealershipai.com
-  // Allow localhost for development and vercel.app for previews
+  // IMPORTANT: Clerk should ONLY be active on dash.dealershipai.com
+  // Explicitly block on main domain (dealershipai.com)
+  if (hostname === 'dealershipai.com' || hostname === 'www.dealershipai.com') {
+    return false;
+  }
+  
+  // Allow only on dashboard subdomain, localhost for development, and vercel.app for previews
   return (
     hostname === 'dash.dealershipai.com' ||
     hostname === 'localhost' ||
@@ -47,6 +52,8 @@ const publicRoutes = [
   '/sitemap.xml',
   '/sign-in',
   '/sign-up',
+  '/auth/signin',
+  '/auth/signup',
 ];
 
 // Protected routes that require authentication (only on dashboard domain)
@@ -69,6 +76,7 @@ function isPublicRoute(pathname: string): boolean {
   return (
     publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/')) ||
     pathname.startsWith('/(mkt)') ||
+    pathname.startsWith('/(auth)') || // Auth route group
     pathname.startsWith('/api/v1/') ||
     pathname.startsWith('/api/claude/') ||
     pathname === '/api/claude/download' ||
@@ -155,6 +163,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     '/instant',
     '/sign-in(/*)',
     '/sign-up(/*)',
+    '/auth/signin(/*)',
+    '/auth/signup(/*)',
   ]
 });
 
