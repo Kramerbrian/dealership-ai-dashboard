@@ -1,14 +1,24 @@
 /**
- * Pulse API - Backend push endpoint for Pulse cards
- * POST /api/pulse - Add pulse cards from backend
+ * Pulse API - Decision Inbox with Database Persistence
+ * POST /api/pulse - Ingest pulse cards with auto-promotion
+ * GET /api/pulse - Fetch pulse inbox with filtering
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@supabase/supabase-js';
 import type { PulseCard } from '@/lib/types/pulse';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * POST /api/pulse - Ingest pulse cards with deduplication and auto-promotion
+ */
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
@@ -16,84 +26,72 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const cards: PulseCard[] = await req.json();
+    const body = await req.json();
+    const cards: PulseCard[] = Array.isArray(body) ? body : [body];
+    const dealerId = req.nextUrl.searchParams.get('dealerId') || 'demo-tenant';
 
-    if (!Array.isArray(cards) || cards.length === 0) {
+    if (cards.length === 0) {
       return NextResponse.json({ error: 'Invalid payload: expected array of PulseCard' }, { status: 400 });
     }
 
     // Validate cards
     for (const card of cards) {
-      if (!card.id || !card.ts || !card.level || !card.kind || !card.title) {
+      if (!card.level || !card.kind || !card.title) {
         return NextResponse.json(
-          { error: `Invalid card: missing required fields` },
+          { error: `Invalid card: missing required fields (level, kind, title)` },
           { status: 400 }
         );
       }
     }
 
-    // Process auto-promotion rules
-    const promotedIncidents = [];
+    // Ingest each card using stored function (handles deduplication + auto-promotion)
+    const ingestedIds: (string | null)[] = [];
     for (const card of cards) {
-      if (card.kind === 'kpi_delta' && card.delta) {
-        const delta = typeof card.delta === 'number' ? card.delta : parseFloat(String(card.delta));
-        if (Math.abs(delta) >= 6) {
-          // Auto-promote to incident
-          promotedIncidents.push({
-            title: `AIV ${delta > 0 ? '+' : ''}${delta}`,
-            category: 'ai_visibility',
-            urgency: delta < 0 ? 'high' : 'medium',
-            impact_points: Math.abs(delta) * 1000,
-            confidence: 0.8,
-            time_to_fix_min: 5,
-            reason: 'Visibility shifted beyond target band.',
-            autofix: true,
-            fix_tiers: ['tier1_diy', 'tier2_guided', 'tier3_dfy'],
-            receipts: [
-              {
-                label: 'KPI trend',
-                kpi: 'AIV',
-                before: (typeof card.delta === 'number' ? 0 : 0) - delta,
-                after: typeof card.delta === 'number' ? card.delta : parseFloat(String(card.delta)),
-              },
-            ],
-            created_at: new Date().toISOString(),
-            pulseCardId: card.id,
-          });
-        }
-      }
+      const cardJson = {
+        ts: card.ts || new Date().toISOString(),
+        level: card.level,
+        kind: card.kind,
+        title: card.title,
+        detail: card.detail,
+        delta: card.delta,
+        thread_type: card.thread?.type,
+        thread_id: card.thread?.id,
+        actions: card.actions || [],
+        dedupe_key: card.dedupe_key,
+        ttl_sec: card.ttl_sec,
+        context: card.context || {},
+        receipts: card.receipts || [],
+      };
 
-      if (card.kind === 'sla_breach') {
-        promotedIncidents.push({
-          title: card.title,
-          category: 'sla',
-          urgency: 'high',
-          impact_points: 5000,
-          confidence: 1.0,
-          time_to_fix_min: 15,
-          reason: card.detail || 'SLA breach detected',
-          autofix: false,
-          fix_tiers: ['tier2_guided', 'tier3_dfy'],
-          receipts: card.receipts || [],
-          created_at: new Date().toISOString(),
-          pulseCardId: card.id,
+      const { data, error } = await supabase
+        .rpc('ingest_pulse_card', {
+          p_dealer_id: dealerId,
+          p_card: cardJson,
         });
+
+      if (error) {
+        console.error('[pulse] Ingest error:', error);
+      } else {
+        ingestedIds.push(data);
       }
     }
 
-    // In production, you would:
-    // 1. Store cards in database
-    // 2. Create incidents for promoted cards
-    // 3. Emit real-time updates via WebSocket/SSE
+    // Get auto-promoted incidents
+    const { data: incidents } = await supabase
+      .from('pulse_incidents')
+      .select('*')
+      .in('pulse_card_id', ingestedIds.filter(Boolean))
+      .eq('dealer_id', dealerId);
 
     return NextResponse.json({
       success: true,
       cardsReceived: cards.length,
-      promotedIncidents: promotedIncidents.length,
-      incidents: promotedIncidents,
+      cardsIngested: ingestedIds.filter(Boolean).length,
+      promotedIncidents: incidents?.length || 0,
+      incidents: incidents || [],
     });
   } catch (error: any) {
-    console.error('Pulse API error:', error);
+    console.error('[pulse] POST error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
@@ -101,6 +99,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * GET /api/pulse - Fetch pulse inbox with filtering
+ */
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
@@ -109,18 +110,62 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
+    const dealerId = searchParams.get('dealerId') || 'demo-tenant';
     const filter = searchParams.get('filter') || 'all';
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // In production, fetch from database
-    // For now, return empty array
+    // Fetch cards using stored function
+    const { data: cards, error } = await supabase
+      .rpc('get_pulse_inbox', {
+        p_dealer_id: dealerId,
+        p_filter: filter,
+        p_limit: limit,
+      });
+
+    if (error) {
+      console.error('[pulse] GET error:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch pulse cards' },
+        { status: 500 }
+      );
+    }
+
+    // Transform to PulseCard format
+    const pulseCards: PulseCard[] = (cards || []).map((card: any) => ({
+      id: card.id,
+      ts: card.ts,
+      level: card.level,
+      kind: card.kind,
+      title: card.title,
+      detail: card.detail,
+      delta: card.delta,
+      thread: card.thread_type && card.thread_id ? {
+        type: card.thread_type,
+        id: card.thread_id,
+      } : undefined,
+      actions: card.actions,
+      dedupe_key: card.dedupe_key,
+      context: card.context,
+      receipts: card.receipts,
+    }));
+
+    // Get digest summary
+    const { data: digest } = await supabase
+      .from('pulse_digest')
+      .select('*')
+      .eq('dealer_id', dealerId)
+      .order('digest_date', { ascending: false })
+      .limit(1)
+      .single();
+
     return NextResponse.json({
-      cards: [],
+      cards: pulseCards,
       filter,
       limit,
+      digest: digest || null,
     });
   } catch (error: any) {
-    console.error('Pulse GET error:', error);
+    console.error('[pulse] GET error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
