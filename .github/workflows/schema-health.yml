@@ -1,0 +1,84 @@
+name: Schema Health Audit
+
+on:
+  schedule:
+    - cron: "0 13 * * 1" # Mondays 1PM UTC
+  workflow_dispatch:
+
+jobs:
+  schema-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Schema Health Reporter
+        id: audit
+        run: |
+          node scripts/schema-health-report.js > audit_output.txt 2>&1 || true
+          cat audit_output.txt
+        env:
+          NEXT_PUBLIC_API_BASE: https://dealershipai.com
+
+      - name: Extract metrics
+        id: metrics
+        run: |
+          SCHEMA_COV=$(grep -Eo 'Schema Coverage: [0-9.]+' audit_output.txt | awk '{print $3}' || echo "N/A")
+          EEAT=$(grep -Eo 'E-E-A-T Score: [0-9.]+' audit_output.txt | awk '{print $3}' || echo "N/A")
+          echo "schema_coverage=$SCHEMA_COV" >> $GITHUB_OUTPUT
+          echo "eeat_score=$EEAT" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          channel: '#deployments'
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "${{ steps.metrics.outputs.schema_coverage >= 90 && 'good' || 'warning' }}",
+                "title": "📊 Weekly Schema Health Report",
+                "fields": [
+                  {
+                    "title": "Schema Coverage",
+                    "value": "${{ steps.metrics.outputs.schema_coverage }}%",
+                    "short": true
+                  },
+                  {
+                    "title": "E-E-A-T Score",
+                    "value": "${{ steps.metrics.outputs.eeat_score }}%",
+                    "short": true
+                  },
+                  {
+                    "title": "Status",
+                    "value": "${{ steps.metrics.outputs.schema_coverage >= 90 && '✅ Healthy' || '⚠️ Action Required' }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Date",
+                    "value": "${{ github.event.repository.updated_at }}",
+                    "short": true
+                  }
+                ],
+                "footer": "DealershipAI Schema Health Monitor",
+                "footer_icon": "https://dealershipai.com/favicon.ico"
+              }]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-health-report
+          path: audit_output.txt
+          retention-days: 90
