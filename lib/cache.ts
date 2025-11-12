@@ -84,10 +84,8 @@ export class RedisCache {
           // Don't throw - just log
         });
 
-        // Connection happens automatically, but we catch errors
-        this.client.connect().catch((error) => {
-          console.warn('[Cache] Redis connection failed, using in-memory fallback:', error.message);
-        });
+        // Connection happens automatically with redis package
+        // Errors are handled by the error event listener above
       } catch (error) {
         console.error('[Cache] Failed to create Redis client:', error);
         // Create a mock client that does nothing
