@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import "./globals.lean.css";
 import FreeAuditWidget from "@/components/landing/FreeAuditWidget";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { faqSchema, howToSchema } from "@/components/seo/SeoBlocks";
 
 interface ScanPreview {
   domain: string;
@@ -86,9 +88,14 @@ export default function Page() {
   }
 
   return (
-    <main className="wrapper">
-      {/* Exit-Intent Modal */}
-      {exitIntentShown && (
+    <>
+      {/* JSON-LD Structured Data for AI Visibility */}
+      <JsonLd data={faqSchema()} />
+      <JsonLd data={howToSchema()} />
+
+      <main className="wrapper">
+        {/* Exit-Intent Modal */}
+        {exitIntentShown && (
         <div className="exit-modal-overlay" onClick={() => setExitIntentShown(false)}>
           <div className="exit-modal" onClick={(e) => e.stopPropagation()}>
             <button className="exit-close" onClick={() => setExitIntentShown(false)} aria-label="Close">×</button>
@@ -251,5 +258,6 @@ export default function Page() {
         </div>
       </footer>
     </main>
+    </>
   );
 }
