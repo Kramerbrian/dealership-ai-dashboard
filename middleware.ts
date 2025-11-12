@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import type { NextMiddleware } from 'next/server';
 
 // Check if Clerk is configured
 const isClerkConfigured = !!(
@@ -114,8 +114,21 @@ async function publicMiddleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// Clerk middleware (only for dashboard domain)
-const dashboardMiddleware = clerkMiddleware(async (auth, req: NextRequest) => {
+// Dynamically import Clerk only when needed (dashboard domain)
+let clerkMiddleware: any = null;
+let createRouteMatcher: any = null;
+
+async function getClerkMiddleware() {
+  if (!clerkMiddleware) {
+    const clerk = await import('@clerk/nextjs/server');
+    clerkMiddleware = clerk.clerkMiddleware;
+    createRouteMatcher = clerk.createRouteMatcher;
+  }
+  return { clerkMiddleware, createRouteMatcher };
+}
+
+// Clerk middleware (only for dashboard domain) - lazy loaded
+async function dashboardMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // IMPORTANT: Check public routes FIRST, before any auth logic
@@ -129,57 +142,63 @@ const dashboardMiddleware = clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
-  // We're on dashboard domain - apply Clerk authentication to protected routes
-  // Only protect routes that are explicitly marked as protected
-  if (isProtectedRoute(req)) {
-    const { userId } = await auth();
-    if (!userId) {
-      // Redirect to sign-in for protected routes
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
-      return NextResponse.redirect(signInUrl);
+  // Lazy load Clerk middleware only when needed
+  const { clerkMiddleware: clerkMw } = await getClerkMiddleware();
+  const protectedRouteMatcher = await getProtectedRouteMatcher();
+  
+  return clerkMw(async (auth: any, req: NextRequest) => {
+    // We're on dashboard domain - apply Clerk authentication to protected routes
+    // Only protect routes that are explicitly marked as protected
+    if (protectedRouteMatcher(req)) {
+      const { userId } = await auth();
+      if (!userId) {
+        // Redirect to sign-in for protected routes
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('redirect_url', req.url);
+        return NextResponse.redirect(signInUrl);
+      }
     }
-  }
 
-  // Default: allow through (for routes that are neither explicitly public nor protected)
-  return NextResponse.next();
-}, {
-  // CRITICAL: Tell Clerk these routes should skip auth entirely
-  // Use glob patterns (*) not regex (.*)
-  publicRoutes: [
-    '/',
-    '/api/v1(/*)',
-    '/api/health',
-    '/api/status',
-    '/api/ai/health',
-    '/api/system/status',
-    '/api/observability',
-    '/api/telemetry',
-    '/api/claude(/*)',
-    '/api/schema(/*)',
-    '/api/test(/*)',
-    '/api/gpt(/*)',
-    '/.well-known(/*)',
-    '/pricing',
-    '/instant',
-    '/sign-in(/*)',
-    '/sign-up(/*)',
-    '/auth/signin(/*)',
-    '/auth/signup(/*)',
-  ]
-});
+    // Default: allow through (for routes that are neither explicitly public nor protected)
+    return NextResponse.next();
+  }, {
+    // CRITICAL: Tell Clerk these routes should skip auth entirely
+    // Use glob patterns (*) not regex (.*)
+    publicRoutes: [
+      '/',
+      '/api/v1(/*)',
+      '/api/health',
+      '/api/status',
+      '/api/ai/health',
+      '/api/system/status',
+      '/api/observability',
+      '/api/telemetry',
+      '/api/claude(/*)',
+      '/api/schema(/*)',
+      '/api/test(/*)',
+      '/api/gpt(/*)',
+      '/.well-known(/*)',
+      '/pricing',
+      '/instant',
+      '/sign-in(/*)',
+      '/sign-up(/*)',
+      '/auth/signin(/*)',
+      '/auth/signup(/*)',
+    ]
+  })(req);
+}
 
 // Export conditional middleware: only use Clerk on dashboard domain
 export default async function middleware(req: NextRequest) {
   const hostname = req.headers.get('host') || '';
   
   // CRITICAL: If NOT on dashboard domain, use simple pass-through (NO Clerk)
-  // This prevents Clerk from being invoked at all on the main domain
+  // This prevents Clerk from being imported or invoked at all on the main domain
   if (!isDashboardDomain(hostname)) {
     return publicMiddleware(req);
   }
   
-  // If on dashboard domain, use Clerk middleware
+  // If on dashboard domain, use Clerk middleware (lazy loaded)
   return dashboardMiddleware(req);
 }
 
