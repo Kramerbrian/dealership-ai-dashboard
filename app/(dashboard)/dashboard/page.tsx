@@ -16,6 +16,7 @@ import DealershipAIScoreCard from '@/components/dashboard/DealershipAIScoreCard'
 import { OelCard } from '@/app/(dashboard)/components/metrics/OelCard';
 import OelModal from '@/app/(dashboard)/components/metrics/OelModal';
 import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
+import PulseInbox from '@/components/pulse/PulseInbox';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,6 +86,27 @@ function DashboardContent() {
         {/* Orchestrator View - AI CSO Status */}
         <div className="mb-8">
           <OrchestratorView dealerId={dealerId} />
+        </div>
+
+        {/* Pulse Decision Inbox - Inevitability Spec */}
+        <div className="mb-8">
+          <div className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl overflow-hidden">
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-white">Pulse Decision Inbox</h2>
+                <p className="text-sm text-gray-400">Real-time insights requiring action</p>
+              </div>
+              <a
+                href="/inevitability"
+                className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold hover:opacity-90 transition-opacity"
+              >
+                🧠 View Spec
+              </a>
+            </div>
+            <div style={{ height: '500px' }}>
+              <PulseInbox dealerId={dealerId} autoRefresh={true} />
+            </div>
+          </div>
         </div>
 
         {/* Real-Time Diagnostic Dashboard */}
