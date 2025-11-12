@@ -45,6 +45,11 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    types: {
+      'application/rss+xml': '/insights/feed.xml',
+    },
+  },
   openGraph: {
     type: 'website',
     url: 'https://dealershipai.com/',
