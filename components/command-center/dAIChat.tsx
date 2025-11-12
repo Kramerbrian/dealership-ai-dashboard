@@ -30,7 +30,7 @@ export default function dAIChat({ dealerId, domain, className = '' }: dAIChatPro
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello. I am dAI, your AI Chief Strategy Officer. I can analyze visibility, compute QAI, calculate OCI, generate ASRs, and analyze UGC. What would you like to know?',
+      content: 'Hello! I\'m your AI assistant. I can help you understand:\n\n• How visible your dealership is to AI search tools (like ChatGPT and Google AI)\n• Your quality and trust scores (QAI)\n• How much money you might be losing (OCI)\n• Safety reports with recommendations (ASR)\n• What customers are saying in reviews (UGC)\n\nWhat would you like to know?',
       timestamp: new Date()
     }
   ]);
@@ -126,30 +126,35 @@ export default function dAIChat({ dealerId, domain, className = '' }: dAIChatPro
 
     const { result, confidence, rationale } = response;
     
-    // Format based on action type
+    // Format based on action type - using simple language
     if (result.aiv !== undefined) {
-      return `**AI Visibility Analysis**\n\n- AI Visibility Index (AIV): ${result.aiv}\n- Algorithmic Trust Index (ATI): ${result.ati || 'N/A'}\n\nPlatform Breakdown:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+      return `**How Visible You Are to AI Search Tools**\n\n- Visibility Score: ${result.aiv}% (how often AI tools find you)\n- Trust Score: ${result.ati || 'N/A'}% (how much AI tools trust your content)\n\nWhere You Show Up:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
     if (result.qai !== undefined) {
-      return `**Quality Authority Index**\n\n- Overall QAI: ${result.qai}\n\nComponents:\n${result.components ? Object.entries(result.components).map(([c, v]: [string, any]) => `  • ${c}: ${v}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+      return `**Your Quality and Trust Score**\n\n- Overall Quality Score: ${result.qai}\n\nWhat Makes Up Your Score:\n${result.components ? Object.entries(result.components).map(([c, v]: [string, any]) => `  • ${c}: ${v}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
     if (result.ociValue !== undefined) {
-      return `**Opportunity Cost of Inaction**\n\n- Monthly OCI Value: $${result.ociValue.toLocaleString()}\n- Monthly Risk: $${result.monthlyRisk?.toLocaleString() || 'N/A'}\n- Recoverable: $${result.recoverable?.toLocaleString() || 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+      return `**Money You Might Be Losing**\n\n- Monthly Loss: $${result.ociValue.toLocaleString()}\n- Monthly Risk: $${result.monthlyRisk?.toLocaleString() || 'N/A'}\n- Money You Could Get Back: $${result.recoverable?.toLocaleString() || 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
     if (result.recommendations) {
-      return `**Autonomous Strategy Recommendations**\n\n${result.recommendations.map((rec: any, idx: number) => 
-        `${idx + 1}. **${rec.action}**\n   - Impact: $${rec.impact?.toLocaleString() || 'N/A'}/mo\n   - Effort: ${rec.effort || 'N/A'}\n   - Confidence: ${(rec.confidence * 100).toFixed(1)}%`
+      return `**Recommended Actions**\n\n${result.recommendations.map((rec: any, idx: number) => 
+        `${idx + 1}. **${rec.action}**\n   - Money Impact: $${rec.impact?.toLocaleString() || 'N/A'}/month\n   - How Hard: ${rec.effort || 'N/A'}\n   - Confidence: ${(rec.confidence * 100).toFixed(1)}%`
       ).join('\n\n')}\n\nOverall Confidence: ${(result.overallConfidence * 100).toFixed(1)}%`;
     }
     
     if (result.sentiment !== undefined) {
-      return `**UGC Sentiment Analysis**\n\n- Overall Sentiment: ${result.sentiment}\n\nPlatform Breakdown:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nRecommendations:\n${result.recommendations ? result.recommendations.map((r: string) => `  • ${r}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+      return `**What Customers Are Saying**\n\n- Overall Feeling: ${result.sentiment}\n\nBy Platform:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nWhat You Should Do:\n${result.recommendations ? result.recommendations.map((r: string) => `  • ${r}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
 
-    // Fallback
+    // Fallback - use content directly if available
+    if (response.content) {
+      return response.content;
+    }
+
+    // Last resort
     return rationale || JSON.stringify(result, null, 2);
   };
 
@@ -231,7 +236,7 @@ export default function dAIChat({ dealerId, domain, className = '' }: dAIChatPro
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="Ask dAI about visibility, QAI, OCI, ASRs, or UGC..."
+            placeholder="Ask about your visibility, quality scores, revenue at risk, safety reports, or customer reviews..."
             className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white 
                        placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={loading}
@@ -246,7 +251,7 @@ export default function dAIChat({ dealerId, domain, className = '' }: dAIChatPro
           </button>
         </div>
         <div className="mt-2 text-xs text-slate-500">
-          Try: "What's my AI visibility?" • "Calculate OCI" • "Generate ASRs" • "Analyze UGC sentiment"
+          Try: "How visible am I to AI search tools?" • "How much money am I losing?" • "Show me safety recommendations" • "What are customers saying?"
         </div>
       </div>
     </div>
