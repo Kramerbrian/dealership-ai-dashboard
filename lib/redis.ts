@@ -99,3 +99,10 @@ export async function getCached<T>(
   await cacheSet(key, fresh, ttl);
   return fresh;
 }
+
+/**
+ * Get Redis client - For compatibility with existing code
+ */
+export function getRedis() {
+  return redis;
+}
