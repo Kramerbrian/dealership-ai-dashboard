@@ -46,7 +46,7 @@ TTL:   300
 
 ### Add All Three Domains in Vercel
 
-Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 Click "**Add Domain**" and add each one:
 
@@ -127,7 +127,7 @@ Then in Vercel, add `dealershipai.com` and set it to redirect to your preferred 
 
 ### Phase 2: Vercel Configuration (5 minutes)
 
-1. Open: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+1. Open: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 2. Click "Add Domain" for each:
    - `main.dealershipai.com`
    - `marketing.dealershipai.com`

@@ -1,50 +1,77 @@
-'use client';
-
 /**
- * Haptic feedback utilities
- * Provides tactile feedback for user interactions
+ * Haptic Feedback
+ * Provides tactile feedback for supported devices
+ * Falls back gracefully on unsupported platforms
  */
 
-export const tap = (): void => {
-  if (typeof navigator === 'undefined') return;
-  if ('vibrate' in navigator) {
-    try {
-      navigator.vibrate(12);
-    } catch (err) {
-      // Silently fail if vibration not supported
-    }
-  }
-};
+/**
+ * Check if haptic feedback is available
+ */
+function isHapticsAvailable(): boolean {
+  return typeof window !== 'undefined' && 'vibrate' in navigator;
+}
 
-export const doubleTap = (): void => {
-  if (typeof navigator === 'undefined') return;
-  if ('vibrate' in navigator) {
+/**
+ * Single tap feedback (light)
+ */
+export function tap(): void {
+  if (isHapticsAvailable()) {
     try {
-      navigator.vibrate([10, 40, 10]);
-    } catch (err) {
-      // Silently fail if vibration not supported
-    }
-  }
-};
-
-export const success = (): void => {
-  if (typeof navigator === 'undefined') return;
-  if ('vibrate' in navigator) {
-    try {
-      navigator.vibrate([8, 20, 8, 20, 8]);
-    } catch (err) {
+      navigator.vibrate(10); // 10ms light tap
+    } catch (e) {
       // Silently fail
     }
   }
-};
+}
 
-export const error = (): void => {
-  if (typeof navigator === 'undefined') return;
-  if ('vibrate' in navigator) {
+/**
+ * Double tap feedback (medium)
+ */
+export function doubleTap(): void {
+  if (isHapticsAvailable()) {
     try {
-      navigator.vibrate([50, 50, 50]);
-    } catch (err) {
+      navigator.vibrate([10, 30, 15]); // tap-pause-tap pattern
+    } catch (e) {
       // Silently fail
     }
   }
-};
+}
+
+/**
+ * Success feedback (celebratory)
+ */
+export function success(): void {
+  if (isHapticsAvailable()) {
+    try {
+      navigator.vibrate([20, 50, 30, 50, 40]); // ascending pattern
+    } catch (e) {
+      // Silently fail
+    }
+  }
+}
+
+/**
+ * Error feedback (warning)
+ */
+export function error(): void {
+  if (isHapticsAvailable()) {
+    try {
+      navigator.vibrate([50, 100, 50]); // stronger, double pulse
+    } catch (e) {
+      // Silently fail
+    }
+  }
+}
+
+/**
+ * Long press feedback (sustained)
+ */
+export function longPress(): void {
+  if (isHapticsAvailable()) {
+    try {
+      navigator.vibrate(40); // 40ms sustained
+    } catch (e) {
+      // Silently fail
+    }
+  }
+}

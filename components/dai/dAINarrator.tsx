@@ -33,7 +33,7 @@ interface dAINarratorProps {
  *
  * Personality Evolution:
  * - Days 1-7: Formal, instructional ("I'm analyzing...")
- * - Days 8-30: Professional with occasional dry wit
+ * - Days 8-30: Professional with dry razor sharp wit
  * - Days 31+: Full dAI personality (subtle humor, light sarcasm)
  *
  * Message Types:

@@ -128,7 +128,7 @@ ory patch identity-config \
 ```
 
 ### 2. Add Environment Variables to Vercel
-- Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+- Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 - Add all variables listed above
 - Select environments: ✅ Production, ✅ Preview
 

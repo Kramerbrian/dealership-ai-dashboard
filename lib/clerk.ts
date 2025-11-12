@@ -1,7 +1,18 @@
 import { clerkClient } from '@clerk/nextjs/server';
 
-// Clerk configuration
+// Clerk configuration for dealershipai.com
 export const clerkConfig = {
+  // SSO Configuration
+  sso: {
+    enabled: true,
+    domain: 'dealershipai.com',
+    // Configure SSO in Clerk Dashboard:
+    // 1. Go to https://dashboard.clerk.com
+    // 2. Navigate to Configure → SSO Connections
+    // 3. Add custom domain: dealershipai.com
+    // 4. Configure DNS records as instructed
+  },
+  
   // OAuth providers configuration
   oauthProviders: {
     google: {
@@ -36,13 +47,14 @@ export const clerkConfig = {
     requireMFA: false, // For MVP
   },
   
-  // Redirect URLs
+  // Redirect URLs - Updated for onboarding flow
   redirects: {
-    signIn: '/auth/signin',
-    signUp: '/auth/signup',
-    afterSignIn: '/dashboard',
-    afterSignUp: '/dashboard',
+    signIn: '/sign-in',
+    signUp: '/sign-up',
+    afterSignIn: '/onboarding', // Redirect to onboarding first
+    afterSignUp: '/onboarding', // New users go to onboarding
     afterSignOut: '/',
+    afterOnboarding: '/dashboard', // After onboarding, go to dashboard
   },
 };
 
@@ -79,8 +91,18 @@ export async function hasRole(userId: string, role: string): Promise<boolean> {
 // Helper function to update user metadata
 export async function updateUserMetadata(userId: string, metadata: Record<string, any>) {
   try {
+    // Get existing user to merge metadata
+    const user = await clerkClient.users.getUser(userId);
+    const existingMetadata = (user.publicMetadata || {}) as Record<string, any>;
+    
+    // Merge new metadata with existing
+    const mergedMetadata = {
+      ...existingMetadata,
+      ...metadata,
+    };
+    
     await clerkClient.users.updateUserMetadata(userId, {
-      publicMetadata: metadata,
+      publicMetadata: mergedMetadata,
     });
     return true;
   } catch (error) {

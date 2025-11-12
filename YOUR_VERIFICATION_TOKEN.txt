@@ -1,0 +1,30 @@
+# Your Vercel Domain Verification Token
+
+vc-domain-verify=dealershipai.com,b6d0acdf14a0e0348f56
+
+## Add this TXT record in Squarespace:
+
+Type: TXT
+Host: _vercel
+Value: vc-domain-verify=dealershipai.com,b6d0acdf14a0e0348f56
+TTL: 3600 (or default)
+
+## Step-by-step:
+
+1. Squarespace is now open in your browser
+2. Click on: dealershipai.com
+3. Click: Advanced Settings
+4. Click: DNS Settings
+5. Click: Add Record
+6. Select Type: TXT
+7. Host: _vercel
+8. Value: Copy the verification string above
+9. Click: Save
+
+## After saving, run this command to monitor:
+
+./scripts/check-domain-verification.sh
+
+## Once TXT record is detected, run:
+
+./scripts/complete-domain-setup.sh

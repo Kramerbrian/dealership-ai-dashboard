@@ -1,0 +1,140 @@
+# DNS Records Configuration for dealershipai.com
+# Copy these records to your DNS provider (GoDaddy, Namecheap, Cloudflare, etc.)
+
+========================================
+VERCEL DOMAIN RECORDS
+========================================
+
+Record 1: Apex Domain
+Type:    A
+Name:    @ (or blank, or "dealershipai.com" depending on provider)
+Value:   76.76.21.21
+TTL:     3600 (or Auto)
+Note:    Points dealershipai.com to Vercel
+
+Record 2: WWW Subdomain
+Type:    CNAME
+Name:    www
+Value:   cname.vercel-dns.com
+TTL:     3600 (or Auto)
+Note:    Enables www.dealershipai.com (will redirect to apex)
+
+========================================
+RESEND EMAIL RECORDS
+========================================
+
+Record 3: SPF (Sender Policy Framework)
+Type:    TXT
+Name:    @ (or blank)
+Value:   v=spf1 include:_spf.resend.com ~all
+TTL:     3600
+Note:    Authorizes Resend to send email from your domain
+
+Record 4: DKIM Key 1 (DomainKeys Identified Mail)
+Type:    CNAME
+Name:    resend._domainkey
+Value:   resend._domainkey.resend.com
+TTL:     3600
+Note:    Email authentication key #1
+
+Record 5: DKIM Key 2
+Type:    CNAME
+Name:    resend2._domainkey
+Value:   resend2._domainkey.resend.com
+TTL:     3600
+Note:    Email authentication key #2
+
+Record 6: DMARC (Optional but Recommended)
+Type:    TXT
+Name:    _dmarc
+Value:   v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@dealershipai.com
+TTL:     3600
+Note:    Email policy and reporting
+
+========================================
+OPTIONAL: FUTURE SUBDOMAINS
+========================================
+
+Record 7: API Subdomain (Future)
+Type:    CNAME
+Name:    api
+Value:   cname.vercel-dns.com
+TTL:     3600
+Note:    For api.dealershipai.com
+
+Record 8: App Subdomain (Future)
+Type:    CNAME
+Name:    app
+Value:   cname.vercel-dns.com
+TTL:     3600
+Note:    For app.dealershipai.com (fleet dashboard)
+
+Record 9: Docs Subdomain (Future)
+Type:    CNAME
+Name:    docs
+Value:   cname.vercel-dns.com
+TTL:     3600
+Note:    For docs.dealershipai.com
+
+========================================
+IMPORTANT NOTES
+========================================
+
+1. DELETE EXISTING RECORDS FIRST
+   Before adding these records, remove any existing:
+   - A records for @ or www
+   - CNAME records for @ or www
+   - AAAA records for @ or www
+   - Parking page redirects
+
+2. CLOUDFLARE USERS
+   If using Cloudflare:
+   - Click the orange cloud icon to make it GRAY (DNS only)
+   - Do NOT proxy through Cloudflare
+   - Set SSL/TLS mode to "Full" or "Full (strict)"
+
+3. DNS PROPAGATION
+   - Changes take 5-30 minutes typically
+   - Maximum: 48 hours
+   - Check status: dig dealershipai.com
+
+4. VERIFICATION COMMANDS
+   # Check Vercel DNS
+   dig dealershipai.com
+   dig www.dealershipai.com
+
+   # Check Email DNS
+   dig TXT dealershipai.com
+   dig CNAME resend._domainkey.dealershipai.com
+
+   # Check SSL
+   curl -I https://dealershipai.com
+
+5. NEXT STEPS AFTER DNS
+   - Add domain in Vercel dashboard
+   - Wait for SSL certificate (automatic)
+   - Verify domain in Resend dashboard
+   - Update NEXT_PUBLIC_BASE_URL environment variable
+   - Test email sending
+
+========================================
+QUICK COPY-PASTE FORMAT
+========================================
+
+For providers that accept bulk import:
+
+@ A 76.76.21.21 3600
+www CNAME cname.vercel-dns.com 3600
+@ TXT "v=spf1 include:_spf.resend.com ~all" 3600
+resend._domainkey CNAME resend._domainkey.resend.com 3600
+resend2._domainkey CNAME resend2._domainkey.resend.com 3600
+_dmarc TXT "v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@dealershipai.com" 3600
+
+========================================
+CONTACT
+========================================
+
+Vercel Support: https://vercel.com/support
+Resend Support: https://resend.com/support
+DNS Checker: https://dnschecker.org
+SSL Test: https://www.ssllabs.com/ssltest/

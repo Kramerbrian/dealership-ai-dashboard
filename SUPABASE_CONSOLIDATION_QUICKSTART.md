@@ -89,7 +89,7 @@ DATABASE_URL="postgresql://postgres.[YOUR-NEW-PROJECT-REF]:[PASSWORD]@aws-0-us-w
 
 ### **Update Vercel Environment**
 
-1. **Go to**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+1. **Go to**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 2. **Update these variables**:
    ```bash
    NEXT_PUBLIC_SUPABASE_URL

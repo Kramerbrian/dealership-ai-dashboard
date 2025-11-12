@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Proxies to your dAI Schema Engine — set SCHEMA_ENGINE_URL
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+/**
+ * GET /api/schema/validate
+ * Proxies to your dAI Schema Engine — set SCHEMA_ENGINE_URL
+ */
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url).searchParams.get('url');
+  const url = new URL(req.url);
+  const targetUrl = url.searchParams.get('url');
   const base = process.env.SCHEMA_ENGINE_URL;
 
   if (!base) {
@@ -13,12 +20,16 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const r = await fetch(`${base.replace(/\/$/, '')}/validate?url=${encodeURIComponent(url || '')}`, {
-      cache: 'no-store'
-    });
+    const r = await fetch(
+      `${base.replace(/\/$/, '')}/validate?url=${encodeURIComponent(targetUrl || '')}`,
+      { cache: 'no-store' }
+    );
     const data = await r.json();
     return NextResponse.json(data);
   } catch (e: any) {
-    return NextResponse.json({ coverage: 0.0, errors: [e.message] }, { status: 502 });
+    return NextResponse.json(
+      { coverage: 0.0, errors: [e.message] },
+      { status: 502 }
+    );
   }
 }

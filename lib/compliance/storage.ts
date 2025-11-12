@@ -91,10 +91,16 @@ function getSupabaseClient() {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('[Storage] Supabase credentials not configured');
+      console.warn('[Storage] Supabase credentials not configured - storage features disabled');
+      return null;
     }
 
-    supabaseClient = createClient(supabaseUrl, supabaseKey);
+    try {
+      supabaseClient = createClient(supabaseUrl, supabaseKey);
+    } catch (error) {
+      console.warn('[Storage] Supabase initialization failed:', error);
+      return null;
+    }
   }
 
   return supabaseClient;

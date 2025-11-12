@@ -1,38 +1,32 @@
-/**
- * Bulk Origins API - CSV/JSON Ingest
- * Proxies bulk origin uploads to fleet API
- */
-
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRoleAndTenant } from '@/src/lib/auth/roles';
+import fs from 'fs';
+import path from 'path';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
-const BASE = process.env.FLEET_API_BASE || process.env.NEXT_PUBLIC_FLEET_API_BASE || '';
-const KEY = process.env.X_API_KEY || '';
-
+// Simple stub to persist uploaded origins to a json file; in prod, forward to backend orchestrator.
 export async function POST(req: NextRequest) {
-  if (!BASE) {
-    return NextResponse.json({ ok: false, error: 'FLEET_API_BASE not set' }, { status: 500 });
-  }
-
   try {
-    const body = await req.text();
-    
-    const response = await fetch(new URL('/api/origins/bulk', BASE).toString(), {
-      method: 'POST',
-      headers: {
-        'x-api-key': KEY,
-        'content-type': 'application/json',
-        'X-Orchestrator-Role': 'AI_CSO',
-      },
-      body,
-    });
+    const { role, tenant } = requireRoleAndTenant(req, ['admin', 'manager']);
+    const body = await req.json();
+    const items = Array.isArray(body?.origins) ? body.origins : [];
+    if (!items.length) return NextResponse.json({ ok:false, error:'No origins provided' }, { status:400 });
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
-  } catch (error: any) {
-    console.error('Bulk origins error:', error);
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    const targetDir = path.join(process.cwd(), 'public', 'data');
+    const targetFile = path.join(targetDir, `origins_${tenant || 'default'}.json`);
+    await fs.promises.mkdir(targetDir, { recursive: true });
+
+    let prev: any[] = [];
+    if (fs.existsSync(targetFile)) {
+      try { prev = JSON.parse(fs.readFileSync(targetFile,'utf8')); } catch { /* ignore */ }
+    }
+
+    const merged = [...prev, ...items];
+    await fs.promises.writeFile(targetFile, JSON.stringify(merged, null, 2));
+
+    return NextResponse.json({ ok: true, saved: items.length, total: merged.length, tenant });
+  } catch (e:any) {
+    return NextResponse.json({ ok:false, error: e?.message || 'failed' }, { status: 500 });
   }
 }
-

@@ -11,7 +11,8 @@ import { useUser } from '@clerk/nextjs';
 import IntelligenceShell from '@/components/cognitive/IntelligenceShell';
 import OrchestratorView from '@/components/cognitive/OrchestratorView';
 import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
-import PulseInbox from '@/components/pulse/PulseInbox';
+// TODO: Re-enable when PulseInbox is implemented
+// import PulseInbox from '@/components/pulse/PulseInbox';
 import ZeroClickCard from '@/components/zero-click/ZeroClickCard';
 import AiriCard from '@/components/zero-click/AiriCard';
 import { 
@@ -258,7 +259,10 @@ export default function CinematicDashboard({ dealerId, domain }: CinematicDashbo
                 variants={depthLayerVariants}
                 className="bg-gray-900/80 backdrop-blur-2xl rounded-2xl border border-white/10 p-6 shadow-2xl"
               >
-                <PulseInbox />
+                {/* TODO: Re-enable when PulseInbox is implemented */}
+                <div className="text-center text-gray-400 py-12">
+                  <p>Pulse Inbox - Coming Soon</p>
+                </div>
               </motion.div>
             </motion.div>
           )}
@@ -279,28 +283,30 @@ export default function CinematicDashboard({ dealerId, domain }: CinematicDashbo
       </motion.div>
 
       {/* Depth Layer 3: Floating Particles (Optional) */}
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-emerald-400/20 rounded-full"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
-            }}
-            animate={{
-              y: [null, -100, -200],
-              opacity: [0, 0.5, 0],
-            }}
-            transition={{
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: 'linear',
-            }}
-          />
-        ))}
-      </div>
+      {typeof window !== 'undefined' && (
+        <div className="fixed inset-0 -z-10 pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-emerald-400/20 rounded-full"
+              initial={{
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
+                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
+              }}
+              animate={{
+                y: [null, -100, -200],
+                opacity: [0, 0.5, 0],
+              }}
+              transition={{
+                duration: Math.random() * 10 + 10,
+                repeat: Infinity,
+                delay: Math.random() * 5,
+                ease: 'linear',
+              }}
+            />
+          ))}
+        </div>
+      )}
     </IntelligenceShell>
   );
 }

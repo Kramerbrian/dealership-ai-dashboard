@@ -1,286 +1,190 @@
-# ✅ DealershipAI Dashboard - Setup Complete!
+# ✅ Setup Complete - Next Steps
 
-## 🎉 Congratulations! Everything is Ready
+## 🎉 Installation Complete!
 
----
-
-## ✅ What's Been Completed
-
-### 1. Code & Deployment
-- ✅ **DealershipAIDashboardLA component** created with full EEAT functionality
-- ✅ **Deployed to Vercel production** successfully
-- ✅ **Git commit** created and pushed
-- ✅ **Build completed** without errors
-- ✅ **Dashboard live** at `/dash` route
-
-### 2. Features Implemented
-- ✅ **Executive Dashboard** with SEO (87.3), AEO (73.8), GEO (65.2) metrics
-- ✅ **Revenue Impact** tracking ($367K)
-- ✅ **Trust Score** display (92/100)
-- ✅ **AI Opportunities Engine** with deployment actions
-- ✅ **Interactive EEAT Modals** with improvement opportunities
-- ✅ **7-tab Navigation** system (Overview, AI Health, Website, Schema, Reviews, War Room, Settings)
-- ✅ **Real-time status** indicators and clock
-- ✅ **Mobile responsive** design
-
-### 3. Documentation Created
-- ✅ **DOMAIN_SUMMARY.md** - Quick overview of all 3 domains
-- ✅ **COMPLETE_DOMAIN_SETUP.md** - Comprehensive domain configuration guide
-- ✅ **DEPLOYMENT_SUCCESS_DASH.md** - Full deployment guide
-- ✅ **QUICK_START_DASH.md** - 2-step quick start
-- ✅ **VERCEL_DEPLOYMENT_FIX.md** - Technical reference
-- ✅ **add-all-domains.sh** - Automated domain setup script
-
-### 4. Configuration Fixed
-- ✅ **Vercel root directory** corrected (set to blank/root)
-- ✅ **Build command** configured properly
-- ✅ **Project linked** to Vercel correctly
+All dependencies have been installed and configuration files are ready.
 
 ---
 
-## 🌐 Production URLs
+## 📋 Setup Checklist
 
-### Current Live URLs
-- **Production Vercel**: https://dealership-ai-dashboard-brian-kramers-projects.vercel.app
-- **Dashboard Route**: https://dealership-ai-dashboard-brian-kramers-projects.vercel.app/dash
-- **Deployment ID**: dpl_6ZHjr7WXqw7rBEp6GxGCWjNq13TP
+### ✅ Completed
+- [x] Dependencies installed (`@supabase/supabase-js`, `@upstash/ratelimit`, `@upstash/redis`, `zustand`, `recharts`)
+- [x] `.env.local` created from `.env.example`
+- [x] Supabase migration file created
+- [x] Setup documentation created
 
-### Custom Domains (After DNS Setup)
-- **main.dealershipai.com** → Main application
-- **marketing.dealershipai.com** → Marketing site
-- **dash.dealershipai.com/dash** → Dashboard ⭐
+### 🔄 Next Steps
 
----
+#### 1. Configure Environment Variables
 
-## 📋 Domain Setup Instructions
+Edit `.env.local` and fill in your values:
 
-### Quick Setup (2 Steps)
-
-#### Step 1: Add Domains to Vercel
-**Option A - Automated:**
 ```bash
-./add-all-domains.sh
+# Required
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Supabase (Required for telemetry)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+
+# Upstash Redis (Optional but recommended)
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token
+
+# DealershipAI GPT API
+DAI_API_KEY=sk-proj-...
+NEXT_PUBLIC_DAI_API_KEY=sk-proj-...
 ```
 
-**Option B - Manual:**
-Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+#### 2. Set Up Supabase
 
-Add these domains:
-1. `main.dealershipai.com`
-2. `marketing.dealershipai.com`
-3. `dash.dealershipai.com`
+**Option A: SQL Editor (Recommended)**
+1. Go to your Supabase project dashboard
+2. Navigate to **SQL Editor**
+3. Copy and paste the SQL from `supabase/migrations/20250111000001_create_telemetry_events.sql`
+4. Click **Run**
 
-#### Step 2: Add DNS Records
-In your domain registrar, add 3 CNAME records:
-
-```
-Type: CNAME, Name: main, Value: cname.vercel-dns.com, TTL: 300
-Type: CNAME, Name: marketing, Value: cname.vercel-dns.com, TTL: 300
-Type: CNAME, Name: dash, Value: cname.vercel-dns.com, TTL: 300
-```
-
-**Wait 5-60 minutes** for DNS propagation, then test!
-
----
-
-## 🧪 Testing Your Dashboard
-
-### Access the Dashboard
-1. Open: https://dealership-ai-dashboard-brian-kramers-projects.vercel.app/dash
-2. Authenticate with Vercel if needed
-
-### Test Checklist
-- [ ] Dashboard loads and displays all metrics
-- [ ] Click SEO card → Modal opens with details
-- [ ] Click AEO card → EEAT modal shows Authority improvements
-- [ ] Click GEO card → EEAT modal shows Experience improvements
-- [ ] Click "Deploy" on FAQ Schema → Alert displays
-- [ ] Click "Create Content" on keyword opportunity → Alert displays
-- [ ] Switch to "AI Health" tab → Content changes
-- [ ] Switch to "Settings" tab → Settings page loads
-- [ ] Modal close button (×) works
-- [ ] Live status shows current time
-- [ ] Mobile view is responsive
-
-### Verify After Custom Domain Setup
-- [ ] https://dash.dealershipai.com/dash loads
-- [ ] SSL certificate is valid (green padlock)
-- [ ] All features work on custom domain
-- [ ] No mixed content warnings
-
----
-
-## 📊 Project Statistics
-
-### Deployment Info
-- **Deploy Time**: ~4 seconds
-- **Build Status**: Success ✅
-- **Total Routes**: 227+
-- **Upload Size**: 74.9KB
-- **Server**: iad1 (US East)
-
-### Code Stats
-- **Commit Hash**: 7cc6711
-- **Files Changed**: 1 (app/dash/page.tsx)
-- **Lines Added**: 549
-- **Component**: DealershipAIDashboardLA
-- **Framework**: Next.js
-- **Styling**: CSS-in-JS (styled-jsx)
-
----
-
-## 🔍 Monitoring & Maintenance
-
-### Useful Commands
+**Option B: Supabase CLI**
 ```bash
-# Check all deployments
-vercel ls
-
-# Inspect current deployment
-vercel inspect https://dealership-ai-dashboard-brian-kramers-projects.vercel.app
-
-# Check domain status
-vercel domains ls
-
-# View logs
-vercel logs https://dealership-ai-dashboard-brian-kramers-projects.vercel.app
-
-# Check DNS propagation
-dig dash.dealershipai.com
-
-# Test HTTPS
-curl -I https://dash.dealershipai.com/dash
+supabase link --project-ref your-project-ref
+supabase db push
 ```
 
-### Vercel Dashboard Links
-- **Project**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
-- **Domains**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
-- **Deployments**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/deployments
-- **Settings**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
+See `SUPABASE_SETUP.md` for detailed instructions.
 
----
+#### 3. Set Up Upstash Redis (Optional)
 
-## 📚 Documentation Reference
+1. Go to [Upstash Console](https://console.upstash.com/)
+2. Create a new Redis database
+3. Copy REST URL and token
+4. Add to `.env.local`
 
-### Quick Reference
-| Document | Use When |
-|----------|----------|
-| **DOMAIN_SUMMARY.md** | Setting up all 3 domains |
-| **QUICK_START_DASH.md** | Quick dashboard setup |
-| **DEPLOYMENT_SUCCESS_DASH.md** | Complete deployment info |
-| **COMPLETE_DOMAIN_SETUP.md** | Detailed domain config |
+See `UPSTASH_SETUP.md` for detailed instructions.
 
-### Technical Reference
-| Document | Use When |
-|----------|----------|
-| **VERCEL_DEPLOYMENT_FIX.md** | Troubleshooting Vercel |
-| **vercel.json** | Configuring routes/headers |
-| **add-all-domains.sh** | Automating domain setup |
+#### 4. Test the Installation
 
----
+```bash
+# Start development server
+pnpm run dev
 
-## 🎯 Success Metrics
-
-### Deployment
-- ✅ Code committed to git
-- ✅ Vercel configuration fixed
-- ✅ Production deployment successful
-- ✅ Dashboard accessible at /dash
-- ✅ All features functional
-- ✅ Build completed without errors
-- ✅ Documentation complete
-
-### Ready for Production
-- ✅ Component optimized and tested
-- ✅ Error handling implemented
-- ✅ Responsive design verified
-- ✅ Security headers configured
-- ✅ CORS settings proper
-- ✅ SSL ready (auto-provisioned)
-
----
-
-## 🚀 Next Steps (Optional)
-
-### Immediate
-1. Add custom domains (when ready)
-2. Configure DNS records
-3. Test all three domains
-4. Verify SSL certificates
-
-### Future Enhancements
-- Connect to real backend APIs
-- Add user authentication
-- Integrate analytics tracking
-- Expand placeholder tabs with real content
-- Add more EEAT improvement categories
-- Implement profile editing functionality
-- Connect to live data sources
-
----
-
-## 🎊 Final Status
-
-### System Status: ✅ FULLY OPERATIONAL
-
-```
-┌─────────────────────────────────────────┐
-│  DealershipAI Dashboard                 │
-│  Status: LIVE & READY                   │
-│                                          │
-│  ✅ Code Deployed                        │
-│  ✅ Dashboard Live                       │
-│  ✅ Features Functional                  │
-│  ✅ Documentation Complete               │
-│  ⏳ Custom Domains Ready to Configure   │
-└─────────────────────────────────────────┘
+# In another terminal, test telemetry endpoint
+curl -X POST http://localhost:3000/api/telemetry \
+  -H "Content-Type: application/json" \
+  -d '{"type":"test_event","payload":{"test":true}}'
 ```
 
-### Production URLs
-- **Dashboard**: https://dealership-ai-dashboard-brian-kramers-projects.vercel.app/dash
-- **Custom (after setup)**: https://dash.dealershipai.com/dash
-
-### Features Live
-- SEO/AEO/GEO Visibility Metrics
-- Revenue Impact Analytics
-- Trust Score Display
-- AI Opportunities Engine
-- Interactive EEAT Modals
-- 7-Tab Navigation
-- Real-time Status Indicators
+Expected response: `{"ok":true}`
 
 ---
 
-## 💡 Pro Tips
+## 🚀 Quick Start Commands
 
-1. **Bookmark the production URL** for quick access
-2. **Keep documentation handy** for future reference
-3. **Test thoroughly** before announcing to users
-4. **Monitor Vercel dashboard** for deployment status
-5. **Set up alerts** for downtime monitoring
-6. **Use low TTL** (300) initially for quick DNS changes
-7. **Test on multiple devices** and browsers
+```bash
+# Install dependencies (already done)
+pnpm install
 
----
+# Start development server
+pnpm run dev
 
-## 🙏 Thank You!
+# Build for production
+pnpm run build
 
-Your DealershipAI Dashboard is now live and ready to help dealerships optimize their AI visibility!
-
-The dashboard provides:
-- Real-time AI visibility metrics
-- Actionable improvement opportunities
-- Revenue impact tracking
-- Interactive EEAT analysis
-- One-click deployment actions
-
-**Everything is set up and ready to go!** 🚀
+# Start production server
+pnpm start
+```
 
 ---
 
-**Deployment Date**: October 16, 2025
-**Status**: ✅ Complete & Live
-**Next**: Configure custom domains (optional)
-**Support**: See documentation files for help
+## 📚 Documentation
 
-🎉 **Congratulations on your successful deployment!** 🎉
+- **Supabase Setup:** See `SUPABASE_SETUP.md`
+- **Upstash Setup:** See `UPSTASH_SETUP.md`
+- **Production Ready:** See `PRODUCTION_READY_100_PERCENT.md`
+
+---
+
+## 🔍 Verification
+
+After setup, verify everything works:
+
+1. **Environment Variables**
+   ```bash
+   # Check .env.local exists and has values
+   cat .env.local | grep -v "^#" | grep "="
+   ```
+
+2. **Supabase Connection**
+   - Test telemetry endpoint (should return `{"ok":true}`)
+   - Check Supabase dashboard → Table Editor → `telemetry_events`
+
+3. **Rate Limiting**
+   - Make 31 requests to `/api/telemetry` quickly
+   - 31st request should return `429 Too Many Requests`
+
+4. **Onboarding Flow**
+   - Visit `/onboarding`
+   - Should see multi-step stepper
+
+5. **Admin Dashboard**
+   - Visit `/admin` (requires admin role)
+   - Should see analytics dashboard
+
+---
+
+## ⚠️ Important Notes
+
+1. **Supabase is Required** for telemetry to work
+   - Without it, telemetry endpoint returns `{"ok":true, "warn":"no supabase (dev mode)"}`
+   - Events won't be stored
+
+2. **Upstash is Optional** but recommended
+   - Without it, rate limiting uses in-memory fallback
+   - Works for development, not ideal for production
+
+3. **Clerk is Required** for authentication
+   - All protected routes require Clerk
+   - Admin routes require admin role
+
+---
+
+## 🆘 Troubleshooting
+
+### "Module not found" errors
+```bash
+# Reinstall dependencies
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+```
+
+### Environment variables not loading
+- Restart dev server after editing `.env.local`
+- Check variable names match exactly (case-sensitive)
+- No quotes around values in `.env.local`
+
+### Supabase connection errors
+- Verify `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are correct
+- Check Supabase project is active
+- Verify table exists: `SELECT * FROM telemetry_events LIMIT 1;`
+
+### Rate limiting not working
+- Check Upstash credentials are correct
+- Verify environment variables are loaded
+- Check browser console for errors
+
+---
+
+## 🎯 You're Ready!
+
+Once you've:
+1. ✅ Filled in `.env.local`
+2. ✅ Created Supabase table
+3. ✅ (Optional) Set up Upstash Redis
+
+You're ready to run:
+```bash
+pnpm run dev
+```
+
+And start building! 🚀

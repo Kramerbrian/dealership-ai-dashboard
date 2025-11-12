@@ -1,0 +1,102 @@
+name: Claude Export Auto-Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'v*-claude'
+  workflow_dispatch:
+    inputs:
+      force_export:
+        description: 'Force export generation'
+        required: false
+        default: 'true'
+
+jobs:
+  export-and-deploy:
+    name: Generate Claude Export & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Make export script executable
+        run: chmod +x scripts/export-for-claude.sh
+
+      - name: Generate Claude export
+        run: ./scripts/export-for-claude.sh
+        env:
+          NODE_ENV: production
+
+      - name: Verify export was created
+        run: |
+          if [ ! -f "public/claude/dealershipai_claude_export.zip" ]; then
+            echo "Error: Export ZIP not found!"
+            exit 1
+          fi
+          echo "Export size: $(du -h public/claude/dealershipai_claude_export.zip | cut -f1)"
+          echo "Export created successfully!"
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+      - name: Get deployment URL
+        id: get-url
+        run: |
+          echo "Deployment completed!"
+          echo "Export available at: https://dealership-ai-dashboard.vercel.app/claude/dealershipai_claude_export.zip"
+
+      - name: Create GitHub Release (if tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: public/claude/dealershipai_claude_export.zip
+          body: |
+            ## Claude Export Package
+
+            **Download**: [dealershipai_claude_export.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/dealershipai_claude_export.zip)
+
+            **Live URL**: https://dealership-ai-dashboard.vercel.app/claude/dealershipai_claude_export.zip
+
+            ### Claude Handoff Prompt
+
+            \`\`\`
+            Load project from https://dealership-ai-dashboard.vercel.app/claude/dealershipai_claude_export.zip
+
+            Manifest: /exports/manifest.json
+
+            Build cinematic Next.js 14 interface with Clerk + Framer Motion.
+            Use the cognitive interface patterns and maintain brand hue continuity.
+            \`\`\`
+
+            ### What's Included
+
+            - Complete source code (app, components, lib)
+            - Configuration files
+            - Project manifest with AI guidance
+            - Auto-generated documentation (INDEX.md, README.md)
+            - All cognitive interface components
+
+            **Size**: ~2.1 MB
+            **Version**: ${{ github.ref_name }}
+            **Commit**: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

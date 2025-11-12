@@ -1,147 +1,104 @@
-# Environment Variables Setup Guide
+# 🔑 Environment Variables Setup Guide
 
-This guide explains how to set up the required environment variables in Vercel for the DealershipAI Fleet Agent integration.
+## Current Status
 
-## Required Environment Variables
+✅ **SUPABASE_URL** - Already set  
+❌ **SUPABASE_SERVICE_KEY** - **REQUIRED** - Get from Supabase Dashboard  
+⚠️ **UPSTASH_REDIS_REST_URL** - Optional (for rate limiting)  
+⚠️ **UPSTASH_REDIS_REST_TOKEN** - Optional (for rate limiting)
 
-### 1. FLEET_API_BASE
-**Description:** Base URL for the fleet API service  
-**Example:** `https://api.internal.dealershipai.com`  
-**Required for:** Fleet dashboard, bulk operations, cron jobs
+## Quick Setup
 
-### 2. X_API_KEY
-**Description:** API key for authenticating with the fleet API  
-**Example:** `sk_live_xxxxxxxxxxxxx`  
-**Required for:** All fleet API requests
+### 1. Get SUPABASE_SERVICE_KEY (Required)
 
-### 3. CRON_SECRET
-**Description:** Secret token for securing cron job endpoints  
-**Example:** Generate a strong random string (32+ characters)  
-**Required for:** Fleet refresh cron jobs  
-**Security:** Keep this secret - it protects your cron endpoints
+**From Supabase Dashboard:**
+1. Go to https://supabase.com/dashboard
+2. Select your project
+3. Navigate to **Settings** → **API**
+4. Scroll to **Project API keys**
+5. Find the **`service_role`** key (⚠️ Secret - never expose publicly)
+6. Copy it
 
-### 4. UPSTASH_REDIS_REST_URL
-**Description:** Upstash Redis REST API URL  
-**Example:** `https://your-redis.upstash.io`  
-**Required for:** Caching AI scores and fleet data
-
-### 5. UPSTASH_REDIS_REST_TOKEN
-**Description:** Upstash Redis REST API token  
-**Example:** `AXxxxxxxxxxxxxxxxxxxxxx`  
-**Required for:** Redis authentication
-
-## Setting Up in Vercel
-
-### Method 1: Vercel Dashboard
-1. Go to your Vercel project dashboard
-2. Navigate to **Settings** → **Environment Variables**
-3. Add each variable:
-   - **Name:** Variable name (e.g., `FLEET_API_BASE`)
-   - **Value:** Your actual value
-   - **Environment:** Select `Production`, `Preview`, and `Development` as needed
-4. Click **Save**
-
-### Method 2: Vercel CLI
+**Add to .env.local:**
 ```bash
-# Set environment variables
-vercel env add FLEET_API_BASE production
-vercel env add X_API_KEY production
-vercel env add CRON_SECRET production
-vercel env add UPSTASH_REDIS_REST_URL production
-vercel env add UPSTASH_REDIS_REST_TOKEN production
-
-# Pull to local .env.local (for development)
-vercel env pull .env.local
+SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### Method 3: Bulk Import
-Create a `.env.production` file:
+### 2. Get Upstash Credentials (Optional but Recommended)
+
+**From Upstash Console:**
+1. Go to https://console.upstash.com
+2. Create a new Redis database (free tier: 10K commands/day)
+3. Go to database details
+4. Copy **REST URL** and **REST TOKEN**
+
+**Add to .env.local:**
 ```bash
-FLEET_API_BASE=https://api.internal.dealershipai.com
-X_API_KEY=sk_live_xxxxxxxxxxxxx
-CRON_SECRET=your-secret-token-here-32-chars-min
 UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AXxxxxxxxxxxxxxxxxxxxxx
+UPSTASH_REDIS_REST_TOKEN=your_token_here
 ```
 
-Then use:
+### 3. From Vercel (If Deployed)
+
+If your keys are in Vercel:
+1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+2. Copy the values
+3. Add them to `.env.local` for local development
+
+## Verify Setup
+
+Run the check script:
 ```bash
-vercel env pull .env.production production
+node scripts/check-env.js
 ```
 
-## Generating CRON_SECRET
+## Test After Setup
 
-Use a secure random generator:
-```bash
-# Using openssl
-openssl rand -hex 32
+Once you've added the keys:
 
-# Using Node.js
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-## Verification
-
-After setting variables, verify they're working:
-
-1. **Check Status Endpoint:**
+1. **Restart dev server:**
    ```bash
-   curl https://your-app.vercel.app/api/status
+   # Stop current server (Ctrl+C)
+   npm run dev
    ```
 
-2. **Test Fleet Dashboard:**
-   - Visit `/fleet` after authentication
-   - Should load rooftop list (even if empty)
-
-3. **Test AI Scores Proxy:**
+2. **Test telemetry endpoint:**
    ```bash
-   curl "https://your-app.vercel.app/api/ai-scores?origin=https://example.com"
+   curl -X POST http://localhost:3000/api/telemetry \
+     -H "Content-Type: application/json" \
+     -d '{"type":"test","payload":{"test":true},"ts":1234567890}'
    ```
 
-## Local Development Setup
+3. **Check admin setup:**
+   ```bash
+   curl http://localhost:3000/api/admin/setup
+   ```
 
-Create `.env.local`:
-```bash
-FLEET_API_BASE=https://api.internal.dealershipai.com
-X_API_KEY=sk_live_xxxxxxxxxxxxx
-CRON_SECRET=dev-secret-for-local-testing
-UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AXxxxxxxxxxxxxxxxxxxxxx
-```
+## What Each Variable Does
 
-**Never commit `.env.local` to git!** It's already in `.gitignore`.
+- **SUPABASE_URL** - Your Supabase project URL (already set ✅)
+- **SUPABASE_SERVICE_KEY** - Allows API to write to database (required ❌)
+- **UPSTASH_REDIS_REST_URL** - For rate limiting (optional ⚠️)
+- **UPSTASH_REDIS_REST_TOKEN** - For rate limiting (optional ⚠️)
+- **SCHEMA_ENGINE_URL** - Schema validation service (optional)
+- **NEXT_PUBLIC_BASE_URL** - App base URL (already set ✅)
+
+## Security Notes
+
+⚠️ **Never commit .env.local to git** (already in .gitignore ✅)  
+⚠️ **Never expose service_role key** in client-side code  
+✅ Service role key is safe in `.env.local` (server-side only)
 
 ## Troubleshooting
 
-### Issue: "FLEET_API_BASE not set"
-- Ensure variable is set in Vercel for the correct environment
-- Redeploy after adding variables
-- Check variable name matches exactly (case-sensitive)
+### "Supabase not configured"
+- Check `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set
+- Restart dev server after adding vars
 
-### Issue: "unauthorized" from cron jobs
-- Verify `CRON_SECRET` is set correctly
-- Check authorization header format: `Bearer YOUR_SECRET`
-- Ensure secret matches between Vercel cron config and environment variable
+### "Table does not exist"
+- Create the table using SQL from `supabase/migrations/001_telemetry_events.sql`
+- Run in Supabase SQL Editor
 
-### Issue: Redis connection failures
-- Verify `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are correct
-- Check Upstash dashboard for active Redis instance
-- Ensure Redis is in same region as your Vercel deployment for best performance
-
-## Security Best Practices
-
-1. **Never commit secrets** to git
-2. **Use different secrets** for production/preview/development
-3. **Rotate secrets regularly** (especially if exposed)
-4. **Use Vercel's secret management** instead of hardcoding
-5. **Restrict API keys** to necessary permissions only
-
-## Next Steps
-
-After setting up environment variables:
-1. Deploy to production: `npx vercel --prod`
-2. Test the Free Audit Widget on landing page
-3. Test Fleet Dashboard at `/fleet`
-4. Verify cron jobs are scheduled in Vercel dashboard
-5. Test manual cron trigger (see `TESTING_GUIDE.md`)
-
+### Rate limiting not working
+- Upstash is optional - endpoints will work without it
+- Rate limiting just won't be enforced without Upstash

@@ -1,139 +1,67 @@
-'use client';
-
 /**
- * Sonic Palette - Audio cues for UI interactions
- * Uses WebAudio API for consistent, low-latency sounds
+ * Sound Palette
+ * Provides audio feedback cues for UI interactions
+ * Uses Web Audio API for crisp, low-latency sounds
  */
 
-type SonicEvent = 'pulse' | 'autofix' | 'resolved' | 'error' | 'success' | 'click' | 'open' | 'close';
+type SoundType = 'pulse' | 'autofix' | 'success' | 'error' | 'click';
 
-let audioContext: AudioContext | null = null;
-
-// Initialize audio context on first interaction
-export function initSonicPalette(): void {
-  if (typeof window === 'undefined') return;
-  if (audioContext) return;
+// Simple sine wave generator for UI sounds
+function createTone(frequency: number, duration: number, volume: number = 0.1): void {
+  if (typeof window === 'undefined' || !window.AudioContext) return;
 
   try {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-  } catch (err) {
-    console.warn('WebAudio not supported');
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+
+    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+  } catch (e) {
+    // Silently fail if audio not available
   }
 }
 
-export function playSonic(event: SonicEvent): void {
-  if (!audioContext) initSonicPalette();
-  if (!audioContext) return;
+const soundMap: Record<SoundType, () => void> = {
+  pulse: () => createTone(523.25, 0.08, 0.08), // C5 - gentle notification
+  autofix: () => {
+    // Two-tone: ascending perfect fifth
+    createTone(392, 0.06, 0.06); // G4
+    setTimeout(() => createTone(587.33, 0.08, 0.06), 40); // D5
+  },
+  success: () => {
+    // Happy triad
+    createTone(523.25, 0.06, 0.05); // C5
+    setTimeout(() => createTone(659.25, 0.06, 0.05), 30); // E5
+    setTimeout(() => createTone(783.99, 0.1, 0.05), 60); // G5
+  },
+  error: () => createTone(196, 0.15, 0.1), // G3 - low warning
+  click: () => createTone(880, 0.03, 0.04), // A5 - quick tap
+};
 
-  const now = audioContext.currentTime;
-  const osc = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  osc.connect(gain);
-  gain.connect(audioContext.destination);
-
-  // Map events to frequencies and patterns
-  switch (event) {
-    case 'pulse':
-      osc.frequency.setValueAtTime(440, now); // A4
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-      osc.start(now);
-      osc.stop(now + 0.1);
-      break;
-
-    case 'autofix':
-      osc.frequency.setValueAtTime(523.25, now); // C5
-      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-      osc.start(now);
-      osc.stop(now + 0.15);
-      break;
-
-    case 'resolved':
-      osc.frequency.setValueAtTime(659.25, now); // E5
-      osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12); // G5
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-      osc.start(now);
-      osc.stop(now + 0.12);
-      break;
-
-    case 'error':
-      osc.frequency.setValueAtTime(220, now); // A3
-      gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start(now);
-      osc.stop(now + 0.2);
-      break;
-
-    case 'success':
-      // Triple ascending tones
-      playTone(523.25, 0.08, 0.12, now); // C5
-      playTone(659.25, 0.08, 0.12, now + 0.08); // E5
-      playTone(783.99, 0.12, 0.15, now + 0.16); // G5
-      return; // Don't disconnect osc/gain (already handled in playTone)
-
-    case 'click':
-      osc.frequency.setValueAtTime(800, now);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-      osc.start(now);
-      osc.stop(now + 0.05);
-      break;
-
-    case 'open':
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.exponentialRampToValueAtTime(600, now + 0.12);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-      osc.start(now);
-      osc.stop(now + 0.12);
-      break;
-
-    case 'close':
-      osc.frequency.setValueAtTime(600, now);
-      osc.frequency.exponentialRampToValueAtTime(400, now + 0.12);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-      osc.start(now);
-      osc.stop(now + 0.12);
-      break;
-
-    default:
-      osc.frequency.setValueAtTime(440, now);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-      osc.start(now);
-      osc.stop(now + 0.1);
+/**
+ * Play a sonic cue
+ * @param type - Type of sound to play
+ */
+export function playSonic(type: SoundType): void {
+  const sound = soundMap[type];
+  if (sound) {
+    sound();
   }
 }
 
-function playTone(frequency: number, duration: number, volume: number, startTime: number): void {
-  if (!audioContext) return;
-
-  const osc = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  osc.connect(gain);
-  gain.connect(audioContext.destination);
-
-  osc.frequency.setValueAtTime(frequency, startTime);
-  gain.gain.setValueAtTime(volume, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-
-  osc.start(startTime);
-  osc.stop(startTime + duration);
-}
-
-// Initialize on first user interaction
-if (typeof window !== 'undefined') {
-  const initOnInteraction = () => {
-    initSonicPalette();
-    document.removeEventListener('click', initOnInteraction);
-    document.removeEventListener('keydown', initOnInteraction);
-  };
-  document.addEventListener('click', initOnInteraction, { once: true });
-  document.addEventListener('keydown', initOnInteraction, { once: true });
+/**
+ * Check if Web Audio API is available
+ */
+export function isAudioAvailable(): boolean {
+  return typeof window !== 'undefined' && !!(window.AudioContext || (window as any).webkitAudioContext);
 }

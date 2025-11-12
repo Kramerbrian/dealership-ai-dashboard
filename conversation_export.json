@@ -1,0 +1,140 @@
+{
+  "project_name": "DealershipAI Cognitive Interface 3.0",
+  "exported_at": "2025-11-09T00:00:00Z",
+  "source": "Cursor IDE / Auto",
+  "target_compatible": ["Claude Code", "Cursor IDE", "VSCode Copilot"],
+  "purpose": "Continue development, landing→onboarding→dashboard orchestration, cinematic PLG UX",
+  "import_instructions": [
+    "Drop this file into Claude Code or Cursor.",
+    "Claude: type `/load conversation_export.json` or drag into chat.",
+    "Cursor: drag into sidebar → right-click → 'Ask AI about this repo' or use @import conversation_export.json"
+  ],
+  "context_summary": {
+    "core_framework": "Next.js 14 + React 18 + Clerk + Framer Motion + Tailwind + Zustand",
+    "main_pages": [
+      "app/(mkt)/page.tsx — cinematic landing with Clerk CTA (SignInButton/SignUpButton)",
+      "app/(marketing)/onboarding/page.tsx — onboarding with PVR + Ad PVR inputs (5 steps)",
+      "app/(dashboard)/preview/page.tsx — orchestrator dashboard with cinematic sequence",
+      "app/drive/page.tsx — pulse-driven dashboard",
+      "app/layout.tsx — middleware for Clerk and global theme"
+    ],
+    "cinematic_sequence": [
+      "TronAcknowledgment → OrchestratorReadyState → PulseAssimilation → SystemOnlineOverlay"
+    ],
+    "cinematic_components": [
+      "components/cognitive/TronAcknowledgment.tsx — System acknowledgment with Tron-style grid",
+      "components/cognitive/OrchestratorReadyState.tsx — Ready state with status grid",
+      "components/cognitive/PulseAssimilation.tsx — Animated pulse data assimilation",
+      "components/cognitive/SystemOnlineOverlay.tsx — Final system online confirmation"
+    ],
+    "personalization": {
+      "hook": "lib/hooks/useBrandHue.ts",
+      "logic": "Dealer domain → deterministic HSL hue (0–360)",
+      "functions": [
+        "useBrandHue(domain) — returns hue number",
+        "getBrandHSL(hue, saturation, lightness) — returns HSL color string",
+        "getBrandCSSVar(hue) — returns CSS custom property"
+      ],
+      "propagates_to": [
+        "TronAcknowledgment",
+        "OrchestratorReadyState",
+        "PulseAssimilation",
+        "SystemOnlineOverlay"
+      ]
+    },
+    "plg_journey": {
+      "1": "Landing collects dealer domain via FreeAuditWidget",
+      "2": "Clerk login (SignInButton/SignUpButton) → redirects to onboarding",
+      "3": "Onboarding Step 4: User enters PVR + Ad Expense PVR → POST /api/save-metrics",
+      "4": "Onboarding Step 5: Launch Orchestrator → /dashboard/preview",
+      "5": "TronAcknowledgment plays (3s auto-transition)",
+      "6": "OrchestratorReadyState → user clicks Proceed",
+      "7": "PulseAssimilation → fetches /api/pulse/snapshot, animates pulses",
+      "8": "SystemOnlineOverlay → user clicks Enter Dashboard",
+      "9": "Redirect to /dashboard"
+    },
+    "api_routes": [
+      "POST /api/save-metrics — saves PVR and Ad Expense PVR to Clerk metadata",
+      "GET /api/pulse/snapshot — returns pulse feed for assimilation",
+      "POST /api/user/onboarding-complete — marks onboarding complete"
+    ],
+    "store_integration": {
+      "file": "lib/store.ts",
+      "hook": "useOnboarding()",
+      "new_fields": [
+        "pvr: string | undefined",
+        "adExpensePvr: string | undefined",
+        "setPvr: (s: string) => void",
+        "setAdExpensePvr: (s: string) => void"
+      ]
+    },
+    "deployment": {
+      "build": "Vercel",
+      "scripts": [
+        "npm run dev — local preview",
+        "npm run build — production build"
+      ],
+      "environment_variables": [
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        "CLERK_SECRET_KEY",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN"
+      ]
+    },
+    "dependencies": {
+      "framer-motion": "^10.18.0 (already installed)",
+      "@clerk/nextjs": "^5.7.5 (already installed)",
+      "zustand": "^4.5.7 (already installed)",
+      "next": "^15.5.6",
+      "react": "^18.0.0"
+    },
+    "file_structure": {
+      "hooks": "lib/hooks/useBrandHue.ts",
+      "components": "components/cognitive/*.tsx (4 cinematic components)",
+      "pages": [
+        "app/(mkt)/page.tsx",
+        "app/(marketing)/onboarding/page.tsx",
+        "app/(dashboard)/preview/page.tsx"
+      ],
+      "api": "app/api/save-metrics/route.ts",
+      "store": "lib/store.ts"
+    },
+    "implementation_status": {
+      "personalization_hook": "✅ Complete",
+      "cinematic_components": "✅ Complete (4/4)",
+      "orchestrator_preview": "✅ Complete",
+      "onboarding_pvr_step": "✅ Complete",
+      "api_save_metrics": "✅ Complete",
+      "store_pvr_support": "✅ Complete",
+      "landing_clerk_cta": "✅ Already exists"
+    },
+    "next_steps": [
+      "Test full flow: Landing → Clerk → Onboarding → PVR → Preview → Dashboard",
+      "Verify store hook PVR fields work correctly",
+      "Add error handling for API failures",
+      "Add loading states during cinematic transitions",
+      "Optional: Add sound effects to cinematic components",
+      "Optional: Add skip option during cinematic sequence"
+    ]
+  },
+  "claude_load_prompt": {
+    "system": "You are an expert in TypeScript, React, Next.js 14, and design systems. You understand the DealershipAI Cognitive Interface 3.0 architecture and cinematic PLG UX patterns.",
+    "user": "Load context from conversation_export.json. Continue building the DealershipAI Cognitive Interface cinematic experience. The system includes:\n\n1. Landing page with Clerk authentication\n2. Onboarding flow with PVR metrics collection\n3. Cinematic sequence (TronAcknowledgment → OrchestratorReadyState → PulseAssimilation → SystemOnlineOverlay)\n4. Personalization via useBrandHue hook\n5. Store integration with Zustand\n\nFocus on completing any remaining integration work, testing the flow, and enhancing the cinematic experience."
+  },
+  "key_implementation_details": {
+    "brand_hue_algorithm": "Simple hash of domain string, mapped to 0-360 hue range",
+    "cinematic_timing": {
+      "tron_acknowledgment": "3000ms auto-transition",
+      "ready_state": "Manual proceed button",
+      "pulse_assimilation": "800ms per pulse, auto-completes",
+      "system_online": "Manual dismiss button"
+    },
+    "pvr_validation": "Both PVR and Ad Expense PVR required before proceeding",
+    "metadata_storage": "PVR metrics saved to Clerk user.publicMetadata",
+    "pulse_data_source": "Fetched from /api/pulse/snapshot?domain=...",
+    "domain_extraction": "From user.publicMetadata.website_url or sessionStorage"
+  }
+}
+

@@ -3,13 +3,27 @@
  * Multi-model AI orchestration with cost optimization and failover
  */
 
-import { ChatAnthropic } from '@anthropic-ai/sdk';
-import { ChatOpenAI } from '@langchain/openai';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { RunnableSequence } from '@langchain/core/runnables';
-import { Embeddings } from '@langchain/openai';
-import { pgvector } from '@langchain/postgres';
-import type { Message } from '@langchain/core/messages';
+// LangChain imports - optional, fallback if not installed
+let ChatAnthropic: any = null;
+let ChatOpenAI: any = null;
+let OpenAIEmbeddings: any = null;
+let ChatPromptTemplate: any = null;
+let RunnableSequence: any = null;
+type Message = any;
+
+try {
+  const anthropic = require('@langchain/anthropic');
+  const openai = require('@langchain/openai');
+  const prompts = require('@langchain/core/prompts');
+  const runnables = require('@langchain/core/runnables');
+  ChatAnthropic = anthropic.ChatAnthropic;
+  ChatOpenAI = openai.ChatOpenAI;
+  OpenAIEmbeddings = openai.OpenAIEmbeddings;
+  ChatPromptTemplate = prompts.ChatPromptTemplate;
+  RunnableSequence = runnables.RunnableSequence;
+} catch {
+  // LangChain is optional - use fallback implementations
+}
 
 export interface AITask {
   type: 'summarize' | 'reason' | 'code' | 'schema' | 'chat' | 'embedding';
@@ -72,12 +86,12 @@ let anthropicHaiku: ChatAnthropic | null = null;
 let anthropicSonnet: ChatAnthropic | null = null;
 let openaiGPT4o: ChatOpenAI | null = null;
 let openaiGPT4Turbo: ChatOpenAI | null = null;
-let embeddings: Embeddings | null = null;
+let embeddings: OpenAIEmbeddings | null = null;
 
 function getAnthropicHaiku() {
   if (!anthropicHaiku) {
     anthropicHaiku = new ChatAnthropic({
-      modelName: 'claude-3-haiku-20240307',
+      model: 'claude-3-haiku-20240307',
       temperature: 0.7,
       maxTokens: 4096,
       anthropicApiKey: process.env.ANTHROPIC_API_KEY,
@@ -89,7 +103,7 @@ function getAnthropicHaiku() {
 function getAnthropicSonnet() {
   if (!anthropicSonnet) {
     anthropicSonnet = new ChatAnthropic({
-      modelName: 'claude-3-sonnet-20240229',
+      model: 'claude-3-sonnet-20240229',
       temperature: 0.7,
       maxTokens: 4096,
       anthropicApiKey: process.env.ANTHROPIC_API_KEY,
@@ -124,7 +138,7 @@ function getOpenAIGPT4Turbo() {
 
 function getEmbeddings() {
   if (!embeddings) {
-    embeddings = new Embeddings({
+    embeddings = new OpenAIEmbeddings({
       modelName: 'text-embedding-3-large',
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
@@ -135,10 +149,10 @@ function getEmbeddings() {
 /**
  * Vector cache for failover context (pgvector)
  */
+import { getCachedContext as fetchCachedContext } from './vector-cache';
+
 export async function getCachedContext(query: string, limit = 3) {
-  // TODO: Connect to Supabase pgvector
-  // For now, return empty array
-  return [];
+  return await fetchCachedContext(query, limit);
 }
 
 /**
@@ -214,7 +228,7 @@ export async function executeAITask(task: AITask): Promise<AIResponse> {
         // Retrieve cached context from vector store
         const cachedContext = await getCachedContext(task.input);
         const contextPrompt = cachedContext.length > 0
-          ? `Previous context:\n${cachedContext.map(c => c.content).join('\n')}\n\nCurrent task: ${task.input}`
+          ? `Previous context:\n${cachedContext.map((c: { content: string }) => c.content).join('\n')}\n\nCurrent task: ${task.input}`
           : task.input;
 
         const chain = RunnableSequence.from([

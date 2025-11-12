@@ -84,7 +84,7 @@ API_SECRET=your_api_secret_for_signatures
 ```
 
 ### **2. Fix Vercel Project Settings:**
-- Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
+- Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
 - Change Root Directory from `apps/web` to `.` (root directory)
 
 ### **3. Deploy Secured APIs:**

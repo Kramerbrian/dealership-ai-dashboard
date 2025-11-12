@@ -26,6 +26,7 @@ import CompetitiveIntel from './CompetitiveIntel';
 import SessionCounter from './SessionCounter';
 import TierBadge from './TierBadge';
 import UpgradeModal from './UpgradeModal';
+import AIVStrip from '@/components/visibility/AIVStrip';
 
 interface User {
   id: string;
@@ -224,6 +225,9 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* AIV Strip */}
+              <AIVStrip domain={undefined} className="hidden md:flex" />
+              
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}

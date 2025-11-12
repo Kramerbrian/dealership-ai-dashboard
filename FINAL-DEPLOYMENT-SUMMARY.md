@@ -53,7 +53,7 @@ I cannot modify Vercel dashboard settings through the CLI. You must complete the
 **Why:** Vercel is configured with wrong root directory: `~/dealership-ai-dashboard/apps/web/apps/web`
 
 **Action:**
-1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
+1. Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
 2. Scroll to **"Build & Development Settings"**
 3. Click **"Edit"** next to **"Root Directory"**
 4. Change to: **`.`** (just a single dot)
@@ -65,7 +65,7 @@ I cannot modify Vercel dashboard settings through the CLI. You must complete the
 
 ### Step 2: Add Environment Variables to Vercel
 
-**Go to:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+**Go to:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 
 **Reference:** Open `ADD-TO-VERCEL-NOW.txt` (has all values ready to copy)
 
@@ -156,8 +156,8 @@ All files are in: `/Users/briankramer/dealership-ai-dashboard/`
 
 All already opened for you:
 
-- **Vercel Settings:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
-- **Vercel Env Vars:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+- **Vercel Settings:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
+- **Vercel Env Vars:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 - **Supabase Database:** https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw/settings/database
 - **Ory Console:** https://console.ory.sh/projects/360ebb8f-2337-48cd-9d25-fba49a262f9c
 

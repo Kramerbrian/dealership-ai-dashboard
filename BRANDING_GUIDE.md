@@ -21,11 +21,11 @@ Air Traffic Control Tower = Monitoring every signal, predicting patterns, optimi
 
 ## 🎨 Brand Voice
 
-### Ryan Reynolds meets Dave Chappelle
-- **Witty**: Self-aware humor that doesn't try too hard
-- **Honest**: Transparent about what we can and can't do
-- **Smart**: Technical depth without jargon overload
-- **Approachable**: Enterprise power with consumer-friendly UX
+### The Voice: Confident Wit with Sharp Intelligence
+- **Witty**: Self-aware humor that doesn't try too hard — clever without being desperate
+- **Honest**: Transparent about what we can and can't do — no false promises, no marketing fluff
+- **Smart**: Technical depth without jargon overload — intelligence that serves, not shows off
+- **Approachable**: Enterprise power with consumer-friendly UX — serious capability, zero pretension
 
 ### What We Say
 ✅ "Your Command Center for dealership intelligence"
@@ -199,18 +199,18 @@ Always show: "50x cost reduction through geographic pooling ($0.625 → $0.0125 
 
 ---
 
-## 🎬 Ryan Reynolds References (Use Sparingly)
+## 🎬 Cultural References (Use Sparingly)
 
 ### Approved References
-✅ Green Lantern (self-deprecating)
-✅ Marvel contract (renewal jokes)
-✅ Aviation Gin (only if alcohol-appropriate context)
-✅ Maximum effort (when launching features)
+✅ Self-deprecating humor about past mistakes
+✅ Renewal/contract jokes (when appropriate)
+✅ "Maximum effort" energy (when launching features)
+✅ Light pop culture nods that don't require deep knowledge
 
 ### Off-Limits
-❌ Deadpool violence/crude humor
-❌ Movie spoilers
-❌ Anything requiring deep movie knowledge
+❌ Violence or crude humor
+❌ Spoilers or deep-cut references
+❌ Anything requiring extensive cultural knowledge
 ❌ References that date the product
 
 ---
@@ -259,7 +259,7 @@ Before releasing any customer-facing content:
 - [ ] Does wit enhance clarity or obscure it?
 - [ ] Are we transparent about accuracy and limitations?
 - [ ] Does it match our Apple Park aesthetic?
-- [ ] Would Ryan Reynolds approve this joke?
+- [ ] Does the wit enhance or obscure the message?
 - [ ] Can a dealership GM understand it in 5 seconds?
 - [ ] Does it make us look confident without being arrogant?
 

@@ -1,82 +1,185 @@
-# 🚀 Quick Deploy Checklist
+# ⚡ Quick Deploy Guide
 
-## Immediate Setup (5 minutes)
+## 🚀 Fastest Path to Production
 
-### 1. Environment Variables (Vercel Dashboard)
-
-Go to: **Vercel Dashboard → Your Project → Settings → Environment Variables**
-
-Add these **5 required variables**:
-```bash
-FLEET_API_BASE=https://your-fleet-api.com
-X_API_KEY=your-api-key-here
-CRON_SECRET=your-secure-secret-min-32-chars
-UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-UPSTASH_REDIS_REST_TOKEN=xxx
-```
-
-**⚠️ Important:** Set for **Production**, **Preview**, and **Development** environments.
-
-### 2. First Commit
+### Option 1: Interactive Script (Recommended)
 
 ```bash
-git add app/page.tsx components/landing/FreeAuditWidget.tsx lib/types/AiScores.ts app/api/ai-scores/ lib/redis.ts
-git commit -m "feat: landing page hero + instant analyzer skeleton"
-git push
+./scripts/deploy.sh
 ```
 
-### 3. Deploy to Vercel
+This script will guide you through each step interactively.
 
-**Option A: Auto-deploy from Git**
-- Connect repo to Vercel (if not already)
-- Push to main branch → auto-deploys
+---
 
-**Option B: Manual CLI deploy**
-```bash
-npx vercel --prod
-```
+### Option 2: Manual Steps
 
-### 4. Verify Deployment
-
-✅ **Landing Page:** `https://your-domain.com`  
-✅ **Free Audit Widget:** Scroll to hero section, test with `https://www.exampledealer.com`  
-✅ **Fleet Dashboard:** `https://your-domain.com/fleet` (requires auth)  
-✅ **Status Endpoint:** `https://your-domain.com/api/status`
-
-### 5. Test Cron Jobs
+#### 1. Configure Environment
 
 ```bash
-# Get your CRON_SECRET from Vercel env vars
-curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  https://your-app.vercel.app/api/cron/fleet-refresh
+# Edit .env.local with your actual values
+# Required: Clerk, Supabase, DealershipAI API keys
+nano .env.local  # or use your preferred editor
 ```
 
-**Expected:** `{ "ok": true, "queued": 0, "total": 0 }`
+**Critical Variables:**
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_KEY`
+- `DAI_API_KEY`
 
-## 🎯 What's Live
+---
 
-- ✅ **Landing Page Hero** with Free Audit Widget
-- ✅ **AI Scores API Proxy** with Redis caching
-- ✅ **Fleet Dashboard** (5k rooftops support)
-- ✅ **Bulk Origins API** (CSV/JSON ingest)
-- ✅ **Cron Fleet Refresh** (8am, 12pm, 4pm ET)
-- ✅ **Auto-Fix Engine** stub ready
-- ✅ **Seed Script** for bulk imports
+#### 2. Run Supabase Migration
 
-## 📝 Next Steps
+**Find your project reference:**
+1. Go to Supabase Dashboard → Settings → General
+2. Copy the **Reference ID**
 
-1. **Seed Origins** (when ready):
-   ```bash
-   node scripts/seed-origins.mjs ./data/dealers.csv
-   ```
+**Link and push:**
+```bash
+# Login (first time only)
+supabase login
 
-2. **Monitor Logs**: Vercel Dashboard → Project → Logs
+# Link your project
+supabase link --project-ref YOUR_PROJECT_REF
 
-3. **Test with Real Data**: Use actual dealership URLs
+# Push migration
+supabase db push
+```
 
-## 🔗 Resources
+**Or use SQL Editor:**
+1. Go to Supabase Dashboard → SQL Editor
+2. Copy SQL from `supabase/migrations/20250111000001_create_telemetry_events.sql`
+3. Paste and click **Run**
 
-- **Full Guide:** See `DEPLOYMENT_SETUP_GUIDE.md`
-- **Environment Setup:** See `ENV_SETUP_GUIDE.md`
-- **Testing:** See `TESTING_GUIDE.md`
+---
 
+#### 3. Test Locally
+
+```bash
+pnpm run dev
+```
+
+**Test these:**
+- Visit `http://localhost:3000`
+- Test sign-in/sign-up
+- Test `/api/health`
+- Test `/api/telemetry` (POST)
+
+Press `Ctrl+C` to stop.
+
+---
+
+#### 4. Build
+
+```bash
+pnpm run build
+```
+
+**Fix any errors before deploying.**
+
+---
+
+#### 5. Deploy to Vercel
+
+**Option A: Via Dashboard (Recommended)**
+1. Push code to GitHub
+2. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+3. Import your repository
+4. Add all environment variables from `.env.local`
+5. Click **Deploy**
+
+**Option B: Via CLI**
+```bash
+# Install Vercel CLI (if not installed)
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+**Important:** Add all environment variables to Vercel:
+- Go to Project → Settings → Environment Variables
+- Add each variable from `.env.local`
+- Set for **Production**, **Preview**, and **Development**
+
+---
+
+## ✅ Verification Checklist
+
+After deployment, verify:
+
+- [ ] Production URL loads
+- [ ] `/api/health` returns `{"ok":true}`
+- [ ] Authentication works (sign-in/sign-up)
+- [ ] Onboarding flow works
+- [ ] Dashboard loads for authenticated users
+- [ ] Admin dashboard accessible (if admin user)
+- [ ] Telemetry endpoint works
+- [ ] No errors in Vercel logs
+
+---
+
+## 🆘 Troubleshooting
+
+### Build Fails
+```bash
+# Check for TypeScript errors
+pnpm run type-check
+
+# Check for lint errors
+pnpm run lint
+```
+
+### Environment Variables Not Loading
+- Verify variables are set in Vercel Dashboard
+- Check variable names match exactly (case-sensitive)
+- Restart deployment after adding variables
+
+### Supabase Connection Errors
+- Verify `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are correct
+- Check Supabase project is active
+- Verify table exists: `SELECT * FROM telemetry_events LIMIT 1;`
+
+### Authentication Not Working
+- Verify Clerk keys are correct
+- Check middleware configuration
+- Verify environment variables in Vercel
+
+---
+
+## 📞 Need Help?
+
+- **Supabase Setup:** See `SUPABASE_SETUP.md`
+- **Upstash Setup:** See `UPSTASH_SETUP.md`
+- **Full Checklist:** See `DEPLOYMENT_CHECKLIST.md`
+
+---
+
+## 🎯 Quick Commands Summary
+
+```bash
+# 1. Configure
+nano .env.local
+
+# 2. Supabase
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+
+# 3. Test
+pnpm run dev
+
+# 4. Build
+pnpm run build
+
+# 5. Deploy
+# Push to GitHub → Deploy via Vercel Dashboard
+# Or: vercel --prod
+```
+
+---
+
+**Ready? Run `./scripts/deploy.sh` to get started! 🚀**

@@ -21,7 +21,7 @@
 
 ## Step 2: Add Domains to NEW Project ⏳
 
-**Go to**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+**Go to**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 - [ ] Add `main.dealershipai.com`
   - Click "Add Domain" → Enter domain → Click Add

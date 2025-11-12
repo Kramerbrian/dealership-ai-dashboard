@@ -1,0 +1,134 @@
+{
+  "project_name": "DealershipAI Cognitive Interface",
+  "version": "3.0.0",
+  "description": "A Next.js 14 + Clerk + Framer Motion orchestration system for automotive AI visibility, trust, and PLG onboarding.",
+  "framework": {
+    "app": "Next.js 14",
+    "ui": "React 18",
+    "motion": "Framer Motion 11",
+    "auth": "Clerk",
+    "styling": "Tailwind CSS 3.4",
+    "state": "Zustand",
+    "build_target": "Vercel Edge"
+  },
+  "entry_points": {
+    "landing": "app/(mkt)/page.tsx",
+    "onboarding": "app/(marketing)/onboarding/page.tsx",
+    "dashboard": "app/(dashboard)/dashboard/page.tsx",
+    "preview": "app/(dashboard)/preview/page.tsx",
+    "drive": "app/drive/page.tsx",
+    "admin": "app/(admin)/admin/page.tsx"
+  },
+  "middleware": {
+    "auth": "middleware.ts",
+    "description": "Clerk middleware handles session and propagates user.publicMetadata for personalization."
+  },
+  "api_routes": {
+    "marketpulse_compute": "app/api/marketpulse/compute/route.ts",
+    "save_metrics": "app/api/save-metrics/route.ts",
+    "telemetry": "app/api/telemetry/route.ts",
+    "health": "app/api/health/route.ts",
+    "pulse_impacts": "app/api/pulse/impacts/route.ts",
+    "pulse_radar": "app/api/pulse/radar/route.ts",
+    "pulse_snapshot": "app/api/pulse/snapshot/route.ts"
+  },
+  "cinematic_components": {
+    "tron_ack": "components/cognitive/TronAcknowledgment.tsx",
+    "ready_state": "components/cognitive/OrchestratorReadyState.tsx",
+    "pulse_assimilation": "components/cognitive/PulseAssimilation.tsx",
+    "system_online": "components/cognitive/SystemOnlineOverlay.tsx"
+  },
+  "clay_components": {
+    "description": "Clay.ai UX enhancement components",
+    "path": "components/clay/*"
+  },
+  "pulse_components": {
+    "description": "Pulse dashboard visualization components",
+    "path": "components/pulse/*",
+    "key_files": [
+      "components/pulse/ImpactLedger.tsx",
+      "components/pulse/ZeroClickHeat.tsx"
+    ]
+  },
+  "hooks": {
+    "brand_hue": "lib/hooks/useBrandHue.ts",
+    "reduced_motion": "lib/hooks/useReducedMotion.ts"
+  },
+  "stores": {
+    "main": "lib/store.ts",
+    "description": "Zustand state management with cognitive and preferences slices"
+  },
+  "adapters": {
+    "ga4": "lib/adapters/ga4.ts",
+    "reviews": "lib/adapters/reviews.ts",
+    "schema": "lib/adapters/schema.ts",
+    "visibility": "lib/adapters/visibility.ts",
+    "utils": "lib/adapters/utils.ts"
+  },
+  "data_flow": [
+    "Landing → Clerk (middleware) → Onboarding",
+    "Onboarding → /api/marketpulse → /api/save-metrics",
+    "TronAcknowledgment → OrchestratorReadyState → PulseAssimilation → Dashboard"
+  ],
+  "personalization": {
+    "enabled": true,
+    "source": "dealer domain hash",
+    "hook": "useBrandHue",
+    "propagates_to": [
+      "SystemOnlineOverlay",
+      "OrchestratorReadyState",
+      "PulseAssimilation"
+    ]
+  },
+  "plg_journey": {
+    "awareness": "Landing page collects dealer URL + role",
+    "conversion": "Clerk login with URL context handoff",
+    "activation": "Onboarding scan + PVR input",
+    "adoption": "Pulse dashboard auto-actions",
+    "advocacy": "Clarity Reports + Slack webhooks"
+  },
+  "security": {
+    "auth_provider": "Clerk",
+    "rate_limit": "100 req/min per user",
+    "sensitive_fields": ["dealer", "pvr", "adPvr"],
+    "encrypted_at_rest": true
+  },
+  "env_keys": [
+    "CLERK_SECRET_KEY",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "NEXT_PUBLIC_CLERK_SIGN_IN_URL",
+    "NEXT_PUBLIC_CLERK_SIGN_UP_URL",
+    "ORCHESTRATOR_API",
+    "ORCHESTRATOR_TOKEN",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "SLACK_METRICS_WEBHOOK"
+  ],
+  "database": {
+    "provider": "Supabase",
+    "migrations_path": "supabase/migrations/",
+    "key_tables": [
+      "telemetry_events",
+      "dealers",
+      "integrations"
+    ]
+  },
+  "repository": {
+    "url": "https://github.com/Kramerbrian/dealership-ai-dashboard",
+    "branch": "main",
+    "current_branch": "refactor/route-groups",
+    "deploy_target": "https://dealershipai.vercel.app"
+  },
+  "ai_guidance": {
+    "claude_compatible": true,
+    "cursor_ready": true,
+    "recommended_prompt": "Load manifest.json and generate a new app/(mkt)/page.tsx integrating PLG onboarding flow, brand tint, and Clerk middleware CTA to dash.dealershipai.com."
+  },
+  "maintainers": [
+    { "name": "Brian Kramer", "role": "Architect", "contact": "brian@dealershipai.com" }
+  ],
+  "last_updated": "2025-11-10T00:00:00Z"
+}

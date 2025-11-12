@@ -1,83 +1,92 @@
-# 🔴 Upstash Redis Setup Guide
+# ⚡ Upstash Redis Setup Guide
 
-## Step 1: Create Upstash Account
-1. Go to [upstash.com](https://upstash.com)
-2. Sign up for a free account
-3. Verify your email
+## Why Upstash Redis?
 
-## Step 2: Login to Upstash CLI
+Upstash Redis provides serverless Redis for rate limiting. It's optional but recommended for production.
+
+**Without Upstash:** Rate limiting uses in-memory fallback (resets on server restart)  
+**With Upstash:** Persistent rate limiting across deployments
+
+## Quick Setup
+
+### 1. Create Upstash Redis Database
+
+1. Go to [Upstash Console](https://console.upstash.com/)
+2. Click **Create Database**
+3. Choose:
+   - **Name:** `dealershipai-rate-limit` (or your choice)
+   - **Type:** Regional (recommended) or Global
+   - **Region:** Choose closest to your deployment
+4. Click **Create**
+
+### 2. Get Your Credentials
+
+After creating the database:
+
+1. Click on your database
+2. Go to **Details** tab
+3. Copy:
+   - **UPSTASH_REDIS_REST_URL** (REST API endpoint)
+   - **UPSTASH_REDIS_REST_TOKEN** (REST API token)
+
+### 3. Add to .env.local
+
 ```bash
-npx @upstash/cli auth login
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token-here
 ```
 
-## Step 3: Create Redis Database
-```bash
-# List available regions
-npx @upstash/cli redis list-regions
+## Rate Limits Configured
 
-# Create a new Redis database
-npx @upstash/cli redis create --name dealershipai-redis --region us-east-1
-```
+| Endpoint Type | Limit | Window |
+|--------------|-------|--------|
+| Telemetry | 30 requests | 1 minute |
+| Public API | 60 requests | 1 minute |
+| Strict | 10 requests | 1 minute |
 
-## Step 4: Get Connection Details
-```bash
-# List your Redis databases
-npx @upstash/cli redis list
+## Testing
 
-# Get connection details for your database
-npx @upstash/cli redis get [database-id]
-```
-
-## Step 5: Update Vercel Environment Variables
-Once you have your Redis database, update the environment variables in Vercel:
+Test rate limiting:
 
 ```bash
-# Update Redis URL
-npx vercel env rm UPSTASH_REDIS_REST_URL production
-npx vercel env add UPSTASH_REDIS_REST_URL production
-
-# Update Redis token
-npx vercel env rm UPSTASH_REDIS_REST_TOKEN production
-npx vercel env add UPSTASH_REDIS_REST_TOKEN production
+# Make 31 requests quickly (should get rate limited on 31st)
+for i in {1..31}; do
+  curl -X POST http://localhost:3000/api/telemetry \
+    -H "Content-Type: application/json" \
+    -d '{"type":"test"}'
+  echo ""
+done
 ```
 
-## Step 6: Test Redis Connection
-```bash
-# Test Redis connection
-npx @upstash/cli redis connect [database-id]
-```
+You should see `429 Too Many Requests` on the 31st request.
 
-## Alternative: Manual Setup
-If you prefer to set up through the web interface:
+## Fallback Behavior
 
-1. Go to [console.upstash.com](https://console.upstash.com)
-2. Create a new Redis database
-3. Copy the REST URL and token
-4. Update Vercel environment variables
+If Upstash is not configured:
+- Rate limiting still works (in-memory)
+- Limits reset on server restart
+- Perfect for development
+- Not recommended for production
 
-## Redis CLI Commands
-```bash
-# Connect to Redis
-npx @upstash/cli redis connect [database-id]
+## Troubleshooting
 
-# Run Redis commands
-redis> SET test "Hello World"
-redis> GET test
-redis> KEYS *
-redis> FLUSHDB
-```
+### "Invalid URL"
+- Check `UPSTASH_REDIS_REST_URL` format: should be `https://...`
+- No trailing slash
 
-## Production Redis Setup
-For production, consider:
-- **Region:** Choose closest to your users
-- **TLS:** Enable for security
-- **Backup:** Enable automatic backups
-- **Monitoring:** Set up alerts
+### "Unauthorized"
+- Verify `UPSTASH_REDIS_REST_TOKEN` is correct
+- Token should be the REST API token (not Redis password)
 
-## Free Tier Limits
-- **10,000 requests/day**
-- **256MB storage**
-- **1 database**
-- **7 days retention**
+### Rate limiting not working
+- Check environment variables are loaded
+- Restart dev server after adding env vars
+- Check browser console for errors
 
-Perfect for development and small production deployments!
+## Cost
+
+Upstash Free Tier:
+- 10,000 commands/day
+- Perfect for development and small production deployments
+
+Paid plans start at $0.20/100K commands.
