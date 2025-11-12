@@ -11,6 +11,10 @@ import AiriCard from '@/components/zero-click/AiriCard';
 import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
 import PulseInbox from '@/components/pulse/PulseInbox';
 import VitalsBadge from '@/components/hud/VitalsBadge';
+import { PulseDock } from '@/components/hud/PulseDock';
+import { CommandPalette } from '@/components/hud/CommandPalette';
+import { ToastContainer } from '@/components/hud/ToastContainer';
+import { HotCorner } from '@/components/hud/HotCorner';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +49,10 @@ export default function DashboardPage() {
   return (
     <>
       <VitalsBadge />
+      <PulseDock />
+      <CommandPalette />
+      <ToastContainer />
+      <HotCorner />
       <IntelligenceShell dealerId={dealerId} showCognitionBar={true}>
         {/* Orchestrator View - AI CSO Status */}
         <div className="mb-8">
