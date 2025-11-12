@@ -39,22 +39,22 @@ export default function OrchestratorCommandCenter() {
   }
 
   const tabs = [
-    { key: "status", label: "AI CSO Status", icon: <Brain className="w-4 h-4"/> },
-    { key: "dai", label: "dAI Chat", icon: <MessageSquare className="w-4 h-4"/> },
-    { key: "ai", label: "AI Health", icon: <Activity className="w-4 h-4"/> },
-    { key: "asr", label: "ASR Intelligence", icon: <ShieldCheck className="w-4 h-4"/> },
-    { key: "plugin", label: "Plugin Health", icon: <LineChart className="w-4 h-4"/> },
-    { key: "scenario", label: "Scenario Simulator", icon: <FlaskConical className="w-4 h-4"/> },
-    { key: "mystery-shop", label: "Mystery Shop", icon: <ShoppingBag className="w-4 h-4"/> }
+    { key: "status", label: "System Status", icon: <Brain className="w-4 h-4"/> },
+    { key: "dai", label: "AI Assistant Chat", icon: <MessageSquare className="w-4 h-4"/> },
+    { key: "ai", label: "AI Health Check", icon: <Activity className="w-4 h-4"/> },
+    { key: "asr", label: "Safety Reports", icon: <ShieldCheck className="w-4 h-4"/> },
+    { key: "plugin", label: "Tool Status", icon: <LineChart className="w-4 h-4"/> },
+    { key: "scenario", label: "What-If Simulator", icon: <FlaskConical className="w-4 h-4"/> },
+    { key: "mystery-shop", label: "Competitor Check", icon: <ShoppingBag className="w-4 h-4"/> }
   ] as const;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Cognitive Ops Platform</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">AI Command Center</h1>
         <p className="text-slate-400">
-          Your AI Chief Strategy Officer is continuously auditing, predicting, fixing, and explaining decisions.
+          Your AI assistant watches your dealership's online presence, finds problems, and suggests ways to improve.
         </p>
       </div>
 
@@ -82,23 +82,23 @@ export default function OrchestratorCommandCenter() {
           <>
             <OrchestratorStatusPanel dealerId={dealerId} />
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Cognitive Ops Principles</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">How This System Works</h3>
               <div className="space-y-3 text-sm text-slate-300">
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-400 mt-1.5" />
-                  <p><strong className="text-white">Zero Guessing:</strong> Every metric traceable to evidence</p>
+                  <p><strong className="text-white">No Guessing:</strong> Every number comes from real data we can show you</p>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-400 mt-1.5" />
-                  <p><strong className="text-white">Invisible Power:</strong> Advanced computation, calm presentation</p>
+                  <p><strong className="text-white">Smart but Simple:</strong> We do complex work behind the scenes, but show you easy-to-understand results</p>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full bg-purple-400 mt-1.5" />
-                  <p><strong className="text-white">Eternal Learning:</strong> System refines itself continuously</p>
+                  <p><strong className="text-white">Always Learning:</strong> The system gets smarter over time as it learns more about your dealership</p>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full bg-amber-400 mt-1.5" />
-                  <p><strong className="text-white">Provenance & Proof:</strong> All insights cryptographically signed</p>
+                  <p><strong className="text-white">Trusted Results:</strong> All recommendations are backed by proof you can verify</p>
                 </div>
               </div>
             </div>
