@@ -12,8 +12,13 @@ echo "🔐 Adding Supabase Database Password to Vercel"
 echo "Project: $PROJECT"
 echo ""
 
-# Check if vercel CLI is installed
-if ! command -v vercel &> /dev/null; then
+# Try to find vercel CLI
+VERCEL_CMD=""
+if command -v vercel &> /dev/null; then
+  VERCEL_CMD="vercel"
+elif command -v npx &> /dev/null; then
+  VERCEL_CMD="npx vercel"
+else
   echo "❌ Vercel CLI not found"
   echo "   Install with: npm i -g vercel"
   echo ""
@@ -27,9 +32,9 @@ if ! command -v vercel &> /dev/null; then
 fi
 
 # Check if logged in
-if ! vercel whoami &> /dev/null; then
+if ! $VERCEL_CMD whoami &> /dev/null; then
   echo "⚠️  Not logged in to Vercel"
-  echo "   Run: vercel login"
+  echo "   Run: $VERCEL_CMD login"
   exit 1
 fi
 
@@ -38,16 +43,16 @@ echo ""
 
 # Add SUPABASE_DB_PASSWORD for all environments
 echo "Adding SUPABASE_DB_PASSWORD..."
-echo "$PASSWORD" | vercel env add SUPABASE_DB_PASSWORD production
-echo "$PASSWORD" | vercel env add SUPABASE_DB_PASSWORD preview
-echo "$PASSWORD" | vercel env add SUPABASE_DB_PASSWORD development
+echo "$PASSWORD" | $VERCEL_CMD env add SUPABASE_DB_PASSWORD production
+echo "$PASSWORD" | $VERCEL_CMD env add SUPABASE_DB_PASSWORD preview
+echo "$PASSWORD" | $VERCEL_CMD env add SUPABASE_DB_PASSWORD development
 
 # Add DATABASE_PASSWORD for all environments
 echo ""
 echo "Adding DATABASE_PASSWORD..."
-echo "$PASSWORD" | vercel env add DATABASE_PASSWORD production
-echo "$PASSWORD" | vercel env add DATABASE_PASSWORD preview
-echo "$PASSWORD" | vercel env add DATABASE_PASSWORD development
+echo "$PASSWORD" | $VERCEL_CMD env add DATABASE_PASSWORD production
+echo "$PASSWORD" | $VERCEL_CMD env add DATABASE_PASSWORD preview
+echo "$PASSWORD" | $VERCEL_CMD env add DATABASE_PASSWORD development
 
 echo ""
 echo "✅ Environment variables added successfully!"
