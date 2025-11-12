@@ -36,6 +36,7 @@ const publicRoutes = [
   '/api/claude/stats',
   '/api/claude/manifest',
   '/api/claude/export',
+  '/api/claude/download',
   '/api/schema/validate',
   '/api/schema/status',
   '/api/schema',
@@ -70,12 +71,15 @@ function isPublicRoute(pathname: string): boolean {
     pathname.startsWith('/(mkt)') ||
     pathname.startsWith('/api/v1/') ||
     pathname.startsWith('/api/claude/') ||
+    pathname === '/api/claude/download' ||
     pathname.startsWith('/api/schema') ||
     pathname.startsWith('/.well-known/') ||
     pathname.startsWith('/api/gpt/') ||
     pathname.startsWith('/api/test') ||
     pathname.startsWith('/pricing') ||
-    pathname.startsWith('/instant')
+    pathname.startsWith('/instant') ||
+    pathname.startsWith('/claude/') || // Claude export bundle
+    pathname.startsWith('/exports/')   // Manifest and exports
   );
 }
 
@@ -83,7 +87,9 @@ function isIgnoredRoute(pathname: string): boolean {
   return (
     pathname.startsWith('/_next/') ||
     pathname === '/favicon.ico' ||
-    pathname === '/og-image.png'
+    pathname === '/og-image.png' ||
+    pathname.endsWith('.zip') || // Allow zip files (Claude export)
+    pathname.endsWith('.json') && pathname.startsWith('/exports/') // Allow manifest.json
   );
 }
 
@@ -92,7 +98,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
   const hostname = req.headers.get('host') || '';
 
-  // Ignore static assets
+  // Ignore static assets - allow immediately
   if (isIgnoredRoute(pathname)) {
     return NextResponse.next();
   }
@@ -117,17 +123,45 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   // We're on dashboard domain - apply Clerk authentication to protected routes
   // Only protect routes that are explicitly marked as protected
   if (isProtectedRoute(req)) {
-    await auth().protect();
+    const { userId } = await auth();
+    if (!userId) {
+      // Redirect to sign-in for protected routes
+      const signInUrl = new URL('/sign-in', req.url);
+      signInUrl.searchParams.set('redirect_url', req.url);
+      return NextResponse.redirect(signInUrl);
+    }
   }
 
   // Default: allow through (for routes that are neither explicitly public nor protected)
   return NextResponse.next();
+}, {
+  // CRITICAL: Tell Clerk these routes should skip auth entirely
+  // Use glob patterns (*) not regex (.*)
+  publicRoutes: [
+    '/',
+    '/api/v1(/*)',
+    '/api/health',
+    '/api/status',
+    '/api/ai/health',
+    '/api/system/status',
+    '/api/observability',
+    '/api/telemetry',
+    '/api/claude(/*)',
+    '/api/schema(/*)',
+    '/api/test(/*)',
+    '/api/gpt(/*)',
+    '/.well-known(/*)',
+    '/pricing',
+    '/instant',
+    '/sign-in(/*)',
+    '/sign-up(/*)',
+  ]
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Skip Next.js internals, static files, and public directories
+    '/((?!_next|claude|exports|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],

@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const origin = url.searchParams.get("origin") || "demo";
+/**
+ * GET /api/schema
+ * Returns schema.org markup coverage, types, errors, and recommendations
+ * TODO: Wire to schema validator that crawls the site and validates schema.org markup
+ */
+export async function GET(req: NextRequest) {
+  const dealerId = req.nextUrl.searchParams.get('dealerId') || 'demo';
+  const origin = req.nextUrl.searchParams.get('origin') || 'demo';
 
-  // TODO: Wire to your schema validator
-  // This should crawl the site and validate schema.org markup
   return NextResponse.json({
+    dealerId,
     origin,
     coverage: 0.76,
     types: {
@@ -18,14 +22,14 @@ export async function GET(req: Request) {
       Review: true,
     },
     errors: [
-      "FAQPage missing acceptedAnswer",
-      "Offer.price missing currency",
-      "Vehicle missing @id",
+      'FAQPage missing acceptedAnswer',
+      'Offer.price missing currency',
+      'Vehicle missing @id',
     ],
     recommendations: [
-      "Add FAQPage schema for common questions",
-      "Include currency in all Offer prices",
-      "Add unique @id to each Vehicle",
+      'Add FAQPage schema for common questions',
+      'Include currency in all Offer prices',
+      'Add unique @id to each Vehicle',
     ],
   });
 }
