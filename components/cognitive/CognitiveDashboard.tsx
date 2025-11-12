@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { ActionDrawer } from '@/components/ActionDrawer';
-import { CognitiveHeader } from '@/components/cognitive/CognitiveHeader';
+import { CognitiveHeader } from '@/components/CognitiveHeader';
 import { VoiceOrb } from '@/components/cognitive/VoiceOrb';
 import { AutopilotMode } from '@/components/cognitive/modes/AutopilotMode';
 import { DriveMode } from '@/components/modes/DriveMode';
