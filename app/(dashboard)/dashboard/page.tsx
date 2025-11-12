@@ -10,6 +10,7 @@ import AiriCard from '@/components/zero-click/AiriCard';
 // import SchemaHealthCard from '@/components/pulse/SchemaHealthCard'; // Temporarily disabled - missing BrandColorContext
 import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
 import PulseInbox from '@/components/pulse/PulseInbox';
+import VitalsBadge from '@/components/hud/VitalsBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,10 +43,19 @@ export default function DashboardPage() {
                  'demo-dealership.com';
 
   return (
-    <IntelligenceShell dealerId={dealerId} showCognitionBar={true}>
-      {/* Orchestrator View - AI CSO Status */}
+    <>
+      <VitalsBadge />
+      <IntelligenceShell dealerId={dealerId} showCognitionBar={true}>
+        {/* Orchestrator View - AI CSO Status */}
+        <div className="mb-8">
+          <OrchestratorView dealerId={dealerId} />
+        </div>
+
+      {/* Pulse Inbox - Decision Inbox */}
       <div className="mb-8">
-        <OrchestratorView dealerId={dealerId} />
+        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden" style={{ height: '400px' }}>
+          <PulseInbox />
+        </div>
       </div>
 
       {/* Real-Time Diagnostic Dashboard */}
@@ -83,6 +93,7 @@ export default function DashboardPage() {
           <AiriCard tenantId={dealerId} />
         </div>
       </div>
-    </IntelligenceShell>
+      </IntelligenceShell>
+    </>
   );
 }

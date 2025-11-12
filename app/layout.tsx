@@ -54,6 +54,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Preconnect to improve performance */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+
         {/* JSON-LD Structured Data for AI Crawlers */}
         <JsonLd data={softwareApplicationSchema()} />
         <JsonLd data={organizationSchema()} />
