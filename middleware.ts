@@ -7,6 +7,33 @@ const isClerkConfigured = !!(
   process.env.CLERK_SECRET_KEY
 );
 
+// Fallback middleware if Clerk fails
+function createFallbackMiddleware() {
+  return async (req: NextRequest) => {
+    const { pathname } = req.nextUrl;
+    const hostname = req.headers.get('host') || '';
+
+    // Ignore static assets
+    if (isIgnoredRoute(pathname)) {
+      return NextResponse.next();
+    }
+
+    // Allow public routes
+    if (isPublicRoute(pathname)) {
+      return NextResponse.next();
+    }
+
+    // If on dashboard domain and route is protected, redirect to sign-in
+    if (isDashboardDomain(hostname) && isProtectedRoute(req)) {
+      const signInUrl = new URL('/sign-in', req.url);
+      signInUrl.searchParams.set('redirect_url', req.url);
+      return NextResponse.redirect(signInUrl);
+    }
+
+    return NextResponse.next();
+  };
+}
+
 // Check if we're on the dashboard subdomain (where Clerk should be active)
 function isDashboardDomain(hostname: string | null): boolean {
   if (!hostname) return false;
@@ -101,72 +128,87 @@ function isIgnoredRoute(pathname: string): boolean {
   );
 }
 
-// Middleware: Only apply Clerk on dashboard subdomain
-export default clerkMiddleware(async (auth, req: NextRequest) => {
-  const { pathname } = req.nextUrl;
-  const hostname = req.headers.get('host') || '';
+// Middleware: Only apply on dashboard subdomain (dash.dealershipai.com)
+// Skip entirely on landing page (dealershipai.com)
+export default isClerkConfigured
+  ? clerkMiddleware(async (auth, req: NextRequest) => {
+      const hostname = req.headers.get('host') || '';
+      const { pathname } = req.nextUrl;
 
-  // Ignore static assets - allow immediately
-  if (isIgnoredRoute(pathname)) {
-    return NextResponse.next();
-  }
+      // CRITICAL: Skip middleware entirely on landing page domain
+      // This prevents any Clerk or auth logic from running on dealershipai.com
+      if (!isDashboardDomain(hostname)) {
+        return NextResponse.next();
+      }
 
-  // IMPORTANT: Check public routes FIRST, before any auth logic
-  // This ensures public endpoints always bypass auth
-  if (isPublicRoute(pathname)) {
-    return NextResponse.next();
-  }
+      // We're on dashboard domain - now apply middleware logic
+      // Ignore static assets - allow immediately
+      if (isIgnoredRoute(pathname)) {
+        return NextResponse.next();
+      }
 
-  // If Clerk is not configured, allow all routes (demo mode)
-  if (!isClerkConfigured) {
-    return NextResponse.next();
-  }
+      // IMPORTANT: Check public routes FIRST, before any auth logic
+      // This ensures public endpoints always bypass auth
+      if (isPublicRoute(pathname)) {
+        return NextResponse.next();
+      }
 
-  // If NOT on dashboard domain (e.g., on main dealershipai.com landing page)
-  // Skip Clerk authentication entirely - allow all routes
-  if (!isDashboardDomain(hostname)) {
-    return NextResponse.next();
-  }
+      // We're on dashboard domain - apply Clerk authentication to protected routes
+      if (isProtectedRoute(req)) {
+        try {
+          const { userId } = await auth();
+          if (!userId) {
+            // Redirect to sign-in for protected routes
+            const signInUrl = new URL('/sign-in', req.url);
+            signInUrl.searchParams.set('redirect_url', req.url);
+            return NextResponse.redirect(signInUrl);
+          }
+        } catch (authError) {
+          // If auth check fails, redirect to sign-in
+          console.error('Auth check failed:', authError);
+          const signInUrl = new URL('/sign-in', req.url);
+          signInUrl.searchParams.set('redirect_url', req.url);
+          return NextResponse.redirect(signInUrl);
+        }
+      }
 
-  // We're on dashboard domain - apply Clerk authentication to protected routes
-  // Only protect routes that are explicitly marked as protected
-  if (isProtectedRoute(req)) {
-    const { userId } = await auth();
-    if (!userId) {
-      // Redirect to sign-in for protected routes
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
-      return NextResponse.redirect(signInUrl);
-    }
-  }
+      // Default: allow through
+      return NextResponse.next();
+    }, {
+      // CRITICAL: Tell Clerk these routes should skip auth entirely
+      publicRoutes: [
+        '/',
+        '/api/v1(/*)',
+        '/api/health',
+        '/api/status',
+        '/api/ai/health',
+        '/api/system/status',
+        '/api/observability',
+        '/api/telemetry',
+        '/api/claude(/*)',
+        '/api/schema(/*)',
+        '/api/test(/*)',
+        '/api/gpt(/*)',
+        '/.well-known(/*)',
+        '/pricing',
+        '/instant',
+        '/sign-in(/*)',
+        '/sign-up(/*)',
+        '/auth/signin(/*)',
+        '/auth/signup(/*)',
+      ]
+    })
+  : async function middleware(req: NextRequest) {
+      const hostname = req.headers.get('host') || '';
 
-  // Default: allow through (for routes that are neither explicitly public nor protected)
-  return NextResponse.next();
-}, {
-  // CRITICAL: Tell Clerk these routes should skip auth entirely
-  // Use glob patterns (*) not regex (.*)
-  publicRoutes: [
-    '/',
-    '/api/v1(/*)',
-    '/api/health',
-    '/api/status',
-    '/api/ai/health',
-    '/api/system/status',
-    '/api/observability',
-    '/api/telemetry',
-    '/api/claude(/*)',
-    '/api/schema(/*)',
-    '/api/test(/*)',
-    '/api/gpt(/*)',
-    '/.well-known(/*)',
-    '/pricing',
-    '/instant',
-    '/sign-in(/*)',
-    '/sign-up(/*)',
-    '/auth/signin(/*)',
-    '/auth/signup(/*)',
-  ]
-});
+      // CRITICAL: Skip middleware entirely on landing page domain
+      if (!isDashboardDomain(hostname)) {
+        return NextResponse.next();
+      }
+
+      // Use fallback middleware for dashboard domain
+      return createFallbackMiddleware()(req);
+    };
 
 export const config = {
   matcher: [

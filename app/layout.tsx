@@ -6,7 +6,11 @@ import dynamic from 'next/dynamic'
 import { ClerkProviderWrapper } from '@/components/providers/ClerkProviderWrapper'
 import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
 import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
+// ErrorBoundary imported dynamically to avoid circular dependencies
+const ErrorBoundary = dynamic(
+  () => import('@/components/ErrorBoundary').then(mod => ({ default: mod.ErrorBoundary })),
+  { ssr: false }
+)
 import { ThemeProvider } from '@/lib/theme'
 
 // Dynamic import for Toaster to avoid webpack issues
