@@ -83,10 +83,10 @@ function isPGSafe(q: QuoteItem) {
  * Used as fallback when easter eggs fail scarcity gate (90% of time)
  */
 const NEUTRAL_COACH_LINES = [
-  'You're closer than you think. One fix, then the next.',
+  'You\'re closer than you think. One fix, then the next.',
   'Progress compounds. Small wins add up.',
   'Every incident resolved makes the next one easier.',
-  'Trust the process. You've got this.',
+  'Trust the process. You\'ve got this.',
   'Focus wins. One incident at a time.',
   'Momentum builds with every action.',
   'Clarity comes from doing, not planning.',
