@@ -102,6 +102,7 @@
     "autoprefixer": "^10.4.0",
     "bcryptjs": "^3.0.2",
     "bullmq": "^4.15.0",
+    "cheerio": "^1.0.0-rc.12",
     "class-variance-authority": "^0.7.1",
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
