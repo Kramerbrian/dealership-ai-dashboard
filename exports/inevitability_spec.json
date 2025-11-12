@@ -1,0 +1,88 @@
+{
+  "$schema": "https://design-tokens.github.io/schema.json",
+  "meta": {
+    "name": "DealershipAI • Inevitability Spec",
+    "version": "1.0.0",
+    "updated": "2025-11-06",
+    "brand": "DealershipAI",
+    "doctrine": {
+      "clarity": "how well you're seen",
+      "trust": "how much the system believes you"
+    }
+  },
+  "color": {
+    "surface": {
+      "graphite": { "value": "#0d1117" },
+      "panel": { "value": "rgba(13,17,23,0.72)" },
+      "border": { "value": "#2a2f36" },
+      "glass": { "value": "rgba(12,18,24,0.45)" }
+    },
+    "accent": {
+      "clarityBlue": { "value": "#3b82f6" },
+      "clarityCyan": { "value": "#06b6d4" },
+      "emerald": { "value": "#10b981" },
+      "amber": { "value": "#f59e0b" },
+      "critical": { "value": "#ef4444" }
+    },
+    "text": {
+      "primary": { "value": "#e5e7eb" },
+      "secondary": { "value": "#a6adbb" },
+      "muted": { "value": "#7c8494" }
+    }
+  },
+  "radius": {
+    "xl": { "value": "16px" },
+    "2xl": { "value": "20px" }
+  },
+  "shadow": {
+    "soft": { "value": "0 8px 24px rgba(0,0,0,0.28)" },
+    "glowBlue": { "value": "0 12px 28px rgba(59,130,246,0.35)" }
+  },
+  "blur": { "backdrop": { "value": "20px" } },
+  "space": {
+    "xs": { "value": "8px" },
+    "sm": { "value": "12px" },
+    "md": { "value": "16px" },
+    "lg": { "value": "24px" },
+    "xl": { "value": "32px" }
+  },
+  "font": {
+    "family": {
+      "sans": { "value": "-apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif" },
+      "mono": { "value": "'SF Mono', Menlo, Monaco, 'Courier New', monospace" }
+    },
+    "size": {
+      "xs": { "value": "12px" },
+      "sm": { "value": "14px" },
+      "base": { "value": "16px" },
+      "lg": { "value": "20px" },
+      "xl": { "value": "24px" },
+      "2xl": { "value": "30px" },
+      "3xl": { "value": "36px" }
+    }
+  },
+  "motion": {
+    "timing": {
+      "fast": { "value": "120ms" },
+      "base": { "value": "200ms" },
+      "slow": { "value": "320ms" }
+    },
+    "easing": {
+      "cupertino": { "value": "cubic-bezier(0.25, 0.1, 0.25, 1)" },
+      "springy": { "value": "cubic-bezier(0.2, 0.8, 0.2, 1)" }
+    }
+  },
+  "persona": {
+    "analyst": { "color": { "value": "#3b82f6" }, "tone": "Data-driven", "motion": "linear" },
+    "coach":   { "color": { "value": "#10b981" }, "tone": "Motivational", "motion": "elastic" },
+    "operator":{ "color": { "value": "#e5e7eb" }, "tone": "Direct", "motion": "snappy" },
+    "storyteller":{ "color": { "value": "#7c3aed" }, "tone": "Narrative", "motion": "fluid" }
+  },
+  "kpi": {
+    "AIV": { "label": "AI Visibility Index" },
+    "ATI": { "label": "Algorithmic Trust Index" },
+    "CVI": { "label": "Conversion Efficiency" },
+    "ORI": { "label": "Operational Health" },
+    "GRI": { "label": "Growth Readiness" }
+  }
+}
