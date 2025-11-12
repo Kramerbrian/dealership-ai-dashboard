@@ -53,6 +53,8 @@
     "orchestrate:status": "tsx scripts/autonomous-orchestrator.ts status",
     "orchestrate:pause": "tsx scripts/autonomous-orchestrator.ts pause",
     "orchestrate:resume": "tsx scripts/autonomous-orchestrator.ts resume",
+    "orchestrate:test": "tsx scripts/test-orchestrator.ts",
+    "orchestrate:deploy": "./scripts/deploy-orchestrator.sh",
     "cache:stats": "curl -X GET http://localhost:3000/api/cache/stats",
     "test:analytics": "tsx scripts/test-google-analytics.ts",
     "analytics:test-api": "curl -X GET http://localhost:3000/api/test-analytics"
