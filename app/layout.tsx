@@ -100,23 +100,6 @@ export default function RootLayout({
         )}
       </head>
       <body className={inter.className}>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Initialize Sentry on client-side
-              if (typeof window !== 'undefined') {
-                const initSentry = () => {
-                  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
-                  if (dsn && typeof window !== 'undefined') {
-                    // Sentry will be initialized via dynamic import in lib/monitoring/sentry.ts
-                    console.log('[Monitoring] Sentry ready to initialize');
-                  }
-                };
-                initSentry();
-              }
-            `,
-          }}
-        />
         <ErrorBoundary>
           <ClerkProviderWrapper>
             <ThemeProvider>
