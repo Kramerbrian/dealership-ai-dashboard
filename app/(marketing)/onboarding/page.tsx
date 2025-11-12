@@ -2,233 +2,369 @@
 
 import React, { useState } from 'react';
 import { useOnboarding } from '@/lib/store';
-import { motion } from 'framer-motion';
-import { Check, ChevronRight, Share2, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, ChevronRight, Share2, Zap, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-function StepShell({ title, children }: { title: string; children: React.ReactNode }) {
+function StepShell({ title, children, step }: { title: string; children: React.ReactNode; step: number }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-      <h2 className="text-xl font-bold mb-3">{title}</h2>
-      {children}
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="relative"
+    >
+      {/* Gradient glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-3xl blur-xl -z-10" />
+
+      <div className="bg-white/90 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg"
+          >
+            {step}
+          </motion.div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            {title}
+          </h2>
+        </div>
+        {children}
+      </div>
+    </motion.div>
+  );
+}
+
+function ProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+  return (
+    <div className="mb-8">
+      <div className="flex justify-between mb-2">
+        {Array.from({ length: totalSteps }).map((_, index) => (
+          <motion.div
+            key={index}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: index * 0.1 }}
+            className={`flex-1 mx-1 h-2 rounded-full overflow-hidden ${
+              index < currentStep ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-gray-200'
+            }`}
+          >
+            {index === currentStep - 1 && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 0.5 }}
+                className="h-full bg-gradient-to-r from-blue-600 to-purple-600"
+              />
+            )}
+          </motion.div>
+        ))}
+      </div>
+      <p className="text-sm text-gray-600 text-center">
+        Step {currentStep} of {totalSteps}
+      </p>
     </div>
   );
 }
 
-export default function Onboarding() {
+export default function CinematicOnboarding() {
   const s = useOnboarding();
+  const [isScanning, setIsScanning] = useState(false);
+
+  const handleScan = async () => {
+    setIsScanning(true);
+    s.decScan();
+    // Simulate scanning animation
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsScanning(false);
+    s.setStep(2);
+  };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <header className="flex items-center justify-between">
-          <div className="text-2xl font-black">DealershipAI · Onboarding</div>
-          <Link href="/" className="text-blue-600">Back</Link>
-        </header>
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 relative overflow-hidden">
+      {/* Animated background orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute w-96 h-96 rounded-full bg-blue-500/20 blur-3xl"
+          animate={{
+            x: [0, 100, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{ repeat: Infinity, duration: 20, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute right-0 bottom-0 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl"
+          animate={{
+            x: [0, -100, 0],
+            y: [0, -50, 0],
+          }}
+          transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+        />
+      </div>
 
-        {s.step === 1 && (
-          <StepShell title="Step 1 · Your dealership URL">
-            <p className="text-gray-600 mb-3">
-              Paste your website. We run a 3-second AI visibility + zero-click scan and build your starter plan.
-            </p>
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border rounded-xl px-4 py-3"
-                placeholder="https://yourdealership.com"
-                value={s.dealerUrl}
-                onChange={e => s.setUrl(e.target.value)}
-              />
-              <button
-                onClick={() => {
-                  s.decScan();
-                  s.setStep(2);
-                }}
-                disabled={!s.dealerUrl}
-                className="px-5 py-3 rounded-xl bg-blue-600 text-white flex items-center gap-2 disabled:opacity-40"
-              >
-                <Zap className="w-4 h-4" />
-                Scan
-              </button>
-            </div>
-            <div className="text-xs text-gray-500 mt-2">Free scans left: {s.scansLeft}</div>
-          </StepShell>
-        )}
+      <div className="relative z-10 p-6 max-w-5xl mx-auto">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-12 pt-8"
+        >
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-8 h-8 text-blue-400" />
+            <span className="text-3xl font-black text-white">
+              DealershipAI
+            </span>
+          </div>
+          <Link
+            href="/"
+            className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
+          >
+            <ChevronRight className="w-4 h-4 rotate-180" />
+            Back
+          </Link>
+        </motion.header>
 
-        {s.step === 2 && (
-          <StepShell title="Step 2 · Unlock full report">
-            <p className="text-gray-600 mb-3">
-              Share your score to unlock the full details or enter email to receive the PDF.
-            </p>
-            <div className="grid md:grid-cols-2 gap-3">
-              <button
-                onClick={() => s.setStep(3)}
-                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl flex items-center gap-2 justify-center"
-              >
-                <Share2 className="w-4 h-4" />
-                Share to unlock
-              </button>
-              <div className="flex gap-2">
-                <input
-                  className="flex-1 border rounded-xl px-4 py-3"
-                  placeholder="you@dealership.com"
-                  value={s.email}
-                  onChange={e => s.setEmail(e.target.value)}
-                />
-                <button
-                  onClick={() => s.setStep(3)}
-                  className="px-5 py-3 border rounded-xl"
-                >
-                  Email me
-                </button>
-              </div>
-            </div>
-          </StepShell>
-        )}
+        <ProgressBar currentStep={s.step} totalSteps={5} />
 
-        {s.step === 3 && (
-          <StepShell title="Step 3 · Pick 3–5 competitors (optional)">
-            <div className="grid grid-cols-2 gap-3">
-              {['Naples Honda', 'Terry Reid Hyundai', 'Germain Toyota of Naples', 'Crown Nissan', 'Classic Honda'].map(name => (
-                <label
-                  key={name}
-                  className={`px-4 py-3 rounded-xl border cursor-pointer ${
-                    s.competitors.includes(name)
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    className="mr-2"
-                    checked={s.competitors.includes(name)}
-                    onChange={() => s.toggleCompetitor(name)}
-                  />
-                  {name}
-                </label>
-              ))}
-            </div>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => s.setStep(4)}
-                className="px-5 py-3 bg-blue-600 text-white rounded-xl flex items-center gap-2"
-              >
-                Continue
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </StepShell>
-        )}
-
-        {s.step === 4 && (
-          <StepShell title="Step 4 · Business Metrics (PVR)">
-            <p className="text-gray-600 mb-4">
-              Help us personalize your dashboard by providing your monthly PVR (Parts, Vehicle, Repair) revenue and advertising expense.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Monthly PVR Revenue ($)
-                </label>
-                <input
-                  type="number"
-                  className="w-full border rounded-xl px-4 py-3"
-                  placeholder="e.g., 500000"
-                  value={s.pvr || ''}
-                  onChange={e => s.setPvr?.(e.target.value)}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Total monthly revenue from Parts, Vehicle sales, and Repair services
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Monthly Ad Expense PVR ($)
-                </label>
-                <input
-                  type="number"
-                  className="w-full border rounded-xl px-4 py-3"
-                  placeholder="e.g., 50000"
-                  value={s.adExpensePvr || ''}
-                  onChange={e => s.setAdExpensePvr?.(e.target.value)}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Monthly advertising spend across all channels
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={async () => {
-                  // Save metrics to API
-                  if (s.pvr && s.adExpensePvr) {
-                    try {
-                      const response = await fetch('/api/save-metrics', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          pvr: Number(s.pvr),
-                          adExpensePvr: Number(s.adExpensePvr),
-                        }),
-                      })
-
-                      const data = await response.json()
-
-                      if (!response.ok || !data.ok) {
-                        throw new Error(data.error || 'Failed to save metrics')
-                      }
-
-                      // Success - proceed to next step
-                      s.setStep(5)
-                    } catch (error: any) {
-                      console.error('Failed to save metrics:', error)
-                      // Show error but allow user to continue
-                      alert(`Failed to save metrics: ${error.message}. You can continue, but metrics won't be saved.`)
-                      s.setStep(5)
-                    }
-                  } else {
-                    s.setStep(5)
-                  }
-                }}
-                disabled={!s.pvr || !s.adExpensePvr}
-                className="px-5 py-3 bg-blue-600 text-white rounded-xl flex items-center gap-2 disabled:opacity-40"
-              >
-                Continue
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </StepShell>
-        )}
-
-        {s.step === 5 && (
-          <StepShell title="Step 5 · Complete">
-            <div className="flex items-center gap-2 text-green-700 mb-4">
-              <Check className="w-5 h-5" />
-              <span>Your metrics have been saved. Ready to launch the orchestrator?</span>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-              <p className="text-sm text-blue-900">
-                You'll experience a cinematic onboarding sequence: System Acknowledgment → Orchestrator Ready → Pulse Assimilation → Dashboard
+        <AnimatePresence mode="wait">
+          {s.step === 1 && (
+            <StepShell key="step1" title="Your Dealership URL" step={1}>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Paste your website URL. We'll run a 3-second AI visibility + zero-click scan and build your starter intelligence plan.
               </p>
-            </div>
-            <div className="flex gap-3">
-              <Link
-                href="/dashboard/preview"
-                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl flex items-center gap-2"
-              >
-                Launch Orchestrator
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href={`/dashboard?dealer=${encodeURIComponent(s.dealerUrl || 'demo')}`}
-                className="px-5 py-3 border rounded-xl"
-              >
-                Skip to Dashboard
-              </Link>
-            </div>
-          </StepShell>
-        )}
+              <div className="flex gap-3">
+                <input
+                  className="flex-1 border-2 border-gray-200 focus:border-blue-500 rounded-2xl px-6 py-4 text-lg transition-all outline-none"
+                  placeholder="https://yourdealership.com"
+                  value={s.dealerUrl}
+                  onChange={e => s.setUrl(e.target.value)}
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleScan}
+                  disabled={!s.dealerUrl || isScanning}
+                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold text-lg flex items-center gap-2 disabled:opacity-40 shadow-lg shadow-blue-500/50"
+                >
+                  {isScanning ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    >
+                      <Zap className="w-5 h-5" />
+                    </motion.div>
+                  ) : (
+                    <Zap className="w-5 h-5" />
+                  )}
+                  {isScanning ? 'Scanning...' : 'Scan Now'}
+                </motion.button>
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <span className="text-sm text-gray-600">Free scans remaining: {s.scansLeft}</span>
+                <span className="text-sm text-blue-600 font-medium">Takes ~3 seconds</span>
+              </div>
+            </StepShell>
+          )}
+
+          {s.step === 2 && (
+            <StepShell key="step2" title="Unlock Full Report" step={2}>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Share your AI visibility score to unlock full details, or enter your email to receive the complete PDF report.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => s.setStep(3)}
+                  className="px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl flex items-center gap-2 justify-center font-semibold shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <Share2 className="w-5 h-5" />
+                  Share to Unlock
+                </motion.button>
+                <div className="flex gap-3">
+                  <input
+                    className="flex-1 border-2 border-gray-200 focus:border-blue-500 rounded-2xl px-5 py-4 transition-all outline-none"
+                    placeholder="you@dealership.com"
+                    value={s.email}
+                    onChange={e => s.setEmail(e.target.value)}
+                  />
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => s.setStep(3)}
+                    className="px-6 py-4 border-2 border-blue-600 text-blue-600 font-semibold rounded-2xl hover:bg-blue-50 transition-colors"
+                  >
+                    Email Me
+                  </motion.button>
+                </div>
+              </div>
+            </StepShell>
+          )}
+
+          {s.step === 3 && (
+            <StepShell key="step3" title="Select Competitors (Optional)" step={3}>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Choose 3–5 competitors to track. We'll monitor their AI visibility and alert you when they appear in recommendations.
+              </p>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {['Naples Honda', 'Terry Reid Hyundai', 'Germain Toyota of Naples', 'Crown Nissan', 'Classic Honda'].map((name, index) => (
+                  <motion.label
+                    key={name}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    className={`px-5 py-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      s.competitors.includes(name)
+                        ? 'border-blue-600 bg-blue-50 shadow-lg'
+                        : 'border-gray-200 hover:border-blue-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-3 w-5 h-5"
+                      checked={s.competitors.includes(name)}
+                      onChange={() => s.toggleCompetitor(name)}
+                    />
+                    <span className="font-medium">{name}</span>
+                  </motion.label>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => s.setStep(4)}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl flex items-center gap-2 font-semibold shadow-lg shadow-purple-500/50"
+                >
+                  Continue
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </StepShell>
+          )}
+
+          {s.step === 4 && (
+            <StepShell key="step4" title="Business Metrics (PVR)" step={4}>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Help us personalize your dashboard with your monthly PVR (Parts, Vehicle, Repair) revenue and advertising spend.
+              </p>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-3">
+                    Monthly PVR Revenue ($)
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full border-2 border-gray-200 focus:border-blue-500 rounded-2xl px-6 py-4 text-lg transition-all outline-none"
+                    placeholder="e.g., 500,000"
+                    value={s.pvr || ''}
+                    onChange={e => s.setPvr?.(e.target.value)}
+                  />
+                  <p className="text-sm text-gray-600 mt-2">
+                    Total monthly revenue from Parts, Vehicle sales, and Repair services
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-3">
+                    Monthly Ad Expense PVR ($)
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full border-2 border-gray-200 focus:border-blue-500 rounded-2xl px-6 py-4 text-lg transition-all outline-none"
+                    placeholder="e.g., 50,000"
+                    value={s.adExpensePvr || ''}
+                    onChange={e => s.setAdExpensePvr?.(e.target.value)}
+                  />
+                  <p className="text-sm text-gray-600 mt-2">
+                    Monthly advertising spend across all channels
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end mt-8">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={async () => {
+                    if (s.pvr && s.adExpensePvr) {
+                      try {
+                        const response = await fetch('/api/save-metrics', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            pvr: Number(s.pvr),
+                            adExpensePvr: Number(s.adExpensePvr),
+                          }),
+                        });
+                        const data = await response.json();
+                        if (!response.ok || !data.ok) {
+                          throw new Error(data.error || 'Failed to save metrics');
+                        }
+                        s.setStep(5);
+                      } catch (error: any) {
+                        console.error('Failed to save metrics:', error);
+                        alert(`Failed to save metrics: ${error.message}. You can continue, but metrics won't be saved.`);
+                        s.setStep(5);
+                      }
+                    } else {
+                      s.setStep(5);
+                    }
+                  }}
+                  disabled={!s.pvr || !s.adExpensePvr}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl flex items-center gap-2 font-semibold disabled:opacity-40 shadow-lg shadow-purple-500/50"
+                >
+                  Continue
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </StepShell>
+          )}
+
+          {s.step === 5 && (
+            <StepShell key="step5" title="Setup Complete!" step={5}>
+              <div className="flex items-center gap-3 text-green-700 mb-6 bg-green-50 p-4 rounded-2xl">
+                <Check className="w-6 h-6" />
+                <span className="font-semibold">Your metrics have been saved successfully!</span>
+              </div>
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 mb-6">
+                <p className="text-blue-900 leading-relaxed">
+                  <strong>🎬 Cinematic Experience Ahead:</strong> You'll experience a stunning onboarding sequence with System Acknowledgment → Orchestrator Ready → Pulse Assimilation → Dashboard
+                </p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Link
+                  href="/dashboard/preview"
+                  className="block"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl flex items-center gap-2 justify-center font-bold text-lg shadow-xl hover:shadow-2xl transition-shadow"
+                  >
+                    🚀 Launch Orchestrator
+                    <ChevronRight className="w-5 h-5" />
+                  </motion.div>
+                </Link>
+                <Link
+                  href={`/dashboard?dealer=${encodeURIComponent(s.dealerUrl || 'demo')}`}
+                  className="block"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-5 border-2 border-gray-300 rounded-2xl flex items-center justify-center font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Skip to Dashboard
+                  </motion.div>
+                </Link>
+              </div>
+            </StepShell>
+          )}
+        </AnimatePresence>
       </div>
     </main>
   );
 }
-
