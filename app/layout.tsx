@@ -14,7 +14,6 @@ import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
 import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { ThemeProvider } from '@/lib/theme'
-import { initSentry } from '@/lib/monitoring/sentry'
 
 const inter = Inter({ 
   subsets: ['latin'],
