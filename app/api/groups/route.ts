@@ -2,10 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { auth } from '@clerk/nextjs/server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+  
+  if (!url || !key) {
+    return null;
+  }
+  
+  return createClient(url, key);
+}
 
 export const runtime = 'nodejs';
 
@@ -21,6 +27,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
       );
     }
 
@@ -43,7 +57,11 @@ export async function GET(req: NextRequest) {
     // Get metrics for each group
     const groupsWithMetrics = await Promise.all(
       (groups || []).map(async (group) => {
-        const { data: metrics } = await supabase
+        const supabaseClient = getSupabase();
+        if (!supabaseClient) {
+          return { ...group, metrics: null };
+        }
+        const { data: metrics } = await supabaseClient
           .from('dealer_group_metrics')
           .select('*')
           .eq('group_id', group.id)

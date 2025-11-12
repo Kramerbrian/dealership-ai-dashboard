@@ -5,10 +5,16 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+  
+  if (!url || !key) {
+    return null;
+  }
+  
+  return createClient(url, key);
+}
 
 interface HistoricalDataPoint {
   timestamp: Date;
@@ -126,6 +132,12 @@ export async function predictMetric(
     // Fetch historical data
     const tableName = metric === 'ai_visibility' ? 'ai_visibility_tests' : 'schema_scans';
     const metricColumn = metric === 'ai_visibility' ? 'overall_score' : metric;
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      console.warn('[predictive-engine] Supabase not configured, returning null');
+      return null;
+    }
 
     const { data, error } = await supabase
       .from(tableName)
@@ -284,6 +296,12 @@ export async function predictCompetitorMovement(
   risk_level: 'high' | 'medium' | 'low';
 }[]> {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      console.warn('[predictive-engine] Supabase not configured, returning empty array');
+      return [];
+    }
+
     // Get competitor scan history
     const { data: competitors } = await supabase
       .from('competitors')
@@ -342,6 +360,12 @@ export async function generateActionableInsights(dealerId: string): Promise<{
   reasoning: string;
 }[]> {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      console.warn('[predictive-engine] Supabase not configured, returning empty insights');
+      return [];
+    }
+
     // Get current metrics
     const { data: latestScan } = await supabase
       .from('schema_scans')
