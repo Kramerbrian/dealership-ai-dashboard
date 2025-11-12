@@ -108,17 +108,17 @@ export async function callOrchestrator(
       }
     }
 
-    // Mock response for now
+    // Mock response for now - using simple language
     const mockResponses: Record<string, string> = {
-      'visibility': 'Your AI Visibility Index is 87.3%. This is above the industry average of 72%. Key strengths: strong schema coverage, active GBP presence. Areas to improve: zero-click inclusion rate could be higher.',
-      'qai': 'Your QAI (Quality AI Index) score is 84.2. This measures how well AI models understand and trust your content. Your E-E-A-T signals are strong, with good author expertise indicators.',
-      'oci': 'OCI (Opportunity Cost Index) analysis shows $24,800 monthly revenue at risk. Primary drivers: missing FAQ schema (estimated $8K recovery), slow review response times ($12K recovery potential).',
-      'asr': 'ASR (Algorithmic Safety Report) indicates 3 medium-priority issues: geo-integrity inconsistencies, missing vehicle schema on 12% of inventory pages, and trust signal gaps in service pages.',
-      'ugc': 'UGC analysis shows 1,240 Google reviews (4.3 avg), 340 Yelp reviews (4.1 avg), 890 Facebook reviews (4.5 avg). Sentiment is 70% positive. Response rate is 65% - target 80%+ for optimal visibility.',
+      'visibility': 'Your dealership shows up in AI search tools 87.3% of the time. This is better than most dealerships (average is 72%). What\'s working well: your website has good structure and your Google Business Profile is active. What needs work: you could show up more often in quick answers that don\'t require clicking.',
+      'qai': 'Your quality and trust score is 84.2 out of 100. This measures how much AI tools trust your content. Your website shows expertise and authority well. You have good signals that show you know what you\'re talking about.',
+      'oci': 'You might be losing about $24,800 per month. Here\'s why: missing FAQ pages could cost you $8,000 you could get back, and slow responses to reviews could cost you $12,000 you could recover. These are fixable problems.',
+      'asr': 'Safety report found 3 issues that need attention: your location information has some inconsistencies, 12% of your car listings are missing important details, and your service pages need better trust signals. These are medium priority - not urgent, but worth fixing.',
+      'ugc': 'Customer reviews: You have 1,240 Google reviews (average 4.3 stars), 340 Yelp reviews (4.1 stars), and 890 Facebook reviews (4.5 stars). Overall, 70% of customers feel positive. You\'re responding to 65% of reviews - try to get to 80% or higher for best results.',
     };
 
     // Fallback to mock responses based on action or query
-    let content = 'I can help you analyze your AI visibility, compute QAI scores, calculate OCI, generate ASRs, and analyze UGC. What specific metric would you like to explore?';
+    let content = 'I can help you understand:\n\n• How visible you are to AI search tools\n• Your quality and trust scores\n• How much money you might be losing\n• Safety reports with recommendations\n• What customers are saying in reviews\n\nWhat would you like to know?';
     
     if (action) {
       // Use action to determine response
@@ -155,7 +155,7 @@ export async function callOrchestrator(
       } else if (query.includes('ugc') || query.includes('review') || query.includes('user generated')) {
         content = mockResponses.ugc;
       } else if (query.includes('hello') || query.includes('hi') || query.includes('help')) {
-        content = 'Hello! I am dAI, your AI Chief Strategy Officer. I can analyze visibility, compute QAI, calculate OCI, generate ASRs, and analyze UGC. What would you like to know?';
+        content = 'Hello! I\'m your AI assistant. I can help you understand how visible you are to AI search tools, your quality scores, how much money you might be losing, safety reports, and what customers are saying. What would you like to know?';
       }
     }
 

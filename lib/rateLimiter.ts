@@ -1,10 +1,44 @@
 import { Redis } from '@upstash/redis'
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+// Initialize Redis client only if valid URL and token are provided
+let redis: Redis | null = null;
+let redisInitialized = false;
+
+function getRedis(): Redis | null {
+  if (redisInitialized) {
+    return redis;
+  }
+
+  redisInitialized = true;
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  // Validate URL format before initializing
+  if (!url || !token) {
+    console.warn('[RateLimiter] Redis not configured - rate limiting disabled');
+    return null;
+  }
+
+  // Check if URL looks valid (basic validation)
+  if (!url.includes('.upstash.io') && !url.startsWith('http')) {
+    console.warn('[RateLimiter] Invalid Redis URL format - rate limiting disabled');
+    return null;
+  }
+
+  try {
+    redis = new Redis({
+      url,
+      token,
+    });
+    return redis;
+  } catch (error) {
+    console.error('[RateLimiter] Failed to initialize Redis:', error);
+    return null;
+  }
+}
+
+const redisClient = getRedis();
 
 export interface RateLimitConfig {
   windowMs: number // Time window in milliseconds
@@ -70,7 +104,16 @@ export class RedisRateLimiter {
         end
       `
 
-      const result = await redis.eval(
+      if (!redisClient) {
+        // Redis not available - allow request
+        return {
+          allowed: true,
+          remaining: this.config.maxRequests - 1,
+          resetTime: now + this.config.windowMs
+        };
+      }
+
+      const result = await redisClient.eval(
         script,
         [key],
         [windowStart, this.config.windowMs, this.config.maxRequests, now]
