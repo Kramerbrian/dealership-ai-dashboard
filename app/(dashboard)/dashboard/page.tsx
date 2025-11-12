@@ -9,6 +9,7 @@ import ZeroClickCard from '@/components/zero-click/ZeroClickCard';
 import AiriCard from '@/components/zero-click/AiriCard';
 // import SchemaHealthCard from '@/components/pulse/SchemaHealthCard'; // Temporarily disabled - missing BrandColorContext
 import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
+import PulseInbox from '@/components/pulse/PulseInbox';
 
 export const dynamic = 'force-dynamic';
 
