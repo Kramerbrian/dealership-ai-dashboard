@@ -28,22 +28,77 @@ export interface OrchestratorResponse {
 
 /**
  * Call Orchestrator API
- * In production, this connects to your Orchestrator 3.0 service
+ * Connects to the internal /api/orchestrator endpoint or external Orchestrator 3.0 service
  */
 export async function callOrchestrator(
   request: OrchestratorRequest
 ): Promise<OrchestratorResponse> {
   try {
-    // TODO: Replace with actual Orchestrator API endpoint
-    // const response = await fetch(`${process.env.ORCHESTRATOR_API}/chat`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': `Bearer ${process.env.ORCHESTRATOR_TOKEN}`,
-    //   },
-    //   body: JSON.stringify(request),
-    // });
-    // return await response.json();
+    // Option 1: Use internal API route (recommended for now)
+    // This uses the existing /api/orchestrator endpoint
+    const query = request.query.toLowerCase();
+    let action = 'analyze_visibility';
+    
+    // Map query to appropriate action
+    if (query.includes('qai') || query.includes('quality')) {
+      action = 'compute_qai';
+    } else if (query.includes('oci') || query.includes('opportunity') || query.includes('revenue')) {
+      action = 'calculate_oci';
+    } else if (query.includes('asr') || query.includes('safety') || query.includes('risk')) {
+      action = 'generate_asr';
+    } else if (query.includes('ugc') || query.includes('review') || query.includes('user generated')) {
+      action = 'analyze_ugc';
+    }
+
+    // Try internal API first
+    try {
+      const apiUrl = typeof window !== 'undefined' 
+        ? '/api/orchestrator' 
+        : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/orchestrator`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action,
+          dealerId: request.dealerId,
+          domain: request.context?.domain,
+          context: request.context,
+          parameters: {},
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          content: data.content || data.message || JSON.stringify(data),
+          confidence: data.confidence || 0.85,
+          traceId: data.traceId || `trace_${Date.now()}`,
+          toolsUsed: data.toolsUsed || [],
+          evidence: data.evidence || [],
+        };
+      }
+    } catch (apiError) {
+      console.warn('Internal API call failed, falling back to mock:', apiError);
+    }
+
+    // Option 2: Use external Orchestrator 3.0 service (if configured)
+    if (process.env.ORCHESTRATOR_API && process.env.ORCHESTRATOR_TOKEN) {
+      const response = await fetch(`${process.env.ORCHESTRATOR_API}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.ORCHESTRATOR_TOKEN}`,
+        },
+        body: JSON.stringify(request),
+      });
+      
+      if (response.ok) {
+        return await response.json();
+      }
+    }
 
     // Mock response for now
     const mockResponses: Record<string, string> = {
