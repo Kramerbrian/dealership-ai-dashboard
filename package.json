@@ -7,7 +7,15 @@
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start",
     "lint": "echo \"noop\"",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest --testPathPattern=__tests__",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test:unit && npm run test:e2e",
+    "type-check": "tsc --noEmit",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.0",
@@ -16,15 +24,18 @@
     "@langchain/core": "^0.3.0",
     "@langchain/openai": "^0.2.0",
     "@prisma/client": "^6.19.0",
+    "@sentry/nextjs": "^10.25.0",
     "@supabase/supabase-js": "^2.81.1",
     "@upstash/ratelimit": "^2.0.3",
     "@upstash/redis": "^1.35.6",
+    "@vercel/analytics": "^1.5.0",
     "cheerio": "1.0.0-rc.12",
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.468.0",
     "next": "14.2.33",
     "openai": "^4.0.0",
+    "posthog-js": "^1.290.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "recharts": "^3.4.1",
@@ -32,9 +43,21 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^14.2.33",
+    "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/jest": "^29.5.11",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.22",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
+    "ts-jest": "^29.1.1",
     "typescript": "^5"
   }
 }
