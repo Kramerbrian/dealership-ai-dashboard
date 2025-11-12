@@ -1,17 +1,8 @@
-// Elite Landing Page (OpenAI/Ive aesthetic) - Production Ready
+// Cinematic Landing Page - Christopher Nolan Inspired
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-import FreeAuditWidget from "@/components/landing/FreeAuditWidget";
+import CinematicLandingPage from "@/components/landing/CinematicLandingPage";
 import AIGEOSchema from "@/components/SEO/AIGEOSchema";
 import LandingPageMeta from "@/components/SEO/LandingPageMeta";
-import Link from "next/link";
-import { validateUrlClient } from '@/lib/utils/url-validation-client';
-import { getLastAIV } from '@/lib/client/aivStorage';
-import dynamic from 'next/dynamic';
-import { ClerkConditional } from "@/components/providers/ClerkConditional";
-import { Zap, TrendingUp, AlertTriangle, Target, Crown, ArrowRight, Lock, Share2, Mail, X, CheckCircle } from 'lucide-react';
 
 // Lazy load visibility components
 const AIVStrip = dynamic(() => import('@/components/visibility/AIVStrip'), { ssr: false });
