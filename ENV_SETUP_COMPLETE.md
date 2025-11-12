@@ -1,159 +1,104 @@
-# Environment Setup Complete ✅
+# Environment Variables Setup Complete
 
-## API Key Configuration
+## ✅ Local (.env.local)
 
-The dAI GPT API key has been configured for:
+Added database password variables:
+- `SUPABASE_DB_PASSWORD=Autonation2077$`
+- `DATABASE_PASSWORD=Autonation2077$`
 
-### 1. Local Development (.env.local)
+## 📋 Vercel Environment Variables
 
-**Run this command to save the key:**
+### Option 1: Vercel Dashboard (Recommended)
+
+1. **Visit Vercel Dashboard**
+   - Go to: https://vercel.com/YOUR_PROJECT/settings/environment-variables
+   - Or: Project Settings → Environment Variables
+
+2. **Add Variables**
+   - Click "Add New"
+   - Add each variable:
+     - **Key**: `SUPABASE_DB_PASSWORD`
+     - **Value**: `Autonation2077$`
+     - **Environments**: Production, Preview, Development
+     - Click "Save"
+   
+   - **Key**: `DATABASE_PASSWORD`
+   - **Value**: `Autonation2077$`
+   - **Environments**: Production, Preview, Development
+   - Click "Save"
+
+3. **Redeploy**
+   - After adding variables, trigger a new deployment
+   - Or run: `vercel --prod`
+
+### Option 2: Vercel CLI
+
 ```bash
-./scripts/save-dai-api-key.sh
-```
+# Install Vercel CLI (if not installed)
+npm i -g vercel
 
-Or manually add to `.env.local`:
-```env
-# DealershipAI GPT API Key
-OPENAI_API_KEY=sk-***REDACTED***
-DAI_API_KEY=sk-***REDACTED***
-NEXT_PUBLIC_DAI_API_KEY=sk-***REDACTED***
-NEXT_PUBLIC_API_BASE_URL=https://api.gpt.dealershipai.com
-```
-
-**Important:** 
-- No quotes around values
-- No trailing spaces
-- Restart dev server after editing: `npm run dev`
-
----
-
-### 2. Supabase Secrets
-
-**Using Supabase CLI:**
-```bash
-supabase secrets set OPENAI_API_KEY="sk-***REDACTED***"
-supabase secrets set DAI_API_KEY="sk-***REDACTED***"
-```
-
-**Or via Supabase Dashboard:**
-1. Go to Project Settings → Secrets
-2. Add `OPENAI_API_KEY` and `DAI_API_KEY`
-3. Paste the key value (no quotes)
-
----
-
-### 3. Vercel Environment Variables
-
-**Using Vercel CLI:**
-```bash
-# Link project first (if not already linked)
-vercel link
+# Login to Vercel
+vercel login
 
 # Add environment variables
-echo "sk-***REDACTED***" | vercel env add OPENAI_API_KEY production
-echo "sk-***REDACTED***" | vercel env add DAI_API_KEY production
-echo "sk-***REDACTED***" | vercel env add NEXT_PUBLIC_DAI_API_KEY production
-echo "https://api.gpt.dealershipai.com" | vercel env add NEXT_PUBLIC_API_BASE_URL production
+vercel env add SUPABASE_DB_PASSWORD production
+# Enter: Autonation2077$
+
+vercel env add DATABASE_PASSWORD production
+# Enter: Autonation2077$
+
+# Also add for preview and development
+vercel env add SUPABASE_DB_PASSWORD preview
+vercel env add SUPABASE_DB_PASSWORD development
+vercel env add DATABASE_PASSWORD preview
+vercel env add DATABASE_PASSWORD development
+
+# Redeploy
+vercel --prod
 ```
 
-**Or via Vercel Dashboard:**
-1. Go to Project Settings → Environment Variables
-2. Add each variable:
-   - `OPENAI_API_KEY` = `sk-***REDACTED***`
-   - `DAI_API_KEY` = `sk-***REDACTED***`
-   - `NEXT_PUBLIC_DAI_API_KEY` = `sk-***REDACTED***`
-   - `NEXT_PUBLIC_API_BASE_URL` = `https://api.gpt.dealershipai.com`
-3. Select environments: Production, Preview, Development
-4. Redeploy after adding
+## 🔐 Supabase Configuration
 
----
+The database password is already configured in Supabase:
+- **Dashboard**: https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw/settings/database
+- **Password**: `Autonation2077$`
 
-## API Configuration Fixed ✅
+The Supabase CLI will use this password when:
+- Running `supabase db push`
+- Running `supabase migration repair`
+- Connecting via `supabase link`
 
-### Updated `lib/apiConfig.ts`
+## ✅ Verification
 
-The API configuration now:
-- ✅ Uses `https://api.gpt.dealershipai.com` as base URL
-- ✅ Sends `api_key` as **query parameter** (not header)
-- ✅ Provides `buildDAIApiUrl()` helper function
-- ✅ Provides `fetchDAIApi()` helper function
-
-### Usage Example
-
-```typescript
-import { fetchDAIApi, buildDAIApiUrl } from '@/lib/apiConfig'
-
-// Method 1: Using helper function
-const result = await fetchDAIApi('/api/v1/analyze', {
-  domain: 'terryreidhyundai.com'
-})
-
-// Method 2: Building URL manually
-const url = buildDAIApiUrl('/api/v1/analyze', {
-  domain: 'terryreidhyundai.com'
-})
-const response = await fetch(url)
-```
-
-### Test the API
-
+### Local
 ```bash
-# Test directly
-curl "https://api.gpt.dealershipai.com/api/v1/analyze?domain=terryreidhyundai.com&api_key=sk-***REDACTED***"
+# Check .env.local has the password
+grep SUPABASE_DB_PASSWORD .env.local
 ```
 
----
+### Vercel
+```bash
+# Check Vercel env vars (requires Vercel CLI)
+vercel env ls
+```
 
-## New Features Implemented ✅
+### Supabase CLI
+```bash
+# Test connection
+export PGPASSWORD='Autonation2077$'
+supabase db push --include-all
+```
 
-### 1. OEL by Channel
-- ✅ API: `/api/metrics/oel/channels`
-- ✅ Hook: `useOELChannels()`
-- ✅ Component: `OELChannelsChart`
+## 🔒 Security Notes
 
-### 2. Fix Pack ROI Monitor
-- ✅ API: `/api/fix-pack/roi`
-- ✅ Component: `FixPackROIPanel`
+- ✅ Password is stored in `.env.local` (gitignored)
+- ✅ Vercel environment variables are encrypted
+- ✅ Supabase password is managed in Dashboard
+- ⚠️ Never commit passwords to git
+- ⚠️ Use different passwords for different environments if possible
 
-### 3. Scan Summary Modal
-- ✅ Already exists, enhanced with auto-trigger
-- ✅ Integration snippet provided
+## 📄 Files Updated
 
-### 4. PIQR with OEL Integration
-- ✅ API: `/api/metrics/piqr`
-- ✅ Hook: `usePIQR()`
-- ✅ Incorporates OEL as risk driver (35% weight)
-
-### 5. Integration Snippets
-- ✅ Complete integration guide: `INTEGRATION_SNIPPETS.md`
-- ✅ Copy-paste ready code
-
----
-
-## Next Steps
-
-1. **Run the setup script:**
-   ```bash
-   ./scripts/save-dai-api-key.sh
-   ```
-
-2. **Restart dev server:**
-   ```bash
-   npm run dev
-   ```
-
-3. **Test API connection:**
-   ```bash
-   curl "https://api.gpt.dealershipai.com/api/v1/analyze?domain=example.com&api_key=YOUR_KEY"
-   ```
-
-4. **Integrate components:**
-   - See `INTEGRATION_SNIPPETS.md` for copy-paste code
-   - Add OEL by Channel chart to dashboard
-   - Add Fix Pack ROI panel
-   - Wire up Scan Summary modal
-
----
-
-*All configuration complete and ready for use!*
-
+- ✅ `.env.local` - Added `SUPABASE_DB_PASSWORD` and `DATABASE_PASSWORD`
+- ✅ `scripts/add-vercel-env-vars.sh` - Helper script for Vercel setup
+- ✅ `ENV_SETUP_COMPLETE.md` - This documentation
