@@ -9,6 +9,11 @@
  *   npm run orchestrate:status
  */
 
+// Load environment variables from .env.local
+import { config } from 'dotenv';
+import { resolve } from 'path';
+config({ path: resolve(process.cwd(), '.env.local') });
+
 import { createDealershipAIOrchestrator } from '../lib/agent/orchestrator3';
 import * as fs from 'fs';
 import * as path from 'path';
