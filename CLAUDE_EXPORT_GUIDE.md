@@ -34,17 +34,28 @@ claude-export/
 
 ## 🌐 Hosting Options
 
-### Option A: Vercel Static (Recommended)
+### Option A: Vercel API Route (Recommended) ✅
 
+**Download Export:**
+```
+https://[your-vercel-url]/api/claude/download
+```
+
+**Manifest:**
+```
+https://[your-vercel-url]/api/claude/manifest
+```
+
+**Why API Route:**
+- ✅ Works with Next.js standalone mode
+- ✅ Proper Content-Type headers
+- ✅ Publicly accessible (no auth required)
+- ✅ Cached appropriately
+
+**Deploy:**
 ```bash
-# Export is already in public/claude/
-# Just deploy:
+# Push to git (triggers auto-deploy) or:
 vercel deploy --prod
-```
-
-**URL:**
-```
-https://dealership-ai-dashboard-[hash].vercel.app/claude/dealershipai_claude_export.zip
 ```
 
 ### Option B: GitHub Releases
@@ -72,9 +83,9 @@ Copy-paste this into Claude:
 
 ```
 Load project from:
-https://[your-domain]/claude/dealershipai_claude_export.zip
+https://[your-vercel-url]/api/claude/download
 
-Manifest: /exports/manifest.json
+Manifest: https://[your-vercel-url]/api/claude/manifest
 
 Objective:
 Build a Next.js 14 cinematic landing + onboarding + dashboard bundle 
@@ -83,6 +94,10 @@ Use Framer Motion + Tailwind.
 
 Output new or updated .tsx files only.
 ```
+
+**Example URLs:**
+- Download: `https://dealership-ai-dashboard-[hash].vercel.app/api/claude/download`
+- Manifest: `https://dealership-ai-dashboard-[hash].vercel.app/api/claude/manifest`
 
 ---
 
@@ -106,33 +121,55 @@ Output new or updated .tsx files only.
 
 ## 📋 Key Entry Points (for Claude)
 
-- **Landing:** `app/(mkt)/page.tsx`
-- **Onboarding:** `app/(marketing)/onboarding/page.tsx`
-- **Dashboard:** `app/(dashboard)/preview/page.tsx`
-- **Middleware:** `middleware.ts`
-- **Layout:** `app/layout.tsx`
+### Core Pages
+- **Landing:** `app/(mkt)/page.tsx` - Cinematic landing with Clerk CTA
+- **Onboarding:** `app/(marketing)/onboarding/page.tsx` - 5-step onboarding flow with PVR inputs
+- **Dashboard Preview:** `app/(dashboard)/preview/page.tsx` - Orchestrator with cinematic sequence
+- **Main Dashboard:** `app/(dashboard)/dashboard/page.tsx` - Full dashboard experience
 
-**Cinematic Components:**
-- `components/cognitive/TronAcknowledgment.tsx`
-- `components/cognitive/OrchestratorReadyState.tsx`
-- `components/cognitive/PulseAssimilation.tsx`
-- `components/cognitive/SystemOnlineOverlay.tsx`
+### Infrastructure
+- **Middleware:** `middleware.ts` - Clerk authentication & route protection
+- **Layout:** `app/layout.tsx` - Root layout with providers (Clerk, Monitoring)
 
-**Hooks:**
-- `lib/hooks/useBrandHue.ts` (brand personalization)
+### Cinematic Components
+- `components/cognitive/TronAcknowledgment.tsx` - System acknowledgment (Tron-style)
+- `components/cognitive/OrchestratorReadyState.tsx` - Ready state with status grid
+- `components/cognitive/PulseAssimilation.tsx` - Animated pulse data assimilation
+- `components/cognitive/SystemOnlineOverlay.tsx` - Final system online confirmation
 
-**Manifest:**
-- `exports/manifest.json` (master file map)
+### Key Hooks & Utilities
+- `lib/hooks/useBrandHue.ts` - Brand color personalization (deterministic HSL hue)
+- `lib/store.ts` - Zustand store for onboarding state
+
+### API Routes
+- `app/api/save-metrics/route.ts` - Save PVR and Ad Expense PVR
+- `app/api/pulse/snapshot/route.ts` - Fetch pulse data for assimilation
+- `app/api/user/onboarding-complete/route.ts` - Mark onboarding complete
+
+### Manifest
+- `exports/manifest.json` - Master file map and project structure
 
 ---
 
 ## 🔄 Update Workflow
 
-1. Make changes to codebase
-2. Run `./export_for_claude.sh`
-3. Move zip to `public/claude/` (or upload to hosting)
-4. Deploy to make it publicly accessible
-5. Share URL with Claude
+1. **Make changes** to codebase
+2. **Run export script:**
+   ```bash
+   ./export_for_claude.sh
+   ```
+3. **Move zip to public folder:**
+   ```bash
+   mv dealershipai_claude_export.zip public/claude/
+   ```
+   (Or upload to GitHub releases / other hosting)
+4. **Deploy to Vercel:**
+   ```bash
+   vercel deploy --prod
+   ```
+5. **Share URL with Claude** using the handoff prompt above
+
+**Note:** The script automatically moves the zip to `public/claude/` if run from project root.
 
 ---
 

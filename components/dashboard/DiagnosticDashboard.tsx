@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import RelevanceOverlay from './RelevanceOverlay';
 import RISimulator from './RISimulator';
+import TrendsChart from './TrendsChart';
 
 interface DiagnosticIssue {
   id: string;
@@ -46,13 +47,58 @@ export default function DiagnosticDashboard({ domain, dealerId }: DiagnosticDash
   const [showRelevanceOverlay, setShowRelevanceOverlay] = useState(false);
   const [overallScore, setOverallScore] = useState(0);
   const [currentRelevance, setCurrentRelevance] = useState(0);
+  const [trends, setTrends] = useState<any>(null);
+  const [showTrends, setShowTrends] = useState(false);
 
   useEffect(() => {
     fetchDiagnostics();
+    fetchTrends();
     // Auto-refresh every 5 minutes
-    const interval = setInterval(fetchDiagnostics, 300000);
+    const interval = setInterval(() => {
+      fetchDiagnostics();
+      fetchTrends();
+    }, 300000);
     return () => clearInterval(interval);
   }, [domain, dealerId]);
+
+  const fetchTrends = async () => {
+    try {
+      const res = await fetch(`/api/analytics/trends?domain=${encodeURIComponent(domain)}&dealerId=${dealerId}&days=30`);
+      if (res.ok) {
+        const data = await res.json();
+        setTrends(data);
+      }
+    } catch (error) {
+      console.error('Trends fetch error:', error);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const format = prompt('Export format:\n1. JSON\n2. CSV\n\nEnter 1 or 2:', '1');
+      if (!format) return;
+
+      const exportFormat = format === '2' ? 'csv' : 'json';
+      const res = await fetch(
+        `/api/export/data?dealerId=${dealerId}&format=${exportFormat}&type=all&days=30`
+      );
+
+      if (!res.ok) throw new Error('Export failed');
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dealershipai-export-${Date.now()}.${exportFormat}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to export data. Please try again.');
+    }
+  };
 
   const fetchDiagnostics = async () => {
     try {
@@ -72,6 +118,47 @@ export default function DiagnosticDashboard({ domain, dealerId }: DiagnosticDash
       setCurrentRelevance(68);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFixIssue = async (issue: DiagnosticIssue) => {
+    try {
+      // Determine action type based on category
+      const actionMap: Record<string, string> = {
+        schema: 'fix_schema',
+        reviews: 'fix_reviews',
+        content: 'fix_content',
+        technical: 'fix_technical',
+        competitive: 'fix_competitive',
+      };
+
+      const action = actionMap[issue.category] || 'fix_generic';
+
+      const res = await fetch('/api/fix/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          issueId: issue.id,
+          action,
+          domain,
+          dealerId,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to trigger fix');
+
+      const data = await res.json();
+      
+      // Show success message
+      alert(`Fix workflow started! ${data.message}`);
+      
+      // Refresh diagnostics after a delay
+      setTimeout(() => {
+        fetchDiagnostics();
+      }, 2000);
+    } catch (error) {
+      console.error('Fix action error:', error);
+      alert('Failed to start fix workflow. Please try again.');
     }
   };
 
@@ -249,6 +336,27 @@ export default function DiagnosticDashboard({ domain, dealerId }: DiagnosticDash
         </div>
       </div>
 
+      {/* Trends & Predictions */}
+      {trends && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-white">Historical Trends & Predictions</h3>
+            <button
+              onClick={() => setShowTrends(!showTrends)}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              {showTrends ? 'Hide' : 'Show'} Trends
+            </button>
+          </div>
+          {showTrends && (
+            <TrendsChart
+              historical={trends.historical || []}
+              predictions={trends.predictions}
+            />
+          )}
+        </div>
+      )}
+
       {/* Issues List - Prioritized */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -352,6 +460,19 @@ export default function DiagnosticDashboard({ domain, dealerId }: DiagnosticDash
           onClose={() => setShowRelevanceOverlay(false)}
         />
       )}
+
+      {/* Export Button */}
+      <div className="mt-6 flex justify-end">
+        <button
+          onClick={handleExport}
+          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export Data
+        </button>
+      </div>
     </div>
   );
 }

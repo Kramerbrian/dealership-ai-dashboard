@@ -15,6 +15,7 @@ import SocialShareButtons from '@/components/dashboard/SocialShareButtons';
 import DealershipAIScoreCard from '@/components/dashboard/DealershipAIScoreCard';
 import { OelCard } from '@/app/(dashboard)/components/metrics/OelCard';
 import OelModal from '@/app/(dashboard)/components/metrics/OelModal';
+import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,6 +85,11 @@ function DashboardContent() {
         {/* Orchestrator View - AI CSO Status */}
         <div className="mb-8">
           <OrchestratorView dealerId={dealerId} />
+        </div>
+
+        {/* Real-Time Diagnostic Dashboard */}
+        <div className="mb-8">
+          <DiagnosticDashboard domain={domain} dealerId={dealerId} />
         </div>
 
       {/* AIVATI AI Visibility Metrics */}

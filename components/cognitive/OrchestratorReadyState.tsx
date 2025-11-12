@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useBrandHue, getBrandHSL } from '@/lib/hooks/useBrandHue'
+import { useBrandPalette } from '@/lib/hooks/useBrandHue'
 
 interface OrchestratorReadyStateProps {
   domain?: string | null
@@ -13,16 +13,19 @@ export default function OrchestratorReadyState({
   domain,
   onReady,
 }: OrchestratorReadyStateProps) {
-  const hue = useBrandHue(domain)
+  const { accent, accentSoft, accentBg } = useBrandPalette(domain)
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-6"
-      style={{
-        background: `radial-gradient(circle at center, ${getBrandHSL(hue, 20, 10)} 0%, black 100%)`,
-      }}
-    >
-      <div className="max-w-4xl w-full">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-black relative">
+      {/* Cinematic grid glow */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at 50% 40%, ${accent}15, transparent 80%)`,
+        }}
+      />
+      
+      <div className="max-w-4xl w-full relative z-10">
         {/* Status grid */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {['ORCHESTRATOR', 'PULSE ENGINE', 'COGNITIVE CORE'].map((label, i) => (
@@ -33,14 +36,14 @@ export default function OrchestratorReadyState({
               transition={{ delay: i * 0.2 }}
               className="border rounded-lg p-4 backdrop-blur-sm"
               style={{
-                borderColor: getBrandHSL(hue, 40, 30),
-                backgroundColor: `${getBrandHSL(hue, 20, 10)}40`,
+                borderColor: accent,
+                backgroundColor: `${accentBg}40`,
               }}
             >
               <div className="flex items-center gap-3">
                 <motion.div
                   className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: getBrandHSL(hue, 80, 60) }}
+                  style={{ backgroundColor: accent }}
                   animate={{
                     scale: [1, 1.2, 1],
                     opacity: [0.5, 1, 0.5],
@@ -53,14 +56,14 @@ export default function OrchestratorReadyState({
                 />
                 <span
                   className="text-sm font-mono uppercase tracking-wider"
-                  style={{ color: getBrandHSL(hue, 60, 70) }}
+                  style={{ color: accentSoft }}
                 >
                   {label}
                 </span>
               </div>
               <div
                 className="text-xs font-mono mt-2"
-                style={{ color: getBrandHSL(hue, 40, 50) }}
+                style={{ color: accentSoft }}
               >
                 READY
               </div>
@@ -77,13 +80,13 @@ export default function OrchestratorReadyState({
         >
           <motion.h1
             className="text-5xl md:text-7xl font-mono font-bold mb-4"
-            style={{ color: getBrandHSL(hue, 80, 60) }}
+            style={{ color: accent }}
           >
             ORCHESTRATOR
           </motion.h1>
           <motion.h2
             className="text-2xl md:text-4xl font-mono font-light mb-8"
-            style={{ color: getBrandHSL(hue, 60, 70) }}
+            style={{ color: accentSoft }}
           >
             READY STATE
           </motion.h2>
@@ -97,7 +100,7 @@ export default function OrchestratorReadyState({
           >
             <div
               className="text-sm font-mono uppercase tracking-widest"
-              style={{ color: getBrandHSL(hue, 50, 60) }}
+              style={{ color: accentSoft }}
             >
               INITIALIZING PULSE ASSIMILATION
             </div>
@@ -111,7 +114,7 @@ export default function OrchestratorReadyState({
                 <motion.div
                   key={i}
                   className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: getBrandHSL(hue, 80, 60) }}
+                  style={{ backgroundColor: accent }}
                   animate={{
                     scale: [1, 1.5, 1],
                     opacity: [0.5, 1, 0.5],
@@ -131,12 +134,12 @@ export default function OrchestratorReadyState({
             onClick={onReady}
             className="px-8 py-4 rounded-lg font-mono uppercase tracking-wider border-2 transition-all hover:scale-105"
             style={{
-              borderColor: getBrandHSL(hue, 80, 60),
-              color: getBrandHSL(hue, 80, 60),
-              backgroundColor: `${getBrandHSL(hue, 80, 60)}10`,
+              borderColor: accent,
+              color: accent,
+              backgroundColor: `${accent}10`,
             }}
             whileHover={{
-              backgroundColor: `${getBrandHSL(hue, 80, 60)}20`,
+              backgroundColor: `${accent}20`,
             }}
             whileTap={{ scale: 0.95 }}
             initial={{ opacity: 0, y: 20 }}
