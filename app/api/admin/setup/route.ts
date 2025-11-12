@@ -6,11 +6,17 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSbAdmin } from '@/lib/supabase';
+import { createAdminRoute } from '@/lib/api/enhanced-route';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export async function POST(req: NextRequest) {
+const SetupSchema = z.object({
+  tenantId: z.string().optional(),
+});
+
+export const POST = createAdminRoute(async (req: NextRequest, { tenantId }) => {
   try {
     // Check if Supabase is configured
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
@@ -91,9 +97,11 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, {
+  schema: SetupSchema,
+});
 
-export async function GET() {
+export const GET = createAdminRoute(async () => {
   try {
     // Check if Supabase is configured
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
