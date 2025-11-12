@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { SoftwareApplicationLd, FaqLd, HowToLd } from '@/components/seo/SeoBlocks';
 import ShareUnlockModal from '@/components/share/ShareUnlockModal';
+import VitalsBadge from '@/components/hud/VitalsBadge';
+import StructuredData from '@/components/seo/StructuredData';
 
 export default function LandingPage() {
   const [domain, setDomain] = useState('');
@@ -25,6 +27,15 @@ export default function LandingPage() {
       <JsonLd data={SoftwareApplicationLd()} />
       <JsonLd data={FaqLd()} />
       <JsonLd data={HowToLd()} />
+      <StructuredData />
+      <VitalsBadge />
+
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 bg-black text-white px-3 py-2 rounded z-50"
+      >
+        Skip to content
+      </a>
 
       <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -39,8 +50,8 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6">
-        <section className="pt-16 pb-10 text-center">
+      <main id="main" className="max-w-6xl mx-auto px-6">
+        <section className="pt-16 pb-10 text-center" aria-live="polite">
           <h1 className="text-4xl md:text-6xl font-black leading-tight">Are You <span className="bg-gradient-to-r from-blue-600 to-cyan-600 text-transparent bg-clip-text">Invisible</span> to AI?</h1>
           <p className="mt-5 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">When ChatGPT doesn't know you exist, you're losing ~<b>$43,000/month</b> in potential sales.</p>
           <div className="mt-8 mx-auto max-w-xl bg-white border rounded-2xl p-5 shadow-lg text-left">
