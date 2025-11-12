@@ -149,7 +149,7 @@
   "totalTasks": 10,
   "overallProgress": 0,
   "currentPhase": "planning_complete",
-  "isAutonomous": true,
+  "isAutonomous": false,
   "confidence": 0.95,
   "logs": [
     {
@@ -163,6 +163,6 @@
       "message": "Generated 10 tasks for autonomous execution"
     }
   ],
-  "isRunning": true,
+  "isRunning": false,
   "lastUpdated": "2025-11-12T13:33:32.880Z"
 }

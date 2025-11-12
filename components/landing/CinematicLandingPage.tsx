@@ -311,7 +311,7 @@ export default function CinematicLandingPage() {
             {[
               {
                 title: 'Clarity',
-                subtitle: 'How well you're seen',
+                subtitle: 'How well you\'re seen',
                 icon: Eye,
                 description: 'Real-time visibility across all AI platforms. Know exactly where you stand.',
                 color: 'cyan',

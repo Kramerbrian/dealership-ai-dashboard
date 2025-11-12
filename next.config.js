@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Set output file tracing root to silence workspace warning
+  outputFileTracingRoot: require('path').join(__dirname),
   typescript: {
     ignoreBuildErrors: true,
   },
