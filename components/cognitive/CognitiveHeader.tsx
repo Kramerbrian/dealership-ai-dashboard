@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BarChart3, Power, Settings, Zap } from 'lucide-react';
+import { Activity, BarChart3, Power, Settings, Zap } from 'lucide-react';
 
 import { useCognitiveStore } from '@/lib/store/cognitive';
 import type { CognitiveMode } from '@/lib/types/cognitive';
@@ -10,6 +10,7 @@ const MODES: Array<{ id: CognitiveMode; label: string; icon: typeof Power }> = [
   { id: 'drive', label: 'Drive', icon: Power },
   { id: 'autopilot', label: 'Autopilot', icon: Zap },
   { id: 'insights', label: 'Insights', icon: BarChart3 },
+  { id: 'pulse', label: 'Pulse', icon: Activity },
 ];
 
 export function CognitiveHeader() {
