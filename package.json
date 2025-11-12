@@ -15,6 +15,7 @@
     "@langchain/anthropic": "^0.2.0",
     "@langchain/core": "^0.3.0",
     "@langchain/openai": "^0.2.0",
+    "@supabase/supabase-js": "^2.81.1",
     "@upstash/redis": "^1.35.6",
     "cheerio": "1.0.0-rc.12",
     "framer-motion": "^11.0.0",

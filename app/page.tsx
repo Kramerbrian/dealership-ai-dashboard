@@ -33,7 +33,8 @@ export default function LandingPage() {
             <a href="#product" className="hover:text-blue-600">Product</a>
             <a href="#pricing" className="hover:text-blue-600">Pricing</a>
             <a href="#faq" className="hover:text-blue-600">FAQ</a>
-            <a href="/login" className="px-4 py-2 rounded-lg border hover:bg-gray-50">Login</a>
+            <a href="/sign-in" className="px-4 py-2 rounded-lg border hover:bg-gray-50">Sign In</a>
+            <a href="/sign-up" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:opacity-90">Get Started</a>
           </nav>
         </div>
       </header>
@@ -95,7 +96,7 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <a href="#pricing" className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-center">🎯 Fix These Issues – Start Free Trial</a>
+                <a href="/sign-up" className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-center">🎯 Fix These Issues – Start Free Trial</a>
                 <button onClick={()=>setShareOpen(true)} className="px-5 py-3 rounded-xl border text-center">📤 Share to Unlock Extras</button>
               </div>
             </div>
