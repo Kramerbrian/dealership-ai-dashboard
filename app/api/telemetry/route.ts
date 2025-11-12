@@ -1,73 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sbAdmin } from '@/lib/supabase';
-import { allow, rl_telemetry } from '@/lib/ratelimit';
+import { getRedis } from '@/lib/redis';
+import { logger } from '@/lib/logger';
+import { redact } from '@/lib/security/redact';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') || req.ip || 'anon';
-  const rl = await allow(rl_telemetry, `telemetry:${ip}`);
-  
-  if (!rl.success) {
-    return NextResponse.json(
-      { ok: false, rateLimited: true },
-      { status: 429 }
-    );
-  }
-
-  const body = await req.json().catch(() => ({}));
-
   try {
-    if (!process.env.SUPABASE_URL || !sbAdmin) {
-      // In development, allow telemetry to succeed even without Supabase
-      if (process.env.NODE_ENV === 'development') {
-        return NextResponse.json({ ok: true, warn: 'no supabase (dev)' });
-      }
-      // In production, log but don't fail
-      console.warn('[Telemetry] Supabase not configured');
-      return NextResponse.json({ ok: true, warn: 'telemetry disabled' });
-    }
+    const body = await req.json();
+    const { event, dealer, email, metadata, timestamp } = body;
 
-    const { error } = await sbAdmin.from('telemetry_events').insert({
-      type: body.type || 'unknown',
-      payload: body.payload ?? null,
-      ts: body.ts ?? Date.now(),
-      ip
-    });
+    // Redact PII
+    const sanitized = {
+      event,
+      dealer: dealer ? redact(dealer) : undefined,
+      email: email ? redact(email) : undefined,
+      metadata: metadata ? JSON.parse(redact(JSON.stringify(metadata))) : undefined,
+      timestamp: timestamp || new Date().toISOString(),
+      ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+      userAgent: req.headers.get('user-agent') || 'unknown',
+    };
 
-    if (error) throw error;
+    // Store in Redis
+    const redis = getRedis();
+    await redis.lpush('telemetry:events', JSON.stringify(sanitized));
+    await redis.ltrim('telemetry:events', 0, 9999); // Keep last 10k events
+
+    // Log to structured logger
+    await logger.info('Telemetry event', sanitized);
+
+    // TODO: Send to analytics warehouse (Supabase, BigQuery, etc.)
 
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
-    // Log error but don't fail the request - telemetry should be non-blocking
-    console.error('[Telemetry] Failed to insert event:', e);
+  } catch (error: any) {
+    await logger.error('Telemetry error', { error: error.message });
     return NextResponse.json(
-      { ok: false, error: e.message },
+      { error: 'Failed to record telemetry' },
       { status: 500 }
     );
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    if (!process.env.SUPABASE_URL || !sbAdmin) {
-      return NextResponse.json({ events: [], warn: 'no supabase' });
-    }
+    const { searchParams } = new URL(req.url);
+    const event = searchParams.get('event');
+    const limit = parseInt(searchParams.get('limit') || '100');
 
-    const { data, error } = await sbAdmin
-      .from('telemetry_events')
-      .select('*')
-      .order('ts', { ascending: false })
-      .limit(200);
+    const redis = getRedis();
+    const events = await redis.lrange('telemetry:events', 0, limit - 1);
 
-    if (error) throw error;
+    const parsed = events
+      .map((e: string) => {
+        try {
+          return JSON.parse(e);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean)
+      .filter((e: any) => !event || e.event === event);
 
-    return NextResponse.json({ events: data || [] });
-  } catch (e: any) {
-    console.error('[Telemetry] Failed to fetch events:', e);
+    return NextResponse.json({
+      events: parsed,
+      count: parsed.length,
+    });
+  } catch (error: any) {
     return NextResponse.json(
-      { events: [], error: e.message },
+      { error: 'Failed to fetch telemetry' },
       { status: 500 }
     );
   }
