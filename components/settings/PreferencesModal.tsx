@@ -97,11 +97,18 @@ export default function PreferencesModal({ open, onClose }: PreferencesModalProp
                   className="mt-3 p-3 rounded-lg text-sm"
                   style={{ background: `${TOKENS.color.accent.clarityBlue}15`, color: TOKENS.color.text.secondary }}
                 >
-                  <div className="font-mono text-xs mb-1" style={{ color: TOKENS.color.text.muted }}>EXAMPLES</div>
+                  <div className="font-mono text-xs mb-1" style={{ color: TOKENS.color.text.muted }}>PERSONALITY PROFILE</div>
+                  <div className="text-xs mb-2" style={{ color: TOKENS.color.text.secondary }}>
+                    Subtle, dry humor with razor-sharp wit. Inspired by Ryan Reynolds, Dave Chappelle, Jerry Seinfeld.
+                  </div>
+                  <div className="font-mono text-xs mb-1 mt-2" style={{ color: TOKENS.color.text.muted }}>EXAMPLE QUOTES</div>
                   <div className="space-y-1 text-xs">
-                    <div>"Do. Or do not. There is no try" — Yoda</div>
-                    <div>"Just keep swimming" — Dory</div>
-                    <div>"Done is better than perfect" — Sheryl Sandberg</div>
+                    <div>"Show me the money!" — Jerry Maguire</div>
+                    <div>"You're gonna need a bigger boat." — Jaws</div>
+                    <div>"Phone home." — E.T.</div>
+                  </div>
+                  <div className="mt-2 text-xs" style={{ color: TOKENS.color.text.muted }}>
+                    <strong>Scarcity:</strong> Shown ≤10% of time • <strong>Fresh rotation:</strong> Usage-decay weighted
                   </div>
                 </motion.div>
               )}
