@@ -42,7 +42,7 @@ export default function StructuredData() {
         name: 'What is Clarity?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Clarity is how well you're seen across AI and search surfaces.',
+          text: 'Clarity is how well you are seen across AI and search surfaces.',
         },
       },
       {
