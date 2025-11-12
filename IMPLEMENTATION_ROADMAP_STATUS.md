@@ -279,32 +279,22 @@ CREATE TABLE competitors (
 
 ---
 
-### 6. PDF Report Generation
+### 6. ~~PDF Report Generation~~ (REMOVED)
 
-**Library:** jsPDF or react-pdf
+**Decision:** Users login to view results in the dashboard instead of downloading PDFs.
 
-**Report Sections:**
-1. Executive Summary
-   - Current schema coverage %
-   - E-E-A-T score with trend
-   - Status (healthy/warning/critical)
-   - Top 3 recommendations
+**Sharing Strategy:**
+- Users access full reports via authenticated dashboard
+- Share functionality via HTML link (with optional access control)
+- Real-time data always up-to-date (no stale PDFs)
+- Better user experience and engagement metrics
 
-2. Detailed Analysis
-   - Per-page schema audit
-   - Missing schema types
-   - Validation errors
-   - Competitive benchmarking
-
-3. Action Plan
-   - Prioritized fix list
-   - Implementation guides
-   - Expected impact estimates
-
-**Delivery:**
-- Download PDF button on dashboard
-- Scheduled email reports (weekly/monthly)
-- White-label for agencies
+**Benefits vs PDF:**
+- ✅ No stale data (always current)
+- ✅ Better SEO (indexed dashboard pages)
+- ✅ Higher user engagement
+- ✅ Easier to update/iterate
+- ✅ Lower infrastructure costs (no PDF generation)
 
 ---
 
@@ -360,9 +350,9 @@ CREATE TABLE competitors (
 - ✅ AI platform testing (COMPLETE)
 
 **Week 2 (Nov 20-26):**
-- Schema generator UI
-- Competitor tracking
-- PDF reports
+- ✅ Schema generator UI (COMPLETE)
+- ✅ Competitor tracking (COMPLETE)
+- ~~PDF reports~~ (REMOVED - users login to view, share via HTML link instead)
 
 **Week 3-4 (Nov 27-Dec 10):**
 - Multi-location support
