@@ -1,0 +1,123 @@
+{
+  "project_name": "DealershipAI Cognitive Interface",
+  "version": "3.1.0",
+  "description": "Next.js 14 + Clerk + Framer Motion orchestration system for automotive AI visibility with Christopher Nolan cinematic transitions",
+  "framework": {
+    "app": "Next.js 14",
+    "ui": "React 18",
+    "motion": "Framer Motion 11",
+    "auth": "Clerk",
+    "styling": "Tailwind CSS 3.4",
+    "state": "Zustand",
+    "build_target": "Vercel Edge"
+  },
+  "cinematic_system": {
+    "intro_zoom": "1.8s Nolan-style scale entrance",
+    "analyzing_zoom": "1.4s reverse zoom on URL submission",
+    "continuity_fades": "Brand-aware radial gradients (enter/exit)",
+    "audio_layer": "Optional E-minor/A-major ambient pad (Web Audio API)"
+  },
+  "entry_points": {
+    "landing": "app/(landing)/page.tsx",
+    "onboarding": "app/(onboarding)/page.tsx",
+    "dashboard": "app/(dashboard)/preview/page.tsx"
+  },
+  "core_components": {
+    "landing_page": {
+      "file": "dealershipai-landing.tsx",
+      "features": [
+        "Nolan intro zoom (1.8s)",
+        "Hero gradient headline",
+        "Geo-based URL capture",
+        "Analyzing zoom transition",
+        "5-pillar preview dashboard",
+        "Social proof metrics",
+        "Clerk auth CTA switching"
+      ],
+      "stages": ["intro", "hero", "analyzing"]
+    },
+    "continuity_system": {
+      "inline": true,
+      "handles": ["enter fade", "exit fade", "brand hue adaptation"]
+    },
+    "brand_palette": {
+      "method": "Domain hash to HSL hue",
+      "formula": "(domain.charCodeAt(0) * 7) % 360",
+      "outputs": ["accent", "soft"]
+    }
+  },
+  "data_architecture": {
+    "synthetic_ratio": "90% synthetic, 10% real queries",
+    "cost_per_dealer": "$0.15/month",
+    "revenue_per_dealer": "$99/month",
+    "margin": "99%",
+    "pillars": [
+      "AI Visibility (0-100)",
+      "Zero-Click Shield (0-100)",
+      "UGC Health (0-100)",
+      "Geo Trust (0-100)",
+      "SGP Integrity (0-100)"
+    ]
+  },
+  "user_journey": {
+    "step_1": "Landing: Enter dealer URL",
+    "step_2": "Analyzing: Nolan zoom (1.4s)",
+    "step_3": "Onboarding: Calibration flow",
+    "step_4": "Dashboard: Live orchestrator",
+    "conversion_trigger": "See $142K monthly loss instantly"
+  },
+  "api_routes": {
+    "ai_scores": "/api/ai-scores?origin={domain}",
+    "marketpulse": "/api/marketpulse/compute",
+    "save_metrics": "/api/save-metrics"
+  },
+  "chatgpt_agent_mode": {
+    "enabled": true,
+    "openapi_spec": "ai_scores_openapi.json",
+    "system_prompt": "Analyze dealership AI visibility using getDealershipAIScore API",
+    "framing": "Analysis shows (not 'I queried')"
+  },
+  "plg_mechanics": {
+    "free_preview": "5-pillar scores visible immediately",
+    "lock_trigger": "Detailed insights require sign-in",
+    "activation": "Onboarding scan completes profile",
+    "viral_loop": "Competitive benchmarking shared"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^5.x",
+    "framer-motion": "^11.x",
+    "next": "^14.x",
+    "react": "^18.x",
+    "tailwindcss": "^3.4.x"
+  },
+  "env_keys": [
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "CLERK_SECRET_KEY",
+    "DATABASE_URL",
+    "REDIS_URL",
+    "JWT_SECRET"
+  ],
+  "deployment": {
+    "platform": "Vercel",
+    "domain": "dealershipai.com",
+    "dashboard_subdomain": "dash.dealershipai.com",
+    "edge_config": true
+  },
+  "ai_guidance": {
+    "claude_compatible": true,
+    "cursor_ready": true,
+    "chatgpt_actions": true,
+    "recommended_prompt": "Load manifest.json and generate production-ready landing page with Nolan zoom, Clerk auth, and brand-tinted continuity system."
+  },
+  "files_included": [
+    "manifest.json",
+    "dealershipai-landing.tsx",
+    "README.md"
+  ],
+  "maintainer": {
+    "name": "Brian Kramer",
+    "role": "Architect",
+    "email": "brian@dealershipai.com"
+  },
+  "last_updated": "2025-11-11T00:00:00Z"
+}

@@ -1,180 +1,268 @@
-# DealershipAI Dashboard
+# DealershipAI Cognitive Interface — Claude Export Bundle
 
-## "Here's to the Crazy Ones" - Revolutionary Automotive Intelligence
+## 🎬 What This Is
 
-*"Here's to the crazy ones. The misfits. The rebels. The troublemakers. The round pegs in the square holes. The ones who see things differently... Because they change things."*
+A production-ready Next.js 14 landing page with **Christopher Nolan-style cinematic transitions**, designed for DealershipAI — "The Bloomberg Terminal for Automotive AI Visibility."
 
-**Welcome to the DealershipAI Dashboard** - the most advanced AI-powered automotive intelligence platform designed for dealership owners who refuse to accept the status quo.
+## ⚡ Key Features
 
-## 🚀 Why DealershipAI?
+### Cinematic System
+- **Intro Zoom** (1.8s): Nolan-style scale entrance with pulsing ring
+- **Analyzing Zoom** (1.4s): Reverse zoom on URL submission → onboarding
+- **Continuity Fades**: Brand-aware radial gradients on entry/exit
+- **Brand Palette**: Auto-generated from dealer domain hash
 
-In an industry dominated by legacy thinking, you have the opportunity to be different. While your competitors rely on outdated metrics and hope for the best, you'll have real-time AI-powered insights that reveal:
+### User Journey
+```
+Landing → Enter URL → Analyzing Zoom → Onboarding → Dashboard
+   ↓           ↓              ↓              ↓           ↓
+ Hero     Clerk CTA      Geo Scan     Calibration   Live Data
+```
 
-- **AI Platform Visibility**: How often ChatGPT, Perplexity, Gemini, and other AI platforms mention your dealership
-- **Authority Signals**: E-E-A-T validation that establishes your expertise in the digital ecosystem
-- **Competitive Intelligence**: Real-time monitoring of competitor movements and market opportunities
-- **Schema Optimization**: Structured data that makes you discoverable in the age of AI search
-- **UGC Monitoring**: Automated social media and review intelligence across all platforms
+### Business Model
+- **Cost**: $0.15/dealer/month (90% synthetic + 10% real queries)
+- **Revenue**: $99/month per dealer
+- **Margin**: 99%
+- **Value Prop**: "$142K avg monthly loss from AI invisibility"
 
-## ⚡ Quick Start (10 Minutes)
+## 🚀 Quick Start
 
-Ready to revolutionize your dealership? Follow our [Quick Start Guide](./docs/QUICK-START.md) and be operational in under 10 minutes.
+### 1. Install Dependencies
+```bash
+npm install @clerk/nextjs framer-motion next react tailwindcss
+```
+
+### 2. Environment Variables
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+DATABASE_URL=postgresql://...
+REDIS_URL=redis://...
+```
+
+### 3. Deploy File
+```bash
+# Copy to your Next.js app
+cp dealershipai-landing.tsx app/(landing)/page.tsx
+
+# Or create new route
+mkdir -p app/(marketing)
+cp dealershipai-landing.tsx app/(marketing)/page.tsx
+```
+
+### 4. Run
+```bash
+npm run dev
+# Visit http://localhost:3000
+```
+
+## 📊 The 5 Pillars
+
+1. **AI Visibility** (0-100): ChatGPT/Claude/Perplexity mentions
+2. **Zero-Click Shield** (0-100): Schema.org markup completeness
+3. **UGC Health** (0-100): Review velocity × rating × response rate
+4. **Geo Trust** (0-100): GMB completeness + NAP consistency
+5. **SGP Integrity** (0-100): Knowledge graph readiness
+
+## 🎯 ChatGPT Agent Mode Integration
+
+The system includes OpenAPI spec for ChatGPT Custom Actions:
+
+```yaml
+paths:
+  /api/ai-scores:
+    get:
+      operationId: getDealershipAIScore
+      parameters:
+        - name: origin
+          schema:
+            type: string
+```
+
+**Agent prompt framing**: "Analysis shows..." (not "I queried")
+
+## 🎨 Cinematic Stages
+
+### Stage 1: Intro (0-1.8s)
+```tsx
+scale: 1.6 → 1.0
+opacity: 0 → 1
+```
+
+### Stage 2: Hero (1.8s+)
+- Gradient headline with brand hue
+- URL input field
+- 5-pillar preview dashboard
+- Social proof metrics
+
+### Stage 3: Analyzing (on submit)
+```tsx
+scale: 1.0 → 0.85
+duration: 1.4s
+→ router.push('/onboarding')
+```
+
+## 💻 Code Structure
+
+```tsx
+// Inline brand palette (no external deps)
+const useBrand = (domain: string) => {
+  const hue = domain ? (domain.charCodeAt(0) * 7) % 360 : 210;
+  return {
+    accent: `hsl(${hue}, 70%, 55%)`,
+    soft: `hsl(${hue}, 60%, 45%)`
+  };
+};
+
+// Unified continuity system
+const Continuity = ({ phase }) => {
+  // Handles enter/exit fades with brand gradient
+};
+
+// Three stages: intro → hero → analyzing
+const [stage, setStage] = useState<'intro' | 'hero' | 'analyzing'>('intro');
+```
+
+## 📦 File Size
+
+- **Source**: 7.2 KB
+- **Minified**: ~6 KB
+- **Gzipped**: ~2.1 KB
+
+## 🔗 Integration Points
+
+### Clerk Auth
+```tsx
+import { useUser, SignInButton } from '@clerk/nextjs';
+
+// Auto-switches CTA based on auth state
+{user ? (
+  <button onClick={handleSubmit}>Analyze →</button>
+) : (
+  <SignInButton mode="modal">
+    <button>Start Free Scan →</button>
+  </SignInButton>
+)}
+```
+
+### Local Storage Handoff
+```tsx
+localStorage.setItem('dai:dealer', dealer);
+// Retrieved in onboarding/dashboard for continuity
+```
+
+### Route Transitions
+```tsx
+setPhase('exit'); // Trigger continuity fade
+setTimeout(() => router.push('/onboarding'), 800);
+```
+
+## 🎭 Psychology Play
+
+**What dealers see:**
+1. "$142K Monthly Loss" (instant fear)
+2. "73% Dealers Invisible" (social proof)
+3. Live 5-pillar scores (believable data)
+4. "15s Scan Time" (low friction)
+
+**What they get:**
+- Actionable insights (not perfect scores)
+- Competitive context (beating rivals)
+- Clear ROI (pays for itself in 2 hours)
+- Progress tracking (number go up = dopamine)
+
+## 🧠 AI Assistant Prompts
+
+### For Claude
+```
+Load manifest.json from this bundle and generate a Next.js 14 landing page 
+with Nolan zoom transitions, Clerk auth, and brand-tinted continuity system.
+```
+
+### For Cursor
+```
+Use dealershipai-landing.tsx as reference. Create matching /onboarding route 
+with same cinematic continuity and brand palette system.
+```
+
+### For ChatGPT
+```
+Review manifest.json. Explain the data architecture for DealershipAI's 
+90% synthetic + 10% real query model and how it achieves 99% margins.
+```
+
+## 📈 Conversion Mechanics
+
+```
+Visitor → See Loss Stats → Enter URL → Analyzing Zoom
+   ↓            ↓             ↓              ↓
+Fear       Social Proof   Commitment    Processing
+   
+→ Onboarding → See Scores → Sign Up
+       ↓            ↓           ↓
+  Calibration   Value Proof  Activation
+```
+
+## 🎨 Design System
+
+**Typography**: SF Pro Display (Apple-grade)
+**Motion**: Framer Motion 11 with Nolan easing `[0.19, 1, 0.22, 1]`
+**Colors**: Dynamic HSL from dealer domain
+**Layout**: Centered max-w-6xl with glassmorphism cards
+
+## 🔧 Customization
+
+### Change Intro Duration
+```tsx
+setTimeout(() => setStage('hero'), 2500); // 1800 → 2500ms
+```
+
+### Adjust Analyzing Zoom
+```tsx
+animate={{ scale: 0.75 }} // 0.85 → 0.75 for more dramatic
+```
+
+### Modify Brand Formula
+```tsx
+const hue = (domain.length * 13) % 360; // Different calculation
+```
+
+## 📚 Next Steps
+
+1. **Create `/onboarding` route** (~150 lines, same continuity)
+2. **Add audio layer** (optional E-minor pad, +40 lines)
+3. **Wire API endpoints** (`/api/ai-scores`, `/api/marketpulse`)
+4. **Deploy to Vercel** with edge config
+
+## 🎯 The Money Shot
+
+> "When ChatGPT doesn't know you exist, you might as well be selling horse carriages."
+
+**This landing page turns that fear into $99/month subscriptions.**
+
+## 📞 Support
+
+- **Architect**: Brian Kramer
+- **Email**: brian@dealershipai.com
+- **Docs**: dealershipai.com/docs
+- **GitHub**: github.com/kramerbrian/dealershipai
+
+---
+
+## ⚡ One-Command Deploy
 
 ```bash
-# Clone the revolution
-git clone https://github.com/yourusername/dealership-ai-dashboard
-cd dealership-ai-dashboard
-
-# Install dependencies
-npm install
-
-# Launch your transformation
+# Complete setup
+npx create-next-app@latest dealershipai --typescript --tailwind --app
+cd dealershipai
+npm install @clerk/nextjs framer-motion
+cp dealershipai-landing.tsx app/page.tsx
 npm run dev
 ```
 
-## 📚 Complete Documentation
-
-### For the Bold Pioneers
-- **[DIY Guide](./docs/DIY-GUIDE.md)** - Complete implementation guide with "Think Different" philosophy
-- **[Deployment Guide](./docs/DEPLOYMENT-GUIDE.md)** - Production deployment instructions
-- **[Quick Start](./docs/QUICK-START.md)** - 10-minute setup guide
-
-### For the Technical Innovators
-- **Components**: Dynamic dashboard blocks with real-time AI intelligence
-- **Agent System**: Multi-AI orchestration (Claude, ChatGPT, Perplexity, Gemini)
-- **Real-time Analytics**: Live competitor monitoring and threat detection
-- **Automated Actions**: One-click optimization deployment
-
-## 🏆 Key Features
-
-### AI Intelligence Block
-- **SEO Score**: Traditional search optimization
-- **AEO Score**: Answer Engine Optimization for AI platforms
-- **GEO Score**: Generative Engine Optimization
-- **Authority Validation**: E-E-A-T signal verification
-
-### Competitive Intelligence
-- Real-time competitor monitoring
-- Threat detection and response automation
-- Market share analysis
-- Opportunity identification
-
-### Multi-Agent AI System
-- Claude Sonnet for technical analysis
-- ChatGPT-4 for content strategy
-- Perplexity for real-time competitive intelligence
-- Gemini for local business validation
-
-### Advanced Dashboard Features
-- Role-based access control
-- Mobile-responsive design
-- Real-time notifications
-- Custom block development
-- API integration framework
-
-## 🛠 Architecture
-
-Built on modern, scalable technology:
-
-- **Frontend**: Next.js 14, React, TypeScript, TailwindCSS
-- **Backend**: Supabase, PostgreSQL, Real-time subscriptions
-- **AI Integration**: Multi-provider agent system with fallbacks
-- **Authentication**: Row-level security with Supabase Auth
-- **Deployment**: Vercel, Docker, cloud-agnostic
-
-## 🌟 Success Stories
-
-**"We went from invisible to #1 in AI platform mentions within 60 days. Our lead volume increased 300% and we finally understand our competitive position."**
-
-*- Metro Honda, Fort Myers*
-
-**"The authority validation feature helped us identify and fix critical E-E-A-T gaps that were costing us thousands in lost visibility."**
-
-*- Premier BMW, Naples*
-
-## 🚨 Critical Industry Insights
-
-### The AI Search Revolution is Here
-- 64% of car buyers now start research with AI platforms
-- Traditional SEO accounts for only 23% of visibility
-- Dealerships with AI optimization see 3.7x more qualified leads
-- 89% of automotive searches now include AI-generated results
-
-### Your Competition is Moving Fast
-- Top-performing dealerships have 12.3x higher AI mention rates
-- Schema-optimized dealerships rank 4.2x higher in AI results
-- Real-time competitive intelligence provides 47% faster response to threats
-
-## 💰 ROI Calculator
-
-**Conservative estimates for a mid-size dealership:**
-
-- Increased AI visibility: +$23,000/month
-- Improved conversion rates: +$18,500/month
-- Competitive advantage: +$31,200/month
-- **Total monthly impact: $72,700**
-
-**Implementation cost: Under $2,000/month**
-
-**ROI: 3,635%**
-
-## 🔧 Installation & Setup
-
-### System Requirements
-- Node.js 18.0.0+
-- Modern web browser
-- Supabase account
-- AI service API keys (optional for initial setup)
-
-### Environment Setup
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Configure environment variables
-4. Set up Supabase database
-5. Launch: `npm run dev`
-
-Detailed instructions in our [Quick Start Guide](./docs/QUICK-START.md).
-
-## 🤝 Community & Support
-
-Join the automotive revolution:
-
-- **GitHub Issues**: Bug reports and feature requests
-- **Discord Community**: Daily discussions with industry pioneers
-- **Documentation**: Comprehensive guides and tutorials
-- **Video Training**: Step-by-step implementation walkthroughs
-
-## 📄 License
-
-MIT License - Use this foundation to build something revolutionary.
-
-## 🎯 The Bottom Line
-
-You have two choices:
-
-1. **Continue doing what everyone else does** - Fight for scraps in an increasingly competitive market while AI platforms reshape how customers discover dealerships
-
-2. **Think Different** - Join the automotive rebels who are rewriting the rules with AI-powered intelligence
-
-The tools are here. The roadmap is clear. The opportunity is massive.
-
-**The only question is: Are you crazy enough to change the automotive industry?**
+**Live in 60 seconds.**
 
 ---
 
-*Ready to be different? Ready to think different? Ready to revolutionize your dealership?*
-
-**[Start Your 10-Minute Setup](./docs/QUICK-START.md)** and join the automotive revolution.
-
----
-
-### Quick Links
-- 🚀 [Quick Start Guide](./docs/QUICK-START.md) - Be operational in 10 minutes
-- 📖 [Complete DIY Guide](./docs/DIY-GUIDE.md) - Everything you need to know
-- 🏗️ [Architecture Overview](./docs/architecture.md) - Technical deep dive
-- 🎨 [Component Library](./docs/components.md) - UI building blocks
-- 🔧 [API Documentation](./docs/api.md) - Integration reference
-
-**Remember: You're not just implementing software. You're pioneering the future of automotive retail.**
-
-*Think different. Act different. Be the change.* 🚀
+*"The best lie tells mostly the truth. Just charge for the packaging."*  
+— Ancient DealershipAI Proverb
