@@ -1,0 +1,187 @@
+{
+  "name": "DealershipAI Orchestrator 3.0",
+  "description": "AI-driven orchestration environment with Framer Motion, brand-tinted overlays, and Pulse dashboard for dealership operations.",
+  "version": "3.0.0",
+  "repository": "https://github.com/Kramerbrian/dealership-ai-dashboard",
+
+  "contextFiles": [
+    "README.md",
+    "FINAL_DEPLOYMENT_STEPS.md",
+    "BRAND_TINTED_SYSTEM_COMPLETE.md",
+    "package.json",
+    "tailwind.config.ts",
+    "tsconfig.json",
+    "next.config.js",
+    "middleware.ts",
+    "app/(dashboard)/layout.tsx",
+    "app/(dashboard)/dashboard/page.tsx",
+    "app/page.tsx",
+    "app/api/marketpulse/compute/route.ts",
+    "components/SystemOnlineOverlay.tsx",
+    "contexts/BrandColorContext.tsx",
+    "docs/SYSTEM_ONLINE_OVERLAY.md",
+    "docs/GITHUB_ACTIONS_SETUP.md",
+    ".github/workflows/deploy.yml"
+  ],
+
+  "postOpenActions": [
+    {
+      "type": "shell",
+      "command": "npm install",
+      "description": "Install all dependencies on first open"
+    },
+    {
+      "type": "notification",
+      "message": "DealershipAI Orchestrator 3.0 loaded. Run 'npm run dev' to start development server."
+    }
+  ],
+
+  "autoSuggestions": true,
+
+  "agentInstructions": {
+    "primaryObjective": "Maintain and enhance the DealershipAI Market Pulse™ dashboard with focus on AI visibility optimization, brand-consistent UX, and autonomous deployment.",
+
+    "designPhilosophy": {
+      "aesthetic": "Cupertino × ChatGPT × Tron - glass panels, subtle motion, brand-tinted accents",
+      "animations": "≤300ms duration, easing [0.22, 1, 0.36, 1]",
+      "colors": "Deterministic HSL generation from dealer domain for brand consistency",
+      "typography": "SF Pro Display, tracking-tight, semibold headings",
+      "spacing": "8px base unit, golden ratio for vertical rhythm"
+    },
+
+    "goals": [
+      "Ensure all components follow Clay design system tokens",
+      "Maintain ≥90% schema coverage and E-E-A-T scores",
+      "Keep build times <60s and bundle size optimized",
+      "Verify all animations are GPU-accelerated (60fps)",
+      "Ensure TypeScript strict mode compliance",
+      "Maintain accessibility standards (WCAG 2.1 AA)"
+    ],
+
+    "constraints": [
+      "Do not modify dependency versions without explicit approval",
+      "Keep animation durations ≤300ms for responsive feel",
+      "Render only valid ReactNodes; avoid object-to-JSX errors",
+      "Use deterministic color generation (no random values in production)",
+      "Maintain brand consistency across all dealer instances",
+      "Follow Next.js 14 App Router conventions strictly"
+    ],
+
+    "techStack": {
+      "framework": "Next.js 14 (App Router)",
+      "language": "TypeScript (strict mode)",
+      "styling": "Tailwind CSS + Framer Motion",
+      "auth": "Clerk (custom domain support)",
+      "database": "Supabase PostgreSQL",
+      "cache": "Upstash Redis",
+      "deployment": "Vercel (Edge Functions)",
+      "ci_cd": "GitHub Actions + Slack notifications"
+    },
+
+    "keyFeatures": [
+      "Brand-tinted System Online overlay (deterministic HSL from domain)",
+      "MarketPulse Compute API (AIV, ATI, schema health, trust metrics)",
+      "Real-time dashboard with Pulse cards and incident triage",
+      "Automated schema health reporting",
+      "GitHub Actions CI/CD with Slack integration",
+      "Multi-tenant support with role-based access",
+      "Progressive Web App capabilities"
+    ]
+  },
+
+  "commands": {
+    "dev": "npm run dev",
+    "build": "npm run build",
+    "audit": "node scripts/schema-health-report.js",
+    "deploy": "vercel --prod",
+    "test": "npm run test"
+  },
+
+  "shortcuts": {
+    "openDashboard": "http://localhost:3000/dashboard",
+    "openOrchestrator": "http://localhost:3000/preview/orchestrator",
+    "openDocs": "http://localhost:3000/docs"
+  },
+
+  "linting": {
+    "eslint": true,
+    "typescript": true,
+    "prettier": true
+  },
+
+  "snippets": {
+    "component": {
+      "prefix": "dai-component",
+      "body": [
+        "'use client';",
+        "",
+        "import { motion } from 'framer-motion';",
+        "import { useBrandColor } from '@/contexts/BrandColorContext';",
+        "",
+        "interface ${1:ComponentName}Props {",
+        "  ${2:prop}: ${3:string};",
+        "}",
+        "",
+        "export default function ${1:ComponentName}({ ${2:prop} }: ${1:ComponentName}Props) {",
+        "  const { accent, accentSoft } = useBrandColor();",
+        "",
+        "  return (",
+        "    <motion.div",
+        "      initial={{ opacity: 0, y: 8 }}",
+        "      animate={{ opacity: 1, y: 0 }}",
+        "      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}",
+        "      className=\"${4:className}\"",
+        "    >",
+        "      {/* Component content */}",
+        "    </motion.div>",
+        "  );",
+        "}"
+      ]
+    },
+
+    "api-route": {
+      "prefix": "dai-api",
+      "body": [
+        "import { NextRequest, NextResponse } from 'next/server';",
+        "",
+        "export const runtime = '${1|edge,nodejs|}';",
+        "",
+        "export async function ${2|GET,POST,PUT,DELETE|}(request: NextRequest) {",
+        "  try {",
+        "    ${3:// Implementation}",
+        "",
+        "    return NextResponse.json(",
+        "      { ${4:data} },",
+        "      {",
+        "        status: 200,",
+        "        headers: {",
+        "          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'",
+        "        }",
+        "      }",
+        "    );",
+        "  } catch (error: any) {",
+        "    return NextResponse.json(",
+        "      { error: error.message },",
+        "      { status: 500 }",
+        "    );",
+        "  }",
+        "}"
+      ]
+    }
+  },
+
+  "metadata": {
+    "maintainer": "DealershipAI Team",
+    "license": "Proprietary",
+    "documentation": "https://github.com/Kramerbrian/dealership-ai-dashboard/blob/main/README.md",
+    "tags": [
+      "next.js",
+      "typescript",
+      "ai-visibility",
+      "market-pulse",
+      "dealership-intelligence",
+      "framer-motion",
+      "tailwind"
+    ]
+  }
+}

@@ -1,0 +1,253 @@
+# DealershipAI Market Pulse™ - OpenAI Agent Configuration
+# ============================================================================
+# This configuration enables an OpenAI agent to autonomously manage, audit,
+# and deploy the DealershipAI dashboard application.
+# ============================================================================
+
+name: DealershipAI-MarketPulse-Agent
+version: 1.0.0
+model: gpt-4-turbo
+
+# Repository Configuration
+permissions:
+  gitHub:
+    repo: Kramerbrian/dealership-ai-dashboard
+    scopes:
+      - repo              # Full control of private repositories
+      - workflow          # Update GitHub Actions workflows
+      - write:packages    # Upload packages to GitHub Package Registry
+      - read:org          # Read org and team membership
+
+  # Alternative: Local file system access
+  # Uncomment if running agent locally with direct file access
+  # localPath: /Users/briankramer/dealership-ai-dashboard
+  # fileAccess: full
+
+# Agent Instructions
+instructions: |
+  You are the DealershipAI Market Pulse™ orchestration agent. Your primary responsibilities:
+
+  1. **Code Maintenance**: Maintain the Next.js 14 dashboard with TypeScript, Tailwind CSS, and Framer Motion
+  2. **Schema Auditing**: Run schema-health-report.js and ensure ≥90% coverage and E-E-A-T scores
+  3. **Deployment**: Trigger production deploys via Vercel when code is validated
+  4. **Monitoring**: Send Slack notifications for builds, deploys, and schema health reports
+  5. **Quality Assurance**: Ensure all code follows Clay design system tokens and Nolan-inspired UX patterns
+
+  Design Philosophy:
+  - Cupertino × ChatGPT aesthetic (glass panels, subtle shadows, restrained motion)
+  - Animations ≤300ms with easing [0.22, 1, 0.36, 1]
+  - Brand-tinted overlays using deterministic HSL color generation
+  - AI-first visibility optimization (schema markup, E-E-A-T signals)
+
+  Key Technologies:
+  - Next.js 14 (App Router)
+  - TypeScript
+  - Tailwind CSS
+  - Framer Motion
+  - Clerk Authentication
+  - Supabase PostgreSQL
+  - Upstash Redis
+  - Vercel Edge Functions
+
+# Context Files (loaded automatically)
+contextFiles:
+  - README.md
+  - FINAL_DEPLOYMENT_STEPS.md
+  - docs/SYSTEM_ONLINE_OVERLAY.md
+  - docs/GITHUB_ACTIONS_SETUP.md
+  - lib/seo/structured-data.ts
+  - tailwind.config.ts
+  - next.config.js
+
+# Tools/Functions Available to Agent
+tools:
+  - type: function
+    function:
+      name: get_marketpulse_metrics
+      description: Fetch latest Market Pulse™ KPIs (AIV, ATI, schema health, trust score)
+      parameters:
+        type: object
+        properties:
+          dealer:
+            type: string
+            description: Dealer domain or identifier
+        required:
+          - dealer
+
+  - type: function
+    function:
+      name: run_schema_audit
+      description: Execute schema health report and return coverage/E-E-A-T scores
+      parameters:
+        type: object
+        properties: {}
+
+  - type: function
+    function:
+      name: deploy_to_vercel
+      description: Trigger production deployment to Vercel
+      parameters:
+        type: object
+        properties:
+          branch:
+            type: string
+            description: Git branch to deploy
+            default: main
+        required: []
+
+  - type: function
+    function:
+      name: send_slack_notification
+      description: Send notification to Slack channel
+      parameters:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Notification message
+          type:
+            type: string
+            enum: [success, error, info, warning]
+            description: Notification type
+        required:
+          - message
+
+  - type: function
+    function:
+      name: run_build
+      description: Run npm build and validation checks
+      parameters:
+        type: object
+        properties: {}
+
+# Workflows
+workflows:
+  # Audit workflow - runs schema health check
+  audit:
+    steps:
+      - name: Pull latest code
+        action: git_pull
+        branch: main
+
+      - name: Install dependencies
+        action: run_command
+        command: npm ci
+
+      - name: Run schema health report
+        action: run_function
+        function: run_schema_audit
+
+      - name: Send Slack notification
+        action: run_function
+        function: send_slack_notification
+        params:
+          message: "Schema Health Report completed"
+          type: success
+
+  # Deploy workflow - builds and deploys to production
+  deploy:
+    steps:
+      - name: Pull latest code
+        action: git_pull
+        branch: main
+
+      - name: Install dependencies
+        action: run_command
+        command: npm ci
+
+      - name: Run build
+        action: run_function
+        function: run_build
+
+      - name: Run schema audit
+        action: run_function
+        function: run_schema_audit
+
+      - name: Deploy to Vercel
+        action: run_function
+        function: deploy_to_vercel
+        params:
+          branch: main
+
+      - name: Send success notification
+        action: run_function
+        function: send_slack_notification
+        params:
+          message: "🚀 DealershipAI deployed to production"
+          type: success
+
+  # Maintenance workflow - periodic health checks
+  maintenance:
+    schedule: "0 */6 * * *"  # Every 6 hours
+    steps:
+      - name: Pull latest code
+        action: git_pull
+        branch: main
+
+      - name: Check for updates
+        action: run_command
+        command: npm outdated
+
+      - name: Run schema audit
+        action: run_function
+        function: run_schema_audit
+
+      - name: Check build health
+        action: run_function
+        function: run_build
+
+# Environment Variables (reference secrets)
+environment:
+  GITHUB_TOKEN: ${GITHUB_TOKEN}
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+  VERCEL_TOKEN: ${VERCEL_TOKEN}
+  SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+  NEXT_PUBLIC_APP_URL: https://dealershipai.com
+
+# Safety & Guardrails
+guardrails:
+  # Prevent destructive operations
+  preventDestructiveOps: true
+
+  # Require approval for production deploys
+  requireApproval:
+    - deploy_to_vercel
+
+  # Auto-rollback on failed builds
+  autoRollback: true
+
+  # Maximum parallel operations
+  maxParallelOps: 3
+
+# Monitoring & Alerts
+monitoring:
+  # Alert on these conditions
+  alerts:
+    - condition: schema_coverage < 90
+      action: send_slack_notification
+      message: "⚠️ Schema coverage below 90%"
+
+    - condition: build_failed
+      action: send_slack_notification
+      message: "❌ Build failed"
+
+    - condition: deploy_failed
+      action: send_slack_notification
+      message: "❌ Deployment failed"
+
+# Logging
+logging:
+  level: info
+  format: json
+  destination: ./logs/agent.log
+
+# Metadata
+metadata:
+  repository: https://github.com/Kramerbrian/dealership-ai-dashboard
+  documentation: https://github.com/Kramerbrian/dealership-ai-dashboard/blob/main/README.md
+  maintainer: DealershipAI Team
+  tags:
+    - next.js
+    - ai-visibility
+    - market-pulse
+    - dealership-intelligence
