@@ -16,7 +16,8 @@ import DealershipAIScoreCard from '@/components/dashboard/DealershipAIScoreCard'
 import { OelCard } from '@/app/(dashboard)/components/metrics/OelCard';
 import OelModal from '@/app/(dashboard)/components/metrics/OelModal';
 import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
-import PulseInbox from '@/components/pulse/PulseInbox';
+// TODO: Re-enable when PulseInbox is implemented
+// import PulseInbox from '@/components/pulse/PulseInbox';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,7 +89,8 @@ function DashboardContent() {
           <OrchestratorView dealerId={dealerId} />
         </div>
 
-        {/* Pulse Decision Inbox - Inevitability Spec */}
+        {/* Pulse Decision Inbox - Inevitability Spec - TODO: Re-enable when PulseInbox is implemented */}
+        {/*
         <div className="mb-8">
           <div className="rounded-2xl border border-gray-700 bg-gray-900/50 backdrop-blur-xl overflow-hidden">
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
@@ -108,6 +110,7 @@ function DashboardContent() {
             </div>
           </div>
         </div>
+        */}
 
         {/* Real-Time Diagnostic Dashboard */}
         <div className="mb-8">

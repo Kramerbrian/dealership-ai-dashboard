@@ -10,6 +10,7 @@ import { AutopilotMode } from '@/components/cognitive/modes/AutopilotMode';
 import { DriveMode } from '@/components/modes/DriveMode';
 import { InsightsMode } from '@/components/cognitive/modes/InsightsMode';
 import { PulseStream } from '@/components/modes/PulseStream';
+import { SettingsModal } from '@/components/modals/SettingsModal';
 import { useCognitiveStore } from '@/lib/store/cognitive';
 import { loadSeedData } from '@/lib/data/seed-incidents';
 
@@ -85,6 +86,7 @@ export function CognitiveDashboard() {
 
       <VoiceOrb />
       <ActionDrawer />
+      <SettingsModal />
     </div>
   );
 }

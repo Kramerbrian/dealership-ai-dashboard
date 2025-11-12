@@ -17,9 +17,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // External packages for server components (Next.js 15+)
-  serverExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
-  // Note: instrumentationHook is now default in Next.js 15, no need to specify
+  // External packages for server components (Next.js 14+)
+  experimental: {
+    serverComponentsExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
+  },
   // Disable static export to allow Clerk to work
   output: 'standalone',
   

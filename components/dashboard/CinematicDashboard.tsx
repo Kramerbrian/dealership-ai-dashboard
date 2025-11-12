@@ -11,7 +11,8 @@ import { useUser } from '@clerk/nextjs';
 import IntelligenceShell from '@/components/cognitive/IntelligenceShell';
 import OrchestratorView from '@/components/cognitive/OrchestratorView';
 import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
-import PulseInbox from '@/components/pulse/PulseInbox';
+// TODO: Re-enable when PulseInbox is implemented
+// import PulseInbox from '@/components/pulse/PulseInbox';
 import ZeroClickCard from '@/components/zero-click/ZeroClickCard';
 import AiriCard from '@/components/zero-click/AiriCard';
 import { 
@@ -258,7 +259,10 @@ export default function CinematicDashboard({ dealerId, domain }: CinematicDashbo
                 variants={depthLayerVariants}
                 className="bg-gray-900/80 backdrop-blur-2xl rounded-2xl border border-white/10 p-6 shadow-2xl"
               >
-                <PulseInbox />
+                {/* TODO: Re-enable when PulseInbox is implemented */}
+                <div className="text-center text-gray-400 py-12">
+                  <p>Pulse Inbox - Coming Soon</p>
+                </div>
               </motion.div>
             </motion.div>
           )}

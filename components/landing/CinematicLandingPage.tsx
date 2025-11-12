@@ -22,6 +22,32 @@ import {
 } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { ClerkConditional } from '@/components/providers/ClerkConditional';
+import { getEasterEggQuote } from '@/lib/agent/quoteEngine';
+
+// Easter Egg Quote Component
+function EasterEggQuote() {
+  const [egg, setEgg] = useState<{quote: string; source: string} | null>(null);
+
+  useEffect(() => {
+    const q = getEasterEggQuote();
+    if (q) setEgg({ quote: q.quote, source: q.source });
+  }, []);
+
+  if (!egg) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.5, duration: 0.6 }}
+      className="mt-3 pt-3 border-t border-white/10"
+    >
+      <p className="text-[11px] text-white/60 italic text-center">
+        "{egg.quote}" — <span className="opacity-90">{egg.source}</span>
+      </p>
+    </motion.div>
+  );
+}
 
 export default function CinematicLandingPage() {
   const [mounted, setMounted] = useState(false);
@@ -261,6 +287,8 @@ export default function CinematicLandingPage() {
                 <p className="text-white font-mono text-xs">
                   "What's my AI visibility score across ChatGPT, Claude, and Perplexity?"
                 </p>
+                {/* Easter Egg Quote (10% chance) */}
+                <EasterEggQuote />
               </motion.div>
             </div>
           </motion.div>
