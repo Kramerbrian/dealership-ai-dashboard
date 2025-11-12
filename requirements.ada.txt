@@ -25,7 +25,7 @@ requests==2.31.0
 # Utilities
 python-dotenv==1.0.0
 pydantic==2.5.0
-python-multipart==0.0.6
+python-multipart==0.0.18
 
 # Monitoring
 prometheus-client==0.19.0
