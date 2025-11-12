@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sbAdmin } from '@/lib/supabase';
-import { allow, rl_telemetry } from '@/lib/rateLimit';
+import { allow, rl_telemetry } from '@/lib/ratelimit';
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || req.ip || 'anon';
