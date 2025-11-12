@@ -5,6 +5,12 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { ClerkProviderWrapper } from '@/components/providers/ClerkProviderWrapper'
 import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
+import { JsonLd } from '@/components/seo/JsonLd'
+import {
+  softwareApplicationSchema,
+  organizationSchema,
+  websiteSchema
+} from '@/components/seo/SeoBlocks'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -48,6 +54,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* JSON-LD Structured Data for AI Crawlers */}
+        <JsonLd data={softwareApplicationSchema()} />
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={websiteSchema()} />
+
         {process.env.NEXT_PUBLIC_GA && (
           <>
             <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA}`} />
