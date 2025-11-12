@@ -32,15 +32,35 @@ function getRedisClient(): Redis {
       } as any;
     }
 
-    redisClient = new Redis(redisUrl, {
-      maxRetriesPerRequest: 3,
-      enableReadyCheck: true,
-      enableOfflineQueue: false,
-    });
+    try {
+      redisClient = new Redis(redisUrl, {
+        maxRetriesPerRequest: 3,
+        enableReadyCheck: true,
+        enableOfflineQueue: false,
+        lazyConnect: true, // Don't connect immediately
+        retryStrategy: (times) => {
+          if (times > 3) {
+            console.warn('[Storage] Redis connection failed after 3 retries, using mock storage');
+            return null; // Stop retrying
+          }
+          return Math.min(times * 50, 2000);
+        },
+      });
 
-    redisClient.on('error', (error) => {
-      console.error('[Storage] Redis error:', error);
-    });
+      redisClient.on('error', (error) => {
+        console.error('[Storage] Redis error:', error);
+        // Don't throw - just log the error
+      });
+
+      // Try to connect, but don't fail if it doesn't work
+      redisClient.connect().catch((error) => {
+        console.warn('[Storage] Redis connection failed, using mock storage:', error.message);
+        redisClient = null;
+      });
+    } catch (error) {
+      console.error('[Storage] Failed to create Redis client:', error);
+      redisClient = null;
+    }
   }
 
   return redisClient;
