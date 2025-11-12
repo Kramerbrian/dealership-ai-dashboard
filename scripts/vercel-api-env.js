@@ -100,7 +100,11 @@ console.log('');
 async function addEnvVar({ key, value, target, type }) {
   console.log(`Adding ${key}...`);
 
-  const url = `https://api.vercel.com/v10/projects/${PROJECT_ID}/env`;
+  // Try personal account (no teamId) and team account
+  const urls = [
+    `https://api.vercel.com/v10/projects/${PROJECT_ID}/env`,
+    `https://api.vercel.com/v10/projects/${PROJECT_ID}/env?teamId=${ORG_ID}`
+  ];
 
   const body = JSON.stringify({
     key,
@@ -109,27 +113,37 @@ async function addEnvVar({ key, value, target, type }) {
     type
   });
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${VERCEL_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body
-    });
+  // Try personal account first
+  for (let i = 0; i < urls.length; i++) {
+    try {
+      const response = await fetch(urls[i], {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${VERCEL_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body
+      });
 
-    if (response.ok) {
-      console.log(`  ✅ ${key} added successfully`);
-      return true;
-    } else {
-      const error = await response.text();
-      console.log(`  ⚠️  ${key}: ${error}`);
-      return false;
+      if (response.ok) {
+        console.log(`  ✅ ${key} added successfully`);
+        return true;
+      } else {
+        const errorText = await response.text();
+        if (i === urls.length - 1) {
+          // Last attempt failed
+          console.log(`  ⚠️  ${key}: ${errorText}`);
+          return false;
+        }
+        // Try next URL
+        continue;
+      }
+    } catch (error) {
+      if (i === urls.length - 1) {
+        console.log(`  ❌ ${key}: ${error.message}`);
+        return false;
+      }
     }
-  } catch (error) {
-    console.log(`  ❌ ${key}: ${error.message}`);
-    return false;
   }
 }
 
