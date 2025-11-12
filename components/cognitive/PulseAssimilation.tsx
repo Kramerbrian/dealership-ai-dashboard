@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useBrandHue, getBrandHSL } from '@/lib/hooks/useBrandHue'
+import { useBrandPalette } from '@/lib/hooks/useBrandHue'
 
 interface PulseAssimilationProps {
   domain?: string | null
@@ -25,7 +25,7 @@ export default function PulseAssimilation({
   error = null,
   onSkip,
 }: PulseAssimilationProps) {
-  const hue = useBrandHue(domain)
+  const { accent, accentSoft, accentBg } = useBrandPalette(domain)
   const [assimilated, setAssimilated] = useState<string[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -57,16 +57,21 @@ export default function PulseAssimilation({
   }, [pulses, currentIndex, onComplete, loading, error])
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-6"
-      style={{
-        background: `radial-gradient(circle at center, ${getBrandHSL(hue, 15, 8)} 0%, black 100%)`,
-      }}
-    >
-      <div className="max-w-4xl w-full">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-black relative">
+      {/* Background grid fade-in */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at 50% 50%, ${accent}15, transparent 80%)`,
+        }}
+        animate={{ opacity: [0, 0.4, 0.8, 0.4, 0] }}
+        transition={{ duration: 3.2, ease: 'easeInOut' }}
+      />
+      
+      <div className="max-w-4xl w-full relative z-10">
         <motion.h1
           className="text-4xl md:text-6xl font-mono font-bold mb-12 text-center"
-          style={{ color: getBrandHSL(hue, 80, 60) }}
+          style={{ color: accent }}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -77,7 +82,7 @@ export default function PulseAssimilation({
           <div className="text-center mb-8">
             <div
               className="text-sm font-mono uppercase tracking-wider mb-4"
-              style={{ color: getBrandHSL(hue, 60, 70) }}
+              style={{ color: accentSoft }}
             >
               LOADING PULSE DATA...
             </div>
@@ -86,7 +91,7 @@ export default function PulseAssimilation({
                 <motion.div
                   key={i}
                   className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: getBrandHSL(hue, 80, 60) }}
+                  style={{ backgroundColor: accent }}
                   animate={{
                     scale: [1, 1.5, 1],
                     opacity: [0.5, 1, 0.5],
@@ -106,13 +111,13 @@ export default function PulseAssimilation({
           <div className="text-center mb-8">
             <div
               className="text-sm font-mono uppercase tracking-wider mb-2"
-              style={{ color: getBrandHSL(hue, 80, 50) }}
+              style={{ color: accent }}
             >
               WARNING: {error}
             </div>
             <div
               className="text-xs font-mono"
-              style={{ color: getBrandHSL(hue, 50, 60) }}
+              style={{ color: accentSoft }}
             >
               Continuing with available data...
             </div>
@@ -134,12 +139,10 @@ export default function PulseAssimilation({
                 }}
                 className="border rounded-lg p-6 backdrop-blur-sm"
                 style={{
-                  borderColor: isAssimilated
-                    ? getBrandHSL(hue, 80, 60)
-                    : getBrandHSL(hue, 20, 20),
+                  borderColor: isAssimilated ? accent : `${accent}40`,
                   backgroundColor: isAssimilated
-                    ? `${getBrandHSL(hue, 30, 15)}60`
-                    : `${getBrandHSL(hue, 10, 5)}40`,
+                    ? `${accentBg}60`
+                    : `${accentBg}40`,
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -147,7 +150,7 @@ export default function PulseAssimilation({
                     {isAssimilated ? (
                       <motion.div
                         className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getBrandHSL(hue, 80, 60) }}
+                        style={{ backgroundColor: accent }}
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', stiffness: 500 }}
@@ -155,23 +158,21 @@ export default function PulseAssimilation({
                     ) : (
                       <div
                         className="w-3 h-3 rounded-full border-2"
-                        style={{ borderColor: getBrandHSL(hue, 40, 40) }}
+                        style={{ borderColor: `${accent}60` }}
                       />
                     )}
                     <div>
                       <div
                         className="font-mono text-lg"
                         style={{
-                          color: isAssimilated
-                            ? getBrandHSL(hue, 80, 70)
-                            : getBrandHSL(hue, 40, 50),
+                          color: isAssimilated ? accentSoft : `${accentSoft}80`,
                         }}
                       >
                         {pulse.title}
                       </div>
                       <div
                         className="text-sm font-mono mt-1"
-                        style={{ color: getBrandHSL(hue, 50, 60) }}
+                        style={{ color: accentSoft }}
                       >
                         ${(pulse.impactMonthlyUSD / 1000).toFixed(1)}K/mo impact
                       </div>
@@ -188,7 +189,7 @@ export default function PulseAssimilation({
                         <motion.div
                           key={i}
                           className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: getBrandHSL(hue, 80, 60) }}
+                          style={{ backgroundColor: accent }}
                           animate={{
                             scale: [1, 1.5, 1],
                             opacity: [0.5, 1, 0.5],
@@ -208,6 +209,23 @@ export default function PulseAssimilation({
           })}
         </div>
 
+        {/* Energy pulse line */}
+        <motion.div
+          className="absolute w-[180%] h-[1px]"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${accentSoft}90, transparent)`,
+          }}
+          animate={{
+            x: ['-100%', '100%'],
+            opacity: [0, 1, 0],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+
         {assimilated.length === pulses.length && pulses.length > 0 && (
           <motion.div
             className="text-center mt-12"
@@ -216,7 +234,7 @@ export default function PulseAssimilation({
           >
             <div
               className="text-2xl font-mono uppercase tracking-wider"
-              style={{ color: getBrandHSL(hue, 80, 60) }}
+              style={{ color: accent }}
             >
               ASSIMILATION COMPLETE
             </div>
@@ -227,7 +245,7 @@ export default function PulseAssimilation({
           <div className="text-center mt-12">
             <div
               className="text-sm font-mono uppercase tracking-wider"
-              style={{ color: getBrandHSL(hue, 50, 60) }}
+              style={{ color: accentSoft }}
             >
               NO PULSES TO ASSIMILATE
             </div>
