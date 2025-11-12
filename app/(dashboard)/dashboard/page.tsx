@@ -8,6 +8,7 @@ import OrchestratorView from '@/components/cognitive/OrchestratorView';
 import ZeroClickCard from '@/components/zero-click/ZeroClickCard';
 import AiriCard from '@/components/zero-click/AiriCard';
 import SchemaHealthCard from '@/components/pulse/SchemaHealthCard';
+import DiagnosticDashboard from '@/components/dashboard/DiagnosticDashboard';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,12 +35,21 @@ export default function DashboardPage() {
 
   // Use dealerId from user metadata or default
   const dealerId = (user.publicMetadata?.dealerId as string) || user.id || 'demo-tenant';
+  // Get domain from user metadata or fallback
+  const domain = (user.publicMetadata?.domain as string) || 
+                 (user.publicMetadata?.dealershipUrl as string)?.replace(/^https?:\/\//, '') || 
+                 'demo-dealership.com';
 
   return (
     <IntelligenceShell dealerId={dealerId} showCognitionBar={true}>
       {/* Orchestrator View - AI CSO Status */}
       <div className="mb-8">
         <OrchestratorView dealerId={dealerId} />
+      </div>
+
+      {/* Real-Time Diagnostic Dashboard */}
+      <div className="mb-8">
+        <DiagnosticDashboard domain={domain} dealerId={dealerId} />
       </div>
 
       {/* Core Metrics Grid */}
