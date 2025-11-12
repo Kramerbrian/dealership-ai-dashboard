@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
     // Redact PII
     const sanitized = {
       event,
-      dealer: dealer ? redact(dealer) : undefined,
-      email: email ? redact(email) : undefined,
+      dealer: dealer ? redact(String(dealer)) : undefined,
+      email: email ? redact(String(email)) : undefined,
       metadata: metadata ? JSON.parse(redact(JSON.stringify(metadata))) : undefined,
       timestamp: timestamp || new Date().toISOString(),
       ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',

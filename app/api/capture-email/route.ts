@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
     const key = `plg:email:${Date.now()}`;
     
     const sanitized = {
-      dealer: redact(dealer),
-      email: redact(email),
+      dealer: redact(String(dealer || '')),
+      email: redact(String(email || '')),
       scanResults,
       utm,
       timestamp: new Date().toISOString(),
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Log telemetry
     await logger.info('Email captured', {
       event: 'email_captured',
-      dealer: redact(dealer),
+      dealer: redact(String(dealer || '')),
       hasScanResults: !!scanResults,
       utm_source: utm?.source,
     });
