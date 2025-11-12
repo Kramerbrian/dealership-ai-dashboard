@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { allow, rl_publicAPI } from '@/lib/rateLimit';
+import { allow, rl_publicAPI } from '@/lib/ratelimit';
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || req.ip || 'anon';

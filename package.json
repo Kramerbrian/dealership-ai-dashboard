@@ -29,6 +29,7 @@
     "@upstash/ratelimit": "^2.0.3",
     "@upstash/redis": "^1.35.6",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.0.14",
     "cheerio": "1.0.0-rc.12",
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.0",
