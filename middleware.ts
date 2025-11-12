@@ -31,18 +31,46 @@ export default clerkMiddleware((auth, req) => {
   const url = new URL(req.url);
   const hostname = req.headers.get('host') || '';
 
-  // Domain-based routing: route dash.dealershipai.com to /dash
-  if (hostname.includes('dash.dealershipai.com') && url.pathname === '/') {
-    const rewriteUrl = url.clone();
-    rewriteUrl.pathname = '/dash';
-    return NextResponse.rewrite(rewriteUrl);
+  // Check if this is the dashboard subdomain
+  const isDashboardDomain = hostname.includes('dash.dealershipai.com') || hostname.includes('dashboard.dealershipai.com');
+  const isMarketingDomain = hostname.includes('dealershipai.com') && !isDashboardDomain;
+
+  // DOMAIN SEPARATION LOGIC
+
+  // 1. Marketing domain (dealershipai.com) - Only allow marketing pages
+  if (isMarketingDomain) {
+    const marketingRoutes = ['/', '/onboarding', '/pricing', '/privacy', '/terms', '/sign-in', '/sign-up', '/instant'];
+    const isMarketingRoute = marketingRoutes.some(route => url.pathname === route || url.pathname.startsWith('/api/'));
+
+    // If trying to access dashboard routes on marketing domain, redirect to dash subdomain
+    if (url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/preview')) {
+      const dashUrl = new URL(req.url);
+      dashUrl.hostname = 'dash.dealershipai.com';
+      return NextResponse.redirect(dashUrl);
+    }
+
+    // Allow marketing routes and API routes
+    if (isMarketingRoute) {
+      return NextResponse.next();
+    }
   }
 
-  // Domain-based routing: route dashboard.dealershipai.com to /dashboard
-  if (hostname.includes('dashboard.dealershipai.com') && url.pathname === '/') {
-    const rewriteUrl = url.clone();
-    rewriteUrl.pathname = '/dashboard';
-    return NextResponse.rewrite(rewriteUrl);
+  // 2. Dashboard domain (dash.dealershipai.com) - Only allow dashboard pages
+  if (isDashboardDomain) {
+    // Rewrite root to dashboard
+    if (url.pathname === '/') {
+      const rewriteUrl = url.clone();
+      rewriteUrl.pathname = '/dashboard';
+      return NextResponse.rewrite(rewriteUrl);
+    }
+
+    // If trying to access marketing routes on dashboard domain, redirect to main domain
+    const marketingOnlyRoutes = ['/onboarding', '/pricing'];
+    if (marketingOnlyRoutes.includes(url.pathname)) {
+      const marketingUrl = new URL(req.url);
+      marketingUrl.hostname = 'dealershipai.com';
+      return NextResponse.redirect(marketingUrl);
+    }
   }
 
   // Skip authentication for public routes
