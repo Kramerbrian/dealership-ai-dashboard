@@ -126,24 +126,17 @@ const nextConfig = {
       'clerk.accounts.dev',
       'img.clerk.com',
     ],
-    formats: ['image/webp', 'image/avif'],
   },
-  
-  // Performance optimizations
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  
-  // Bundle analyzer (enable with ANALYZE=true)
+  // Bundle analyzer
   ...(process.env.ANALYZE === 'true' && {
     webpack: (config, { isServer }) => {
       if (!isServer) {
-        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+        const { BundleAnalyzerPlugin } = require('@next/bundle-analyzer');
         config.plugins.push(
           new BundleAnalyzerPlugin({
             analyzerMode: 'static',
             openAnalyzer: false,
-            reportFilename: './bundle-analysis.html',
+            reportFilename: `../bundle-analyzer/${isServer ? 'server' : 'client'}.html`,
           })
         );
       }

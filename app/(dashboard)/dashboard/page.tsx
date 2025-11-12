@@ -171,8 +171,9 @@ function DashboardContent() {
 
       {/* Zero-Click Rate Intelligence Section */}
       <div className="mt-8">
-        <h2 className="text-2xl font-bold text-white mb-6">Zero-Click Intelligence</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h2 className="text-2xl font-bold text-white mb-6">Market Intelligence</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* <SchemaHealthCard dealerId={dealerId} /> */}
           <ZeroClickCard tenantId={dealerId} />
           <AiriCard tenantId={dealerId} />
         </div>

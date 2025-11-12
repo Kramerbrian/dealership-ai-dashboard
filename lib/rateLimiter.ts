@@ -73,7 +73,16 @@ export class RedisRateLimiter {
         end
       `
 
-      const result = await redis.eval(
+      if (!redisClient) {
+        // Redis not available - allow request
+        return {
+          allowed: true,
+          remaining: this.config.maxRequests - 1,
+          resetTime: now + this.config.windowMs
+        };
+      }
+
+      const result = await redisClient.eval(
         script,
         [key],
         [windowStart, this.config.windowMs, this.config.maxRequests, now]

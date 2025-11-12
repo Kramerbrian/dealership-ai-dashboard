@@ -158,18 +158,18 @@ export default function OrchestratorStatusPanel({ dealerId }: OrchestratorStatus
                    shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
       >
         <Zap className="w-5 h-5" />
-        Run Full Orchestration
+        Run Full Analysis
       </button>
 
-      {/* Latest ASR Preview */}
+      {/* System Status Preview */}
       <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700">
         <div className="flex items-center gap-2 mb-2">
           <CheckCircle2 className="w-4 h-4 text-green-400" />
-          <span className="text-sm font-medium text-slate-300">AI CSO Active</span>
+          <span className="text-sm font-medium text-slate-300">AI Assistant Active</span>
         </div>
         <p className="text-xs text-slate-400">
-          Orchestrator is continuously scanning, diagnosing, and prescribing improvements.
-          The AI Chief Strategy Officer is operating in <span className="text-blue-400">{status.orchestratorRole}</span> mode.
+          The system is continuously watching your dealership, finding problems, and suggesting ways to improve.
+          Operating in <span className="text-blue-400">{status.orchestratorRole}</span> mode.
         </p>
       </div>
     </div>
