@@ -20,7 +20,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'DealershipAI - Cognitive Ops Platform | AI Chief Strategy Officer for Automotive Dealerships',
-  description: 'The Cognitive Ops Platform for Automotive Leaders. Every dealer has an embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains decisions. When ChatGPT doesn't know you exist, you might as well be selling horse carriages.',
+  description: 'The Cognitive Ops Platform for Automotive Leaders. Every dealer has an embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains decisions. When ChatGPT does not know you exist, you might as well be selling horse carriages.',
   keywords: ['dealership', 'AI', 'visibility', 'ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'zero-click', 'automotive', 'marketing', 'cognitive ops', 'AI CSO', 'orchestrator'],
   authors: [{ name: 'DealershipAI Team' }],
   creator: 'DealershipAI',
