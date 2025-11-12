@@ -29,6 +29,19 @@ function getRedisClient(): Redis {
         set: async () => 'OK',
         setex: async () => 'OK',
         del: async () => 1,
+        connect: async () => {},
+      } as any;
+    }
+
+    // Validate URL format
+    if (!redisUrl.includes('://') && !redisUrl.includes('.upstash.io')) {
+      console.warn('[Storage] Invalid Redis URL format, using mock storage');
+      return {
+        get: async () => null,
+        set: async () => 'OK',
+        setex: async () => 'OK',
+        del: async () => 1,
+        connect: async () => {},
       } as any;
     }
 

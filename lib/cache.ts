@@ -61,16 +61,61 @@ export class RedisCache {
   private prefix = 'dealershipai:';
 
   constructor() {
-    this.client = new Redis({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false,
-      maxRetriesPerRequest: null,
-    });
+    const redisUrl = process.env.REDIS_URL || process.env.KV_URL || 'redis://localhost:6379';
+    
+    // Only initialize if URL looks valid
+    if (redisUrl && (redisUrl.includes('://') || redisUrl.includes('.upstash.io'))) {
+      try {
+        this.client = new Redis({
+          url: redisUrl,
+          retryDelayOnFailover: 100,
+          enableReadyCheck: false,
+          maxRetriesPerRequest: null,
+          lazyConnect: true, // Don't connect immediately
+          retryStrategy: (times) => {
+            if (times > 3) {
+              console.warn('[Cache] Redis connection failed, using in-memory fallback');
+              return null; // Stop retrying
+            }
+            return Math.min(times * 50, 2000);
+          },
+        });
 
-    this.client.on('error', (error) => {
-      console.error('Redis connection error:', error);
-    });
+        this.client.on('error', (error) => {
+          console.error('[Cache] Redis connection error:', error.message);
+          // Don't throw - just log
+        });
+
+        // Try to connect, but don't fail if it doesn't work
+        this.client.connect().catch((error) => {
+          console.warn('[Cache] Redis connection failed, using in-memory fallback:', error.message);
+        });
+      } catch (error) {
+        console.error('[Cache] Failed to create Redis client:', error);
+        // Create a mock client that does nothing
+        this.client = {
+          get: async () => null,
+          set: async () => 'OK',
+          setex: async () => 'OK',
+          del: async () => 1,
+          exists: async () => 0,
+          quit: async () => {},
+          connect: async () => {},
+        } as any;
+      }
+    } else {
+      // Invalid URL - use mock client
+      console.warn('[Cache] Invalid Redis URL, using in-memory fallback');
+      this.client = {
+        get: async () => null,
+        set: async () => 'OK',
+        setex: async () => 'OK',
+        del: async () => 1,
+        exists: async () => 0,
+        quit: async () => {},
+        connect: async () => {},
+      } as any;
+    }
   }
 
   static getInstance(): RedisCache {
