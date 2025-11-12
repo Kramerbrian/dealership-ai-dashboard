@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRedis } from '@/lib/redis';
+import { redis } from '@/lib/redis';
 import { redact } from '@/lib/security/redact';
 import { logger } from '@/lib/logger';
 
@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Store in Redis with redacted PII
-    const redis = getRedis();
     const key = `plg:email:${Date.now()}`;
     
     const sanitized = {
