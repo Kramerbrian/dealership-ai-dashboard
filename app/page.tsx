@@ -1,263 +1,141 @@
-"use client";
+'use client';
+import React, { useState } from 'react';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { SoftwareApplicationLd, FaqLd, HowToLd } from '@/components/seo/SeoBlocks';
+import ShareUnlockModal from '@/components/share/ShareUnlockModal';
 
-import { useState, useEffect } from "react";
-import "./globals.lean.css";
-import FreeAuditWidget from "@/components/landing/FreeAuditWidget";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { faqSchema, howToSchema } from "@/components/seo/SeoBlocks";
+export default function LandingPage() {
+  const [domain, setDomain] = useState('');
+  const [status, setStatus] = useState<'idle'|'loading'|'done'>('idle');
+  const [result, setResult] = useState<any>(null);
+  const [shareOpen,setShareOpen] = useState(false);
 
-interface ScanPreview {
-  domain: string;
-  scores: {
-    trust: number;
-    schema: number;
-    zeroClick: number;
-    freshness: number;
+  const fetchAnalyze = async () => {
+    setStatus('loading');
+    const url = '/api/analyze?domain=' + encodeURIComponent(domain);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok){ setStatus('idle'); alert(data.error||'Error'); return; }
+    setResult(data); setStatus('done');
   };
-  mentions: Record<string, boolean>;
-  insights: string[];
-  requiresAuth: boolean;
-}
-
-export default function Page() {
-  const [url, setUrl] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [preview, setPreview] = useState<ScanPreview | null>(null);
-  const [exitIntentShown, setExitIntentShown] = useState(false);
-
-  // Exit-intent detection (high-impact enhancement)
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !exitIntentShown && !preview) {
-        setExitIntentShown(true);
-      }
-    };
-
-    // Also trigger on 45s inactivity
-    const resetTimer = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        if (!exitIntentShown && !preview) {
-          setExitIntentShown(true);
-        }
-      }, 45000);
-    };
-
-    document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('mousemove', resetTimer);
-    document.addEventListener('scroll', resetTimer);
-    resetTimer();
-
-    return () => {
-      document.removeEventListener('mouseleave', handleMouseLeave);
-      document.removeEventListener('mousemove', resetTimer);
-      document.removeEventListener('scroll', resetTimer);
-      clearTimeout(timer);
-    };
-  }, [exitIntentShown, preview]);
-
-  async function onScan(e: React.FormEvent) {
-    e.preventDefault();
-    if (!url) return;
-
-    setSubmitting(true);
-    setMsg(null);
-    setPreview(null);
-
-    try {
-      const response = await fetch('/api/scan/quick', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Scan failed');
-      }
-
-      const data = await response.json();
-      setPreview(data);
-      setMsg("Preview ready! Sign in to view your full report.");
-    } catch (error) {
-      setMsg("Scan failed. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   return (
     <>
-      {/* JSON-LD Structured Data for AI Visibility */}
-      <JsonLd data={faqSchema()} />
-      <JsonLd data={howToSchema()} />
+      <link rel="canonical" href="https://dealershipai.com/" />
+      <JsonLd data={SoftwareApplicationLd()} />
+      <JsonLd data={FaqLd()} />
+      <JsonLd data={HowToLd()} />
 
-      <main className="wrapper">
-        {/* Exit-Intent Modal */}
-        {exitIntentShown && (
-        <div className="exit-modal-overlay" onClick={() => setExitIntentShown(false)}>
-          <div className="exit-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="exit-close" onClick={() => setExitIntentShown(false)} aria-label="Close">×</button>
-            <h3>Wait! Before you go...</h3>
-            <p>Get your first AI visibility report 100% free. No credit card required.</p>
-            <button className="cta" onClick={() => {
-              setExitIntentShown(false);
-              document.querySelector<HTMLElement>('.input')?.focus();
-            }}>Get Free Report</button>
+      <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2"><div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500" /><span className="font-extrabold text-xl">dealership<span className="text-blue-600">AI</span></span></div>
+          <nav className="hidden md:flex items-center gap-6 text-sm">
+            <a href="#product" className="hover:text-blue-600">Product</a>
+            <a href="#pricing" className="hover:text-blue-600">Pricing</a>
+            <a href="#faq" className="hover:text-blue-600">FAQ</a>
+            <a href="/login" className="px-4 py-2 rounded-lg border hover:bg-gray-50">Login</a>
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-6">
+        <section className="pt-16 pb-10 text-center">
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">Are You <span className="bg-gradient-to-r from-blue-600 to-cyan-600 text-transparent bg-clip-text">Invisible</span> to AI?</h1>
+          <p className="mt-5 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">When ChatGPT doesn't know you exist, you're losing ~<b>$43,000/month</b> in potential sales.</p>
+          <div className="mt-8 mx-auto max-w-xl bg-white border rounded-2xl p-5 shadow-lg text-left">
+            <label className="text-sm font-semibold text-gray-700">🔍 Enter your dealership domain</label>
+            <div className="mt-2 flex gap-2">
+              <input type="url" placeholder="terryreidhyundai.com" value={domain} onChange={(e)=>setDomain(e.target.value)} className="flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200" />
+              <button onClick={fetchAnalyze} className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 hover:opacity-90">Analyze</button>
+            </div>
+            <ul className="mt-3 text-sm text-gray-500 grid grid-cols-3 gap-2"><li>✓ Instant results</li><li>✓ 5 AI platforms</li><li>✓ Revenue impact</li></ul>
           </div>
-        </div>
-      )}
+          <div className="mt-6 text-sm text-gray-500">📊 Trusted by 847 dealerships · ⭐ 4.9/5 rating</div>
+        </section>
 
-      {/* Nav */}
-      <nav className="nav">
-        <div className="logo">
-          <span className="logo-dot" />
-          DealershipAI
-        </div>
-        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#learn">Learn</a>
-          <button className="ghost" onClick={() => (window.location.href = "/sign-in")}>Sign in</button>
-          <button className="cta" onClick={() => (window.location.href = "/onboarding")}>Get started</button>
-        </div>
-      </nav>
+        {status==='loading' && (
+          <section className="my-10 bg-white border rounded-2xl p-6 shadow-sm max-w-3xl mx-auto">
+            <div className="font-semibold mb-3">⚡ Analyzing {domain}...</div>
+            <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div className="h-2 w-5/6 bg-gradient-to-r from-blue-500 to-cyan-500 animate-pulse" /></div>
+            <ul className="mt-4 text-sm text-gray-600 space-y-1"><li>✓ Checked 5 AI platforms</li><li>✓ Analyzed 120+ data points</li><li>✓ Compared to local competitors</li></ul>
+          </section>
+        )}
 
-      {/* Hero */}
-      <section className="hero">
-        <div>
-          <div className="badge"><span className="dot" /> Agent-Ready • Real KPIs</div>
-          <h1 className="h-title">See how trusted your dealership looks to AI.</h1>
-          <p className="h-kicker">Run a free scan, view your Trust Score, and get instant, fix-ready insights for schema, content freshness, and zero-click visibility.</p>
+        {status==='done' && result && (
+          <section id="report" className="my-12">
+            <div className="bg-white border rounded-2xl p-6 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div><div className="text-sm text-gray-500">{result.dealership} • {result.location}</div><h2 className="text-2xl font-black">📊 Your AI Visibility Report</h2></div>
+                <div className="text-right"><div className="text-sm text-gray-500">Overall Score</div><div className="text-3xl font-black text-blue-600">{result.overall}/100</div><div className="text-xs text-gray-500">#{result.rank} of {result.of} in market</div></div>
+              </div>
 
-          {/* Preview Results */}
-          {preview && (
-            <div className="panel" style={{marginBottom: 16, animation: "fadeIn 0.3s"}}>
-              <h4 style={{margin: "0 0 12px"}}>Preview Results</h4>
-              <div className="gauges" style={{position: "static", margin: 0}}>
-                <div className="g">
-                  <p className="g-title">Trust Score</p>
-                  <div className="g-num">{preview.scores.trust}</div>
-                </div>
-                <div className="g">
-                  <p className="g-title">Schema</p>
-                  <div className="g-num">{preview.scores.schema}%</div>
-                </div>
-                <div className="g">
-                  <p className="g-title">Zero-Click</p>
-                  <div className="g-num">{preview.scores.zeroClick}%</div>
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full text-sm"><thead><tr className="text-left border-b"><th className="py-2">AI Platform</th><th>Your Score</th><th>Status</th></tr></thead><tbody>
+                  {result.platforms.map((p:any)=> (
+                    <tr key={p.name} className="border-b"><td className="py-2 font-medium">{p.name}</td><td>{p.score}%</td><td className={p.status==='Excellent'?'text-green-600':p.status==='Good'?'text-emerald-600':'text-amber-600'}>{p.status}</td></tr>
+                  ))}
+                </tbody></table>
+              </div>
+
+              <div className="mt-6"><h3 className="font-bold mb-2">🔴 Critical Issues</h3>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {result.issues.map((i:any)=> (
+                    <div key={i.title} className="border rounded-xl p-4 bg-red-50/60">
+                      <div className="font-semibold">{i.title}</div>
+                      <div className="text-sm text-gray-600">→ Costing you ${i.impact.toLocaleString()}/month</div>
+                      <div className="text-xs text-gray-500">⏱ Fix in {i.effort}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              {preview.insights.length > 0 && (
-                <div style={{marginTop: 12, paddingTop: 12, borderTop: "1px solid #1a2430"}}>
-                  <p className="small" style={{margin: "0 0 6px"}}>Key Insights:</p>
-                  <ul style={{margin: 0, paddingLeft: 18, color: "var(--muted)", fontSize: 13}}>
-                    {preview.insights.slice(0, 3).map((insight, i) => (
-                      <li key={i}>{insight}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div style={{marginTop: 12}}>
-                <button className="cta" onClick={() => (window.location.href = "/sign-in")}>
-                  View Full Report
-                </button>
+
+              <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border">
+                <div className="font-bold">💰 Total Revenue at Risk: ${result.issues.reduce((s:number,i:any)=>s+i.impact,0).toLocaleString()}/month</div>
+                <div className="text-sm text-gray-600">DealershipAI Pro: $499/month • ROI: 20x–30x in first month</div>
+              </div>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <a href="#pricing" className="px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-center">🎯 Fix These Issues – Start Free Trial</a>
+                <button onClick={()=>setShareOpen(true)} className="px-5 py-3 rounded-xl border text-center">📤 Share to Unlock Extras</button>
               </div>
             </div>
-          )}
+          </section>
+        )}
 
-          {/* New Free Audit Widget - PLG Integration */}
-          <div style={{ marginBottom: '24px' }}>
-            <FreeAuditWidget />
-          </div>
+        <section id="product" className="my-16"><h2 className="text-3xl font-black text-center mb-6">The Bloomberg Terminal for AI Visibility</h2>
+          <div className="grid md:grid-cols-3 gap-4">{[
+            { t: 'Real-Time AI Tracking', d: 'Monitor your presence across ChatGPT, Claude, Perplexity, Gemini, and Copilot.' },
+            { t: 'Five-Pillar Scoring', d: 'Visibility, Zero-Click Shield, UGC Health, Geo Trust, and Schema Integrity.' },
+            { t: 'Revenue Impact Math', d: 'Translate visibility gaps into dollars so decisions are obvious.' }
+          ].map((c)=> (<div key={c.t} className="bg-white border rounded-2xl p-5 shadow-sm"><div className="font-bold mb-1">{c.t}</div><div className="text-sm text-gray-600">{c.d}</div></div>))}</div>
+        </section>
 
-          {/* Legacy scan form (kept for fallback) */}
-          <form className="panel" onSubmit={onScan} aria-label="Free scan" style={{ display: 'none' }}>
-            <div className="scan">
-              <input
-                className="input"
-                placeholder="Enter your website (e.g., germaintoyotaofnaples.com)"
-                value={url}
-                onChange={e=>setUrl(e.target.value)}
-                aria-label="Website URL"
-                disabled={submitting}
-              />
-              <button className="cta" aria-label="Run scan" disabled={submitting || !url}>
-                {submitting ? "Scanning…" : "Run Free Scan"}
-              </button>
-            </div>
-            <div className="kpis">
-              <span className="k">Trust Score</span>
-              <span className="k">Freshness</span>
-              <span className="k">Schema Coverage</span>
-              <span className="k">AI Mention Rate</span>
-            </div>
-            <div className="note">{msg ?? "No spam. We show a preview, then ask to sign in for the full report."}</div>
-          </form>
+        <section id="pricing" className="my-16"><h2 className="text-3xl font-black text-center mb-8">Start Free. Scale When Ready.</h2>
+          <div className="grid md:grid-cols-3 gap-6">{[
+            { name:'Free', price:'$0', perks:['3 analyses','Basic AI score','1 competitor'] },
+            { name:'Pro', price:'$499/mo', highlight:true, perks:['50 analyses','All 5 platforms','5 competitors','Bi-weekly refresh','ROI calculator'] },
+            { name:'Enterprise', price:'$999/mo', perks:['200 analyses','Mystery shop','White-label','API access'] }
+          ].map((p)=> (<div key={p.name} className={`bg-white border rounded-2xl p-6 shadow-sm ${p.highlight?'ring-2 ring-blue-300':''}`}>
+              <div className="text-xl font-bold">{p.name}</div>
+              <div className="text-3xl font-black mt-2">{p.price}</div>
+              <ul className="mt-4 text-sm text-gray-700 space-y-2">{p.perks.map((x)=> <li key={x}>✓ {x}</li>)}</ul>
+              <div className="mt-5"><a href="#report" className={`block text-center px-4 py-3 rounded-xl border ${p.highlight?'bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-transparent':'hover:bg-gray-50'}`}>Get Started</a></div>
+          </div>))}</div>
+        </section>
 
-          <div className="trustbar" aria-label="Trusted by">
-            <img className="tlogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='18'><rect width='96' height='18' rx='3' fill='%23cfd8e3'/><text x='6' y='13' font-family='Arial' font-size='11' fill='%23222'>SEMRush-style</text></svg>" alt="Press" />
-            <img className="tlogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='76' height='18'><rect width='76' height='18' rx='3' fill='%23dbe2ea'/><text x='6' y='13' font-family='Arial' font-size='11' fill='%23222'>AutoTrade</text></svg>" alt="AutoTrade" />
-            <img className="tlogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='86' height='18'><rect width='86' height='18' rx='3' fill='%23dbe2ea'/><text x='6' y='13' font-family='Arial' font-size='11' fill='%23222'>Retail Bench</text></svg>" alt="Retail Bench" />
-          </div>
-        </div>
+        <section id="faq" className="my-20"><h2 className="text-2xl font-black mb-4">FAQ</h2>
+          <div className="grid md:grid-cols-2 gap-4">{[
+            { q:'How do I check my AI search visibility?', a:'Use the analyzer above; results in ~10 seconds across 5 AI platforms.' },
+            { q:'What is AI search optimization (AEO)?', a:'Optimizing your site and entities so AI assistants rank and recommend your dealership.' },
+            { q:'How much revenue am I losing?', a:'On average ~$43k/mo. The report shows your specific revenue-at-risk math.' },
+            { q:'Do you auto-fix issues?', a:'Pro/Enterprise include auto-fix options (schema, FAQ, and review response workflows).' }
+          ].map((f)=> (<div key={f.q} className="bg-white border rounded-2xl p-5"><div className="font-semibold">{f.q}</div><div className="text-sm text-gray-600 mt-1">{f.a}</div></div>))}</div>
+        </section>
+      </main>
 
-        {/* Visual KPI card */}
-        <div className="hero-visual">
-          <div className="gauges" aria-hidden="true">
-            <div className="g">
-              <p className="g-title">Trust Score</p>
-              <div className="g-num">84</div>
-            </div>
-            <div className="g">
-              <p className="g-title">Schema</p>
-              <div className="g-num">78%</div>
-            </div>
-            <div className="g">
-              <p className="g-title">Zero-Click</p>
-              <div className="g-num">42%</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <footer className="border-t bg-white/70 backdrop-blur-md"><div className="max-w-6xl mx-auto px-6 py-8 text-sm text-gray-600 flex items-center justify-between"><div>© {new Date().getFullYear()} DealershipAI</div><div className="flex gap-4"><a className="hover:text-blue-600" href="/privacy">Privacy</a><a className="hover:text-blue-600" href="/terms">Terms</a><a className="hover:text-blue-600" href="/sitemap.xml">Sitemap</a></div></div></footer>
 
-      {/* Benefits */}
-      <section id="features" className="grid">
-        <article className="card">
-          <h4>Clarity, not guesswork</h4>
-          <p>We score what AI actually reads: schema, freshness, and entity trust—no vanity metrics.</p>
-        </article>
-        <article className="card">
-          <h4>Fix-ready insights</h4>
-          <p>Each issue ships with a one-click, parse-safe fix. No PDFs. No homework.</p>
-        </article>
-        <article className="card">
-          <h4>Agent-ready checkout</h4>
-          <p>Make units transactable inside chat with Stripe's agentic rails.</p>
-        </article>
-      </section>
-
-      {/* Slim pricing teaser */}
-      <section id="pricing" className="panel">
-        <h3 style={{margin:"0 0 6px"}}>Simple pricing</h3>
-        <p className="small">Free scan. Tier 2 from $499/mo. Tier 3 from $999/mo. Cancel anytime.</p>
-        <div style={{display:"flex",gap:10,marginTop:10,flexWrap:"wrap"}}>
-          <button className="cta" onClick={()=>(window.location.href = "/onboarding")}>Start free</button>
-          <button className="ghost" onClick={()=>(window.location.href = "/learn")}>See how it works</button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="small">© {new Date().getFullYear()} DealershipAI</div>
-        <div className="links">
-          <a href="/legal">Legal</a>
-          <a href="/status">Status</a>
-          <a href="/sign-in">Sign in</a>
-        </div>
-      </footer>
-    </main>
+      <ShareUnlockModal open={shareOpen} onClose={()=>setShareOpen(false)} featureName="Full Platform Details" />
     </>
   );
 }
