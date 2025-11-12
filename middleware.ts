@@ -57,20 +57,24 @@ const publicRoutes = [
 ];
 
 // Protected routes that require authentication (only on dashboard domain)
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/dash(.*)',
-  '/intelligence(.*)',
-  '/onboarding(.*)',
-  '/api/ai(.*)',
-  '/api/parity(.*)',
-  '/api/intel(.*)',
-  '/api/compliance(.*)',
-  '/api/audit(.*)',
-  '/api/user(.*)',
-  '/api/pulse(.*)',
-  '/api/save-metrics',
-]);
+// This will be initialized lazily when needed (only on dashboard domain)
+async function getProtectedRouteMatcher() {
+  const { createRouteMatcher: createMatcher } = await getClerkMiddleware();
+  return createMatcher([
+    '/dashboard(.*)',
+    '/dash(.*)',
+    '/intelligence(.*)',
+    '/onboarding(.*)',
+    '/api/ai(.*)',
+    '/api/parity(.*)',
+    '/api/intel(.*)',
+    '/api/compliance(.*)',
+    '/api/audit(.*)',
+    '/api/user(.*)',
+    '/api/pulse(.*)',
+    '/api/save-metrics',
+  ]);
+}
 
 function isPublicRoute(pathname: string): boolean {
   return (
