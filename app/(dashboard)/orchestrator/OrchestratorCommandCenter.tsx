@@ -1,5 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import ScenarioSimulatorPanel from "@/components/ScenarioSimulatorPanel";
 import MacroPulsePanel from "@/components/pulse/MacroPulsePanel";
 import OrchestratorStatusPanel from "@/components/command-center/OrchestratorStatusPanel";
@@ -8,9 +10,33 @@ import dAIChat from "@/components/command-center/dAIChat";
 import { Activity, LineChart, ShieldCheck, FlaskConical, Brain, MessageSquare, ShoppingBag } from "lucide-react";
 
 export default function OrchestratorCommandCenter() {
-  // Mock dealerId - in production, get from auth/session
-  const dealerId = "demo-dealer-123";
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"status"|"ai"|"asr"|"plugin"|"scenario"|"mystery-shop"|"dai">("status");
+
+  // Get dealerId from user metadata or fallback
+  const dealerId = user?.publicMetadata?.dealerId as string || 
+                   user?.publicMetadata?.dealer as string || 
+                   user?.id || 
+                   "demo-dealer-123";
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, user, router]);
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const tabs = [
     { key: "status", label: "AI CSO Status", icon: <Brain className="w-4 h-4"/> },
