@@ -101,22 +101,22 @@ function isIgnoredRoute(pathname: string): boolean {
   );
 }
 
-// Base middleware function (runs for all requests)
-async function baseMiddleware(req: NextRequest) {
+// Simple pass-through middleware for main domain (no Clerk)
+async function publicMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const hostname = req.headers.get('host') || '';
 
   // Ignore static assets - allow immediately
   if (isIgnoredRoute(pathname)) {
     return NextResponse.next();
   }
 
-  // CRITICAL: If NOT on dashboard domain (e.g., on main dealershipai.com landing page)
-  // Skip ALL Clerk processing - return immediately without any Clerk invocation
-  // This prevents Clerk from trying to verify tokens on the public landing page
-  if (!isDashboardDomain(hostname)) {
-    return NextResponse.next();
-  }
+  // All routes on main domain are public - allow through
+  return NextResponse.next();
+}
+
+// Clerk middleware (only for dashboard domain)
+const dashboardMiddleware = clerkMiddleware(async (auth, req: NextRequest) => {
+  const { pathname } = req.nextUrl;
 
   // IMPORTANT: Check public routes FIRST, before any auth logic
   // This ensures public endpoints always bypass auth
@@ -126,21 +126,6 @@ async function baseMiddleware(req: NextRequest) {
 
   // If Clerk is not configured, allow all routes (demo mode)
   if (!isClerkConfigured) {
-    return NextResponse.next();
-  }
-
-  // We're on dashboard domain - continue to Clerk middleware
-  // This will be handled by the clerkMiddleware wrapper below
-  return NextResponse.next();
-}
-
-// Clerk middleware (only processes dashboard domain requests that pass baseMiddleware)
-const clerkAuth = clerkMiddleware(async (auth, req: NextRequest) => {
-  const { pathname } = req.nextUrl;
-  const hostname = req.headers.get('host') || '';
-
-  // Double-check we're on dashboard domain (shouldn't reach here if not, but safety check)
-  if (!isDashboardDomain(hostname)) {
     return NextResponse.next();
   }
 
@@ -188,13 +173,14 @@ const clerkAuth = clerkMiddleware(async (auth, req: NextRequest) => {
 export default async function middleware(req: NextRequest) {
   const hostname = req.headers.get('host') || '';
   
-  // If NOT on dashboard domain, use base middleware (no Clerk)
+  // CRITICAL: If NOT on dashboard domain, use simple pass-through (NO Clerk)
+  // This prevents Clerk from being invoked at all on the main domain
   if (!isDashboardDomain(hostname)) {
-    return baseMiddleware(req);
+    return publicMiddleware(req);
   }
   
   // If on dashboard domain, use Clerk middleware
-  return clerkAuth(req);
+  return dashboardMiddleware(req);
 }
 
 export const config = {
