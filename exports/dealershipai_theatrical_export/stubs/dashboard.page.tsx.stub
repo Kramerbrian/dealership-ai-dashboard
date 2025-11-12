@@ -1,0 +1,148 @@
+/**
+ * DealershipAI Theatrical Dashboard
+ * Pulse dashboard wired to /preview/orchestrator
+ * Brand hue continuity
+ */
+
+'use client';
+
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { useBrandHue } from '@/hooks/useBrandHue';
+import { BarChart3, Sparkles, ArrowRight } from 'lucide-react';
+
+export default function TheatricalDashboardPage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const brandHue = useBrandHue();
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-zinc-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    router.push('/');
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white">
+      {/* Header */}
+      <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center"
+              style={{
+                background: `linear-gradient(135deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+              }}
+            >
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">DealershipAI</h1>
+              <p className="text-xs text-zinc-400">AI Visibility Dashboard</p>
+            </div>
+          </div>
+          <div className="text-sm text-zinc-400">
+            {user.primaryEmailAddress?.emailAddress}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        {/* Welcome Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12"
+        >
+          <h2 className="text-3xl font-bold mb-2">
+            Welcome back, {user.firstName || 'Dealer'}
+          </h2>
+          <p className="text-zinc-400">
+            Track your AI visibility across ChatGPT, Perplexity, and Google AI Overviews
+          </p>
+        </motion.div>
+
+        {/* Quick Stats */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {[
+            { label: 'AI Visibility Index', value: '87.3%', trend: '+2.1%' },
+            { label: 'Revenue at Risk', value: '$24.8K', trend: '-$3.2K' },
+            { label: 'Platform Coverage', value: '5/5', trend: '100%' },
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="p-6 rounded-xl bg-zinc-900/50 backdrop-blur-sm border border-zinc-800"
+            >
+              <div className="text-sm text-zinc-400 mb-2">{stat.label}</div>
+              <div className="text-3xl font-bold mb-1">{stat.value}</div>
+              <div className="text-sm" style={{ color: `hsl(${brandHue}, 70%, 60%)` }}>
+                {stat.trend}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Orchestrator CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="p-8 rounded-2xl bg-gradient-to-br from-zinc-900/50 to-zinc-800/30 border border-zinc-700/50 backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Orchestrator 3.0</h3>
+              <p className="text-zinc-400 mb-4">
+                Access the AI Chief Strategy Officer for autonomous analysis and recommendations
+              </p>
+            </div>
+            <motion.button
+              onClick={() => router.push('/preview/orchestrator')}
+              className="px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+              style={{
+                background: `linear-gradient(135deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Open Orchestrator
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Pulse Dashboard Preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-12 p-8 rounded-2xl bg-zinc-900/50 backdrop-blur-sm border border-zinc-800"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <BarChart3 className="w-6 h-6" style={{ color: `hsl(${brandHue}, 70%, 60%)` }} />
+            <h3 className="text-xl font-bold">Pulse Dashboard</h3>
+          </div>
+          <p className="text-zinc-400 mb-4">
+            Real-time AI visibility metrics and daily pulse updates
+          </p>
+          <div className="h-64 rounded-lg bg-zinc-800/50 border border-zinc-700 flex items-center justify-center text-zinc-500">
+            Pulse Dashboard Content
+          </div>
+        </motion.div>
+      </main>
+    </div>
+  );
+}
+

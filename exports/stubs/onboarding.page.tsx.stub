@@ -1,0 +1,240 @@
+/**
+ * DealershipAI Theatrical Onboarding
+ * PVR inputs and TronAcknowledgment hand-off
+ * Brand hue continuity via useBrandHue
+ */
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useBrandHue } from '@/hooks/useBrandHue';
+import { Check, ArrowRight, Building2 } from 'lucide-react';
+
+interface PVRData {
+  domain: string;
+  email: string;
+  dealershipName: string;
+}
+
+export default function TheatricalOnboardingPage() {
+  const router = useRouter();
+  const brandHue = useBrandHue();
+  const [step, setStep] = useState(1);
+  const [pvrData, setPVRData] = useState<PVRData>({
+    domain: '',
+    email: '',
+    dealershipName: '',
+  });
+  const [acknowledged, setAcknowledged] = useState(false);
+
+  const handleSubmit = async () => {
+    // Save PVR data
+    // Redirect to dashboard
+    router.push('/dashboard');
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-2xl w-full"
+      >
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-zinc-400">Step {step} of 3</span>
+            <span className="text-sm text-zinc-400">{Math.round((step / 3) * 100)}%</span>
+          </div>
+          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full rounded-full"
+              style={{
+                background: `linear-gradient(90deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+              }}
+              initial={{ width: '0%' }}
+              animate={{ width: `${(step / 3) * 100}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <Building2 className="w-6 h-6" style={{ color: `hsl(${brandHue}, 70%, 60%)` }} />
+                <h2 className="text-2xl font-bold">Dealership Information</h2>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Dealership Name</label>
+                  <input
+                    type="text"
+                    value={pvrData.dealershipName}
+                    onChange={(e) => setPVRData({ ...pvrData, dealershipName: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-zinc-800 border border-zinc-700 focus:border-zinc-600 focus:outline-none"
+                    placeholder="Acme Auto Group"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Website Domain</label>
+                  <input
+                    type="text"
+                    value={pvrData.domain}
+                    onChange={(e) => setPVRData({ ...pvrData, domain: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-zinc-800 border border-zinc-700 focus:border-zinc-600 focus:outline-none"
+                    placeholder="acmeautogroup.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={pvrData.email}
+                    onChange={(e) => setPVRData({ ...pvrData, email: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-zinc-800 border border-zinc-700 focus:border-zinc-600 focus:outline-none"
+                    placeholder="you@dealership.com"
+                  />
+                </div>
+              </div>
+
+              <motion.button
+                onClick={() => setStep(2)}
+                disabled={!pvrData.domain || !pvrData.email || !pvrData.dealershipName}
+                className="mt-6 w-full px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: `linear-gradient(135deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+                }}
+                whileHover={{ scale: pvrData.domain && pvrData.email && pvrData.dealershipName ? 1.02 : 1 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Continue
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8"
+            >
+              <h2 className="text-2xl font-bold mb-6">Tron Acknowledgment</h2>
+
+              <div className="space-y-4 mb-6">
+                <p className="text-zinc-300">
+                  By continuing, you acknowledge that:
+                </p>
+                <ul className="space-y-2 text-zinc-400">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: `hsl(${brandHue}, 70%, 60%)` }} />
+                    <span>DealershipAI will analyze your public-facing web presence</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: `hsl(${brandHue}, 70%, 60%)` }} />
+                    <span>Data is processed securely and in compliance with privacy regulations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: `hsl(${brandHue}, 70%, 60%)` }} />
+                    <span>You can revoke access at any time</span>
+                  </li>
+                </ul>
+              </div>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acknowledged}
+                  onChange={(e) => setAcknowledged(e.target.checked)}
+                  className="w-5 h-5 rounded border-zinc-700 bg-zinc-800"
+                />
+                <span className="text-sm text-zinc-300">I acknowledge and agree to the terms above</span>
+              </label>
+
+              <div className="flex gap-4 mt-6">
+                <motion.button
+                  onClick={() => setStep(1)}
+                  className="flex-1 px-6 py-3 rounded-lg font-semibold border border-zinc-700 hover:border-zinc-600 transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Back
+                </motion.button>
+                <motion.button
+                  onClick={() => setStep(3)}
+                  disabled={!acknowledged}
+                  className="flex-1 px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+                  }}
+                  whileHover={{ scale: acknowledged ? 1.02 : 1 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Continue
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(135deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+                }}
+              >
+                <Check className="w-10 h-10 text-white" />
+              </motion.div>
+
+              <h2 className="text-2xl font-bold mb-4">All Set!</h2>
+              <p className="text-zinc-400 mb-8">
+                Your dealership profile is being analyzed. You'll be redirected to your dashboard shortly.
+              </p>
+
+              <motion.button
+                onClick={handleSubmit}
+                className="px-8 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 mx-auto"
+                style={{
+                  background: `linear-gradient(135deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Go to Dashboard
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+}
+

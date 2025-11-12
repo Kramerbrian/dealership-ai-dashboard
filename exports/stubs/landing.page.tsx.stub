@@ -1,0 +1,158 @@
+/**
+ * DealershipAI Theatrical Landing Page
+ * Cinematic intro with instant analyzer hero
+ * Clerk CTA integration
+ */
+
+'use client';
+
+import { SignInButton, SignUpButton } from '@clerk/nextjs';
+import { motion } from 'framer-motion';
+import { useBrandHue } from '@/hooks/useBrandHue';
+import { ArrowRight, Sparkles } from 'lucide-react';
+
+export default function TheatricalLandingPage() {
+  const brandHue = useBrandHue();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white overflow-hidden">
+      {/* Cinematic Hero Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
+        className="relative min-h-screen flex items-center justify-center"
+        style={{
+          background: `radial-gradient(circle at 50% 50%, hsl(${brandHue}, 70%, 20%, 0.3), transparent 70%)`,
+        }}
+      >
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                background: `hsl(${brandHue}, 70%, 60%)`,
+                boxShadow: `0 0 ${Math.random() * 20 + 10}px hsl(${brandHue}, 70%, 60%)`,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                opacity: [0.3, 1, 0.3],
+                scale: [1, 1.5, 1],
+              }}
+              transition={{
+                duration: Math.random() * 3 + 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Sparkles className="w-4 h-4" style={{ color: `hsl(${brandHue}, 70%, 60%)` }} />
+              <span className="text-sm font-medium">AI Visibility Platform</span>
+            </motion.div>
+
+            <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
+              DealershipAI
+            </h1>
+
+            <p className="text-xl md:text-2xl text-zinc-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Track your dealership's visibility across ChatGPT, Perplexity, and Google AI Overviews.
+              <br />
+              <span className="text-white/80">See what AI sees.</span>
+            </p>
+
+            {/* Instant Analyzer CTA */}
+            <motion.div
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+            >
+              <SignUpButton mode="modal">
+                <motion.button
+                  className="px-8 py-4 rounded-xl font-semibold text-lg flex items-center gap-2"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${brandHue}, 70%, 50%), hsl(${brandHue}, 70%, 40%))`,
+                    color: 'white',
+                  }}
+                  whileHover={{ scale: 1.05, boxShadow: `0 10px 40px hsl(${brandHue}, 70%, 40%, 0.4)` }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Start Free Analysis
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </SignUpButton>
+
+              <SignInButton mode="modal">
+                <motion.button
+                  className="px-8 py-4 rounded-xl font-semibold text-lg border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Sign In
+                </motion.button>
+              </SignInButton>
+            </motion.div>
+
+            {/* Feature Preview */}
+            <motion.div
+              className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.9, duration: 0.8 }}
+            >
+              {[
+                { title: 'AI Visibility Index', desc: 'Track citations across AI platforms' },
+                { title: 'Revenue at Risk', desc: 'See what you\'re losing to competitors' },
+                { title: 'One-Click Fixes', desc: 'Automated optimization recommendations' },
+              ].map((feature, i) => (
+                <motion.div
+                  key={i}
+                  className="p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
+                  whileHover={{ y: -5, borderColor: `hsl(${brandHue}, 70%, 50%)` }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <h3 className="font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-sm text-zinc-400">{feature.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+            <motion.div
+              className="w-1.5 h-1.5 rounded-full bg-white/50"
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </div>
+        </motion.div>
+      </motion.section>
+    </div>
+  );
+}
+

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRedis } from '@/lib/redis';
+import { redis } from '@/lib/redis';
 import { logger } from '@/lib/logger';
 import { redact } from '@/lib/security/redact';
 
@@ -22,9 +22,10 @@ export async function POST(req: NextRequest) {
     };
 
     // Store in Redis
-    const redis = getRedis();
-    await redis.lpush('telemetry:events', JSON.stringify(sanitized));
-    await redis.ltrim('telemetry:events', 0, 9999); // Keep last 10k events
+    if (redis) {
+      await redis.lpush('telemetry:events', JSON.stringify(sanitized));
+      await redis.ltrim('telemetry:events', 0, 9999); // Keep last 10k events
+    }
 
     // Log to structured logger
     await logger.info('Telemetry event', sanitized);
@@ -47,7 +48,9 @@ export async function GET(req: NextRequest) {
     const event = searchParams.get('event');
     const limit = parseInt(searchParams.get('limit') || '100');
 
-    const redis = getRedis();
+    if (!redis) {
+      return NextResponse.json({ events: [] }, { status: 200 });
+    }
     const events = await redis.lrange('telemetry:events', 0, limit - 1);
 
     const parsed = events

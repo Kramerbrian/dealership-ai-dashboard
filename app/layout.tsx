@@ -2,19 +2,21 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
-// Toaster is optional - use fallback if not available
-let Toaster: any = null;
-try {
-  Toaster = require('sonner').Toaster;
-} catch {
-  Toaster = () => null; // No-op component
-}
+import dynamic from 'next/dynamic'
 import { ClerkProviderWrapper } from '@/components/providers/ClerkProviderWrapper'
 import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
 import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { ThemeProvider } from '@/lib/theme'
-import { initSentry } from '@/lib/monitoring/sentry'
+
+// Dynamic import for Toaster to avoid webpack issues
+const ToasterWrapper = dynamic(
+  () => import('sonner').then((mod) => {
+    const Toaster = mod.Toaster;
+    return (props: any) => <Toaster position="top-right" richColors {...props} />;
+  }).catch(() => () => null),
+  { ssr: false }
+)
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -104,9 +106,11 @@ export default function RootLayout({
           <ClerkProviderWrapper>
             <ThemeProvider>
               <MonitoringProvider>
-                {children}
-                <Analytics />
-                <Toaster position="top-right" richColors />
+                <AccessibilityProvider>
+                  {children}
+                  <Analytics />
+                  <ToasterWrapper />
+                </AccessibilityProvider>
               </MonitoringProvider>
             </ThemeProvider>
           </ClerkProviderWrapper>

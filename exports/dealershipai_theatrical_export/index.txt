@@ -1,0 +1,37 @@
+DealershipAI Theatrical PLG Export
+===================================
+
+This package contains everything needed to scaffold the complete DealershipAI
+theatrical PLG experience using Cursor's create command or manual setup.
+
+STRUCTURE:
+----------
+exports/theatrical_manifest.json  - Project manifest (read by Cursor)
+stubs/                            - Component stubs (generated into TSX)
+README_DEPLOY.md                  - Deployment instructions
+index.txt                         - This file
+
+CURSOR CREATE COMMAND:
+----------------------
+@import Create DealershipAI Theatrical PLG Experience from https://dealershipai.com/exports/dealershipai_theatrical_export.zip
+
+FEATURES:
+---------
+✅ Cinematic landing page with animated hero
+✅ Clerk authentication integration
+✅ 3-step onboarding flow (PVR)
+✅ Tron acknowledgment hand-off
+✅ Pulse dashboard with Orchestrator 3.0 CTA
+✅ Brand hue continuity system
+✅ PG-safe motion animations
+✅ Next.js 14 + TypeScript + Tailwind
+
+QUICK START:
+------------
+1. Use Cursor create command (recommended)
+2. Or manually: unzip → copy stubs → npm install → npm run dev
+3. Configure environment variables
+4. Deploy with vercel --prod
+
+For detailed instructions, see README_DEPLOY.md
+

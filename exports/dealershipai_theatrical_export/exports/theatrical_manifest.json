@@ -1,0 +1,87 @@
+{
+  "name": "dealershipai-theatrical",
+  "version": "1.0.0",
+  "description": "DealershipAI Theatrical PLG Experience - Cinematic landing → Clerk → onboarding → orchestration → Pulse dashboard",
+  "type": "nextjs-app",
+  "framework": "nextjs-14",
+  "language": "typescript",
+  "features": [
+    "cinematic-landing",
+    "clerk-auth",
+    "onboarding-flow",
+    "orchestrator-dashboard",
+    "pulse-engine",
+    "brand-hue-continuity"
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "component": "landing.page.tsx",
+      "description": "Cinematic landing page with instant analyzer hero"
+    },
+    {
+      "path": "/onboarding",
+      "component": "onboarding.page.tsx",
+      "description": "PVR inputs and TronAcknowledgment hand-off"
+    },
+    {
+      "path": "/dashboard",
+      "component": "dashboard.page.tsx",
+      "description": "Pulse dashboard wired to /preview/orchestrator"
+    },
+    {
+      "path": "/preview/orchestrator",
+      "component": "orchestrator.page.tsx",
+      "description": "Orchestrator 3.0 command center"
+    }
+  ],
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "@clerk/nextjs": "^5.0.0",
+    "framer-motion": "^11.0.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "environment": {
+    "required": [
+      "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      "CLERK_SECRET_KEY",
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "OPENAI_API_KEY"
+    ],
+    "optional": [
+      "ORCHESTRATOR_API",
+      "ORCHESTRATOR_TOKEN"
+    ]
+  },
+  "build": {
+    "command": "npm run build",
+    "output": ".next"
+  },
+  "deploy": {
+    "platform": "vercel",
+    "command": "vercel --prod"
+  },
+  "stubs": {
+    "landing": "stubs/landing.page.tsx.stub",
+    "onboarding": "stubs/onboarding.page.tsx.stub",
+    "middleware": "stubs/layout.middleware.stub.tsx",
+    "dashboard": "stubs/dashboard.page.tsx.stub",
+    "hooks": "stubs/hooks.useBrandHue.stub.ts"
+  },
+  "instructions": {
+    "1": "Unpack the zip file",
+    "2": "Read theatrical_manifest.json",
+    "3": "Generate TSX pages from stubs",
+    "4": "Link Clerk, hooks, and cinematic components",
+    "5": "Run npm install && npm run dev",
+    "6": "Deploy with vercel --prod"
+  },
+  "brand": {
+    "tint": "useBrandHue hook for continuity",
+    "motion": "PG-safe cinematic animations",
+    "aesthetic": "Theatrical PLG experience"
+  }
+}
+
