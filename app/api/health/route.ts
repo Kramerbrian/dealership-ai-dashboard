@@ -56,14 +56,15 @@ export async function GET() {
       
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        // Simple ping test - try to execute a basic query
-        const { error } = await supabase.rpc('version').maybeSingle();
+        // Test connection by trying to access the auth API
+        const { data, error } = await supabase.auth.getSession();
 
-        // Any response means connection is working - even table not found is OK
-        if (error && (error.message.includes('Invalid API key') || error.message.includes('JWT'))) {
+        // Check if we get a valid response (even if no session)
+        if (error && (error.message.includes('Invalid API key') || error.message.includes('JWT') || error.status === 401)) {
           throw error;
         }
 
+        // If we got here, connection is working
         healthStatus.services.database = 'connected';
       }
     } catch (error) {

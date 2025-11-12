@@ -101,13 +101,20 @@ function isIgnoredRoute(pathname: string): boolean {
   );
 }
 
-// Middleware: Only apply Clerk on dashboard subdomain
-export default clerkMiddleware(async (auth, req: NextRequest) => {
+// Base middleware function (runs for all requests)
+async function baseMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hostname = req.headers.get('host') || '';
 
   // Ignore static assets - allow immediately
   if (isIgnoredRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  // CRITICAL: If NOT on dashboard domain (e.g., on main dealershipai.com landing page)
+  // Skip ALL Clerk processing - return immediately without any Clerk invocation
+  // This prevents Clerk from trying to verify tokens on the public landing page
+  if (!isDashboardDomain(hostname)) {
     return NextResponse.next();
   }
 
@@ -122,8 +129,17 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
-  // If NOT on dashboard domain (e.g., on main dealershipai.com landing page)
-  // Skip Clerk authentication entirely - allow all routes
+  // We're on dashboard domain - continue to Clerk middleware
+  // This will be handled by the clerkMiddleware wrapper below
+  return NextResponse.next();
+}
+
+// Clerk middleware (only processes dashboard domain requests that pass baseMiddleware)
+const clerkAuth = clerkMiddleware(async (auth, req: NextRequest) => {
+  const { pathname } = req.nextUrl;
+  const hostname = req.headers.get('host') || '';
+
+  // Double-check we're on dashboard domain (shouldn't reach here if not, but safety check)
   if (!isDashboardDomain(hostname)) {
     return NextResponse.next();
   }
@@ -167,6 +183,19 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     '/auth/signup(/*)',
   ]
 });
+
+// Export conditional middleware: only use Clerk on dashboard domain
+export default async function middleware(req: NextRequest) {
+  const hostname = req.headers.get('host') || '';
+  
+  // If NOT on dashboard domain, use base middleware (no Clerk)
+  if (!isDashboardDomain(hostname)) {
+    return baseMiddleware(req);
+  }
+  
+  // If on dashboard domain, use Clerk middleware
+  return clerkAuth(req);
+}
 
 export const config = {
   matcher: [
