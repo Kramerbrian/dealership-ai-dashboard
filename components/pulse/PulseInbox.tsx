@@ -38,7 +38,12 @@ const FILTERS: { id: PulseFilter; label: string; icon: React.ReactNode }[] = [
   { id: 'system_health', label: 'System', icon: <CheckCircle className="w-4 h-4" /> },
 ];
 
-export default function PulseInbox() {
+interface PulseInboxProps {
+  dealerId?: string;
+  autoRefresh?: boolean;
+}
+
+export default function PulseInbox({ dealerId = 'demo-tenant', autoRefresh = true }: PulseInboxProps) {
   const {
     pulse,
     filter,
@@ -47,10 +52,68 @@ export default function PulseInbox() {
     setDigestMode,
     selectedThread,
     setSelectedThread,
+    addManyPulse,
   } = usePulseStore();
 
   const [keyboardMode, setKeyboardMode] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isDndMode, setIsDndMode] = useState(false);
+  const [dndUntil, setDndUntil] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch pulse cards from API
+  useEffect(() => {
+    fetchPulseCards();
+
+    if (autoRefresh) {
+      const interval = setInterval(fetchPulseCards, 30000); // Refresh every 30 seconds
+      return () => clearInterval(interval);
+    }
+  }, [dealerId, filter]);
+
+  const fetchPulseCards = async () => {
+    try {
+      const response = await fetch(`/api/pulse?dealerId=${dealerId}&filter=${filter}&limit=50`);
+      const data = await response.json();
+
+      if (response.ok && data.cards) {
+        addManyPulse(data.cards);
+      }
+    } catch (error) {
+      console.error('[PulseInbox] Error fetching cards:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check DND status
+  useEffect(() => {
+    if (dndUntil && new Date() > dndUntil) {
+      setIsDndMode(false);
+      setDndUntil(null);
+    }
+  }, [dndUntil]);
+
+  const enableDnd = (duration: '30m' | '2h' | 'end_of_day') => {
+    const now = new Date();
+    let until: Date;
+
+    switch (duration) {
+      case '30m':
+        until = new Date(now.getTime() + 30 * 60 * 1000);
+        break;
+      case '2h':
+        until = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+        break;
+      case 'end_of_day':
+        until = new Date(now);
+        until.setHours(23, 59, 59, 999);
+        break;
+    }
+
+    setIsDndMode(true);
+    setDndUntil(until);
+  };
 
   // Filter cards
   const filteredCards = pulse.filter((card) => {
@@ -134,6 +197,50 @@ export default function PulseInbox() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Pulse Inbox</h2>
           <div className="flex items-center gap-2">
+            {/* DND Mode */}
+            {isDndMode && dndUntil ? (
+              <div className="px-3 py-1.5 bg-purple-900/30 border border-purple-500/30 rounded-lg text-sm text-purple-300 flex items-center gap-2">
+                <VolumeX className="w-4 h-4" />
+                DND until {dndUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <button
+                  onClick={() => {
+                    setIsDndMode(false);
+                    setDndUntil(null);
+                  }}
+                  className="ml-1 text-purple-400 hover:text-purple-200"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <div className="relative group">
+                <button className="px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors flex items-center gap-2">
+                  <VolumeX className="w-4 h-4" />
+                  DND
+                </button>
+                <div className="absolute right-0 top-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl hidden group-hover:block z-50 w-48">
+                  <button
+                    onClick={() => enableDnd('30m')}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 rounded-t-lg"
+                  >
+                    30 minutes
+                  </button>
+                  <button
+                    onClick={() => enableDnd('2h')}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700"
+                  >
+                    2 hours
+                  </button>
+                  <button
+                    onClick={() => enableDnd('end_of_day')}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 rounded-b-lg"
+                  >
+                    Until end of day
+                  </button>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={() => setDigestMode(!digestMode)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
