@@ -13,7 +13,7 @@
 
 #### Next Steps for Custom Domain:
 1. **Add Domain in Vercel** (Browser window opened)
-   - Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+   - Go to: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
    - Click "Add Domain"
    - Enter: `dash.dealershipai.com`
    - Click "Add"
@@ -229,10 +229,10 @@ vercel domains inspect dash.dealershipai.com
 ## 📞 Support & Resources
 
 ### Vercel Links
-- **Project Dashboard**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
-- **Deployment Details**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/6ZHjr7WXqw7rBEp6GxGCWjNq13TP
-- **Project Settings**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
-- **Domains**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+- **Project Dashboard**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
+- **Deployment Details**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/6ZHjr7WXqw7rBEp6GxGCWjNq13TP
+- **Project Settings**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings
+- **Domains**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 ### Testing Tools
 - **DNS Checker**: https://dnschecker.org

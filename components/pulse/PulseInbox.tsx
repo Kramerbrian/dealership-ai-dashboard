@@ -1,356 +1,162 @@
-/**
- * Pulse Inbox - Decision Inbox Component
- * Upgraded from ticker to actionable decision inbox
- */
-
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  AlertTriangle,
-  TrendingUp,
-  TrendingDown,
-  CheckCircle,
-  XCircle,
-  Zap,
-  Clock,
-  Bell,
-  Filter,
-  Eye,
-  Wrench,
-  UserPlus,
-  VolumeX,
-  History,
-} from 'lucide-react';
-import { usePulseStore } from '@/lib/store/pulse-store';
-import type { PulseCard, PulseFilter } from '@/lib/types/pulse';
-import PulseCardComponent from './PulseCard';
-import PulseThreadDrawer from './PulseThreadDrawer';
-import PulseDigest from './PulseDigest';
-
-const FILTERS: { id: PulseFilter; label: string; icon: React.ReactNode }[] = [
-  { id: 'all', label: 'All', icon: <Bell className="w-4 h-4" /> },
-  { id: 'critical', label: 'Critical', icon: <AlertTriangle className="w-4 h-4" /> },
-  { id: 'kpi_delta', label: 'KPI', icon: <TrendingUp className="w-4 h-4" /> },
-  { id: 'incident', label: 'Incidents', icon: <XCircle className="w-4 h-4" /> },
-  { id: 'market_signal', label: 'Market', icon: <TrendingDown className="w-4 h-4" /> },
-  { id: 'system_health', label: 'System', icon: <CheckCircle className="w-4 h-4" /> },
-];
+import { Activity, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { useHudStore } from '@/lib/store/hud';
 
 interface PulseInboxProps {
   dealerId?: string;
   autoRefresh?: boolean;
 }
 
-export default function PulseInbox({ dealerId = 'demo-tenant', autoRefresh = true }: PulseInboxProps) {
-  const {
-    pulse,
-    filter,
-    digestMode,
-    setFilter,
-    setDigestMode,
-    selectedThread,
-    setSelectedThread,
-    addManyPulse,
-  } = usePulseStore();
+export default function PulseInbox({ dealerId, autoRefresh = false }: PulseInboxProps) {
+  const { pulse } = useHudStore();
+  const [filter, setFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'low'>('all');
 
-  const [keyboardMode, setKeyboardMode] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isDndMode, setIsDndMode] = useState(false);
-  const [dndUntil, setDndUntil] = useState<Date | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch pulse cards from API
+  // Auto-refresh pulse data if enabled
   useEffect(() => {
-    fetchPulseCards();
+    if (!autoRefresh) return;
 
-    if (autoRefresh) {
-      const interval = setInterval(fetchPulseCards, 30000); // Refresh every 30 seconds
-      return () => clearInterval(interval);
-    }
-  }, [dealerId, filter]);
+    const interval = setInterval(() => {
+      // In production, this would fetch from API
+      // For now, we're using the store which is populated by VoiceOrb and other components
+    }, 30000); // Refresh every 30 seconds
 
-  const fetchPulseCards = async () => {
-    try {
-      const response = await fetch(`/api/pulse?dealerId=${dealerId}&filter=${filter}&limit=50`);
-      const data = await response.json();
+    return () => clearInterval(interval);
+  }, [autoRefresh]);
 
-      if (response.ok && data.cards) {
-        addManyPulse(data.cards);
-      }
-    } catch (error) {
-      console.error('[PulseInbox] Error fetching cards:', error);
-    } finally {
-      setLoading(false);
+  const filteredPulse = filter === 'all'
+    ? pulse
+    : pulse.filter(p => p.level === filter);
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'critical': return 'text-red-400 bg-red-500/10 border-red-500/20';
+      case 'high': return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
+      case 'medium': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
+      case 'low': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+      default: return 'text-gray-400 bg-gray-500/10 border-gray-500/20';
     }
   };
 
-  // Check DND status
-  useEffect(() => {
-    if (dndUntil && new Date() > dndUntil) {
-      setIsDndMode(false);
-      setDndUntil(null);
-    }
-  }, [dndUntil]);
-
-  const enableDnd = (duration: '30m' | '2h' | 'end_of_day') => {
-    const now = new Date();
-    let until: Date;
-
-    switch (duration) {
-      case '30m':
-        until = new Date(now.getTime() + 30 * 60 * 1000);
-        break;
-      case '2h':
-        until = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-        break;
-      case 'end_of_day':
-        until = new Date(now);
-        until.setHours(23, 59, 59, 999);
-        break;
-    }
-
-    setIsDndMode(true);
-    setDndUntil(until);
-  };
-
-  // Filter cards
-  const filteredCards = pulse.filter((card) => {
-    if (filter === 'all') return true;
-    if (filter === 'critical') return card.level === 'critical';
-    if (filter === 'incident') return card.kind === 'incident_opened' || card.kind === 'incident_resolved';
-    return card.kind === filter;
-  });
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === '?') {
-        setKeyboardMode(!keyboardMode);
-        return;
-      }
-
-      if (!keyboardMode) return;
-
-      switch (e.key) {
-        case 'j':
-          setSelectedIndex((prev) => Math.min(prev + 1, filteredCards.length - 1));
-          break;
-        case 'k':
-          setSelectedIndex((prev) => Math.max(prev - 1, 0));
-          break;
-        case 'Enter':
-          if (filteredCards[selectedIndex]) {
-            handlePrimaryAction(filteredCards[selectedIndex]);
-          }
-          break;
-        case 'm':
-          if (filteredCards[selectedIndex]?.dedupe_key) {
-            usePulseStore.getState().mute(filteredCards[selectedIndex].dedupe_key!, 24 * 60);
-          }
-          break;
-        case 'h':
-          if (filteredCards[selectedIndex]?.thread) {
-            setSelectedThread(filteredCards[selectedIndex].thread!.id);
-          }
-          break;
-        case 'Escape':
-          setKeyboardMode(false);
-          setSelectedThread(null);
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [keyboardMode, selectedIndex, filteredCards]);
-
-  const handlePrimaryAction = (card: PulseCard) => {
-    if (card.actions?.includes('open')) {
-      if (card.thread) {
-        setSelectedThread(card.thread.id);
-      }
-    } else if (card.actions?.includes('fix')) {
-      // Trigger auto-fix
-      console.log('Triggering fix for:', card);
+  const getLevelIcon = (level: string) => {
+    switch (level) {
+      case 'critical': return <AlertCircle size={16} />;
+      case 'high': return <AlertCircle size={16} />;
+      case 'medium': return <Info size={16} />;
+      case 'low': return <CheckCircle size={16} />;
+      default: return <Activity size={16} />;
     }
   };
-
-  // Calculate at-a-glance banner
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayCards = pulse.filter((c) => new Date(c.ts) >= today);
-  const aivDelta = todayCards
-    .filter((c) => c.kind === 'kpi_delta' && c.context?.kpi === 'AIV')
-    .reduce((sum, c) => {
-      const delta = typeof c.delta === 'number' ? c.delta : parseFloat(String(c.delta || 0));
-      return sum + delta;
-    }, 0);
-  const incidentsResolved = todayCards.filter((c) => c.kind === 'incident_resolved').length;
-  const slaRisks = todayCards.filter((c) => c.kind === 'sla_breach').length;
 
   return (
-    <div className="flex flex-col h-full bg-gray-950 text-white">
-      {/* Header with filters and digest toggle */}
-      <div className="border-b border-gray-800 p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Pulse Inbox</h2>
-          <div className="flex items-center gap-2">
-            {/* DND Mode */}
-            {isDndMode && dndUntil ? (
-              <div className="px-3 py-1.5 bg-purple-900/30 border border-purple-500/30 rounded-lg text-sm text-purple-300 flex items-center gap-2">
-                <VolumeX className="w-4 h-4" />
-                DND until {dndUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                <button
-                  onClick={() => {
-                    setIsDndMode(false);
-                    setDndUntil(null);
-                  }}
-                  className="ml-1 text-purple-400 hover:text-purple-200"
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <div className="relative group">
-                <button className="px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors flex items-center gap-2">
-                  <VolumeX className="w-4 h-4" />
-                  DND
-                </button>
-                <div className="absolute right-0 top-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl hidden group-hover:block z-50 w-48">
-                  <button
-                    onClick={() => enableDnd('30m')}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 rounded-t-lg"
-                  >
-                    30 minutes
-                  </button>
-                  <button
-                    onClick={() => enableDnd('2h')}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700"
-                  >
-                    2 hours
-                  </button>
-                  <button
-                    onClick={() => enableDnd('end_of_day')}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 rounded-b-lg"
-                  >
-                    Until end of day
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={() => setDigestMode(!digestMode)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                digestMode
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              Digest Mode
-            </button>
-            {keyboardMode && (
-              <span className="text-xs text-gray-400">Keyboard mode active (?)</span>
-            )}
+    <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6 backdrop-blur-xl">
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
+            <Activity size={20} className="text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-white">Pulse Inbox</h2>
+            <p className="text-sm text-neutral-400">
+              {filteredPulse.length} event{filteredPulse.length !== 1 ? 's' : ''}
+            </p>
           </div>
         </div>
 
-        {/* At-a-glance banner */}
-        <div className="bg-gray-900 rounded-lg p-3 mb-4">
-          <div className="text-sm text-gray-400 mb-1">Today</div>
-          <div className="flex items-center gap-4 text-sm">
-            <span className={aivDelta >= 0 ? 'text-green-400' : 'text-red-400'}>
-              {aivDelta >= 0 ? '+' : ''}
-              {aivDelta.toFixed(1)} AIV
-            </span>
-            <span className="text-gray-300">•</span>
-            <span className="text-green-400">{incidentsResolved} incidents resolved</span>
-            <span className="text-gray-300">•</span>
-            <span className={slaRisks > 0 ? 'text-red-400' : 'text-gray-400'}>
-              {slaRisks} SLA risk{slaRisks !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-
-        {/* Filter pills */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {FILTERS.map((f) => (
+        {/* Filter buttons */}
+        <div className="flex gap-2">
+          {(['all', 'critical', 'high', 'medium', 'low'] as const).map((f) => (
             <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                filter === f.id
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                filter === f
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
               }`}
             >
-              {f.icon}
-              {f.label}
+              {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {digestMode ? (
-          <PulseDigest cards={filteredCards} />
-        ) : (
-          <AnimatePresence mode="popLayout">
-            {filteredCards.length === 0 ? (
-              <div className="text-center text-gray-500 py-12">
-                <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No pulse cards match the current filter</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredCards.map((card, index) => (
-                  <motion.div
-                    key={card.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <PulseCardComponent
-                      card={card}
-                      isSelected={keyboardMode && index === selectedIndex}
-                      onAction={handlePrimaryAction}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </AnimatePresence>
-        )}
+      {/* Event list */}
+      <div className="space-y-3">
+        <AnimatePresence mode="popLayout">
+          {filteredPulse.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="rounded-lg border border-dashed border-neutral-700 bg-neutral-800/40 p-8 text-center"
+            >
+              <Activity size={32} className="mx-auto mb-3 text-neutral-600" />
+              <p className="text-sm font-medium text-neutral-500">No events yet</p>
+              <p className="mt-1 text-xs text-neutral-600">
+                Pulse events will appear here as they happen
+              </p>
+            </motion.div>
+          ) : (
+            filteredPulse.map((event) => (
+              <motion.div
+                key={event.id}
+                layout
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className={`rounded-lg border p-4 ${getLevelColor(event.level)}`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5">
+                    {getLevelIcon(event.level)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-semibold">{event.title}</h3>
+                      <span className="text-xs opacity-60">
+                        {new Date(event.ts).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm opacity-80">{event.detail}</p>
+                    {event.kpi && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs font-medium opacity-60">KPI:</span>
+                        <span className="text-xs font-mono">{event.kpi}</span>
+                        {event.delta && (
+                          <span className="text-xs font-mono opacity-80">
+                            {typeof event.delta === 'number' && event.delta > 0 ? '+' : ''}
+                            {event.delta}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Thread Drawer */}
-      {selectedThread && (
-        <PulseThreadDrawer
-          threadId={selectedThread}
-          onClose={() => setSelectedThread(null)}
-        />
-      )}
-
-      {/* Keyboard help */}
-      {keyboardMode && (
-        <div className="border-t border-gray-800 p-4 bg-gray-900">
-          <div className="text-xs text-gray-400 space-y-1">
-            <div>
-              <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">J</kbd> /{' '}
-              <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">K</kbd> = navigate •{' '}
-              <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">Enter</kbd> = action •{' '}
-              <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">M</kbd> = mute •{' '}
-              <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">H</kbd> = history •{' '}
-              <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">Esc</kbd> = close
+      {/* Footer */}
+      {filteredPulse.length > 0 && (
+        <div className="mt-6 flex items-center justify-between border-t border-neutral-800 pt-4">
+          <p className="text-xs text-neutral-500">
+            Showing {filteredPulse.length} of {pulse.length} total events
+          </p>
+          {autoRefresh && (
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+              <span className="text-xs text-neutral-500">Auto-refresh enabled</span>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
   );
 }
-

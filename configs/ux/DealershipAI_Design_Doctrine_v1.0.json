@@ -1,0 +1,102 @@
+{
+  "doctrine_id": "DealershipAI_Design_Doctrine_v1.0",
+  "alignment": "Mirror Clay's Strategy",
+  "principles": {
+    "1_define_system_as_workflow": {
+      "goal": "Every screen enables a 30-second user accomplishment",
+      "schema": ["intent", "context", "action", "expected_outcome"],
+      "rule": "Each metric must show cause, effect, and immediate path to fix"
+    },
+    "2_hierarchy_of_clarity": {
+      "motto": "Remove, until clarity breaks",
+      "rules": [
+        "One primary KPI, two secondary",
+        "Color and motion replace labels",
+        "Empty states educate",
+        "Consistent spacing: 4pt grid, 8pt padding, 12/16/20 typography"
+      ]
+    },
+    "3_fuse_product_and_data_design": {
+      "goal": "Unified data and UX specifications to avoid metric drift",
+      "example_yaml": {
+        "metric": "aiv_score",
+        "definition": "Algorithmic Visibility Index",
+        "source": "nightly_pipeline_v2",
+        "update_interval": "5m",
+        "confidence_band": 0.9,
+        "ui_display": "orbit_node",
+        "on_click": "open_drawer(aiv_details)"
+      }
+    },
+    "4_narrative_ux_pulse_cards": {
+      "purpose": "Convert data into narrative and action",
+      "structure": {
+        "headline": "plain English result",
+        "subhead": "cause and next step",
+        "footer": ["Fix", "Explain", "Compare"],
+        "evidence_thumbnail": true
+      }
+    },
+    "5_experience_architecture": {
+      "layers": {
+        "1_overview": "Orbit + Clarity Score",
+        "2_drilldown": "Side drawer",
+        "3_workflow": "Auto-Fix → Verify → Confirm",
+        "4_validation": "ROI badge + timestamp"
+      }
+    },
+    "6_interaction_signature": {
+      "feedback_latency_ms": 100,
+      "transition_duration_ms": 300,
+      "guidelines": [
+        "No pop-ups",
+        "Use motion/haptic feedback only where meaningful",
+        "Inertia scroll/parallax only for orientation"
+      ]
+    },
+    "7_visual_language": {
+      "color": "One accent per KPI category",
+      "typography": ["Inter", "SF Pro"],
+      "depth_limit": 3,
+      "icons": "Lucide or Feather",
+      "background": "Matte dark or light, restrained gradients"
+    },
+    "8_continuous_optimization": {
+      "cycle": "Weekly design–measure–simplify",
+      "metrics": [
+        "Node engagement",
+        "Dwell time",
+        "Ignored insights"
+      ],
+      "tests": [
+        "A/B orbit density",
+        "Pulse copy length"
+      ],
+      "retirement_rule": "Feature <5% usage for 30 days"
+    },
+    "9_implementation_stack": {
+      "ui": "React + Tailwind + Framer Motion",
+      "analytics": "PostHog or Mixpanel",
+      "api": "Express + Redis cache",
+      "design_system": "Figma tokens → Tailwind config",
+      "ab_testing": "LaunchDarkly or Split.io",
+      "copy_engine": "LLM-generated microcopy (guardrailed)"
+    },
+    "10_success_metrics": {
+      "time_to_first_insight_s": 10,
+      "action_latency_s": 2,
+      "user_clarity_pct": 90,
+      "screen_abandonment_pct": 5,
+      "visual_elements_per_screen_max": 7
+    }
+  },
+  "summary": {
+    "core_equation": "Design clarity × Workflow immediacy × Emotional trust",
+    "execution_laws": [
+      "Every pixel is a verb",
+      "Every insight self-validates",
+      "Remove friction until comprehension is automatic"
+    ]
+  }
+}
+

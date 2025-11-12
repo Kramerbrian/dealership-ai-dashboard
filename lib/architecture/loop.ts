@@ -56,3 +56,90 @@ export const DEFAULT_SPEC: InevitabilitySpec = {
     forecast_hours: 48
   }
 };
+
+/**
+ * Deployment Phases for Inevitability Rollout
+ */
+export interface DeploymentPhase {
+  name: string;
+  focus: string;
+  outcome: string;
+  milestones: string[];
+  duration_weeks: number;
+}
+
+export const DEPLOYMENT_ROADMAP: DeploymentPhase[] = [
+  {
+    name: 'Alpha',
+    focus: 'Pilot store neural twin',
+    outcome: 'Self-healing baseline validated',
+    milestones: [
+      'Single-store cognition mesh deployed',
+      'Schema autofix validated (100 repairs)',
+      'Latency reroute tested (<120ms)',
+      'Baseline KPI deltas captured'
+    ],
+    duration_weeks: 4
+  },
+  {
+    name: 'Beta',
+    focus: '5-store cognition mesh',
+    outcome: 'Federated learning proven',
+    milestones: [
+      'Cross-store learning verified',
+      'Anomaly detection 48h ahead',
+      'Market consciousness map live',
+      'Zero-fracture identity validated'
+    ],
+    duration_weeks: 8
+  },
+  {
+    name: 'Gamma',
+    focus: 'National deployment',
+    outcome: 'Collective intelligence achieved',
+    milestones: [
+      'Network-wide mesh active',
+      'Predictive accuracy >85%',
+      'Cultural integration confirmed',
+      'Inevitability metrics met'
+    ],
+    duration_weeks: 12
+  }
+];
+
+/**
+ * Cultural Integration Metrics
+ */
+export interface CultureMetric {
+  principle: string;
+  measurement: string;
+  target_threshold: number;
+  current_score?: number;
+}
+
+export const CULTURE_METRICS: CultureMetric[] = [
+  {
+    principle: 'Replace belief with math',
+    measurement: 'Decisions backed by data %',
+    target_threshold: 90,
+    current_score: 73
+  },
+  {
+    principle: 'Clarity = how well you are seen',
+    measurement: 'Schema coverage %',
+    target_threshold: 95,
+    current_score: 82
+  },
+  {
+    principle: 'Trust = how much system believes you',
+    measurement: 'E-E-A-T score',
+    target_threshold: 85,
+    current_score: 78
+  },
+  {
+    principle: 'Best End User wins',
+    measurement: 'Customer satisfaction delta',
+    target_threshold: 15,
+    current_score: 11
+  }
+];

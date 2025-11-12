@@ -1,10 +1,19 @@
 // Realtime feed implementation using Supabase Realtime
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Lazy initialization
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+  
+  return createClient(supabaseUrl, supabaseKey);
+}
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = getSupabaseClient();
 
 export interface RealtimeEvent {
   id: string;
@@ -23,8 +32,14 @@ export class RealtimeFeed {
   }
 
   private async initializeRealtime() {
+    const client = getSupabaseClient();
+    if (!client) {
+      console.warn('[Realtime] Supabase not configured - realtime features disabled');
+      return;
+    }
+    
     // Subscribe to realtime changes
-    const channel = supabase
+    const channel = client
       .channel('dashboard_updates')
       .on('postgres_changes', 
         { 
@@ -112,8 +127,10 @@ export class RealtimeFeed {
       tenant_id: tenantId
     };
 
-    // Store in database
-    await supabase
+    // Store in database (if configured)
+    const client = getSupabaseClient();
+    if (client) {
+      await client
       .from('realtime_events')
       .insert([{
         tenant_id: tenantId,
@@ -143,9 +160,12 @@ export class RealtimeFeed {
   }
 
   public destroy() {
-    this.subscriptions.forEach((subscription) => {
-      supabase.removeChannel(subscription);
-    });
+    const client = getSupabaseClient();
+    if (client) {
+      this.subscriptions.forEach((subscription) => {
+        client.removeChannel(subscription);
+      });
+    }
     this.subscriptions.clear();
     this.listeners.clear();
   }

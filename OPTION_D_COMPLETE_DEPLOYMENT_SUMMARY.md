@@ -526,7 +526,7 @@ import { EmptyState, NoDashboardData, NoSearchResults } from '@/components/ui/Em
 ## 🎯 FINAL STATUS
 
 **Deployment URL:** https://dealershipai.com
-**Latest Deployment:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/8nmaZDmpW1MV1fR6QwcdhucYtyxM
+**Latest Deployment:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/8nmaZDmpW1MV1fR6QwcdhucYtyxM
 **Latest Commit:** `a15dc71`
 
 **Phase 1:** ✅ DEPLOYED

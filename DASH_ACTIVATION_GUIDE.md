@@ -189,7 +189,7 @@ Currently displays:
 - **Deployment Protection**: https://vercel.com/brian-kramers-projects/dealershipai-dashboard/settings/deployment-protection
 - **Domain Settings**: https://vercel.com/brian-kramers-projects/dealershipai-dashboard/settings/domains
 - **Latest Deployment**: https://dealershipai-dashboard-dg5mpzfmg-brian-kramers-projects.vercel.app/dash
-- **GitHub Repository**: https://github.com/brian-kramers-projects/dealership-ai-dashboard
+- **GitHub Repository**: https://github.com/brian-kramer-dealershipai/dealership-ai-dashboard
 
 ## 🐛 Troubleshooting
 

@@ -6,8 +6,48 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import type { AiScoresResponse } from '@/lib/types/AiScores';
 // import { getPersonalityCopy } from '@/lib/cognitive-personality';
+
+/**
+ * Client-side URL validation helper
+ */
+function validateUrlClient(input: string): { valid: boolean; error?: string; normalized?: string } {
+  if (!input || input.trim().length === 0) {
+    return { valid: false, error: 'URL is required' };
+  }
+
+  if (input.length > 2048) {
+    return { valid: false, error: 'URL is too long (max 2048 characters)' };
+  }
+
+  try {
+    let normalized = input.trim().toLowerCase();
+    
+    // Add protocol if missing
+    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+      normalized = `https://${normalized}`;
+    }
+
+    const url = new URL(normalized);
+    const hostname = url.hostname.toLowerCase();
+
+    // Basic validation
+    if (hostname.length === 0 || hostname.length > 253) {
+      return { valid: false, error: 'Invalid domain name' };
+    }
+
+    // Block localhost in production-like environments
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return { valid: false, error: 'Please enter a valid website URL' };
+    }
+
+    return { valid: true, normalized: url.origin };
+  } catch {
+    return { valid: false, error: 'Invalid URL format. Please enter a valid website URL (e.g., exampledealer.com)' };
+  }
+}
 
 export default function FreeAuditWidget() {
   const [url, setUrl] = useState('');
@@ -15,20 +55,31 @@ export default function FreeAuditWidget() {
   const [data, setData] = useState<AiScoresResponse | null>(null);
   const [err, setErr] = useState('');
 
-  const personality = getPersonalityCopy('progress');
+  // const personality = getPersonalityCopy('progress');
 
   async function runAudit() {
-    if (!url.trim()) return;
-    
+    // Validate URL before sending request
+    const validation = validateUrlClient(url.trim());
+    if (!validation.valid) {
+      setErr(validation.error || 'Invalid URL');
+      return;
+    }
+
     setLoading(true);
     setErr('');
     setData(null);
 
     try {
-      const r = await fetch(`/api/ai-scores?origin=${encodeURIComponent(url)}`);
+      // Use validated/normalized URL
+      const urlToFetch = validation.normalized || url.trim();
+      const r = await fetch(`/api/ai-scores?origin=${encodeURIComponent(urlToFetch)}`);
       const j = await r.json();
       
       if (!r.ok) {
+        // Handle rate limiting
+        if (r.status === 429) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
+        }
         throw new Error(j?.error || 'Failed to fetch AI scores');
       }
       
@@ -41,64 +92,81 @@ export default function FreeAuditWidget() {
   }
 
   return (
-    <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#0F141A] p-5 text-[#E6EEF7]">
-      <h3 className="text-lg font-semibold mb-2">Run Free AI Visibility Audit</h3>
-      <p className="text-sm opacity-70 mb-4">
+    <div className="panel" style={{maxWidth: '100%'}}>
+      <h3 style={{margin: "0 0 8px", fontSize: "18px", fontWeight: 600}}>Run Free AI Visibility Audit</h3>
+      <p className="small" style={{margin: "0 0 16px", opacity: 0.85}}>
         Paste your website. Get a bottom-line summary in seconds.
       </p>
       
-      <div className="flex gap-2 mb-4">
+      <div style={{display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap"}}>
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !loading && runAudit()}
           placeholder="https://www.exampledealer.com"
-          className="flex-1 bg-[#0B0F14] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="input"
           disabled={loading}
+          aria-label="Website URL"
         />
         <button
           onClick={runAudit}
           disabled={loading || !url.trim()}
-          className="rounded-lg px-4 py-2 bg-[#3BA3FF] disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#2A8FDD] transition-colors font-medium"
+          className="cta"
+          style={{minWidth: "120px"}}
+          aria-label="Run audit"
         >
-          {loading ? 'Scanning…' : 'Run Audit'}
+          {loading ? (
+            <>
+              <span className="spinner" aria-hidden="true"></span>
+              <span>Scanning…</span>
+            </>
+          ) : 'Run Audit'}
         </button>
       </div>
 
       {err && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+        <div className="panel" style={{
+          marginBottom: "16px",
+          padding: "12px",
+          background: "rgba(249, 112, 102, 0.15)",
+          borderColor: "rgba(249, 112, 102, 0.3)",
+          color: "var(--err)",
+          border: "1px solid rgba(249, 112, 102, 0.3)"
+        }}>
           {err}
         </div>
       )}
 
       {data && (
-        <div className="mt-4 space-y-3 text-sm">
+        <div style={{marginTop: "16px"}}>
           {/* KPI Summary */}
-          <div className="rounded-xl border border-white/10 p-4 bg-[#0B0F14] space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">AI Visibility (OCI)</span>
-              <b className="text-emerald-400 text-lg">
-                {(data.kpi_scoreboard.OCI * 100).toFixed(0)}%
-              </b>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Zero-Click Inclusion</span>
-              <b className="text-blue-400">
-                {(data.zero_click_inclusion_rate * 100).toFixed(0)}%
-              </b>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Schema / Trust Signals</span>
-              <b className="text-purple-400">
-                {(data.kpi_scoreboard.PIQR * 100).toFixed(0)}%
-              </b>
+          <div className="panel" style={{marginBottom: "12px"}}>
+            <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "12px"}}>
+              <div className="g">
+                <p className="g-title">AI Visibility (OCI)</p>
+                <div className="g-num" style={{color: "var(--ok)"}}>
+                  {(data.kpi_scoreboard.OCI * 100).toFixed(0)}%
+                </div>
+              </div>
+              <div className="g">
+                <p className="g-title">Zero-Click</p>
+                <div className="g-num" style={{color: "var(--brand)"}}>
+                  {(data.zero_click_inclusion_rate * 100).toFixed(0)}%
+                </div>
+              </div>
+              <div className="g">
+                <p className="g-title">Schema / Trust</p>
+                <div className="g-num" style={{color: "var(--brand-2)"}}>
+                  {(data.kpi_scoreboard.PIQR * 100).toFixed(0)}%
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Recommended Fixes */}
-          <div className="rounded-xl border border-white/10 p-4 bg-[#0B0F14]">
-            <div className="font-medium mb-2 text-white">14-Day Fixes</div>
-            <ul className="list-disc pl-5 opacity-90 space-y-1 text-gray-300">
+          <div className="panel" style={{marginBottom: "12px"}}>
+            <h4 style={{margin: "0 0 8px", fontSize: "14px", fontWeight: 600}}>14-Day Fixes</h4>
+            <ul style={{margin: 0, paddingLeft: "18px", color: "var(--muted)", fontSize: "13px", lineHeight: "1.6"}}>
               <li>Inject/repair JSON-LD for AutoDealer/Vehicle/FAQ</li>
               <li>Answer-engine content blocks on top 3 service pages</li>
               <li>Review cadence + response SLA to raise credibility</li>
@@ -106,13 +174,13 @@ export default function FreeAuditWidget() {
           </div>
 
           {/* CTAs */}
-          <div className="flex gap-2 pt-2">
-            <button className="flex-1 rounded-lg px-4 py-2.5 bg-[#10b981] hover:bg-[#059669] transition-colors font-medium text-white">
+          <div style={{display: "flex", gap: "10px", flexWrap: "wrap"}}>
+            <Link href="/sign-in" className="cta" style={{flex: "1 1 200px", textAlign: "center"}}>
               Save Full Report
-            </button>
-            <button className="flex-1 rounded-lg px-4 py-2.5 bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors font-medium text-white">
+            </Link>
+            <Link href="/onboarding" className="ghost" style={{flex: "1 1 200px", textAlign: "center"}}>
               Lower Advertising Expense
-            </button>
+            </Link>
           </div>
         </div>
       )}

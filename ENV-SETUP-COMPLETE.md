@@ -261,8 +261,8 @@ Before deploying to production, complete these tasks:
 - **Ory Console:** https://console.ory.sh/projects/360ebb8f-2337-48cd-9d25-fba49a262f9c
 - **Supabase Dashboard:** https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw
 - **Stripe Dashboard:** https://dashboard.stripe.com/
-- **Vercel Dashboard:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
-- **Vercel Env Vars:** https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
+- **Vercel Dashboard:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
+- **Vercel Env Vars:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/environment-variables
 
 ---
 

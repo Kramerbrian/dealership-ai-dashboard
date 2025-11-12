@@ -22,7 +22,7 @@
 ```
 
 Or add domains manually in Vercel:
-https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 
 ### STEP 2: Add DNS Records
 
@@ -169,8 +169,8 @@ watch -n 5 'dig dash.dealershipai.com'
 ## 🔗 Important Links
 
 ### Vercel Dashboard
-- **Project**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
-- **Add Domains**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
+- **Project**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
+- **Add Domains**: https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/settings/domains
 - **Current Deployment**: https://dealership-ai-dashboard-brian-kramers-projects.vercel.app
 
 ### Testing Tools

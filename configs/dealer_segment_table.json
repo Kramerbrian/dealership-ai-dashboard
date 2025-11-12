@@ -1,0 +1,98 @@
+{
+  "version": "2025.11.07",
+  "defaults": {
+    "geo_competitor_radius_miles": {
+      "start": 10,
+      "step": 5,
+      "max": 25,
+      "min_competitors": 5
+    },
+    "similarity_weights": {
+      "brand_segment": 0.55,
+      "oem_region": 0.2,
+      "body_style_focus": 0.2,
+      "price_band": 0.05
+    },
+    "price_bands": [
+      {
+        "code": "entry",
+        "min": 0,
+        "max": 29999
+      },
+      {
+        "code": "mid",
+        "min": 30000,
+        "max": 59999
+      },
+      {
+        "code": "lux",
+        "min": 60000,
+        "max": 99999
+      },
+      {
+        "code": "ultra",
+        "min": 100000,
+        "max": 999999
+      }
+    ]
+  },
+  "brand_segments": [
+    {
+      "brands": ["Ford", "Chevrolet", "Dodge", "Ram", "GMC", "Buick"],
+      "segment": "domestic_mainstream",
+      "oem_region": "US"
+    },
+    {
+      "brands": ["Cadillac", "Lincoln"],
+      "segment": "domestic_luxury",
+      "oem_region": "US"
+    },
+    {
+      "brands": ["Toyota", "Honda", "Nissan", "Subaru", "Mazda", "Mitsubishi", "Hyundai", "Kia", "Genesis"],
+      "segment": "asian_mainstream",
+      "oem_region": "Asia"
+    },
+    {
+      "brands": ["Lexus", "Acura", "Infiniti"],
+      "segment": "asian_luxury",
+      "oem_region": "Asia"
+    },
+    {
+      "brands": ["Mercedes-Benz", "BMW", "Audi", "Porsche"],
+      "segment": "euro_luxury",
+      "oem_region": "EU"
+    },
+    {
+      "brands": ["Volkswagen", "Volvo", "MINI", "Peugeot", "Renault", "Skoda", "Seat"],
+      "segment": "euro_import",
+      "oem_region": "EU"
+    },
+    {
+      "brands": ["Jaguar", "Land Rover", "Bentley", "Rolls-Royce", "Aston Martin", "McLaren"],
+      "segment": "euro_ultra_luxury",
+      "oem_region": "EU"
+    },
+    {
+      "brands": ["Tesla", "Rivian", "Lucid", "Polestar"],
+      "segment": "ev_focus",
+      "oem_region": "Mixed"
+    }
+  ],
+  "body_style_keywords": {
+    "truck": ["truck", "pickup", "f-150", "silverado", "tundra", "ram 1500", "sierra"],
+    "suv": ["suv", "crossover", "cr-v", "rav4", "tahoe", "highlander", "escape", "x5"],
+    "sedan": ["sedan", "accord", "camry", "altima", "malibu", "sonata"],
+    "compact_sedan": ["civic", "corolla", "elantra", "jetta", "versa"],
+    "performance": ["amg", "m3", "m4", "rs", "gt", "z06", "hellcat"],
+    "ev": ["electric", "ev", "model 3", "model y", "ioniq", "ev6", "leaf", "bolt", "polestar", "rivian", "lucid"]
+  },
+  "competitor_filters": {
+    "hard_exclusion": ["wholesale_only", "fleet_only", "salvage_title", "car_rental", "auction"],
+    "soft_exclusion": ["independent_small_lot"]
+  },
+  "fallbacks": {
+    "if_brand_unknown": "import_mainstream",
+    "if_inventory_unavailable": "body_style_from_keywords",
+    "if_no_competitors_found_within_max_radius": "expand_to_county_line"
+  }
+}

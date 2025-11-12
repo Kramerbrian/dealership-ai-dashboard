@@ -5,13 +5,39 @@
 
 import { Redis } from '@upstash/redis';
 
-export const redis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
-    : (null as unknown as Redis);
+// Helper to safely get and trim env vars
+function getRedisUrl(): string | undefined {
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.REDIS_URL || process.env.KV_URL;
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  // Validate URL format
+  if (!trimmed.startsWith('https://') && !trimmed.startsWith('redis://')) {
+    return undefined;
+  }
+  return trimmed;
+}
+
+function getRedisToken(): string | undefined {
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!token) return undefined;
+  return token.trim();
+}
+
+export const redis = (() => {
+  try {
+    const url = getRedisUrl();
+    const token = getRedisToken();
+    if (url && token) {
+      return new Redis({
+        url,
+        token,
+      });
+    }
+  } catch (error) {
+    console.warn('Redis initialization failed:', error);
+  }
+  return null as unknown as Redis;
+})();
 
 /**
  * Cache Get - Safe wrapper with error handling
@@ -47,4 +73,29 @@ export async function cacheDelete(key: string): Promise<void> {
   } catch {
     // Silent fail
   }
+}
+
+/**
+ * Cache Keys Generator - For compatibility
+ */
+export const cacheKeys = {
+  qaiScore: (domain: string) => `qai:score:${domain}`,
+  fleetOrigins: () => 'fleet:origins',
+  bulkChecksum: (checksum: string) => `bulk:checksum:${checksum}`,
+  bulkCommit: (idempotencyKey: string) => `bulk:commit:${idempotencyKey}`,
+};
+
+/**
+ * Get Cached with fallback - For compatibility
+ */
+export async function getCached<T>(
+  key: string,
+  ttl: number,
+  fetcher: () => Promise<T>
+): Promise<T> {
+  const cached = await cacheGet<T>(key);
+  if (cached) return cached;
+  const fresh = await fetcher();
+  await cacheSet(key, fresh, ttl);
+  return fresh;
 }

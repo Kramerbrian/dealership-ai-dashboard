@@ -1,0 +1,52 @@
+name: Doctrine Validator
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'configs/ux/**'
+      - 'scripts/dealershipai_doctrine_selfheal_autocommit.py'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'configs/ux/**'
+      - 'scripts/dealershipai_doctrine_selfheal_autocommit.py'
+  workflow_dispatch:
+
+jobs:
+  validate-doctrine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate Doctrine
+        run: |
+          python scripts/dealershipai_doctrine_selfheal_autocommit.py configs/ux/DealershipAI_Design_Doctrine_v1.0.yaml
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Auto-commit fixes
+        if: steps.check-changes.outputs.has_changes == 'true' && github.event_name == 'push'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add configs/ux/
+          git commit -m "chore: Auto-fix Doctrine validation issues [skip ci]" || exit 0
+          git push || exit 0
+

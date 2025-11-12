@@ -1,9 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { getEasterEggQuote, getNeutralCoachLine } from '@/lib/agent/quoteEngine';
+import { usePrefsStore } from '@/lib/store/prefs';
+import { showToast } from '@/lib/store/toast';
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
+  const { agentEnabled } = usePrefsStore();
   
   const cmds = [
     { label: 'Run Playbook: Recover AI Citations', href: '/playbooks' },
@@ -20,7 +24,37 @@ export default function CommandPalette() {
     { label: 'Open Settings', href: '/settings' },
     { label: 'Switch Location', href: '/locations' },
     { label: 'View API Keys', href: '/settings/api-keys' },
-    { label: 'Export Data', href: '/export' }
+    { label: 'Export Data', href: '/export' },
+    { 
+      label: 'Surprise me (PG easter egg)', 
+      href: '#',
+      action: () => {
+        if (agentEnabled) {
+          const q = getEasterEggQuote();
+          if (q) {
+            showToast({
+              level: 'success',
+              title: 'Coach Boost',
+              message: `"${q.quote}" — ${q.source}`,
+            });
+          } else {
+            const line = getNeutralCoachLine();
+            showToast({
+              level: 'info',
+              title: 'Coach',
+              message: line,
+            });
+          }
+        } else {
+          showToast({
+            level: 'info',
+            title: 'Easter Eggs Disabled',
+            message: 'Enable PG Easter Eggs in Settings to see quotes.',
+          });
+        }
+        setOpen(false);
+      }
+    }
   ];
 
   useEffect(() => {
@@ -73,13 +107,25 @@ export default function CommandPalette() {
         <ul className="max-h-60 overflow-auto">
           {results.map((c, i) => (
             <li key={i}>
-              <a 
-                href={c.href} 
-                className="block px-3 py-2 rounded hover:bg-blue-50 transition-colors"
-                onClick={handleClose}
-              >
-                {c.label}
-              </a>
+              {c.action ? (
+                <button
+                  onClick={() => {
+                    c.action?.();
+                    handleClose();
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition-colors"
+                >
+                  {c.label}
+                </button>
+              ) : (
+                <a 
+                  href={c.href} 
+                  className="block px-3 py-2 rounded hover:bg-blue-50 transition-colors"
+                  onClick={handleClose}
+                >
+                  {c.label}
+                </a>
+              )}
             </li>
           ))}
           {!results.length && (

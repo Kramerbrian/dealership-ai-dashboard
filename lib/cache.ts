@@ -1,34 +1,59 @@
-import type { NextRequest } from 'next/server';
-// Simple in-memory cache with optional Upstash Redis.
-// If UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN exist, use Redis.
-let mem = new Map<string,{v:any,exp:number}>();
-const TTL = 60 * 60 * 24; // 24h
+import { Redis } from '@upstash/redis';
 
-async function getRedis(){
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
-  const { Redis } = await import('@upstash/redis');
-  return new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN });
-}
+const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
 
-export async function cacheGet(key:string){
-  const r = await getRedis();
-  if (r){ return await r.get(key); }
-  const hit = mem.get(key);
-  if (!hit) return null; if (hit.exp < Date.now()) { mem.delete(key); return null; }
-  return hit.v;
-}
-export async function cacheSet(key:string, value:any, ttlSec=TTL){
-  const r = await getRedis();
-  if (r){ await r.set(key,value,{ex:ttlSec}); return; }
-  mem.set(key,{v:value,exp: Date.now()+ttlSec*1000});
+// Only initialize Redis if we have valid URL and token (not placeholders)
+let redis: Redis | null = null;
+try {
+  if (url && token && url.startsWith('https://') && !url.includes('...') && token !== '...') {
+    redis = new Redis({ url, token });
+  }
+} catch (e) {
+  // Redis initialization failed, continue without cache
+  console.warn('[Cache] Redis not available:', e);
 }
 
-// naive city key extractor (placeholder). In production use MaxMind/Places API.
-export function cityKeyFromDomain(domain:string){
-  const d = domain.toLowerCase();
-  // toy mapping for demo; replace with lookup by GMB/Whois/places
-  if (d.includes('naples')) return 'us_fl_naples';
-  if (d.includes('miami')) return 'us_fl_miami';
-  if (d.includes('orlando')) return 'us_fl_orlando';
-  return 'us_generic';
+export async function cacheJSON<T>(key: string, ttlSec: number, fetcher: () => Promise<T>): Promise<T> {
+  if (!redis) return fetcher();
+  const hit = await redis.get<T>(key);
+  if (hit) return hit;
+  const fresh = await fetcher();
+  await redis.set(key, fresh, { ex: ttlSec });
+  return fresh;
 }
+
+// Cache manager for compatibility
+export class CacheManager {
+  static async get<T>(key: string): Promise<T | null> {
+    if (!redis) return null;
+    return await redis.get<T>(key);
+  }
+
+  static async set<T>(key: string, value: T, ttlSec: number): Promise<void> {
+    if (!redis) return;
+    await redis.set(key, value, { ex: ttlSec });
+  }
+
+  static async delete(key: string): Promise<void> {
+    if (!redis) return;
+    await redis.del(key);
+  }
+}
+
+// Cache keys
+export const CACHE_KEYS = {
+  VISIBILITY_AEO: 'visibility:aeo',
+  VISIBILITY_GEO: 'visibility:geo',
+  VISIBILITY_SEO: 'visibility:seo',
+  AI_SCORES: 'ai:scores',
+  PRESENCE: 'visibility:presence',
+} as const;
+
+// Cache TTL (in seconds)
+export const CACHE_TTL = {
+  SHORT: 300, // 5 minutes
+  MEDIUM: 1800, // 30 minutes
+  LONG: 3600, // 1 hour
+  DAY: 86400, // 24 hours
+} as const;

@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs/promises';
+import path from 'path';
+
+/**
+ * GET /api/claude/download
+ * Serves the Claude export ZIP file directly
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const exportPath = path.join(process.cwd(), 'public/claude/dealershipai_claude_export.zip');
+    
+    // Check if file exists
+    try {
+      await fs.access(exportPath);
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, error: 'Export file not found' },
+        { status: 404 }
+      );
+    }
+
+    // Read file
+    const fileBuffer = await fs.readFile(exportPath);
+    const stats = await fs.stat(exportPath);
+
+    // Return file with proper headers
+    return new NextResponse(fileBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': 'attachment; filename="dealershipai_claude_export.zip"',
+        'Content-Length': stats.size.toString(),
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      },
+    });
+  } catch (error: any) {
+    console.error('Error serving export file:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to serve export file' },
+      { status: 500 }
+    );
+  }
+}
+
