@@ -1,5 +1,18 @@
 import '@testing-library/jest-dom'
 
+// Polyfill for Next.js Request/Response APIs
+import { TextEncoder, TextDecoder } from 'util'
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
+
+// Polyfill for Request/Response (Next.js 14+)
+if (typeof global.Request === 'undefined') {
+  const { Request, Response, Headers } = require('undici')
+  global.Request = Request
+  global.Response = Response
+  global.Headers = Headers
+}
+
 // Mock Next.js router
 jest.mock('next/router', () => ({
   useRouter() {

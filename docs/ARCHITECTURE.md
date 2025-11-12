@@ -1,256 +1,327 @@
-# DealershipAI Ecosystem Architecture (2026 Build)
+# DealershipAI Architecture Documentation
 
-## 🏗 Master Repository Layout
+## System Overview
+
+DealershipAI is a Next.js 14 application built with TypeScript, providing AI-powered visibility tracking and optimization for automotive dealerships.
+
+---
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Custom Clay UI system
+- **State Management**: Zustand (global), React Query (server)
+- **Animations**: Framer Motion
+- **Charts**: Recharts
+
+### Backend
+- **Runtime**: Node.js (Vercel Edge/Serverless)
+- **Database**: PostgreSQL (Supabase)
+- **Cache**: Upstash Redis
+- **ORM**: Prisma
+- **Authentication**: Clerk
+
+### Infrastructure
+- **Hosting**: Vercel
+- **CDN**: Vercel Edge Network
+- **Monitoring**: Vercel Analytics, Sentry, PostHog
+- **CI/CD**: GitHub Actions
+
+---
+
+## Architecture Layers
+
+### 1. Presentation Layer
+
+**Location**: `app/`, `components/`
+
+- **Pages**: Next.js App Router pages
+- **Components**: React components organized by feature
+- **Layouts**: Root and nested layouts
+- **Templates**: Page templates
+
+**Key Patterns:**
+- Server Components by default
+- Client Components for interactivity (`'use client'`)
+- Error Boundaries for error handling
+- Loading states with Suspense
+
+---
+
+### 2. Application Layer
+
+**Location**: `lib/`, `app/api/`
+
+- **API Routes**: Next.js API routes (`app/api/`)
+- **Business Logic**: Service functions (`lib/services/`)
+- **Hooks**: Custom React hooks (`lib/hooks/`)
+- **Utilities**: Helper functions (`lib/utils/`)
+
+**Key Patterns:**
+- RESTful API design
+- Server-side validation (Zod)
+- Authentication middleware
+- Rate limiting
+- Error handling
+
+---
+
+### 3. Data Layer
+
+**Location**: `lib/db/`, `prisma/`
+
+- **Database**: Supabase PostgreSQL
+- **ORM**: Prisma Client
+- **Migrations**: Prisma migrations
+- **Queries**: Database query functions
+
+**Key Patterns:**
+- Row Level Security (RLS)
+- Multi-tenant isolation
+- Connection pooling
+- Query optimization
+
+---
+
+### 4. Integration Layer
+
+**Location**: `lib/integrations/`
+
+- **External APIs**: Google APIs, Review Services, etc.
+- **Webhooks**: Incoming webhook handlers
+- **Orchestrator**: OpenAI GPT integration
+- **Marketplace**: Pulse/ATI/CIS integration
+
+---
+
+## Data Flow
+
+### Request Flow
 
 ```
-dealershipAI/
-│
-├── app/
-│   ├── (public)/                   # Marketing / anonymous routes
-│   │   ├── page.tsx                # Main landing (dealershipAI.com)
-│   │   ├── components/
-│   │   │   ├── Hero.tsx
-│   │   │   ├── Features.tsx
-│   │   │   └── Footer.tsx
-│   │   └── pricing/page.tsx        # Tier comparison (Ignition, Momentum, Hyperdrive)
-│   │
-│   ├── (auth)/                     # SSO entry
-│   │   ├── signin/page.tsx
-│   │   ├── signup/page.tsx
-│   │   └── reset-password/page.tsx
-│   │
-│   ├── (onboarding)/               # Fun Savannah-Bananas style flow
-│   │   ├── onboarding/page.tsx
-│   │   └── steps/
-│   │       ├── 1-profile.tsx
-│   │       ├── 2-integrations.tsx
-│   │       └── 3-confirm.tsx
-│   │
-│   ├── (dashboard)/                # Authenticated routes (dashboard.dealershipAI.com)
-│   │   ├── zeropoint/page.tsx      # "Grand Central" Command Center
-│   │   ├── intelligence/page.tsx   # AI Visibility + QAI* core dashboard
-│   │   ├── content/page.tsx        # Content Optimizer (broken links, CTAs, etc.)
-│   │   ├── agents/page.tsx         # dAI Agents manager
-│   │   ├── playbooks/page.tsx      # Playbook Composer
-│   │   ├── api-units/page.tsx      # API Unit Store
-│   │   ├── settings/page.tsx       # User/org settings
-│   │   ├── reports/page.tsx        # Executive reports + exports
-│   │   ├── competitive/page.tsx    # UGC + Market comparison
-│   │   ├── alerts/page.tsx         # AI + Compliance alerts
-│   │   ├── billing/page.tsx        # Billing summary (embedded in settings)
-│   │   └── stubs/                  # Future modules
-│   │       ├── blockdrive/page.tsx # OTT/CTV/Blockchain marketing module
-│   │       ├── mystery-shop/page.tsx
-│   │       ├── fixed-ops/page.tsx
-│   │       ├── trends/page.tsx
-│   │       └── export-api/page.tsx
-│   │
-│   ├── api/                        # Next.js API routes
-│   │   ├── auth/[...nextauth]/route.ts
-│   │   ├── ai-scores/route.ts
-│   │   ├── content-audit/route.ts
-│   │   ├── billing/
-│   │   │   └── buy-units/route.ts
-│   │   ├── playbooks/route.ts
-│   │   ├── agents/run-playbook/route.ts
-│   │   ├── site-inject/route.ts
-│   │   ├── crawl-graph/route.ts
-│   │   ├── alerts/route.ts
-│   │   ├── reports/route.ts
-│   │   └── webhooks/[event]/route.ts
-│   │
-│   ├── layout.tsx                  # Global shell (CSP, Cupertino UI)
-│   └── middleware.ts               # Tenant, SSO, and plan gating
-│
-├── components/                     # Global reusable UI
-│   ├── NavBar.tsx
-│   ├── Sidebar.tsx
-│   ├── TrialNudgeBanner.tsx
-│   ├── SettingsBilling.tsx
-│   ├── BlurGate.tsx
-│   ├── PlaybookComposer.tsx
-│   ├── ContentOptimizer.tsx
-│   ├── DealershipDashboard2026.tsx
-│   ├── CompetitiveUGC.tsx
-│   ├── ZeroClickTab.tsx
-│   └── AIHealthPanel.tsx
-│
-├── lib/
-│   ├── plans.ts                    # Ignition / Momentum / Hyperdrive tier config
-│   ├── rbac.ts                     # Role + tier permissions
-│   ├── quota.ts                    # Usage tracking + Redis counters
-│   ├── scoring.ts                  # QAI*, HRP, PIQR, AEMD formulas
-│   ├── nav.ts                      # Tabs + feature gating
-│   ├── agents.ts                   # Orchestrator client logic
-│   ├── siteInject.ts               # JSON-LD injector client
-│   ├── apiUnits.ts                 # Unit pricing + calc utilities
-│   └── utils.ts                    # Generic helpers
-│
-├── styles/
-│   └── globals.css                 # Tailwind + Cupertino tokens
-│
-├── public/
-│   ├── logos/                      # dealershipAI emblem, favicons
-│   ├── illustrations/              # dashboard mockups, onboarding art
-│   └── robots.txt
-│
-├── docker/
-│   ├── docker-compose.yml          # local Redis, Postgres
-│   ├── redis.conf
-│   └── README.md
-│
-├── prisma/                         # DB schema
-│   ├── schema.prisma               # tenants, users, locations, plans, quotas, playbooks
-│   └── seed.ts
-│
-├── scripts/
-│   ├── seed-demo-data.ts           # for trial/demo mode
-│   ├── sync-aiv.ts                 # background AI visibility job
-│   └── refresh-competitors.ts
-│
-├── package.json
-├── tsconfig.json
-└── README.md
+Client Request
+  ↓
+Middleware (Auth, Rate Limiting)
+  ↓
+API Route Handler
+  ↓
+Service Layer (Business Logic)
+  ↓
+Data Layer (Database/External APIs)
+  ↓
+Response
 ```
 
-## ⚙️ Core Flow Overview
+### State Management Flow
 
-| Phase                   | Route                         | Purpose                                       |
-| ----------------------- | ----------------------------- | --------------------------------------------- |
-| **Marketing**           | `/`                           | LP with "Login" + "Create Account"            |
-| **SSO / Auth**          | `/auth/signin` `/auth/signup` | OAuth or email magic link                     |
-| **Onboarding**          | `/onboarding`                 | Collect site + integrations (GA4, GBP, Pixel) |
-| **Landing after SSO**   | `/zeropoint`                  | Grand Central for dashboards, upgrades, APIs  |
-| **Dashboard core**      | `/intelligence`               | QAI*, AI visibility, SEO/AEO/GEO metrics      |
-| **Content optimizer**   | `/content`                    | Scans for CTAs, 404s, stock photos, schema    |
-| **Agents / Playbooks**  | `/agents` `/playbooks`        | Automations and chained workflows             |
-| **Billing / API store** | `/api-units` `/settings`      | Buy units, manage plan, billing               |
-| **Expansion modules**   | `/stubs/...`                  | Placeholder routes for future products        |
+```
+Server State (React Query)
+  ↓
+Global State (Zustand)
+  ↓
+Local State (useState)
+  ↓
+UI Components
+```
 
-## 🔑 Key Architecture Traits
+---
 
-1. **SSO-based PLG**
-   All new and returning users route through the same Auth.js SSO; sessions hold role, tier, tenantId, and trial expiry.
+## Key Systems
 
-2. **Tenant isolation**
-   Per-location billing (tenantId + locationId); Redis quotas per location; RLS in Postgres.
+### 1. Authentication & Authorization
 
-3. **Dynamic feature gating**
-   `lib/rbac.ts` + `lib/plans.ts` jointly decide visible tabs and permissions.
+**Technology**: Clerk
 
-4. **BlurGate + TrialNudge**
-   Trials keep dashboards visible but blurred; upgrade CTAs inline.
+**Features:**
+- Multi-tenant organizations
+- Role-based access control (RBAC)
+- Session management
+- Middleware protection
 
-5. **API-first**
-   Each major dashboard component has a dedicated API route for isolation, caching, and rate limits.
+**Implementation:**
+- `middleware.ts`: Route protection
+- `lib/authOrg.ts`: Organization utilities
+- `components/OrgSwitcher.tsx`: Org switching UI
 
-6. **Auto-fix pipeline**
-   `/api/site-inject` and `/api/agents/run-playbook` handle verified schema/content injections.
+---
 
-7. **Edge caching & revalidation**
-   Realtime endpoints (`ai-scores`) use per-plan TTLs from `lib/plans.ts`.
+### 2. Multi-Tenant Architecture
 
-8. **Agent orchestration**
-   * `reviewResponder`, `schemaFix` for Momentum+
-   * `mysteryShop`, `playbookRunner` for Hyperdrive
+**Database**: Row Level Security (RLS) policies
 
-9. **Predictive + Prescriptive analytics**
-   QAI*, HRP, PIQR, and AEMD calculations live in `/lib/scoring.ts` and feed `/api/ai-scores`.
+**Features:**
+- Tenant isolation at database level
+- Organization-based access
+- Shared resources with tenant context
 
-10. **ZeroPoint extensibility**
-    Every new product (BlockDrive, Fixed Ops, CTV, API Hub) mounts as a tile inside `/zeropoint/page.tsx`.
+**Implementation:**
+- `tenant_id` column on all tables
+- RLS policies in Supabase
+- Tenant context in API routes
 
-## 🚀 How to Expand Later
+---
 
-| Future Product               | Folder              | Notes                                |
-| ---------------------------- | ------------------- | ------------------------------------ |
-| **BlockDrive CTV / OTT**     | `/stubs/blockdrive` | Blockchain attribution dashboard     |
-| **Fixed Ops AI**             | `/stubs/fixed-ops`  | Service lane acquisition metrics     |
-| **AI PR & Social**           | `/stubs/social`     | Reputation + media coverage tracking |
-| **Advertising Intelligence** | `/stubs/ads`        | CTV + Paid search ROI comparison     |
-| **DealerGPT Copilot**        | `/stubs/agent-chat` | AI chat workspace for dealer staff   |
+### 3. Cognitive Interface
 
-## 🔒 Data & Compliance
+**Components**: Drive Mode, Pulse Stream, Action Drawer
 
-* RLS in Postgres on `tenant_id`.
-* OAuth scopes per integration (GA4, GBP, GSC).
-* Audit logs for every API call and fix injection.
-* Retention by tier (30 / 180 / 365 days).
-* GDPR + CCPA compliance with export/delete endpoints.
+**Features:**
+- Incident triage
+- Real-time pulse updates
+- Agentic recommendations
+- Context-aware actions
 
-## 🧩 External Integrations
+**State**: `lib/store/cognitive.ts`
 
-| System                          | Integration Route                  |
-| ------------------------------- | ---------------------------------- |
-| Google GA4                      | `/onboarding/steps/2-integrations` |
-| GBP / GMB                       | `/api/gmb-sync`                    |
-| Facebook Pixel                  | `/onboarding` optional             |
-| OpenAI / Anthropic / Perplexity | `/api/ai-scores`                   |
-| Redis (cache/quota)             | `/lib/quota.ts`                    |
-| Slack / Teams                   | `/api/webhooks/alerts`             |
+---
 
-## 🧠 DevOps & Deployment
+### 4. Pulse Digest Framework
 
-| Layer          | Tech                                             |
-| -------------- | ------------------------------------------------ |
-| **Frontend**   | Next.js 14 (App Router), Tailwind, Framer Motion |
-| **Backend**    | Next.js API Routes, Redis, Postgres              |
-| **Auth**       | NextAuth (SSO: Google, Microsoft, Email)         |
-| **Infra**      | Vercel + Upstash (Redis) + Supabase/Postgres     |
-| **Jobs**       | Scheduled via Vercel Cron / Upstash QStash       |
-| **Monitoring** | Sentry + Vercel Analytics                        |
-| **CI/CD**      | GitHub Actions → Vercel Deploy Hooks             |
+**Storage**: Redis (Upstash)
 
-## 📊 PLG / Growth Hooks
+**Features:**
+- Daily agentic updates
+- Topic-based organization
+- Dismissal tracking
+- Context expansion
 
-* Trial metrics: `trial_started`, `trial_converted`, `blur_view`, `upgrade_clicked`.
-* Daily digest emails (AI visibility trend, site health).
-* Referral program link in header ("Invite a Friend → +50 queries").
-* "DealerGPT Copilot" teaser chat inside ZeroPoint (read-only in trial).
+**API**: `/api/pulse/digest`
 
-## 🎯 User Flows
+---
 
-### Returning User
-`dealershipAI.com → Login → SSO → dashboard.dealershipai.com/zeropoint`
+### 5. Performance Monitoring
 
-### First-time User
-`dealershipAI.com → Create Account → SSO signup → Onboarding (GA4, FB Pixel, GBP URL, GSC, CRM) → /zeropoint`
+**Tracking**: Core Web Vitals
 
-Both flows use the same SSO and land on **ZeroPoint Command Center**. Primary CTA = **Open Intelligence Dashboard → dash.dealershipai.com**.
+**Features:**
+- Real-time LCP, CLS, INP tracking
+- Performance budgets
+- Automated fix playbooks
+- Trend analysis
 
-## 🔧 Development Guidelines
+**Implementation:**
+- `lib/hooks/useVitals.ts`
+- `lib/web-vitals.ts`
+- `/api/web-vitals`
 
-1. **Always use TypeScript** for type safety
-2. **Follow the established patterns** in existing components
-3. **Implement proper error handling** and loading states
-4. **Use the RBAC system** for all permission checks
-5. **Cache aggressively** with proper TTLs per plan tier
-6. **Log all significant actions** for audit trails
-7. **Test with multiple tenant scenarios** for isolation
-8. **Follow the established API patterns** for consistency
+---
 
-## 📈 Performance Targets
+## Security
 
-- **LCP**: < 2.5s on 3G
-- **CLS**: < 0.1
-- **API Response**: < 200ms p95
-- **Cache Hit Rate**: > 80%
-- **Uptime**: 99.9% SLA
+### Authentication
+- Clerk session-based auth
+- JWT tokens for API
+- Organization-scoped access
 
-## 🛡️ Security Checklist
+### Data Protection
+- Row Level Security (RLS)
+- Input validation (Zod)
+- SQL injection prevention (Prisma)
+- XSS protection (React)
 
-- [ ] RLS enabled on all tenant tables
-- [ ] Input validation on all API endpoints
-- [ ] Rate limiting per tenant/IP
-- [ ] Audit logging for sensitive operations
-- [ ] Secure session management
-- [ ] CSP headers configured
-- [ ] Secrets properly managed
-- [ ] Regular security audits
+### API Security
+- Rate limiting (Upstash)
+- HMAC signature verification
+- Idempotency keys
+- CORS configuration
 
-## 📚 Additional Resources
+---
 
-- [API Documentation](./API.md)
-- [Deployment Guide](./DEPLOYMENT.md)
-- [Contributing Guidelines](./CONTRIBUTING.md)
-- [Security Policy](./SECURITY.md)
+## Performance Optimizations
+
+### Frontend
+- Code splitting (dynamic imports)
+- Image optimization (Next.js Image)
+- Font optimization (next/font)
+- Bundle size optimization
+- Tree shaking
+
+### Backend
+- Edge runtime for APIs
+- Database connection pooling
+- Redis caching
+- Query optimization
+- Response compression
+
+---
+
+## Deployment
+
+### Vercel Configuration
+
+**Build Settings:**
+- Framework: Next.js
+- Build Command: `prisma generate && next build`
+- Output Directory: `.next`
+- Install Command: `npm install`
+
+**Environment Variables:**
+- Database URLs
+- API Keys
+- Service credentials
+
+---
+
+## Monitoring & Observability
+
+### Error Tracking
+- Sentry (client & server)
+- Error boundaries
+- Structured logging
+
+### Analytics
+- Vercel Analytics
+- PostHog (product analytics)
+- Google Analytics (optional)
+
+### Performance
+- Core Web Vitals
+- API response times
+- Database query performance
+
+---
+
+## Development Workflow
+
+### Local Development
+```bash
+npm run dev          # Start dev server
+npm run test         # Run tests
+npm run type-check   # TypeScript check
+npm run lint         # Linting
+```
+
+### Testing
+```bash
+npm run test:unit    # Unit tests
+npm run test:e2e     # E2E tests
+npm run test:all     # All tests
+```
+
+### Deployment
+```bash
+npm run build        # Production build
+npm run deploy       # Deploy to Vercel
+```
+
+---
+
+## Future Enhancements
+
+1. **Real-time Updates**: WebSocket/SSE for live data
+2. **Advanced Analytics**: Custom dashboards
+3. **AI Enhancements**: More orchestrator actions
+4. **Mobile App**: React Native companion
+5. **API Versioning**: v2 API with backward compatibility
+
+---
+
+## References
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Clerk Documentation](https://clerk.com/docs)
+- [Supabase Documentation](https://supabase.com/docs)

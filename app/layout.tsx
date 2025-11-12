@@ -11,7 +11,9 @@ try {
 }
 import { ClerkProviderWrapper } from '@/components/providers/ClerkProviderWrapper'
 import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
+import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ThemeProvider } from '@/lib/theme'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -94,11 +96,13 @@ export default function RootLayout({
       <body className={inter.className}>
         <ErrorBoundary>
           <ClerkProviderWrapper>
-            <MonitoringProvider>
-              {children}
-              <Analytics />
-              <Toaster position="top-right" richColors />
-            </MonitoringProvider>
+            <ThemeProvider>
+              <MonitoringProvider>
+                {children}
+                <Analytics />
+                <Toaster position="top-right" richColors />
+              </MonitoringProvider>
+            </ThemeProvider>
           </ClerkProviderWrapper>
         </ErrorBoundary>
       </body>
