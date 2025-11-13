@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "AI-powered dashboard for dealerships with DTRI analytics and automation",
   "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test": "jest",
