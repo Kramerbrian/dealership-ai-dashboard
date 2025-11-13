@@ -18,6 +18,9 @@
       ],
       "@/exports/*": [
         "../../exports/*"
+      ],
+      "@/docs/*": [
+        "../../docs/*"
       ]
     },
     "strict": true,
