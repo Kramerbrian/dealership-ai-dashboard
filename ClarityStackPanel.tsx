@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 type Scores = {
   seo: number;
@@ -44,13 +44,13 @@ export function ClarityStackPanel({ domain, scores, revenue, onUnlockDashboard }
       key: 'seo',
       label: 'SEO Health',
       value: scores.seo,
-      note: 'Technical and on-page foundations.'
+      note: 'How easy it is for search engines to read your site.'
     },
     {
       key: 'aeo',
       label: 'AEO (Answer Engine)',
       value: scores.aeo,
-      note: 'How easily you can be quoted as an answer.'
+      note: 'How well you answer common shopper questions.'
     },
     {
       key: 'geo',
@@ -62,7 +62,7 @@ export function ClarityStackPanel({ domain, scores, revenue, onUnlockDashboard }
       key: 'avi',
       label: 'AI Visibility Index',
       value: scores.avi,
-      note: 'Your overall visibility score.'
+      note: 'Your overall AI visibility score.'
     }
   ];
 
@@ -112,7 +112,7 @@ export function ClarityStackPanel({ domain, scores, revenue, onUnlockDashboard }
 
       <button
         onClick={onUnlockDashboard}
-        className="mt-5 h-10 w-full rounded-full bg-white text-black text-sm font-medium hover:bg-neutral-100 transition"
+        className="mt-5 h-10 w-full rounded-full bg.White text-black text-sm font-medium hover:bg-neutral-100 transition"
       >
         Unlock full dashboard (Free)
       </button>
