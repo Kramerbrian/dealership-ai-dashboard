@@ -61,11 +61,10 @@ export interface CustomReport {
 }
 
 export class AnalyticsEngine {
-  private cache: CacheManager
   private events: AnalyticsEvent[] = []
 
   constructor() {
-    this.cache = new CacheManager()
+    // CacheManager uses static methods, no instance needed
   }
 
   /**
@@ -83,7 +82,7 @@ export class AnalyticsEngine {
 
     // Store in cache for persistence
     const cacheKey = `${CACHE_KEYS.ANALYTICS_EVENTS}:${analyticsEvent.id}`
-    await this.cache.set(cacheKey, analyticsEvent, CACHE_TTL.ANALYTICS_EVENTS)
+    await CacheManager.set(cacheKey, analyticsEvent, CACHE_TTL.ANALYTICS_EVENTS)
 
     // Process real-time metrics
     await this.updateRealTimeMetrics(analyticsEvent)
@@ -94,19 +93,19 @@ export class AnalyticsEngine {
    */
   async getMetrics(config: ReportConfig): Promise<AnalyticsMetrics> {
     const cacheKey = `${CACHE_KEYS.ANALYTICS_METRICS}:${this.generateCacheKey(config)}`
-    
+
     // Try to get from cache first
-    const cached = await this.cache.get(cacheKey)
+    const cached = await CacheManager.get<AnalyticsMetrics>(cacheKey)
     if (cached) {
       return cached
     }
 
     // Calculate metrics
     const metrics = await this.calculateMetrics(config)
-    
+
     // Cache the results
-    await this.cache.set(cacheKey, metrics, CACHE_TTL.ANALYTICS_METRICS)
-    
+    await CacheManager.set(cacheKey, metrics, CACHE_TTL.ANALYTICS_METRICS)
+
     return metrics
   }
 
@@ -115,8 +114,8 @@ export class AnalyticsEngine {
    */
   async getRealTimeMetrics(): Promise<Partial<AnalyticsMetrics>> {
     const cacheKey = CACHE_KEYS.ANALYTICS_REALTIME
-    const cached = await this.cache.get(cacheKey)
-    
+    const cached = await CacheManager.get<Partial<AnalyticsMetrics>>(cacheKey)
+
     if (cached) {
       return cached
     }
@@ -133,7 +132,7 @@ export class AnalyticsEngine {
       topEvents: this.getTopEvents(recentEvents),
     }
 
-    await this.cache.set(cacheKey, realTimeMetrics, 60) // 1 minute cache
+    await CacheManager.set(cacheKey, realTimeMetrics, 60) // 1 minute cache
     return realTimeMetrics
   }
 
@@ -149,7 +148,7 @@ export class AnalyticsEngine {
     }
 
     const cacheKey = `${CACHE_KEYS.CUSTOM_REPORTS}:${customReport.id}`
-    await this.cache.set(cacheKey, customReport, CACHE_TTL.CUSTOM_REPORTS)
+    await CacheManager.set(cacheKey, customReport, CACHE_TTL.CUSTOM_REPORTS)
 
     return customReport
   }
@@ -159,7 +158,7 @@ export class AnalyticsEngine {
    */
   async getUserCustomReports(userId: string): Promise<CustomReport[]> {
     const cacheKey = `${CACHE_KEYS.USER_CUSTOM_REPORTS}:${userId}`
-    const cached = await this.cache.get(cacheKey)
+    const cached = await CacheManager.get<CustomReport[]>(cacheKey)
     
     if (cached) {
       return cached
@@ -167,8 +166,8 @@ export class AnalyticsEngine {
 
     // In a real implementation, this would query the database
     const reports: CustomReport[] = []
-    await this.cache.set(cacheKey, reports, CACHE_TTL.USER_CUSTOM_REPORTS)
-    
+    await CacheManager.set(cacheKey, reports, CACHE_TTL.CUSTOM_REPORTS)
+
     return reports
   }
 
@@ -354,15 +353,15 @@ export class AnalyticsEngine {
 
   private async updateRealTimeMetrics(event: AnalyticsEvent): Promise<void> {
     const cacheKey = CACHE_KEYS.ANALYTICS_REALTIME
-    const existing = await this.cache.get(cacheKey) || {}
-    
+    const existing = await CacheManager.get<any>(cacheKey) || {}
+
     const updated = {
       ...existing,
       totalEvents: (existing.totalEvents || 0) + 1,
       lastEvent: event,
     }
-    
-    await this.cache.set(cacheKey, updated, 60)
+
+    await CacheManager.set(cacheKey, updated, 60)
   }
 
   private getTopEvents(events: AnalyticsEvent[]): Array<{ eventName: string; count: number }> {
@@ -455,7 +454,8 @@ export class AnalyticsEngine {
         if (event.page.includes('browse')) stepUsers.get('browsing')?.add(event.userId)
         if (event.page.includes('product')) stepUsers.get('interest')?.add(event.userId)
         if (event.page.includes('compare')) stepUsers.get('consideration')?.add(event.userId)
-        if (event.eventName === 'conversion') stepUsers.get('conversion')?.add(event.userId)
+      } else if (event.eventName === 'conversion') {
+        stepUsers.get('conversion')?.add(event.userId)
       }
     })
     
