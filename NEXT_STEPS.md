@@ -1,121 +1,247 @@
-# 🚀 Next Steps - DealershipAI Setup
+# 🚀 Next Steps - DealershipAI Landing Page
 
-## ✅ Completed
-
-1. **Supabase Migration**
-   - ✅ Migration file: `supabase/migrations/20250112000001_onboarding_adaptive_ux.sql`
-   - ✅ Tables verified: `onboarding_step_durations`, `onboarding_step_metrics`
-   - ✅ Function created: `update_onboarding_metrics()`
-
-2. **Local Configuration**
-   - ✅ `.env.local` configured with:
-     - `SUPABASE_DB_PASSWORD=Autonation2077$`
-     - `DATABASE_PASSWORD=Autonation2077$`
-
-3. **Vercel Project**
-   - ✅ Project linked: `prj_HRquUb6CYEdBjyZe2SkcjyYnEqV9`
-   - ✅ Org: `brian-kramers-projects`
-   - ✅ Deployment: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/HRquUb6CYEdBjyZe2SkcjyYnEqV9
-
-4. **Scripts Created**
-   - ✅ `scripts/vercel-setup-interactive.sh`
-   - ✅ `scripts/vercel-deployment-setup.sh`
-   - ✅ `scripts/add-vercel-env-auto.sh`
-   - ✅ `scripts/supabase-push.sh`
-
-## ⏳ Next Steps
-
-### Step 1: Add Vercel Environment Variables
-
-**Recommended: Use Vercel Dashboard (Fastest)**
-
-1. **Visit Environment Variables Page**
-   - URL: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
-
-2. **Add SUPABASE_DB_PASSWORD**
-   - Click "Add New"
-   - Key: `SUPABASE_DB_PASSWORD`
-   - Value: `Autonation2077$`
-   - Environments: ☑️ Production, ☑️ Preview, ☑️ Development
-   - Click "Save"
-
-3. **Add DATABASE_PASSWORD**
-   - Click "Add New" again
-   - Key: `DATABASE_PASSWORD`
-   - Value: `Autonation2077$`
-   - Environments: ☑️ Production, ☑️ Preview, ☑️ Development
-   - Click "Save"
-
-4. **Verify Variables**
-   - You should see both variables listed
-   - Each should show: Production, Preview, Development
-
-### Step 2: Redeploy Application
-
-**Option A: Via Dashboard**
-1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/deployments
-2. Click "Redeploy" on the latest deployment
-3. Wait for deployment to complete
-
-**Option B: Via CLI** (if team ID is resolved)
-```bash
-npx vercel --prod --yes
-```
-
-### Step 3: Verify Deployment
-
-1. **Check Deployment Status**
-   - Visit: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/deployments
-   - Verify latest deployment is successful
-
-2. **Test Application**
-   - Visit your deployment URL
-   - Test onboarding flow
-   - Verify Supabase connections work
-
-3. **Verify Environment Variables**
-   - Check deployment logs for any errors
-   - Variables should be available at runtime
-
-## 📋 Quick Reference
-
-### Important URLs
-
-- **Environment Variables**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
-- **Deployments**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/deployments
-- **Project Dashboard**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
-- **Supabase Dashboard**: https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw
-
-### Variables to Add
-
-| Variable | Value | Environments |
-|----------|-------|--------------|
-| `SUPABASE_DB_PASSWORD` | `Autonation2077$` | Production, Preview, Development |
-| `DATABASE_PASSWORD` | `Autonation2077$` | Production, Preview, Development |
-
-### Scripts Available
-
-- `./scripts/vercel-setup-interactive.sh` - Interactive setup (requires linking)
-- `./scripts/vercel-deployment-setup.sh` - Deployment setup (after linking)
-- `./scripts/supabase-push.sh` - Supabase migrations
-
-## 🎯 Expected Outcome
-
-After completing these steps:
-- ✅ Environment variables available in all Vercel environments
-- ✅ Application redeployed with new variables
-- ✅ Supabase connections working in production
-- ✅ Onboarding flow functional with new tables
-
-## 📄 Related Documentation
-
-- `QUICK_START_VERCEL.md` - Quick reference guide
-- `VERCEL_CLI_TEAM_ISSUE.md` - CLI troubleshooting
-- `SUPABASE_MIGRATION_STATUS.md` - Migration status
-- `ENV_SETUP_COMPLETE.md` - Complete environment guide
+**Last Updated:** $(date)  
+**Status:** ✅ Landing page live with new hero text and AI Chat Demo Orb
 
 ---
 
-**Status**: Ready for Step 1 (Add Environment Variables)
-**Estimated Time**: 5-10 minutes
-**Priority**: High (needed for production deployment)
+## ✅ **Completed**
+
+### **Core Features**
+- ✅ New hero text: "DealershipAI is the first system in your store that hates wasted time as much as you do."
+- ✅ AI Chat Demo Orb with rotating animations
+- ✅ Example prompt section
+- ✅ Vercel rootDirectory fixed (apps.web → .)
+- ✅ All animations working (repeat: -1 instead of Infinity)
+- ✅ Mapbox removed from landing page
+- ✅ Merge conflicts resolved
+- ✅ Changes deployed to production
+
+### **Technical Fixes**
+- ✅ Middleware 500 error fixed (Clerk only on dashboard domain)
+- ✅ Animation iterationCount errors fixed
+- ✅ Component imports verified
+- ✅ Build errors resolved
+
+---
+
+## 📋 **Immediate Next Steps**
+
+### **1. Monitor Deployment** (In Progress)
+```bash
+# Check deployment status
+npx vercel ls --prod
+
+# Monitor build logs
+npx vercel logs --follow
+```
+
+**Current Status:** 2 deployments building (should complete in 1-2 minutes)
+
+---
+
+### **2. Comprehensive Testing** (Priority: High)
+
+#### **A. Landing Page Functionality**
+- [ ] **Mobile Responsiveness**
+  - Test on iPhone (375px, 414px)
+  - Test on Android (360px, 412px)
+  - Test tablet (768px, 1024px)
+  - Verify navigation menu works
+  - Check hero text readability
+  - Verify AI Chat Demo Orb displays correctly
+
+- [ ] **Navigation Links**
+  - [ ] Product link (#product)
+  - [ ] Doctrine link (#doctrine)
+  - [ ] Dashboard link (/dashboard)
+  - [ ] Logo link (home)
+
+- [ ] **CTAs (Call-to-Actions)**
+  - [ ] "Launch the Cognitive Interface" button (signed out)
+  - [ ] "Launch the Cognitive Interface" button (signed in)
+  - [ ] Login button (modal)
+  - [ ] Get Started button (modal)
+
+- [ ] **Animations & Interactions**
+  - [ ] Hero section fade-in
+  - [ ] AI Chat Demo Orb rotation
+  - [ ] Orb pulsing animation
+  - [ ] Scroll-triggered animations
+  - [ ] Mobile menu toggle
+
+#### **B. Browser Compatibility**
+- [ ] Chrome/Edge (latest)
+- [ ] Safari (latest)
+- [ ] Firefox (latest)
+- [ ] Mobile Safari (iOS)
+- [ ] Chrome Mobile (Android)
+
+#### **C. Performance Testing**
+- [ ] Lighthouse score (target: 90+)
+- [ ] First Contentful Paint (target: < 1.5s)
+- [ ] Time to Interactive (target: < 3s)
+- [ ] Core Web Vitals
+
+---
+
+### **3. Fix Sentry CSP Configuration** (Priority: Medium)
+
+**Issue:** Sentry error tracking may be blocked by CSP
+
+**Current CSP (next.config.js):**
+```javascript
+connect-src: '... https://*.ingest.us.sentry.io https://*.ingest.sentry.io'
+```
+
+**Action Required:**
+1. Verify Sentry is configured in Vercel environment variables
+2. Test error tracking by triggering a test error
+3. Check browser console for CSP violations
+4. Update CSP if needed
+
+**Test:**
+```bash
+# Check if Sentry DSN is set
+npx vercel env ls
+
+# Test error tracking
+# Open browser console and check for Sentry initialization
+```
+
+---
+
+### **4. SEO & Analytics** (Priority: Medium)
+
+- [ ] **Verify SEO Components**
+  - [ ] JSON-LD structured data renders
+  - [ ] OpenGraph tags present
+  - [ ] Twitter cards present
+  - [ ] Meta descriptions present
+
+- [ ] **Analytics Setup**
+  - [ ] Google Analytics tracking
+  - [ ] Vercel Analytics
+  - [ ] PostHog (if configured)
+  - [ ] Event tracking for CTAs
+
+---
+
+### **5. Error Monitoring** (Priority: Low)
+
+- [ ] **Sentry Integration**
+  - [ ] Verify Sentry DSN in Vercel
+  - [ ] Test error capture
+  - [ ] Verify source maps uploaded
+  - [ ] Check error dashboard
+
+- [ ] **Console Errors**
+  - [ ] No JavaScript errors
+  - [ ] No CSP violations
+  - [ ] No network errors
+  - [ ] No hydration errors
+
+---
+
+## 🔧 **Optional Enhancements**
+
+### **A. Performance Optimizations**
+- [ ] Image optimization (Next.js Image component)
+- [ ] Code splitting for heavy components
+- [ ] Lazy loading for below-fold content
+- [ ] Font optimization (next/font)
+
+### **B. Accessibility**
+- [ ] ARIA labels for interactive elements
+- [ ] Keyboard navigation
+- [ ] Screen reader testing
+- [ ] Color contrast verification
+
+### **C. Content Updates**
+- [ ] Update footer stats (when real data available)
+- [ ] Add customer testimonials
+- [ ] Add case studies
+- [ ] Update brand logos
+
+---
+
+## 📊 **Testing Checklist**
+
+### **Desktop Testing**
+```
+[ ] Chrome - All features work
+[ ] Safari - All features work
+[ ] Firefox - All features work
+[ ] Edge - All features work
+```
+
+### **Mobile Testing**
+```
+[ ] iPhone Safari - Responsive, menu works
+[ ] Android Chrome - Responsive, menu works
+[ ] iPad - Tablet layout works
+```
+
+### **Feature Testing**
+```
+[ ] Hero section displays correctly
+[ ] AI Chat Demo Orb animates
+[ ] Navigation links work
+[ ] CTAs open modals/redirect
+[ ] Mobile menu toggles
+[ ] Scroll animations trigger
+[ ] Footer links work
+```
+
+---
+
+## 🚨 **Known Issues**
+
+1. **Sentry CSP** - May need additional domains in CSP
+2. **Console Warnings** - Some non-critical warnings may exist
+3. **Performance** - May need optimization for mobile
+
+---
+
+## 📝 **Quick Commands**
+
+```bash
+# Check deployment status
+npx vercel ls --prod
+
+# View build logs
+npx vercel logs --follow
+
+# Check environment variables
+npx vercel env ls
+
+# Run local dev server
+npm run dev
+
+# Run production build locally
+npm run build
+npm run start
+
+# Run linting
+npm run lint
+
+# Run type checking
+npm run type-check
+```
+
+---
+
+## 🎯 **Success Criteria**
+
+- ✅ Landing page loads in < 2 seconds
+- ✅ All CTAs functional
+- ✅ Mobile responsive (all breakpoints)
+- ✅ No console errors
+- ✅ Lighthouse score > 90
+- ✅ All navigation links work
+- ✅ Animations smooth (60fps)
+- ✅ SEO metadata present
+
+---
+
+**Next Action:** Wait for current deployments to complete, then run comprehensive testing checklist.

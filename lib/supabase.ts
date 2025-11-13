@@ -29,3 +29,14 @@ export function getSupabase() {
 export function isSupabaseConfigured(): boolean {
   return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
+
+/**
+ * Get Supabase admin client (alias for getSupabase)
+ * Used for backward compatibility with existing code
+ */
+export const getSbAdmin = getSupabase;
+
+/**
+ * Legacy export for backward compatibility
+ */
+export const sbAdmin = getSupabase();
