@@ -16,8 +16,9 @@ import { ThemeProvider } from '@/lib/theme'
 const ToasterWrapper = dynamic(
   () => import('sonner').then((mod) => {
     const Toaster = mod.Toaster;
-    return (props: any) => <Toaster position="top-right" richColors {...props} />;
-  }).catch(() => () => null)
+    const Component = (props: any) => <Toaster position="top-right" richColors {...props} />;
+    return { default: Component };
+  }).catch(() => ({ default: () => null }))
 )
 
 const inter = Inter({ 
