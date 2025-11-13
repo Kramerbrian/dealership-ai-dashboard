@@ -685,3 +685,63 @@ model OrchestratorState {
   @@index([autonomyEnabled])
   @@map("orchestrator_state")
 }
+
+// ==================== LEAD CAPTURE (PLG) ====================
+
+model TrustScanLead {
+  id              String   @id @default(cuid())
+
+  // Business details from form
+  businessName    String
+  location        String
+  email           String
+
+  // Trust score results (from 6-metric system)
+  trustScore      Float?
+  freshnessScore  Float?
+  identityScore   Float?
+  reviewScore     Float?
+  schemaScore     Float?
+  aiMentionScore  Float?
+  zeroClickScore  Float?
+
+  // Recommendations from scan
+  recommendations Json? // Array of recommendation strings
+
+  // Lead source tracking
+  source          String   @default("FreeScanWidget")
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  referrer        String?
+
+  // Lead status
+  status          LeadStatus @default(NEW)
+  isQualified     Boolean    @default(false)
+
+  // Follow-up tracking
+  emailSentAt     DateTime?
+  followUpCount   Int        @default(0)
+  lastContactedAt DateTime?
+  convertedAt     DateTime?
+  convertedToDealerId String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([email])
+  @@index([createdAt])
+  @@index([status])
+  @@index([isQualified])
+  @@map("trust_scan_leads")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  UNQUALIFIED
+  BOUNCED
+}
