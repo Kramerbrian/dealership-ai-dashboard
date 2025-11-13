@@ -8,7 +8,7 @@ export default function HomePage() {
           Every decision changes how AI sees your dealership.
         </h1>
         <p className="mt-3 text-sm text-white/60 max-w-xl">
-          See how you show up across Google, AI search, and generative answers before you even log in.
+          See how you show up across search, AI answers, and local visibility before you even log in.
         </p>
       </section>
 
