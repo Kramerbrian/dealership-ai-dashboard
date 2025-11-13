@@ -79,6 +79,15 @@ export const POST = createAdminRoute(traced(async (req: NextRequest) => {
       { status: 500 }
     );
   }
-}, 'admin.integrations.visibility.post');
+}, 'admin.integrations.visibility.post'), {
+  schema: z.object({
+    tenantId: z.string().optional(),
+    engines: z.record(z.boolean()).optional(),
+    thresholds: z.record(z.object({
+      warn: z.number(),
+      critical: z.number(),
+    })).optional(),
+  }),
+});
 
 
