@@ -181,6 +181,8 @@ async function dashboardMiddleware(req: NextRequest) {
     // Default: allow through (for routes that are neither explicitly public nor protected)
     return NextResponse.next();
   }, {
+    // CRITICAL: Set domain for Clerk cookies to match dashboard subdomain
+    domain: 'dash.dealershipai.com',
     // CRITICAL: Tell Clerk these routes should skip auth entirely
     // Use glob patterns (*) not regex (.*)
     publicRoutes: [
