@@ -1,25 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSbAdmin } from '@/lib/supabase';
-import { allow, rl_publicAPI } from '@/lib/ratelimit';
-import { requireAdmin } from '@/lib/authRoles';
+import { createAdminRoute } from '@/lib/api/enhanced-route';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 // Inserts a small, realistic set of telemetry + pulse demo rows
-export async function GET(req: NextRequest) {
-  // Check admin access
-  const adminCheck = await requireAdmin();
-  if (!adminCheck.ok) {
-    return NextResponse.json(
-      { ok: false, error: adminCheck.reason === 'not_signed_in' ? 'Authentication required' : 'Admin access required' },
-      { status: adminCheck.reason === 'not_signed_in' ? 401 : 403 }
-    );
-  }
-
-  const ip = req.headers.get('x-forwarded-for') || req.ip || 'seed';
-  const ok = await allow(rl_publicAPI, `admin:seed:${ip}`);
-  if (!ok.success) return NextResponse.json({ ok:false, rateLimited:true }, { status: 429 });
+export const GET = createAdminRoute(async (req: NextRequest) => {
 
   // Check for Supabase configuration
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;

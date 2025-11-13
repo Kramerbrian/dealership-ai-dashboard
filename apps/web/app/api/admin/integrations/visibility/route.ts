@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/auth';
+import { createAdminRoute } from '@/lib/api/enhanced-route';
 import { traced } from '@/lib/api-wrap';
 
 /**
  * GET /api/admin/integrations/visibility
  * Get visibility integration settings for tenant
  */
-export const GET = traced(async (req: NextRequest) => {
-  const gate = await requireAdmin();
-  if (!gate.ok) {
-    return NextResponse.json(
-      { error: gate.reason },
-      { status: gate.reason === 'unauthenticated' ? 401 : 403 }
-    );
-  }
+export const GET = createAdminRoute(traced(async (req: NextRequest) => {
 
   try {
     const url = new URL(req.url);

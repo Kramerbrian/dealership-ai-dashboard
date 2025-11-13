@@ -118,6 +118,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+
     const body = await req.json();
     const {
       dealerId,
