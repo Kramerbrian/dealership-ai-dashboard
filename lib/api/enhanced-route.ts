@@ -6,9 +6,16 @@ import * as Sentry from '@sentry/nextjs';
 import { z } from 'zod';
 
 // Initialize rate limiter (10 requests per 10 seconds per IP)
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL
+// Clean environment variables (trim whitespace)
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+
+const ratelimit = redisUrl && redisToken
   ? new Ratelimit({
-      redis: Redis.fromEnv(),
+      redis: new Redis({
+        url: redisUrl,
+        token: redisToken,
+      }),
       limiter: Ratelimit.slidingWindow(10, '10 s'),
       analytics: true,
       prefix: '@upstash/ratelimit',
