@@ -138,6 +138,7 @@ export class RealtimeFeed {
         event_data: alert,
         created_at: new Date().toISOString()
       }]);
+    }
 
     this.emit('alert', event);
   }
