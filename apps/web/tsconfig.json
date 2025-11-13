@@ -12,6 +12,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@/contexts/*": [
+        "../../contexts/*"
+      ],
+      "@/exports/*": [
+        "../../exports/*"
       ]
     },
     "strict": true,

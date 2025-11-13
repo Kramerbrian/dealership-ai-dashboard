@@ -459,11 +459,11 @@ export interface Database {
     Views: {;
       [_ in never]: never;
     };
-    Functions: {;
+    Functions: {
       [_ in never]: never;
     };
     };
-    Enums: {;
+    Enums: {
       [_ in never]: never;
     };
     };

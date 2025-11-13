@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { postSlack } from '@/src/lib/notify/slack';
+import { postSlack } from '@/lib/notify/slack';
 
 export const runtime = 'nodejs';
 

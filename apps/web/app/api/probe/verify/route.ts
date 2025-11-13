@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRoleAndTenant } from '@/src/lib/auth/roles';
+import { requireRoleAndTenant } from '@/lib/auth/roles';
 
 export const runtime = 'nodejs';
 

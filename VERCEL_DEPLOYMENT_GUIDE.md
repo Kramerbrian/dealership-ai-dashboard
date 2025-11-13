@@ -1,117 +1,154 @@
-# 🚀 Vercel Deployment Guide for DealershipAI v2.0
+# 🚀 Vercel Deployment Guide
 
-## Prerequisites
+## Quick Deployment Steps
 
-1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
-2. **GitHub Repository**: Push your code to GitHub
-3. **Environment Variables**: Set up the required environment variables
+### 1. **Automatic Deployment (Recommended)**
 
-## Step 1: Environment Variables
+Vercel automatically deploys when you push to GitHub:
 
-Go to Vercel Dashboard > Your Project > Settings > Environment Variables and add:
-
-### Required Variables
-```
-DATABASE_URL=postgresql://username:password@host:port/database
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-redis-token
-JWT_SECRET=your-super-secret-jwt-key-here
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_AI_API_KEY=AIza...
-```
-
-### Optional Variables
-```
-SERPER_API_KEY=your-serper-key
-SERPAPI_KEY=your-serpapi-key
-```
-
-## Step 2: Deploy to Vercel
-
-### Option A: Vercel CLI
 ```bash
-# Install Vercel CLI
+git add .
+git commit -m "Fix build errors and prepare for deployment"
+git push origin main
+```
+
+**Vercel will:**
+- Detect the push to `main` branch
+- Run build command from `vercel.json`: 
+  ```bash
+  cd apps/web && npm install --legacy-peer-deps && npx prisma generate && NEXT_TELEMETRY_DISABLED=1 next build
+  ```
+- Deploy to production automatically
+
+### 2. **Manual Deployment via Vercel CLI**
+
+If you prefer manual control:
+
+```bash
+# Install Vercel CLI (if not installed)
 npm i -g vercel
 
 # Login to Vercel
 vercel login
 
-# Deploy
+# Deploy to production
 vercel --prod
 ```
 
-### Option B: GitHub Integration
-1. Connect your GitHub repository to Vercel
-2. Vercel will automatically deploy on every push to main branch
+### 3. **Monitor Deployment**
 
-## Step 3: Configure Stripe
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Select your project: `dealership-ai-dashboard`
+3. Click on "Deployments" tab
+4. Watch the build progress in real-time
+5. Check build logs for any errors
 
-1. **Create Stripe Products**:
-   - FREE Plan: $0/month
-   - PRO Plan: $99/month (50 sessions)
-   - ENTERPRISE Plan: $299/month (200 sessions)
+### 4. **Verify Environment Variables**
 
-2. **Set up Webhooks**:
-   - Endpoint: `https://your-domain.vercel.app/api/stripe/webhook`
-   - Events: `checkout.session.completed`, `customer.subscription.updated`
+Before deployment, ensure these are set in Vercel:
 
-## Step 4: Test Deployment
+**Go to:** Project Settings → Environment Variables
 
-1. **Health Check**: Visit `https://your-domain.vercel.app/api/health`
-2. **Dashboard**: Visit `https://your-domain.vercel.app/dashboard`
-3. **API Test**: Test the analyze endpoint
+**Required Variables:**
+- `NEXT_PUBLIC_MAPBOX_KEY` - Mapbox API token
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key  
+- `CLERK_SECRET_KEY` - Clerk secret key
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
 
-## Step 5: Monitor Performance
+**Optional:**
+- `NEXT_PUBLIC_BASE_URL` - Base URL for API calls
+- `UPSTASH_REDIS_REST_URL` - Redis URL (if using)
+- `UPSTASH_REDIS_REST_TOKEN` - Redis token (if using)
 
-1. **Vercel Analytics**: Monitor performance in Vercel dashboard
-2. **Error Tracking**: Check function logs for any issues
-3. **Database**: Monitor Supabase usage and performance
+**Important:** Set these for **Production**, **Preview**, and **Development** environments.
+
+### 5. **Post-Deployment Verification**
+
+After successful deployment:
+
+**Landing Page:**
+- ✅ Visit `https://dealershipai.com/`
+- ✅ Verify domain input form appears
+- ✅ Test "Analyze my visibility" button
+- ✅ Check Mapbox map loads
+- ✅ Verify Clarity Stack panel displays
+
+**Dashboard (Requires Auth):**
+- ✅ Visit `https://dealershipai.com/dash`
+- ✅ Verify Clerk sign-in redirect works
+- ✅ After sign-in, check Pulse Overview displays
+- ✅ Test navigation:
+  - `/dash/onboarding`
+  - `/dash/autopilot`
+  - `/dash/insights/ai-story`
+
+**API Routes:**
+- ✅ Test `/api/clarity/stack?domain=example.com`
+- ✅ Test `/api/ai-story?tenant=example`
 
 ## Troubleshooting
 
-### Common Issues
+### Build Fails
 
-1. **Build Failures**:
-   - Check environment variables are set
-   - Ensure all dependencies are in `package.json`
-   - Check for TypeScript errors
+1. **Check Vercel Build Logs**
+   - Go to Deployment → Build Logs
+   - Look for error messages
+   - Common issues:
+     - Missing environment variables
+     - TypeScript errors
+     - Missing dependencies
 
-2. **Runtime Errors**:
-   - Verify database connection
-   - Check Redis connection
-   - Validate API keys
+2. **Test Build Locally**
+   ```bash
+   cd apps/web
+   npm install --legacy-peer-deps
+   npx prisma generate --schema=prisma/schema.prisma
+   NEXT_TELEMETRY_DISABLED=1 npm run build
+   ```
 
-3. **Performance Issues**:
-   - Enable Vercel Edge Functions
-   - Optimize database queries
-   - Use Redis caching effectively
+3. **Fix and Redeploy**
+   - Fix errors locally
+   - Commit and push
+   - Vercel will rebuild automatically
 
-## Production Checklist
+### Runtime Errors
 
-- [ ] All environment variables configured
-- [ ] Database migrations applied
-- [ ] Stripe products created
-- [ ] Webhooks configured
-- [ ] Domain configured (optional)
-- [ ] SSL certificate active
-- [ ] Performance monitoring enabled
-- [ ] Error tracking configured
+1. **Check Function Logs**
+   - Vercel Dashboard → Functions tab
+   - Look for runtime errors
 
-## Support
+2. **Verify Environment Variables**
+   - Ensure all required vars are set
+   - Check variable names match exactly
 
-For deployment issues:
-1. Check Vercel function logs
-2. Review environment variables
-3. Test API endpoints individually
-4. Check database connectivity
+3. **Check API Routes**
+   - Test endpoints directly
+   - Verify database connections
+   - Check external API keys
 
----
+## Current Status
 
-**DealershipAI v2.0** - World-class automotive intelligence platform 🚗💨
+✅ **Import paths fixed:**
+- `apps/web/app/(admin)/admin/driftguard/page.tsx` - Fixed DriftTrendSpark import
+- `apps/web/app/(dashboard)/layout.tsx` - Fixed BrandColorContext import
+- `apps/web/app/(deck)/inevitability/page.tsx` - Already using correct path
+- `apps/web/components/modals/SettingsModal.tsx` - Already using correct path
+
+✅ **Dependencies installed**
+✅ **npm audit fix completed** (0 vulnerabilities)
+
+## Next Steps
+
+1. **Commit and push:**
+   ```bash
+   git add .
+   git commit -m "Fix import paths for deployment"
+   git push origin main
+   ```
+
+2. **Monitor Vercel deployment** in dashboard
+
+3. **Verify deployment** after build completes
+
+**Estimated Time:** 5-10 minutes for deployment
