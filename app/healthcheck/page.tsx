@@ -178,4 +178,3 @@ export default async function HealthcheckPage() {
     </main>
   );
 }
-

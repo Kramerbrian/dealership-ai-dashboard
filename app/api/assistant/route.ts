@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { createPublicRoute } from '@/lib/api/enhanced-route';
+import { buildDAISystemPrompt, type dAIPersonaConfig, type dAIContext } from '@/lib/dai/persona';
 
 export const runtime = 'edge';
 
@@ -12,13 +13,25 @@ const anthropic = new Anthropic({
 // Validation schema
 const assistantSchema = z.object({
   message: z.string().min(1, 'Message is required'),
-  context: z.record(z.any()).optional(),
+  context: z.record(z.string(), z.any()).optional(),
   conversationHistory: z.array(
     z.object({
       role: z.enum(['user', 'assistant']),
       content: z.string(),
     })
   ).optional(),
+  // dAI persona configuration
+  personalityLevel: z.enum(['formal', 'dry-wit', 'full-dai']).optional(),
+  enableTruthBombs: z.boolean().optional(),
+  daiContext: z.object({
+    role: z.enum(['gm', 'dealer_principal', 'dp', 'marketing', 'marketing_director', 'internet', 'used_car_manager', 'sales_manager', 'general']).optional(),
+    market: z.string().optional(),
+    store_name: z.string().optional(),
+    domain: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    oem_brand: z.enum(['hyundai', 'ford', 'toyota', 'used', 'general']).optional(),
+  }).optional(),
 });
 
 /**
@@ -30,7 +43,14 @@ const assistantSchema = z.object({
 export const POST = createPublicRoute(
   async (req: NextRequest) => {
     const body = await req.json();
-    const { message, context, conversationHistory } = assistantSchema.parse(body);
+    const {
+      message,
+      context,
+      conversationHistory,
+      personalityLevel,
+      enableTruthBombs,
+      daiContext,
+    } = assistantSchema.parse(body);
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
@@ -58,20 +78,20 @@ export const POST = createPublicRoute(
       content: message,
     });
 
-    // System prompt for dealership context
-    const systemPrompt = `You are an AI assistant for DealershipAI, a platform that helps automotive dealerships optimize their AI visibility and digital presence.
+    // Build dAI persona configuration
+    const personaConfig: dAIPersonaConfig = {
+      personalityLevel: personalityLevel || 'dry-wit',
+      enableTruthBombs: enableTruthBombs !== undefined ? enableTruthBombs : true,
+      context: daiContext,
+    };
 
-You have access to the following context:
-${context ? JSON.stringify(context, null, 2) : 'No additional context provided'}
+    // Generate system prompt with dAI persona
+    let systemPrompt = buildDAISystemPrompt(personaConfig);
 
-Your role is to:
-1. Answer questions about dealership performance metrics
-2. Provide insights on AI visibility across ChatGPT, Claude, Perplexity, and Gemini
-3. Explain revenue impact calculations
-4. Suggest optimization strategies
-5. Help users understand their analytics dashboard
-
-Be concise, data-driven, and actionable in your responses.`;
+    // Append context data if provided
+    if (context && Object.keys(context).length > 0) {
+      systemPrompt += `\n\nYou have access to the following data context:\n${JSON.stringify(context, null, 2)}`;
+    }
 
     // Call Claude API
     const response = await anthropic.messages.create({
