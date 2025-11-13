@@ -1,269 +1,179 @@
-# Next Steps: Deployment & Verification
+# 🚀 Next Steps - Deployment & Verification
 
-## 🚨 Immediate Actions Required
+## ✅ Completed
 
-### 1. Resolve Git Merge Conflicts
+- ✅ Fixed import paths (DriftTrendSpark, BrandColorContext, design-tokens)
+- ✅ Added missing dependencies (@sendgrid/mail, cheerio, mapbox-gl)
+- ✅ Updated Next.js to 15.5.6 (security fixes)
+- ✅ All changes committed and pushed to GitHub
 
-**Status:** Merge conflicts detected in:
-- `supabase/config.toml`
-- `supabase/migrations/20241220000000_idempotency_keys.sql`
-- `supabase/migrations/20251107_integrations.sql`
-- `tailwind.config.js`
-- `tsconfig.json`
-- `tsconfig.tsbuildinfo`
-- `vercel.json`
+## 📋 Immediate Next Steps
 
-**Resolution Options:**
+### 1. **Monitor Vercel Deployment** (5-10 minutes)
 
-#### Option A: Accept Remote Changes (Recommended for config files)
+**Go to:** [Vercel Dashboard](https://vercel.com/dashboard)
+
+**What to check:**
+- ✅ New deployment triggered by latest commit (`8295b5240`)
+- ✅ Build progress in "Deployments" tab
+- ✅ Build logs for any errors
+- ✅ Deployment status (Success/Failed)
+
+**If build fails:**
+- Check build logs for specific errors
+- Fix issues locally
+- Commit and push again
+
+### 2. **Verify Environment Variables** (2 minutes)
+
+**Go to:** Vercel Dashboard → Project Settings → Environment Variables
+
+**Required Variables (must be set):**
+- ✅ `NEXT_PUBLIC_MAPBOX_KEY` - Mapbox API token
+- ✅ `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- ✅ `CLERK_SECRET_KEY` - Clerk secret key
+- ✅ `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- ✅ `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
+
+**Optional (recommended):**
+- `NEXT_PUBLIC_BASE_URL` - Base URL for API calls
+- `UPSTASH_REDIS_REST_URL` - Redis URL (if using)
+- `UPSTASH_REDIS_REST_TOKEN` - Redis token (if using)
+
+**Important:** Set for **Production**, **Preview**, and **Development** environments.
+
+### 3. **Test Landing Page** (5 minutes)
+
+After successful deployment, visit: `https://dealershipai.com/`
+
+**Checklist:**
+- [ ] Page loads without errors
+- [ ] Domain input form appears
+- [ ] "Analyze my visibility" button works
+- [ ] Mapbox map loads and animates
+- [ ] Clarity Stack panel displays scores
+- [ ] AI Intro Card shows current vs improved
+- [ ] "Unlock dashboard" button works
+
+**If issues:**
+- Check browser console for errors
+- Verify `NEXT_PUBLIC_MAPBOX_KEY` is set
+- Check network tab for API failures
+
+### 4. **Test Dashboard** (10 minutes)
+
+Visit: `https://dealershipai.com/dash`
+
+**Checklist:**
+- [ ] Clerk sign-in redirect works
+- [ ] After sign-in, Pulse Overview displays
+- [ ] Navigation works:
+  - [ ] `/dash/onboarding` - Onboarding flow
+  - [ ] `/dash/autopilot` - Autopilot panel
+  - [ ] `/dash/insights/ai-story` - AI Story page
+- [ ] Dashboard Shell navigation works
+- [ ] All components render correctly
+
+**If issues:**
+- Verify Clerk keys are set correctly
+- Check middleware configuration
+- Verify Supabase connection
+
+### 5. **Test API Routes** (5 minutes)
+
+**Test endpoints:**
 ```bash
-# Accept remote version for config files
-git checkout --theirs supabase/config.toml
-git checkout --theirs tailwind.config.js
-git checkout --theirs tsconfig.json
-git checkout --theirs vercel.json
+# Clarity Stack API
+curl https://dealershipai.com/api/clarity/stack?domain=example.com
 
-# Add resolved files
-git add supabase/config.toml tailwind.config.js tsconfig.json vercel.json
-
-# For migrations, review manually
-git checkout --theirs supabase/migrations/20241220000000_idempotency_keys.sql
-git checkout --theirs supabase/migrations/20251107_integrations.sql
-git add supabase/migrations/
-
-# Remove build artifacts
-rm tsconfig.tsbuildinfo
-git add tsconfig.tsbuildinfo
-
-# Complete merge
-git commit -m "Resolve merge conflicts: accept remote configs"
-git push origin main
+# AI Story API
+curl https://dealershipai.com/api/ai-story?tenant=example
 ```
 
-#### Option B: Manual Resolution
-```bash
-# Open each conflicted file and resolve manually
-code supabase/config.toml
-code tailwind.config.js
-code tsconfig.json
-code vercel.json
+**Checklist:**
+- [ ] `/api/clarity/stack` returns valid JSON
+- [ ] `/api/ai-story` returns valid JSON
+- [ ] No 500 errors
+- [ ] Response times are reasonable
 
-# After resolving each file:
-git add <resolved-file>
-git commit -m "Resolve merge conflicts"
-git push origin main
-```
+### 6. **Performance Check** (5 minutes)
 
-### 2. Deploy via Vercel Dashboard (Alternative)
+**Tools:**
+- [Google PageSpeed Insights](https://pagespeed.web.dev/)
+- [Vercel Analytics](https://vercel.com/analytics)
 
-If Git conflicts are complex, deploy directly via Vercel:
-
-1. **Go to:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
-2. **Click:** "Deployments" → "Create Deployment"
-3. **Select:** Latest commit or upload files
-4. **Monitor:** Build logs for completion
-
----
-
-## ✅ Post-Deployment Verification
-
-### Step 1: Health Check
-```bash
-curl https://dash.dealershipai.com/api/health
-```
-
-**Expected Response:**
-```json
-{
-  "status": "healthy",
-  "services": {
-    "database": "connected",
-    "redis": "connected",
-    "ai_providers": "available"
-  }
-}
-```
-
-### Step 2: Test Diagnostic Dashboard API
-
-**Note:** The `/api/diagnostics` endpoint requires authentication.
-
-```bash
-# Test with authentication (requires Clerk session)
-# Use browser DevTools → Network tab after logging in
-# Or use Postman/Insomnia with Clerk session token
-```
-
-**Manual Testing:**
-1. Visit: https://dash.dealershipai.com/dashboard
-2. Open DevTools (F12) → Network tab
-3. Look for `/api/diagnostics` request
-4. Verify response status: 200 OK
-
-### Step 3: Verify All Features
-
-#### ✅ Core Features Checklist
-- [ ] **Health Endpoint:** `/api/health` responds
-- [ ] **Dashboard Loads:** `/dashboard` accessible
-- [ ] **Diagnostic Dashboard:** Visible and functional
-- [ ] **Relevance Overlay:** Opens and displays data
-- [ ] **RI Simulator:** Scenarios load and run
-- [ ] **Trends Chart:** Historical data displays
-- [ ] **Fix Actions:** "Fix Now" buttons work
-- [ ] **Export:** Export button generates files
-- [ ] **Custom Scenarios:** Can create and save
-- [ ] **Templates:** Pre-built scenarios load
-
-#### ✅ API Endpoints Checklist
-- [ ] `/api/diagnostics` - Returns issues and scores
-- [ ] `/api/relevance/overlay` - Query relevance analysis
-- [ ] `/api/fix/action` - Triggers automation workflows
-- [ ] `/api/analytics/trends` - Historical trends and predictions
-- [ ] `/api/relevance/scenarios` - Custom scenarios CRUD
-- [ ] `/api/scenarios/templates` - Pre-built templates
-- [ ] `/api/export/data` - Data export (JSON/CSV)
-
-### Step 4: Test Automation Workflows
-
-1. **Schema Fix:**
-   - Click "Fix Now" on a schema issue
-   - Verify workflow starts
-   - Check for notification (if configured)
-
-2. **Review Fix:**
-   - Click "Fix Now" on a review issue
-   - Verify automation triggers
-
-3. **Content Fix:**
-   - Click "Fix Now" on a content issue
-   - Verify workflow completion
-
----
-
-## 🔍 Troubleshooting
-
-### Issue: API Returns 404
-
-**Cause:** Route not deployed or requires authentication
-
-**Solution:**
-1. Verify route exists: `app/api/diagnostics/route.ts`
-2. Check authentication: Endpoint requires Clerk session
-3. Test with authenticated request
-
-### Issue: Database Connection Fails
-
-**Solution:**
-1. Verify environment variables in Vercel:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_KEY`
-   - `DATABASE_URL`
-2. Check Supabase dashboard for connection status
-3. Verify IP allowlist includes Vercel IPs
-
-### Issue: Redis Connection Fails
-
-**Solution:**
-1. Verify environment variables:
-   - `UPSTASH_REDIS_REST_URL` (no whitespace)
-   - `UPSTASH_REDIS_REST_TOKEN` (no whitespace)
-2. Check Upstash dashboard
-3. Test connection: `curl $UPSTASH_REDIS_REST_URL/ping`
-
-### Issue: Build Fails
-
-**Solution:**
-1. Check Vercel build logs
-2. Verify all dependencies in `package.json`
-3. Check for TypeScript errors: `npm run type-check`
-4. Verify Prisma schema: `npx prisma generate`
-
----
-
-## 📊 Monitoring Setup
-
-### 1. Vercel Analytics
-- **Status:** Enabled
-- **Dashboard:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/analytics
-
-### 2. Error Tracking
-- **Recommended:** Set up Sentry
-- **Steps:**
-  1. Create Sentry project
-  2. Add `SENTRY_DSN` to Vercel env vars
-  3. Install: `npm install @sentry/nextjs`
-  4. Configure: `sentry.client.config.ts`
-
-### 3. Performance Monitoring
-- **Vercel Speed Insights:** Already enabled
-- **Core Web Vitals:** Track in Vercel dashboard
-
----
-
-## 🎯 Production Readiness Checklist
-
-### Pre-Launch
-- [x] All features implemented
-- [x] Database connections verified
-- [x] API endpoints tested
-- [x] Error handling in place
-- [ ] Merge conflicts resolved
-- [ ] Git push successful
-- [ ] Deployment completed
-
-### Post-Launch
-- [ ] Health endpoint verified
-- [ ] Dashboard accessible
-- [ ] All features functional
+**Checklist:**
+- [ ] Page load time < 3 seconds
+- [ ] Core Web Vitals are good
 - [ ] No console errors
-- [ ] Performance metrics acceptable
-- [ ] Error tracking configured
+- [ ] Images load correctly
 
----
+## 🔧 If Build Fails
 
-## 📝 Quick Reference
+### Common Issues & Fixes
 
-### Deployment URLs
-- **Production:** https://dash.dealershipai.com
-- **Health:** https://dash.dealershipai.com/api/health
-- **Dashboard:** https://dash.dealershipai.com/dashboard
-- **Vercel:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
-
-### Key Commands
+**1. Missing Dependencies**
 ```bash
-# Resolve conflicts and deploy
-git checkout --theirs <file>
-git add <file>
-git commit -m "Resolve conflicts"
+# Add to apps/web/package.json
+npm install <package-name> --save
+git add apps/web/package.json
+git commit -m "Add missing dependency"
 git push origin main
-
-# Test health
-curl https://dash.dealershipai.com/api/health
-
-# Check deployment status
-npx vercel ls
-
-# View logs
-npx vercel logs --follow
 ```
 
-### Support Resources
-- **Documentation:** `DEPLOYMENT_READY.md`
-- **Checklist:** `DEPLOYMENT_CHECKLIST.md`
-- **Test Script:** `scripts/test-diagnostic-dashboard.sh`
+**2. Environment Variables Missing**
+- Go to Vercel Dashboard → Environment Variables
+- Add missing variables
+- Redeploy
+
+**3. TypeScript Errors**
+- Check build logs for specific errors
+- Fix type issues
+- Commit and push
+
+**4. Import Path Errors**
+- Verify file paths match tsconfig.json
+- Check `@/*` path mappings
+- Update imports if needed
+
+## 📊 Post-Deployment Monitoring
+
+### Week 1 Checklist
+
+- [ ] Monitor error rates in Vercel logs
+- [ ] Check Google Analytics for traffic
+- [ ] Verify Clerk authentication works
+- [ ] Test all user flows
+- [ ] Monitor API response times
+- [ ] Check for any runtime errors
+
+### Ongoing Maintenance
+
+- [ ] Weekly dependency updates
+- [ ] Monthly security audits
+- [ ] Monitor performance metrics
+- [ ] Review error logs
+- [ ] Update documentation
+
+## 🎯 Success Criteria
+
+**Deployment is successful when:**
+- ✅ Build completes without errors
+- ✅ Landing page loads and functions correctly
+- ✅ Dashboard authentication works
+- ✅ All API routes respond correctly
+- ✅ No critical errors in logs
+- ✅ Performance metrics are acceptable
+
+## 📞 Support Resources
+
+- **Vercel Docs:** https://vercel.com/docs
+- **Next.js Docs:** https://nextjs.org/docs
+- **Clerk Docs:** https://clerk.com/docs
+- **Mapbox Docs:** https://docs.mapbox.com/
 
 ---
 
-## 🚀 Next Actions
-
-1. **Immediate:** Resolve Git merge conflicts
-2. **Today:** Complete deployment and verify health
-3. **This Week:** Set up monitoring and error tracking
-4. **Ongoing:** Monitor performance and user feedback
-
----
-
-**Status:** Ready to deploy after resolving merge conflicts.
-
-**Priority:** High - Resolve conflicts and deploy to production.
-
+**Current Status:** Ready for deployment verification
+**Estimated Time:** 30-45 minutes for full verification
+**Priority:** High - Verify deployment works before announcing
