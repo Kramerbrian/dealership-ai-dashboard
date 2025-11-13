@@ -98,7 +98,20 @@ export default function CinematicLandingPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  // Don't return null - causes hydration mismatch
+  // Instead, render a minimal version that matches server/client
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500 mx-auto mb-4 animate-pulse" />
+            <span className="font-semibold text-lg">DealershipAI</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
