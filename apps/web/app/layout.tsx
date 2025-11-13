@@ -2,24 +2,10 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
-import dynamic from 'next/dynamic'
 import { ClerkProviderWrapper } from '@/components/providers/ClerkProviderWrapper'
 import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
 import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
-// ErrorBoundary imported dynamically to avoid circular dependencies
-const ErrorBoundary = dynamic(
-  () => import('@/components/ErrorBoundary').then(mod => ({ default: mod.ErrorBoundary }))
-)
 import { ThemeProvider } from '@/lib/theme'
-
-// Dynamic import for Toaster to avoid webpack issues
-const ToasterWrapper = dynamic(
-  () => import('sonner').then((mod) => {
-    const Toaster = mod.Toaster;
-    const Component = (props: any) => <Toaster position="top-right" richColors {...props} />;
-    return { default: Component };
-  }).catch(() => ({ default: () => null }))
-)
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -106,19 +92,16 @@ export default function RootLayout({
         )}
       </head>
       <body className={inter.className}>
-        <ErrorBoundary>
-          <ClerkProviderWrapper>
-            <ThemeProvider>
-              <MonitoringProvider>
-                <AccessibilityProvider>
-                  {children}
-                  <Analytics />
-                  <ToasterWrapper />
-                </AccessibilityProvider>
-              </MonitoringProvider>
-            </ThemeProvider>
-          </ClerkProviderWrapper>
-        </ErrorBoundary>
+        <ClerkProviderWrapper>
+          <ThemeProvider>
+            <MonitoringProvider>
+              <AccessibilityProvider>
+                {children}
+                <Analytics />
+              </AccessibilityProvider>
+            </MonitoringProvider>
+          </ThemeProvider>
+        </ClerkProviderWrapper>
       </body>
     </html>
   )
