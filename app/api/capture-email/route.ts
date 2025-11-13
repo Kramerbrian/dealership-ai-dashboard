@@ -2,29 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
 import { redact } from '@/lib/security/redact';
 import { logger } from '@/lib/logger';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
+import { z } from 'zod';
 
 export const runtime = 'nodejs';
 
-export async function POST(req: NextRequest) {
+const CaptureEmailSchema = z.object({
+  dealer: z.string().min(1, 'Dealer is required'),
+  email: z.string().email('Invalid email format'),
+  scanResults: z.any().optional(),
+  utm: z.object({
+    source: z.string().optional(),
+    medium: z.string().optional(),
+    campaign: z.string().optional(),
+  }).optional(),
+});
+
+export const POST = createPublicRoute(async (req: NextRequest) => {
   try {
     const body = await req.json();
-    const { dealer, email, scanResults, utm } = body;
-
-    if (!email || !dealer) {
-      return NextResponse.json(
-        { error: 'Email and dealer are required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
+    const { dealer, email, scanResults, utm } = CaptureEmailSchema.parse(body);
 
     // Store in Redis with redacted PII
     const key = `plg:email:${Date.now()}`;
@@ -70,4 +67,6 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, {
+  schema: CaptureEmailSchema,
+});

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -8,7 +9,7 @@ export const runtime = 'nodejs';
  * 
  * Versioned health check endpoint for production monitoring
  */
-export async function GET() {
+export const GET = createPublicRoute(async () => {
   return NextResponse.json(
     {
       status: 'healthy',
@@ -28,5 +29,5 @@ export async function GET() {
       },
     }
   );
-}
+}););
 

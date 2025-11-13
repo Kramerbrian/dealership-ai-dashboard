@@ -34,26 +34,19 @@ export default async function DashPage({ searchParams }: { searchParams?: { doma
   return (
     <DashboardShell>
       <PulseOverview
-        data={{
-          scores: data.scores,
-          gbp: data.gbp,
-          ugc: {
-            score: data.ugc?.score || 0,
-            velocity: data.ugc?.velocity,
-            response_rate: data.ugc?.response_rate,
-            issues: data.ugc?.issues,
-          },
-          schema: {
-            coverage: data.schema?.coverage || 0,
-            issues: data.schema?.issues,
-          },
-          competitive: data.competitive,
-          revenue_at_risk: data.revenue_at_risk,
-          ai_intro_current: data.ai_intro_current,
-          ai_intro_improved: data.ai_intro_improved,
-          confidence: data.confidence,
+        domain={data.domain}
+        scores={data.scores}
+        gbp={data.gbp}
+        ugc={{
+          score: data.ugc.score,
+          recent_reviews_90d: data.ugc.recent_reviews_90d
         }}
-        domain={domain}
+        schema={{ score: data.schema.score }}
+        competitive={{
+          rank: data.competitive.rank,
+          total: data.competitive.total
+        }}
+        revenueMonthly={data.revenue_at_risk.monthly}
       />
     </DashboardShell>
   );

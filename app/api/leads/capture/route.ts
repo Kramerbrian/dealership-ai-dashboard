@@ -1,30 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
+import { z } from 'zod';
+import { getSupabaseClient } from '@/lib/db/pool';
+import { emailService } from '@/lib/services/email';
 
 export const dynamic = 'force-dynamic';
 
-interface LeadData {
-  dealerUrl: string;
-  email?: string;
-  name?: string;
-  phone?: string;
-  company?: string;
-  source: string;
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-}
+const LeadCaptureSchema = z.object({
+  dealerUrl: z.string().url('Valid dealer URL is required'),
+  email: z.string().email().optional(),
+  name: z.string().optional(),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  source: z.string().default('landing_page'),
+  utm_source: z.string().optional(),
+  utm_medium: z.string().optional(),
+  utm_campaign: z.string().optional(),
+});
 
-export async function POST(req: NextRequest) {
+export const POST = createPublicRoute(async (req: NextRequest) => {
   try {
     const body = await req.json();
-    const { dealerUrl, email, name, phone, company, source, utm_source, utm_medium, utm_campaign } = body;
-
-    if (!dealerUrl) {
-      return NextResponse.json(
-        { error: 'Dealer URL is required' },
-        { status: 400 }
-      );
-    }
+    const validated = LeadCaptureSchema.parse(body);
+    const { dealerUrl, email, name, phone, company, source, utm_source, utm_medium, utm_campaign } = validated;
 
     // Extract IP and user agent for tracking
     const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
@@ -45,17 +43,46 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
     };
 
-    // TODO: Save to database
-    // await saveLead(leadData);
+    // Save to database
+    try {
+      const supabase = getSupabaseClient();
+      const { error: dbError } = await supabase.from('leads').insert({
+        dealer_url: dealerUrl,
+        email,
+        name,
+        phone,
+        company,
+        source,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        created_at: new Date().toISOString(),
+      });
 
-    // TODO: Send to CRM (HubSpot, Salesforce, etc.)
-    // await sendToHubSpot(leadData);
+      if (dbError) {
+        console.error('Failed to save lead to database:', dbError);
+      }
+    } catch (dbError: any) {
+      console.error('Database error:', dbError);
+    }
 
-    // TODO: Send email notification
-    // await sendLeadNotification(leadData);
+    // Send to HubSpot
+    try {
+      await sendToHubSpot(leadData);
+    } catch (hubspotError: any) {
+      console.error('HubSpot error:', hubspotError);
+    }
 
-    // Log for now
-    console.log('Lead captured:', leadData);
+    // Send email notification
+    if (email) {
+      try {
+        await emailService.sendWelcomeEmail(email, dealerName || company || dealerUrl);
+      } catch (emailError: any) {
+        console.error('Email error:', emailError);
+      }
+    }
 
     // Return success with lead ID
     const leadId = `lead_${Date.now()}`;
@@ -73,7 +100,9 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, {
+  schema: LeadCaptureSchema,
+});
 
 // HubSpot integration
 async function sendToHubSpot(leadData: any) {

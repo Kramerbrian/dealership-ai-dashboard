@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
 
 /**
  * GET /api/ai/health
  * Returns AI platform health and visibility metrics
  * TODO: Wire to real AI visibility testing endpoints (RankEmbed, Perplexity, ChatGPT, Claude APIs)
  */
-export async function GET(req: NextRequest) {
+export const GET = createPublicRoute(async (req: NextRequest) => {
   // Extract dealerId from query params if provided
   const dealerId = req.nextUrl.searchParams.get('dealerId') || 'default';
 
@@ -52,4 +53,4 @@ export async function GET(req: NextRequest) {
     },
     dealerId,
   });
-}
+});

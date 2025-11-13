@@ -67,4 +67,3 @@ export function DashboardShell({ children }: Props) {
     </div>
   );
 }
-

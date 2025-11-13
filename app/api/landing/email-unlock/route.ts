@@ -1,19 +1,21 @@
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
+import { z } from 'zod';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
-  try {
-    const { email, dealerName, revenueAtRisk } = await request.json();
+const EmailUnlockSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  dealerName: z.string().optional(),
+  revenueAtRisk: z.number().optional(),
+});
 
-    if (!email || !email.includes('@')) {
-      return NextResponse.json(
-        { error: 'Valid email is required' },
-        { status: 400 }
-      );
-    }
+export const POST = createPublicRoute(async (request: Request) => {
+  try {
+    const body = await request.json();
+    const { email, dealerName, revenueAtRisk } = EmailUnlockSchema.parse(body);
 
     // Track email capture
     const redisClient = redis();
@@ -40,19 +42,13 @@ export async function POST(request: Request) {
       await redisClient.sadd('landing:unique_emails', email.toLowerCase());
     }
 
-    // TODO: Integrate with email service provider (SendGrid, Resend, etc.)
-    // For now, just log the capture
-    console.log(`Email captured: ${email} - ${dealerName || 'Unknown'}`);
-
-    // In production, you'd send the email here:
-    /*
-    await sendEmailReport({
-      to: email,
-      dealerName,
-      revenueAtRisk,
-      templateId: 'ai-visibility-report',
-    });
-    */
+    // Send email report via email service
+    try {
+      const { emailService } = await import('@/lib/services/email');
+      await emailService.sendUnlockEmail(email, 'AI Visibility Report');
+    } catch (emailError: any) {
+      console.warn('Failed to send unlock email:', emailError.message);
+    }
 
     return NextResponse.json({
       success: true,
@@ -65,10 +61,12 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {
+  schema: EmailUnlockSchema,
+});
 
 // Get email capture stats
-export async function GET() {
+export const GET = createPublicRoute(async () => {
   try {
     const redisClient = redis();
 
@@ -101,4 +99,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});
