@@ -5,11 +5,12 @@
 
 export const MAPBOX_STYLES = {
   /**
-   * Inception Dark - Cinematic night mode
-   * Deep blacks, midnight blues, dramatic 3D perspective
+   * Tenet Inversion - Dramatic cinematic dark mode
+   * Deep blacks, vibrant cyan→purple water, glowing pink→cyan roads
+   * Bearing: 180° (inverted perspective for landing impact)
    * Use for: Landing page, hero sections, Pulse dashboard
    */
-  dark: 'mapbox://styles/briankramer/cmhwt6m5n006b01s1c6z9858y',
+  dark: 'mapbox://styles/briankramer/cmhxierfu007h01s1do9wgsri',
 
   /**
    * Inception Daydream - Cinematic light mode

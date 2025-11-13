@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { DealerFlyInMap } from './DealerFlyInMap';
 import { ClarityStackPanel } from './ClarityStackPanel';
 import { AIIntroCard } from './AIIntroCard';
+import { MapStyleToggle } from './MapStyleToggle';
+import { MAPBOX_STYLES } from '@/lib/config/mapbox-styles';
 
 type Scores = { seo: number; aeo: number; geo: number; avi: number };
 type Revenue = { monthly: number; annual: number };
@@ -18,6 +20,7 @@ export function LandingAnalyzer() {
   const [location, setLocation] = useState<Location | null>(null);
   const [introCurrent, setIntroCurrent] = useState<string | null>(null);
   const [introImproved, setIntroImproved] = useState<string | null>(null);
+  const [mapMode, setMapMode] = useState<'night' | 'day'>('night');
   const router = useRouter();
 
   async function handleAnalyze(e: React.FormEvent) {
@@ -81,18 +84,30 @@ export function LandingAnalyzer() {
       {scores && revenue && (
         <>
           <div className="mt-10 grid gap-6 md:grid-cols-2 items-start">
-            {location ? (
-              <div>
-                <div className="mb-2 text-xs text-white/50">
-                  Found your dealership near {location.city}, {location.state}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <div className="text-xs text-white/50">
+                  {location
+                    ? <>Found your dealership near {location.city}, {location.state}</>
+                    : <>We&apos;ll locate your dealership on the map.</>}
                 </div>
-                <DealerFlyInMap lat={location.lat} lng={location.lng} />
+                <MapStyleToggle mode={mapMode} onToggle={setMapMode} />
               </div>
-            ) : (
-              <div className="rounded-3xl border border-white/10 bg-white/[0.02] h-[320px] flex items-center justify-center text-white/40 text-sm">
-                Map preview will appear here when we detect your location.
-              </div>
-            )}
+
+              {location ? (
+                <DealerFlyInMap
+                  lat={location.lat}
+                  lng={location.lng}
+                  mode={mapMode}
+                  nightStyleUrl={MAPBOX_STYLES.dark}
+                  dayStyleUrl={MAPBOX_STYLES.light}
+                />
+              ) : (
+                <div className="rounded-3xl border border-white/10 bg-white/[0.02] h-[320px] flex items-center justify-center text-white/40 text-sm">
+                  Map preview will appear here when we detect your location.
+                </div>
+              )}
+            </div>
 
             <ClarityStackPanel
               domain={domain.trim()}
