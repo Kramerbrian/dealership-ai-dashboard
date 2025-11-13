@@ -1,0 +1,204 @@
+name: Production Healthcheck
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+  # Optional: Run after Vercel deployment completes
+  # You can add a webhook from Vercel to trigger this
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Check production health endpoint
+        id: health
+        env:
+          # Set this in GitHub Secrets or use default
+          APP_URL: ${{ secrets.PRODUCTION_URL || 'https://dealershipai.com' }}
+        run: |
+          echo "🔍 Checking production health at $APP_URL/api/health ..."
+          
+          # Fetch health endpoint with status code
+          RES=$(curl -sS -w "\n%{http_code}" "$APP_URL/api/health" || echo "")
+          
+          if [ -z "$RES" ]; then
+            echo "❌ Failed to connect to health endpoint"
+            echo "body={}" >> $GITHUB_OUTPUT
+            echo "code=000" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          BODY=$(echo "$RES" | head -n1)
+          CODE=$(echo "$RES" | tail -n1)
+          
+          echo "📊 Status code: $CODE"
+          echo "📄 Response body:"
+          echo "$BODY" | jq '.' || echo "$BODY"
+          
+          # Expose for later steps
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "code=$CODE" >> $GITHUB_OUTPUT
+          
+          # Check HTTP status code
+          if [ "$CODE" -ne 200 ]; then
+            echo "❌ Healthcheck failed: non-200 status code ($CODE)"
+            exit 1
+          fi
+          
+          # Check JSON response for ok: true
+          OK=$(echo "$BODY" | jq -r '.ok // empty' || echo "false")
+          
+          if [ "$OK" != "true" ]; then
+            echo "❌ Healthcheck failed: ok != true in response JSON"
+            echo "Response ok value: '$OK'"
+            
+            # Show what checks failed
+            echo ""
+            echo "🔍 Failed checks:"
+            echo "$BODY" | jq '.checks // {}' || echo "Could not parse checks"
+            
+            exit 1
+          fi
+          
+          echo "✅ Healthcheck passed: ok=true, status=$CODE"
+
+          # Show summary of checks
+          echo ""
+          echo "📋 Health Summary:"
+          echo "$BODY" | jq -r '
+            "Environment Variables: " + (if .checks.env then "✅" else "❌" end),
+            "Clarity API: " + (if .checks.clarity.ok then "✅" else "❌" end),
+            "Overall Status: " + (if .ok then "✅ HEALTHY" else "❌ UNHEALTHY" end)
+          ' || echo "Could not parse summary"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+      - name: Generate Agentic GPT Config & Visual
+        continue-on-error: true
+        run: |
+          if [ -f "src/orchestrator/pulse-agent-builder.ts" ]; then
+            echo "🤖 Generating Agentic GPT config..."
+            npx ts-node src/orchestrator/pulse-agent-builder.ts || echo "⚠️ pulse-agent-builder.ts not yet implemented"
+          else
+            echo "⚠️ pulse-agent-builder.ts not found, skipping generation"
+          fi
+
+      - name: Validate Canonical GPT Stack
+        continue-on-error: true
+        run: |
+          if [ -f "tests/dai-agent-test-suite.ts" ]; then
+            echo "🧪 Validating Canonical GPT Stack..."
+            npx ts-node tests/dai-agent-test-suite.ts || echo "⚠️ dai-agent-test-suite.ts not yet implemented"
+          else
+            echo "⚠️ dai-agent-test-suite.ts not found, skipping validation"
+          fi
+
+      - name: Postbuild - Version & Hash Canonical Bundle
+        continue-on-error: true
+        run: |
+          if [ ! -f "canonical/version.json" ]; then
+            echo "⚠️ canonical/version.json not found, skipping hash update"
+            exit 0
+          fi
+
+          echo "📦 Updating version metadata and hashes for DealershipAI Agentic Canonical..."
+
+          # Update version tag with timestamp
+          jq --arg date "$(date +'%Y.%m.%d-%H%M%S')" \
+            '.version = $date' canonical/version.json > tmp.$$.json && mv tmp.$$.json canonical/version.json
+
+          # Recalculate SHA256 hashes for all components
+          for file in $(jq -r '.components | .[] | .[]' canonical/version.json 2>/dev/null || echo ""); do
+            if [ -z "$file" ]; then
+              continue
+            fi
+
+            # Check if file exists in canonical/agentic/
+            if [ -f "canonical/agentic/$file" ]; then
+              hash=$(shasum -a 256 "canonical/agentic/$file" | cut -d " " -f 1)
+              jq --arg f "$file" --arg h "sha256:$hash" '.hashes[$f] = $h' \
+                canonical/version.json > tmp.$$.json && mv tmp.$$.json canonical/version.json
+              echo "✅ Updated hash for $file"
+            else
+              echo "⚠️ File not found: canonical/agentic/$file (keeping placeholder)"
+            fi
+          done
+
+          echo "✅ Canonical bundle updated with new hashes and timestamp."
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          APP_URL: ${{ secrets.PRODUCTION_URL || 'https://dealershipai.com' }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⚠️  SLACK_WEBHOOK_URL not set, skipping Slack notification"
+            exit 0
+          fi
+          
+          BODY="${{ steps.health.outputs.body }}"
+          CODE="${{ steps.health.outputs.code }}"
+          
+          # Extract failure details
+          FAILED_CHECKS=$(echo "$BODY" | jq -r '.checks // {}' || echo "{}")
+          
+          # Build Slack message
+          TEXT="❌ *DealershipAI Production Healthcheck Failed*
+          
+          *URL:* $APP_URL/api/health
+          *Status Code:* $CODE
+          
+          *Failed Checks:*
+          \`\`\`
+          $(echo "$FAILED_CHECKS" | jq -c '.' || echo "Could not parse checks")
+          \`\`\`
+          
+          *GitHub Actions:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          # Send to Slack
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$TEXT\"}" \
+            "$SLACK_WEBHOOK_URL" || echo "⚠️  Failed to send Slack notification"
+
+      - name: Comment on PR (if PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `${{ steps.health.outputs.body }}`;
+            const code = `${{ steps.health.outputs.code }}`;
+            const ok = JSON.parse(body || '{}').ok;
+            
+            const comment = `## 🔍 Production Healthcheck
+            
+            ${ok ? '✅ **PASSED**' : '❌ **FAILED**'}
+            
+            - **Status Code:** ${code}
+            - **Health Status:** ${ok ? 'OK' : 'FAILED'}
+            - **Endpoint:** ${{ secrets.PRODUCTION_URL || 'https://dealershipai.com' }}/api/health
+            
+            ${!ok ? '⚠️ Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.' : ''}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+

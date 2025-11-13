@@ -1,0 +1,36 @@
+{
+  "bundle": "DealershipAI Agentic Canonical",
+  "version": "2025.11.13",
+  "author": "Kramer",
+  "components": {
+    "configs": [
+      "dai-agent-canonical.json",
+      "dai-orchestrator-agentic-commerce.json"
+    ],
+    "runtime": [
+      "dai-agent-runtime.ts",
+      "funnel-visual.ts",
+      "pulse-agent-builder.ts"
+    ],
+    "types": ["dai-agent.d.ts"],
+    "testing": [
+      "dai-agent-test-suite.ts",
+      "dai-agent-ci-report.ts",
+      "dai-agent-ci.yml"
+    ]
+  },
+  "hashes": {
+    "dai-agent-canonical.json": "sha256:<autofill-after-first-commit>",
+    "dai-orchestrator-agentic-commerce.json": "sha256:<autofill-after-first-commit>",
+    "dai-agent-runtime.ts": "sha256:<autofill-after-first-commit>",
+    "funnel-visual.ts": "sha256:<autofill-after-first-commit>",
+    "pulse-agent-builder.ts": "sha256:<autofill-after-first-commit>",
+    "dai-agent-test-suite.ts": "sha256:<autofill-after-first-commit>",
+    "dai-agent-ci-report.ts": "sha256:<autofill-after-first-commit>"
+  },
+  "notes": [
+    "Canonical baseline of DealershipAI dAI Agent + Agentic Commerce Intelligence stack.",
+    "Includes runtime, wit logic, headline intelligence, visualization, and CI validation.",
+    "Use pulse-agent-builder.ts to generate and version future Agentic GPT configs."
+  ]
+}
