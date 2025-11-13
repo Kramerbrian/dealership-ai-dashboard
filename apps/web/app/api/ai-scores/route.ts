@@ -11,7 +11,7 @@ import { cacheGet, cacheSet } from '@/lib/redis';
 import { validateUrl } from '@/lib/security/url-validation';
 import { rateLimit, getClientIP } from '@/lib/security/rate-limit';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 const FLEET_API_BASE = process.env.FLEET_API_BASE || process.env.NEXT_PUBLIC_FLEET_API_BASE || 'https://api.gpt.dealershipai.com';
 const X_API_KEY = process.env.X_API_KEY || '';

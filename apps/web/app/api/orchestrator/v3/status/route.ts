@@ -9,7 +9,7 @@ import { NextResponse } from 'next/server';
 // In production, use Redis or DB to share state between instances
 let orchestratorState: any = null;
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 /**
  * GET /api/orchestrator/v3/status

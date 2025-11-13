@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 type Scores = { seo: number; aeo: number; geo: number; avi: number };
 

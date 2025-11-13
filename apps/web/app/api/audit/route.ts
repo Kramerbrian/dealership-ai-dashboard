@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { trackAuditComplete } from '@/lib/analytics';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 export interface AuditRequest {
   url: string;

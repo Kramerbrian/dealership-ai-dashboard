@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callOrchestrator } from '@/lib/orchestrator/gpt-bridge';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {

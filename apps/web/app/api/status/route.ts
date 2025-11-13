@@ -6,7 +6,7 @@
 import { NextResponse } from 'next/server';
 import { createPublicRoute } from '@/lib/api/enhanced-route';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 export const GET = createPublicRoute(async () => {
   return NextResponse.json({

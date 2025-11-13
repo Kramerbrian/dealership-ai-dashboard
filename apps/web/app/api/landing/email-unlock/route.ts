@@ -3,7 +3,7 @@ import { redis } from '@/lib/redis';
 import { createPublicRoute } from '@/lib/api/enhanced-route';
 import { z } from 'zod';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 const EmailUnlockSchema = z.object({

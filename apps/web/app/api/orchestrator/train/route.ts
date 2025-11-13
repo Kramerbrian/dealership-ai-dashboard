@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 // TODO: Implement reinforce module
 // For now, use simple stubs

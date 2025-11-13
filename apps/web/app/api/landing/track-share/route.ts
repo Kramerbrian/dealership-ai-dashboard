@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
