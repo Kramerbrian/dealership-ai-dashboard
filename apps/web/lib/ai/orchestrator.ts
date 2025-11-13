@@ -309,11 +309,6 @@ Provide:
  * Internal AI task execution (avoids recursion for deployment tasks)
  */
 async function executeAITaskInternal(task: AITask): Promise<AIResponse> {
-
-/**
- * Internal AI task execution (avoids recursion for deployment tasks)
- */
-async function executeAITaskInternal(task: AITask): Promise<AIResponse> {
   const startTime = Date.now();
   const route = routeTask(task);
 

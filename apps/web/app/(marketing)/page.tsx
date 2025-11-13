@@ -1,13 +1,20 @@
 "use client";
 
+import dynamicImport from "next/dynamic";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
+
+// Dynamic imports to avoid SSR issues
+const FOMOTimer = dynamicImport(() => import("@/components/plg/FOMOTimer"), { ssr: false });
+const ProgressiveBlur = dynamicImport(() => import("@/components/plg/ProgressiveBlur"), { ssr: false });
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import LetterFadeText from "@/components/LetterFadeText";
 import { TimelineRail } from "@/components/TimelineRail";
-import FOMOTimer from "@/components/plg/FOMOTimer";
-import ProgressiveBlur from "@/components/plg/ProgressiveBlur";
 import ThemeToggle from "@/components/ThemeToggle";
 import TOKENS from "@/design/tokens";
 import { GRADIENTS, GRADIENT_SHADOWS } from "@/design/gradients";
