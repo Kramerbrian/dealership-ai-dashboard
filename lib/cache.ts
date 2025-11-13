@@ -48,6 +48,11 @@ export const CACHE_KEYS = {
   VISIBILITY_SEO: 'visibility:seo',
   AI_SCORES: 'ai:scores',
   PRESENCE: 'visibility:presence',
+  ANALYTICS_EVENTS: 'analytics:events',
+  ANALYTICS_METRICS: 'analytics:metrics',
+  ANALYTICS_REALTIME: 'analytics:realtime',
+  CUSTOM_REPORTS: 'analytics:custom_reports',
+  USER_CUSTOM_REPORTS: 'analytics:user_reports',
 } as const;
 
 // Cache TTL (in seconds)
@@ -56,4 +61,7 @@ export const CACHE_TTL = {
   MEDIUM: 1800, // 30 minutes
   LONG: 3600, // 1 hour
   DAY: 86400, // 24 hours
+  ANALYTICS_EVENTS: 300, // 5 minutes
+  ANALYTICS_METRICS: 1800, // 30 minutes
+  CUSTOM_REPORTS: 3600, // 1 hour
 } as const;
