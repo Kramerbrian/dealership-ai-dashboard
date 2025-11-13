@@ -4,11 +4,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createPublicRoute } from '@/lib/api/enhanced-route';
 
 export const runtime = 'edge';
 
-export const GET = createPublicRoute(async () => {
+export async function GET() {
   return NextResponse.json({
     ok: true,
     ts: new Date().toISOString(),
@@ -16,5 +15,5 @@ export const GET = createPublicRoute(async () => {
     version: '3.0.0',
     platform: process.env.PLATFORM_MODE || 'CognitiveOps',
   });
-});
+}
 

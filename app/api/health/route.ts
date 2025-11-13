@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { createPublicRoute } from '@/lib/api/enhanced-route';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -32,7 +31,7 @@ interface HealthStatus {
  * Production health check endpoint
  * Returns system status and service availability
  */
-export const GET = createPublicRoute(async () => {
+export async function GET() {
   const startTime = Date.now();
   const healthStatus: HealthStatus = {
     status: 'healthy',
@@ -149,7 +148,7 @@ export const GET = createPublicRoute(async () => {
       { status: 503 }
     );
   }
-});
+}
 
 /**
  * Lightweight AI provider availability checks
