@@ -221,14 +221,9 @@ export default function CinematicLandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
           >
-            <h1 className="text-4xl md:text-6xl font-light mb-6 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-light mb-6 leading-tight">
               <span className="font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                While everyone else argues about leads, dealershipAI shows you the truth: how findable, believable, and worth-clicking your store looks across{' '}
-                <TextRotator 
-                  items={['Google', 'ChatGPT', 'Perplexity', 'Gemini', 'Claude', 'Copilot']}
-                  interval={2000}
-                />
-                , and every AI that now decides who walks in your door.
+                DealershipAI is the first system in your store that hates wasted time as much as you do.
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
