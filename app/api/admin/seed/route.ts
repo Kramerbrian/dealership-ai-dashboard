@@ -34,6 +34,14 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+
     let sbAdmin;
     try {
       sbAdmin = getSbAdmin();

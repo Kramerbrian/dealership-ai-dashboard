@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase';;
 import { auth } from '@clerk/nextjs/server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export const runtime = 'nodejs';
 
@@ -26,6 +22,14 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const dealerId = url.searchParams.get('dealerId') || 'demo-tenant';
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
 
     // Get integration stats
     const { data: stats, error: statsError } = await supabase

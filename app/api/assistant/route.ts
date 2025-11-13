@@ -1,10 +1,24 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { z } from 'zod';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
 
 export const runtime = 'edge';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
+});
+
+// Validation schema
+const assistantSchema = z.object({
+  message: z.string().min(1, 'Message is required'),
+  context: z.record(z.any()).optional(),
+  conversationHistory: z.array(
+    z.object({
+      role: z.enum(['user', 'assistant']),
+      content: z.string(),
+    })
+  ).optional(),
 });
 
 /**
@@ -13,16 +27,10 @@ const anthropic = new Anthropic({
  *
  * Provides conversational AI assistance for dealership analytics and insights
  */
-export async function POST(req: Request) {
-  try {
-    const { message, context, conversationHistory } = await req.json();
-
-    if (!message) {
-      return NextResponse.json(
-        { error: 'Message is required' },
-        { status: 400 }
-      );
-    }
+export const POST = createPublicRoute(
+  async (req: NextRequest) => {
+    const body = await req.json();
+    const { message, context, conversationHistory } = assistantSchema.parse(body);
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
@@ -36,13 +44,11 @@ export async function POST(req: Request) {
 
     // Add conversation history if provided
     if (conversationHistory && Array.isArray(conversationHistory)) {
-      conversationHistory.forEach((msg: { role: string; content: string }) => {
-        if (msg.role === 'user' || msg.role === 'assistant') {
-          messages.push({
-            role: msg.role,
-            content: msg.content,
-          });
-        }
+      conversationHistory.forEach((msg) => {
+        messages.push({
+          role: msg.role,
+          content: msg.content,
+        });
       });
     }
 
@@ -86,27 +92,9 @@ Be concise, data-driven, and actionable in your responses.`;
       },
       conversationId: response.id,
     });
-
-  } catch (error: any) {
-    console.error('Assistant API error:', error);
-
-    if (error?.status === 401) {
-      return NextResponse.json(
-        { error: 'AI service authentication failed' },
-        { status: 503 }
-      );
-    }
-
-    if (error?.status === 429) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
-        { status: 429 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Internal server error', details: error?.message },
-      { status: 500 }
-    );
+  },
+  {
+    rateLimit: true,
+    validateSchema: assistantSchema,
   }
-}
+);

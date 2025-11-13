@@ -18,11 +18,12 @@ import {
   X,
   TrendingUp,
   Zap,
-  Brain
+  Pulse
 } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { ClerkConditional } from '@/components/providers/ClerkConditional';
 import { getEasterEggQuote } from '@/lib/agent/quoteEngine';
+import { FreeScanWidget } from '@/components/FreeScanWidget';
 
 // Easter Egg Quote Component
 function EasterEggQuote() {
@@ -227,8 +228,7 @@ export default function CinematicLandingPage() {
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
-              DealershipAI isn't software you use; it's cognition you borrow. 
-              An embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains.
+              DealershipAI analyzes what's coming, fixes what's broken, and guides what matters, before you realize it needs attention.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <ClerkConditional>
@@ -302,7 +302,7 @@ export default function CinematicLandingPage() {
                 }}
                 className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center"
               >
-                <Brain className="w-16 h-16 text-black" />
+                <Pulse className="w-16 h-16 text-black" />
               </motion.div>
 
               {/* Prompt Example */}
@@ -525,6 +525,41 @@ export default function CinematicLandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Free Trust Score Scan */}
+      <section className="py-20 px-6 bg-gradient-to-b from-black via-gray-950 to-black">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-light mb-4">
+              <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent font-semibold">
+                Check Your Trust Score
+              </span>
+            </h2>
+            <p className="text-xl text-white/70 max-w-2xl mx-auto">
+              See how your dealership appears across ChatGPT, Claude, Perplexity, Gemini, and Copilot.
+              Free instant analysis, no credit card required.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            <FreeScanWidget
+              onComplete={(email, result) => {
+                console.log('Lead captured:', email, result);
+              }}
+            />
+          </motion.div>
         </div>
       </section>
 

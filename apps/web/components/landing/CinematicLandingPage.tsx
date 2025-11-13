@@ -23,6 +23,7 @@ import {
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { ClerkConditional } from '@/components/providers/ClerkConditional';
 import { getEasterEggQuote } from '@/lib/agent/quoteEngine';
+import { FreeScanWidget } from '@/components/FreeScanWidget';
 
 // Easter Egg Quote Component
 function EasterEggQuote() {
@@ -223,17 +224,11 @@ export default function CinematicLandingPage() {
           >
             <h1 className="text-4xl md:text-6xl font-light mb-6 leading-tight">
               <span className="font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                While everyone else argues about leads, dealershipAI shows you the truth: how findable, believable, and worth-clicking your store looks across{' '}
-                <TextRotator 
-                  items={['Google', 'ChatGPT', 'Perplexity', 'Gemini', 'Claude', 'Copilot']}
-                  interval={2000}
-                />
-                , and every AI that now decides who walks in your door.
+                See what AI really thinks of your dealership—and what to fix next.
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
-              DealershipAI isn't software you use; it's cognition you borrow. 
-              An embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains.
+              DealershipAI analyzes what's coming, fixes what's broken, and guides what matters, before you realize it needs attention.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <ClerkConditional>
@@ -530,6 +525,41 @@ export default function CinematicLandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Free Trust Score Scan */}
+      <section className="py-20 px-6 bg-gradient-to-b from-black via-gray-950 to-black">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-light mb-4">
+              <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent font-semibold">
+                Check Your Trust Score
+              </span>
+            </h2>
+            <p className="text-xl text-white/70 max-w-2xl mx-auto">
+              See how your dealership appears across ChatGPT, Claude, Perplexity, Gemini, and Copilot.
+              Free instant analysis, no credit card required.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            <FreeScanWidget
+              onComplete={(email, result) => {
+                console.log('Lead captured:', email, result);
+              }}
+            />
+          </motion.div>
         </div>
       </section>
 
