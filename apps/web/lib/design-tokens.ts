@@ -153,3 +153,27 @@ export function withOpacity(color: string, opacity: number): string {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+/**
+ * Legacy export alias for TOKENS
+ * @deprecated Use designTokens instead
+ */
+export const TOKENS = {
+  color: {
+    surface: {
+      panel: designTokens.colors.base.dark,
+      border: designTokens.colors.glass.light,
+    },
+    text: {
+      primary: designTokens.colors.text.primaryDark,
+      secondary: designTokens.colors.text.primaryLight,
+    },
+    accent: designTokens.colors.accent,
+    cognitive: designTokens.colors.cognitive,
+  },
+  shadow: {
+    soft: designTokens.shadow.elevated,
+  },
+  radius: designTokens.radii,
+  motion: designTokens.motion,
+} as const;
+
