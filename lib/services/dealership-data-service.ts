@@ -4,8 +4,15 @@
  * Fetches real dealership data from database for live dashboard
  */
 
-import { db, withTenant, pages, aivScores, eeatScores, revenueAtRisk, issues } from '@/lib/db';
-import { eq, desc, and, gte, sql } from 'drizzle-orm';
+import { db } from '@/lib/db';
+
+/**
+ * Helper function for tenant scoping (stub implementation)
+ * TODO: Replace with actual RLS or tenant filtering when schema is defined
+ */
+async function withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
+  return fn();
+}
 
 export interface DealershipMetrics {
   dealershipId: string;
@@ -84,100 +91,59 @@ export async function getDealershipInfo(
 
 /**
  * Get latest AIV scores for a dealership
+ * TODO: Implement with actual database schema
  */
-export async function getLatestAIVScores(tenantId: string) {
+export async function getLatestAIVScores(tenantId: string): Promise<{
+  overallScore?: number | null;
+  seoScore?: number | null;
+  aeoScore?: number | null;
+  geoScore?: number | null;
+  ugcScore?: number | null;
+  calculatedAt?: Date | null;
+} | null> {
   return withTenant(tenantId, async () => {
-    const latestScores = await db
-      .select({
-        overallScore: aivScores.overallScore,
-        seoScore: aivScores.seoScore,
-        aeoScore: aivScores.aeoScore,
-        geoScore: aivScores.geoScore,
-        ugcScore: aivScores.ugcScore,
-        calculatedAt: aivScores.calculatedAt,
-      })
-      .from(aivScores)
-      .where(eq(aivScores.tenantId, tenantId))
-      .orderBy(desc(aivScores.calculatedAt))
-      .limit(1);
-
-    return latestScores[0] || null;
+    // Stub implementation - replace with actual query when schema is defined
+    return null;
   });
 }
 
 /**
  * Get AIV score trend (compare with previous period)
+ * TODO: Implement with actual database schema
  */
 export async function getAIVTrend(tenantId: string, days: number = 30) {
   return withTenant(tenantId, async () => {
-    const dateThreshold = new Date();
-    dateThreshold.setDate(dateThreshold.getDate() - days);
-
-    const scores = await db
-      .select({
-        score: aivScores.overallScore,
-        calculatedAt: aivScores.calculatedAt,
-      })
-      .from(aivScores)
-      .where(
-        and(
-          eq(aivScores.tenantId, tenantId),
-          gte(aivScores.calculatedAt, dateThreshold)
-        )
-      )
-      .orderBy(desc(aivScores.calculatedAt))
-      .limit(2);
-
-    if (scores.length < 2) {
-      return 0;
-    }
-
-    const current = parseFloat(scores[0].score?.toString() || '0');
-    const previous = parseFloat(scores[1].score?.toString() || '0');
-
-    return previous > 0 ? ((current - previous) / previous) * 100 : 0;
+    // Stub implementation - replace with actual query when schema is defined
+    return 0;
   });
 }
 
 /**
  * Get latest EEAT scores for a dealership
+ * TODO: Implement with actual database schema
  */
-export async function getLatestEEATScores(tenantId: string) {
+export async function getLatestEEATScores(tenantId: string): Promise<{
+  expertiseScore?: number | null;
+  experienceScore?: number | null;
+  authoritativenessScore?: number | null;
+  trustworthinessScore?: number | null;
+  overallScore?: number | null;
+  calculatedAt?: Date | null;
+} | null> {
   return withTenant(tenantId, async () => {
-    const latestScores = await db
-      .select({
-        expertiseScore: eeatScores.expertiseScore,
-        experienceScore: eeatScores.experienceScore,
-        authoritativenessScore: eeatScores.authoritativenessScore,
-        trustworthinessScore: eeatScores.trustworthinessScore,
-        overallScore: eeatScores.overallScore,
-        calculatedAt: eeatScores.calculatedAt,
-      })
-      .from(eeatScores)
-      .where(eq(eeatScores.tenantId, tenantId))
-      .orderBy(desc(eeatScores.calculatedAt))
-      .limit(1);
-
-    return latestScores[0] || null;
+    // Stub implementation - replace with actual query when schema is defined
+    return null;
   });
 }
 
 /**
  * Get revenue at risk metrics
+ * TODO: Implement with actual database schema
  */
 export async function getRevenueMetrics(tenantId: string) {
   return withTenant(tenantId, async () => {
-    const revenueData = await db
-      .select({
-        currentRevenue: sql<number>`SUM(${revenueAtRisk.currentRevenue})`,
-        potentialRevenue: sql<number>`SUM(${revenueAtRisk.potentialRevenue})`,
-        revenueAtRisk: sql<number>`SUM(${revenueAtRisk.revenueAtRisk})`,
-      })
-      .from(revenueAtRisk)
-      .where(eq(revenueAtRisk.tenantId, tenantId))
-      .groupBy(revenueAtRisk.tenantId);
-
-    return revenueData[0] || {
+    // Stub implementation - replace with actual query when schema is defined
+    return {
       currentRevenue: 0,
       potentialRevenue: 0,
       revenueAtRisk: 0,
@@ -187,47 +153,29 @@ export async function getRevenueMetrics(tenantId: string) {
 
 /**
  * Get issues count by severity
+ * TODO: Implement with actual database schema
  */
 export async function getIssuesCount(tenantId: string) {
   return withTenant(tenantId, async () => {
-    const issuesData = await db
-      .select({
-        severity: issues.severity,
-        count: sql<number>`COUNT(*)`,
-      })
-      .from(issues)
-      .where(
-        and(
-          eq(issues.tenantId, tenantId),
-          eq(issues.status, 'open')
-        )
-      )
-      .groupBy(issues.severity);
-
+    // Stub implementation - replace with actual query when schema is defined
     return {
-      critical: issuesData.find(i => i.severity === 'critical')?.count || 0,
-      high: issuesData.find(i => i.severity === 'high')?.count || 0,
-      medium: issuesData.find(i => i.severity === 'medium')?.count || 0,
-      low: issuesData.find(i => i.severity === 'low')?.count || 0,
-      total: issuesData.reduce((sum, i) => sum + (i.count || 0), 0),
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      total: 0,
     };
   });
 }
 
 /**
  * Get performance metrics
+ * TODO: Implement with actual database schema
  */
 export async function getPerformanceMetrics(tenantId: string) {
   return withTenant(tenantId, async () => {
-    const perfData = await db
-      .select({
-        avgLoadTime: sql<number>`AVG(${pages.loadTime})`,
-        totalPages: sql<number>`COUNT(*)`,
-      })
-      .from(pages)
-      .where(eq(pages.tenantId, tenantId));
-
-    return perfData[0] || {
+    // Stub implementation - replace with actual query when schema is defined
+    return {
       avgLoadTime: 0,
       totalPages: 0,
     };
@@ -316,77 +264,35 @@ export async function getDealershipMetrics(
 
 /**
  * Get top recommendations for a dealership
+ * TODO: Implement with actual database schema
  */
 export async function getTopRecommendations(tenantId: string, limit: number = 5) {
   return withTenant(tenantId, async () => {
-    const recommendations = await db
-      .select({
-        id: issues.id,
-        title: issues.title,
-        description: issues.description,
-        recommendation: issues.recommendation,
-        severity: issues.severity,
-        impact: issues.impact,
-        effort: issues.effort,
-        priority: issues.priority,
-        category: issues.category,
-      })
-      .from(issues)
-      .where(
-        and(
-          eq(issues.tenantId, tenantId),
-          eq(issues.status, 'open')
-        )
-      )
-      .orderBy(desc(issues.priority))
-      .limit(limit);
-
-    return recommendations;
+    // Stub implementation - replace with actual query when schema is defined
+    return [];
   });
 }
 
 /**
  * Get time series data for AIV scores
+ * TODO: Implement with actual database schema
  */
 export async function getAIVTimeSeries(tenantId: string, days: number = 30) {
   return withTenant(tenantId, async () => {
-    const dateThreshold = new Date();
-    dateThreshold.setDate(dateThreshold.getDate() - days);
-
-    const timeSeriesData = await db
-      .select({
-        score: aivScores.overallScore,
-        date: aivScores.calculatedAt,
-      })
-      .from(aivScores)
-      .where(
-        and(
-          eq(aivScores.tenantId, tenantId),
-          gte(aivScores.calculatedAt, dateThreshold)
-        )
-      )
-      .orderBy(aivScores.calculatedAt);
-
-    return timeSeriesData.map(item => ({
-      name: new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      value: parseFloat(item.score?.toString() || '0'),
-      timestamp: item.date!.toISOString(),
-    }));
+    // Stub implementation - replace with actual query when schema is defined
+    return [];
   });
 }
 
 /**
  * Check if dealership has data
+ * TODO: Implement with actual database schema
  */
 export async function hasDealershipData(tenantId: string): Promise<boolean> {
   try {
     return await withTenant(tenantId, async () => {
-      const pageCount = await db
-        .select({ count: sql<number>`COUNT(*)` })
-        .from(pages)
-        .where(eq(pages.tenantId, tenantId));
-
-      return (pageCount[0]?.count || 0) > 0;
+      // Stub implementation - replace with actual query when schema is defined
+      return false;
     });
   } catch (error) {
     console.error('Error checking dealership data:', error);

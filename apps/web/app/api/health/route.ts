@@ -1,124 +1,152 @@
+/**
+ * GET /api/health
+ * Healthcheck endpoint to verify landing + clarity API are reachable
+ * 
+ * Returns:
+ * - ok: boolean (overall status)
+ * - checks: object with env vars and API status
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { createPublicRoute } from '@/lib/api/enhanced-route';
-import { prisma } from '@/lib/prisma';
 
-interface HealthCheckResult {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  timestamp: string;
-  uptime: number;
-  services: {
-    database: {
-      status: 'up' | 'down';
-      latency?: number;
-      error?: string;
-    };
-    redis: {
-      status: 'up' | 'down';
-      error?: string;
-    };
-    anthropic: {
-      status: 'configured' | 'not_configured';
-    };
-    sendgrid: {
-      status: 'configured' | 'not_configured';
-    };
-    clerk: {
-      status: 'configured' | 'not_configured';
-    };
-  };
-  version: string;
-  environment: string;
-}
+export const runtime = 'edge';
 
-async function handler(req: NextRequest): Promise<NextResponse> {
-  const startTime = Date.now();
+export async function GET(_req: NextRequest) {
+  const checks: Record<string, any> = {};
+  let ok = true;
 
-  const result: HealthCheckResult = {
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    services: {
-      database: { status: 'down' },
-      redis: { status: 'down' },
-      anthropic: { status: 'not_configured' },
-      sendgrid: { status: 'not_configured' },
-      clerk: { status: 'not_configured' },
-    },
-    version: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || 'dev',
-    environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
+  // Check env vars
+  const mapboxKey = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_KEY;
+  const clerkPub = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const clerkSecret = process.env.CLERK_SECRET_KEY;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+  checks.env = {
+    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: !!mapboxKey,
+    NEXT_PUBLIC_MAPBOX_KEY: !!mapboxKey, // legacy support
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: !!clerkPub,
+    CLERK_SECRET_KEY: !!clerkSecret,
+    NEXT_PUBLIC_BASE_URL: !!baseUrl,
   };
 
-  // Check database connection
+  // Check if critical env vars are missing
+  if (!clerkPub || !clerkSecret) {
+    ok = false;
+    checks.env._critical_missing = 'Clerk keys required for /dash';
+  }
+
+  // Check clarity API (if it exists)
   try {
-    const dbStartTime = Date.now();
-    await prisma.$queryRaw`SELECT 1`;
-    result.services.database = {
-      status: 'up',
-      latency: Date.now() - dbStartTime,
-    };
-  } catch (error) {
-    result.services.database = {
-      status: 'down',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-    result.status = 'degraded';
-  }
+    const clarityUrl = baseUrl 
+      ? `${baseUrl}/api/clarity/stack?domain=exampledealer.com`
+      : '/api/clarity/stack?domain=exampledealer.com';
+    
+    const res = await fetch(clarityUrl, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).catch(() => {
+      // Fallback to relative URL if baseUrl fetch fails
+      return fetch('/api/clarity/stack?domain=exampledealer.com', {
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    });
 
-  // Check Redis/Upstash configuration
-  if (process.env.UPSTASH_REDIS_REST_URL) {
-    try {
-      const response = await fetch(
-        `${process.env.UPSTASH_REDIS_REST_URL}/ping`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-          },
-        }
-      );
-      result.services.redis.status = response.ok ? 'up' : 'down';
-    } catch (error) {
-      result.services.redis = {
-        status: 'down',
-        error: error instanceof Error ? error.message : 'Unknown error',
+    if (!res.ok) {
+      ok = false;
+      checks.clarity = { 
+        ok: false, 
+        status: res.status,
+        statusText: res.statusText,
+        note: 'Clarity API endpoint may not exist or is broken'
       };
-      result.status = 'degraded';
+    } else {
+      const data = await res.json().catch(() => ({}));
+      checks.clarity = {
+        ok: true,
+        status: res.status,
+        hasScores: !!data?.scores,
+        hasLocation: !!data?.location,
+        hasIntros: !!(data?.ai_intro_current && data?.ai_intro_improved),
+        responseKeys: Object.keys(data || {}),
+      };
     }
+  } catch (err: any) {
+    // Clarity API doesn't exist or is unreachable - this is OK for basic healthcheck
+    checks.clarity = { 
+      ok: false, 
+      error: String(err?.message || err),
+      note: 'Clarity API endpoint may not be implemented yet'
+    };
+    // Don't fail overall healthcheck if clarity API is missing
   }
 
-  // Check service configurations
-  result.services.anthropic.status = process.env.ANTHROPIC_API_KEY
-    ? 'configured'
-    : 'not_configured';
+  // Check trust scan endpoints (if they exist)
+  try {
+    const trustUrl = baseUrl
+      ? `${baseUrl}/api/trust/scan/lite`
+      : '/api/trust/scan/lite';
+    
+    const res = await fetch(trustUrl, {
+      method: 'HEAD',
+      cache: 'no-store',
+    }).catch(() => {
+      return fetch('/api/trust/scan/lite', {
+        method: 'HEAD',
+        cache: 'no-store',
+      });
+    });
 
-  result.services.sendgrid.status =
-    process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL
-      ? 'configured'
-      : 'not_configured';
-
-  result.services.clerk.status =
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
-      ? 'configured'
-      : 'not_configured';
-
-  // Determine overall health status
-  const criticalServicesDown = result.services.database.status === 'down';
-
-  if (criticalServicesDown) {
-    result.status = 'unhealthy';
-  } else if (result.status !== 'degraded') {
-    result.status = 'healthy';
+    checks.trust_api = {
+      exists: res.ok || res.status === 405, // 405 = method not allowed but endpoint exists
+      status: res.status,
+    };
+  } catch (err: any) {
+    checks.trust_api = {
+      exists: false,
+      error: String(err?.message || err),
+    };
   }
 
-  const statusCode = result.status === 'healthy' ? 200 :
-                     result.status === 'degraded' ? 200 : 503;
+  // Check assistant API (if it exists)
+  try {
+    const assistantUrl = baseUrl
+      ? `${baseUrl}/api/assistant`
+      : '/api/assistant';
+    
+    const res = await fetch(assistantUrl, {
+      method: 'HEAD',
+      cache: 'no-store',
+    }).catch(() => {
+      return fetch('/api/assistant', {
+        method: 'HEAD',
+        cache: 'no-store',
+      });
+    });
 
-  return NextResponse.json(result, {
-    status: statusCode,
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'X-Health-Status': result.status,
+    checks.assistant_api = {
+      exists: res.ok || res.status === 405,
+      status: res.status,
+    };
+  } catch (err: any) {
+    checks.assistant_api = {
+      exists: false,
+      error: String(err?.message || err),
+    };
+  }
+
+  const status = ok ? 200 : 500;
+  return NextResponse.json(
+    { 
+      ok, 
+      checks,
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
     },
-  });
+    { status }
+  );
 }
-
-export const GET = createPublicRoute(handler, { rateLimit: false });

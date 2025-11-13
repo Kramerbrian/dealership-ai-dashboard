@@ -7,10 +7,30 @@ interface EnterpriseFeaturesProps {
   tenantId: string;
 }
 
+interface AuditLog {
+  id: string;
+  timestamp: string;
+  user: string;
+  action: string;
+  resource: string;
+  ip: string;
+  status: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  lastLogin: string;
+  status: string;
+  permissions: string[];
+}
+
 export default function EnterpriseFeatures({ tenantId }: EnterpriseFeaturesProps) {
   const [activeTab, setActiveTab] = useState('sso');
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [userManagement, setUserManagement] = useState([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [userManagement, setUserManagement] = useState<User[]>([]);
 
   useEffect(() => {
     // Simulate enterprise data

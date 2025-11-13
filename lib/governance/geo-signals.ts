@@ -92,12 +92,15 @@ export async function checkDuplicateSource(
   url: string,
   contentHash: string
 ): Promise<{ isDuplicate: boolean; existingSource?: any }> {
-  const existingSource = await db.query.externalSources?.findFirst({
-    where: and(
+  const existingSource = await db
+    .select()
+    .from(external_sources)
+    .where(and(
       eq(external_sources.tenantId, tenantId),
       eq(external_sources.url, url)
-    ),
-  });
+    ))
+    .limit(1)
+    .then(rows => rows[0]);
 
   if (existingSource) {
     return {
@@ -107,12 +110,15 @@ export async function checkDuplicateSource(
   }
 
   // Also check by content hash for deduplication
-  const hashMatch = await db.query.externalSources?.findFirst({
-    where: and(
+  const hashMatch = await db
+    .select()
+    .from(external_sources)
+    .where(and(
       eq(external_sources.tenantId, tenantId),
       eq(external_sources.contentHash, contentHash)
-    ),
-  });
+    ))
+    .limit(1)
+    .then(rows => rows[0]);
 
   return {
     isDuplicate: !!hashMatch,
@@ -127,9 +133,12 @@ export async function enforceTenantLimits(
   tenantId: string,
   config: GovernanceConfig = DEFAULT_GOVERNANCE_CONFIG
 ): Promise<{ withinLimits: boolean; currentCount: number; reason?: string }> {
-  const currentCount = await db.query.externalSources?.count({
-    where: eq(external_sources.tenantId, tenantId),
-  }) || 0;
+  const result = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(external_sources)
+    .where(eq(external_sources.tenantId, tenantId));
+
+  const currentCount = result[0]?.count || 0;
 
   if (currentCount >= config.maxSourcesPerTenant) {
     return {
@@ -156,12 +165,13 @@ export async function cleanupOldSources(
   cutoffDate.setDate(cutoffDate.getDate() - config.retentionDays);
 
   // Delete old sources and their associated signals
-  const oldSources = await db.query.externalSources?.findMany({
-    where: and(
+  const oldSources = await db
+    .select()
+    .from(external_sources)
+    .where(and(
       eq(external_sources.tenantId, tenantId),
-      sql`created_at < ${cutoffDate}`
-    ),
-  });
+      sql`${external_sources.createdAt} < ${cutoffDate}`
+    ));
 
   if (!oldSources || oldSources.length === 0) {
     return { deletedCount: 0 };
@@ -171,7 +181,7 @@ export async function cleanupOldSources(
   for (const source of oldSources) {
     // Delete associated geo signals first
     await db.delete(geo_signals).where(eq(geo_signals.sourceId, source.id));
-    
+
     // Delete the source
     await db.delete(external_sources).where(eq(external_sources.id, source.id));
     deletedCount++;
@@ -190,14 +200,15 @@ export async function monitorStability(
   const twoWeeksAgo = new Date();
   twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-  const recentSignals = await db.query.geoSignals?.findMany({
-    where: and(
+  const recentSignals = await db
+    .select()
+    .from(geo_signals)
+    .where(and(
       eq(geo_signals.tenantId, tenantId),
-      sql`computed_at >= ${twoWeeksAgo}`
-    ),
-    orderBy: desc(geo_signals.computedAt),
-    limit: 5,
-  });
+      sql`${geo_signals.computedAt} >= ${twoWeeksAgo}`
+    ))
+    .orderBy(desc(geo_signals.computedAt))
+    .limit(5);
 
   if (!recentSignals || recentSignals.length < 2) {
     return {
@@ -207,12 +218,12 @@ export async function monitorStability(
   }
 
   const instabilityReasons: string[] = [];
-  
+
   // Check for score swings
   for (let i = 1; i < recentSignals.length; i++) {
     const current = recentSignals[i - 1];
     const previous = recentSignals[i];
-    
+
     const swing = Math.abs(current.geoChecklistScore - previous.geoChecklistScore);
     if (swing > config.stabilityThreshold) {
       instabilityReasons.push(
@@ -222,7 +233,7 @@ export async function monitorStability(
   }
 
   // Check for low confidence
-  const avgConfidence = recentSignals.reduce((sum, signal) => sum + Number(signal.confidence), 0) / recentSignals.length;
+  const avgConfidence = recentSignals.reduce((sum: number, signal) => sum + Number(signal.confidence), 0) / recentSignals.length;
   if (avgConfidence < 0.6) {
     instabilityReasons.push(
       `Low average confidence: ${(avgConfidence * 100).toFixed(1)}% over last ${recentSignals.length} measurements`
@@ -250,10 +261,11 @@ export async function generateProvenanceReport(
     properHashing: boolean;
   };
 }> {
-  const sources = await db.query.externalSources?.findMany({
-    where: eq(external_sources.tenantId, tenantId),
-    orderBy: desc(external_sources.createdAt),
-  });
+  const sources = await db
+    .select()
+    .from(external_sources)
+    .where(eq(external_sources.tenantId, tenantId))
+    .orderBy(desc(external_sources.createdAt));
 
   if (!sources || sources.length === 0) {
     return {
@@ -270,20 +282,20 @@ export async function generateProvenanceReport(
 
   // Count providers
   const providers: Record<string, number> = {};
-  sources.forEach(source => {
+  sources.forEach((source) => {
     providers[source.provider] = (providers[source.provider] || 0) + 1;
   });
 
   // Date range
-  const dates = sources.map(s => new Date(s.createdAt));
-  const oldest = new Date(Math.min(...dates.map(d => d.getTime())));
-  const newest = new Date(Math.max(...dates.map(d => d.getTime())));
+  const dates = sources.map((s) => new Date(s.createdAt));
+  const oldest = new Date(Math.min(...dates.map((d) => d.getTime())));
+  const newest = new Date(Math.max(...dates.map((d) => d.getTime())));
 
   // Compliance checks
   const compliance = {
     metadataOnly: true, // We only store metadata
     noContentStorage: true, // We don't store full content
-    properHashing: sources.every(s => s.contentHash && s.contentHash.length === 64),
+    properHashing: sources.every((s) => s.contentHash && s.contentHash.length === 64),
   };
 
   return {
@@ -310,27 +322,36 @@ export async function auditDataIntegrity(
   const issues: string[] = [];
   const recommendations: string[] = [];
 
-  // Check for orphaned geo signals
-  const orphanedSignals = await db.query.geoSignals?.findMany({
-    where: eq(geo_signals.tenantId, tenantId),
-    with: {
-      source: true,
-    },
-  });
+  // Check for orphaned geo signals (signals without a valid source)
+  const allSignals = await db
+    .select()
+    .from(geo_signals)
+    .where(eq(geo_signals.tenantId, tenantId));
 
-  const orphanedCount = orphanedSignals?.filter(s => !s.source).length || 0;
+  const sourceIds = allSignals.map((s) => s.sourceId);
+  const validSources = await db
+    .select({ id: external_sources.id })
+    .from(external_sources)
+    .where(eq(external_sources.tenantId, tenantId));
+
+  const validSourceIds = new Set(validSources.map((s) => s.id));
+  const orphanedCount = sourceIds.filter((id) => !validSourceIds.has(id)).length;
+
   if (orphanedCount > 0) {
     issues.push(`${orphanedCount} orphaned geo signals found`);
     recommendations.push('Clean up orphaned geo signals');
   }
 
   // Check for missing composite scores
-  const hasCompositeScores = await db.query.compositeScores?.findFirst({
-    where: and(
+  const hasCompositeScores = await db
+    .select()
+    .from(composite_scores)
+    .where(and(
       eq(composite_scores.tenantId, tenantId),
       eq(composite_scores.scoreType, 'aiv_geo')
-    ),
-  });
+    ))
+    .limit(1)
+    .then(rows => rows[0]);
 
   if (!hasCompositeScores) {
     issues.push('Missing composite AIV GEO scores');
@@ -341,12 +362,13 @@ export async function auditDataIntegrity(
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-  const staleSignals = await db.query.geoSignals?.findMany({
-    where: and(
+  const staleSignals = await db
+    .select()
+    .from(geo_signals)
+    .where(and(
       eq(geo_signals.tenantId, tenantId),
-      sql`computed_at < ${oneWeekAgo}`
-    ),
-  });
+      sql`${geo_signals.computedAt} < ${oneWeekAgo}`
+    ));
 
   if (staleSignals && staleSignals.length > 0) {
     issues.push(`${staleSignals.length} stale geo signals (older than 1 week)`);
