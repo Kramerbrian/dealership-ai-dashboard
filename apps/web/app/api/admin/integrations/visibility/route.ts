@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminRoute } from '@/lib/api/enhanced-route';
-import { traced } from '@/lib/api-wrap';
 
 /**
  * GET /api/admin/integrations/visibility
  * Get visibility integration settings for tenant
  */
-export const GET = createAdminRoute(traced(async (req: NextRequest) => {
-
+export const GET = createAdminRoute(async (req: NextRequest) => {
   try {
     const url = new URL(req.url);
     const tenantId = url.searchParams.get('tenantId') || 'default';
@@ -38,7 +36,7 @@ export const GET = createAdminRoute(traced(async (req: NextRequest) => {
       { status: 500 }
     );
   }
-}, 'admin.integrations.visibility.get');
+});
 
 /**
  * POST /api/admin/integrations/visibility

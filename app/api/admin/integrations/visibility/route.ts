@@ -44,14 +44,7 @@ export const GET = createAdminRoute(traced(async (req: NextRequest) => {
  * POST /api/admin/integrations/visibility
  * Update visibility integration settings for tenant
  */
-export const POST = traced(async (req: NextRequest) => {
-  const gate = await requireAdmin();
-  if (!gate.ok) {
-    return NextResponse.json(
-      { error: gate.reason },
-      { status: gate.reason === 'unauthenticated' ? 401 : 403 }
-    );
-  }
+export const POST = createAdminRoute(traced(async (req: NextRequest) => {
 
   try {
     const body = await req.json();

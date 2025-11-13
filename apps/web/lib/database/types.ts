@@ -6,7 +6,7 @@ export interface Database {
   public: {
     Tables: {
       dealerships: {
-        Row: {;
+        Row: {
           id: string;
           name: string;
           domain: string;
@@ -18,7 +18,7 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           name: string;
           domain: string;
@@ -30,7 +30,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           name?: string;
           domain?: string;
@@ -44,7 +44,7 @@ export interface Database {
         };
       };
       users: {;
-        Row: {;
+        Row: {
           id: string;
           clerk_id: string;
           email: string;
@@ -52,7 +52,7 @@ export interface Database {
           role: 'user' | 'admin' | 'enterprise_admin';
           created_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           clerk_id: string;
           email: string;
@@ -60,7 +60,7 @@ export interface Database {
           role?: 'user' | 'admin' | 'enterprise_admin';
           created_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           clerk_id?: string;
           email?: string;
@@ -70,7 +70,7 @@ export interface Database {
         };
       };
       qai_scores: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           qai_star_score: number;
@@ -89,7 +89,7 @@ export interface Database {
           geo_score: number;
           calculated_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           qai_star_score: number;
@@ -108,7 +108,7 @@ export interface Database {
           geo_score: number;
           calculated_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           qai_star_score?: number;
@@ -129,7 +129,7 @@ export interface Database {
         };
       };
       eeat_scores: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           experience: number;
@@ -144,7 +144,7 @@ export interface Database {
           audience_integrity_score: number;
           calculated_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           experience: number;
@@ -159,7 +159,7 @@ export interface Database {
           audience_integrity_score: number;
           calculated_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           experience?: number;
@@ -176,7 +176,7 @@ export interface Database {
         };
       };
       ai_platform_scores: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           platform: 'chatgpt' | 'claude' | 'perplexity' | 'gemini' | 'copilot' | 'grok';
@@ -187,7 +187,7 @@ export interface Database {
           market_share: number;
           measured_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           platform: 'chatgpt' | 'claude' | 'perplexity' | 'gemini' | 'copilot' | 'grok';
@@ -198,7 +198,7 @@ export interface Database {
           market_share: number;
           measured_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           platform?: 'chatgpt' | 'claude' | 'perplexity' | 'gemini' | 'copilot' | 'grok';
@@ -211,7 +211,7 @@ export interface Database {
         };
       };
       competitors: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           name: string;
@@ -224,7 +224,7 @@ export interface Database {
           weaknesses: string[];
           updated_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           name: string;
@@ -237,7 +237,7 @@ export interface Database {
           weaknesses: string[];
           updated_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           name?: string;
@@ -252,7 +252,7 @@ export interface Database {
         };
       };
       quick_wins: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           title: string;
@@ -267,7 +267,7 @@ export interface Database {
           completed_at: string | null;
           created_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           title: string;
@@ -282,7 +282,7 @@ export interface Database {
           completed_at?: string | null;
           created_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           title?: string;
@@ -299,7 +299,7 @@ export interface Database {
         };
       };
       mystery_shops: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           shop_type: 'email' | 'chat' | 'phone' | 'form';
@@ -313,7 +313,7 @@ export interface Database {
           overall_score: number;
           conducted_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           shop_type: 'email' | 'chat' | 'phone' | 'form';
@@ -327,7 +327,7 @@ export interface Database {
           overall_score: number;
           conducted_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           shop_type?: 'email' | 'chat' | 'phone' | 'form';
@@ -343,7 +343,7 @@ export interface Database {
         };
       };
       activity_log: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           user_id: string;
@@ -352,7 +352,7 @@ export interface Database {
           delta: string | null;
           created_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           user_id: string;
@@ -361,7 +361,7 @@ export interface Database {
           delta?: string | null;
           created_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           user_id?: string;
@@ -372,7 +372,7 @@ export interface Database {
         };
       };
       geo_pools: {;
-        Row: {;
+        Row: {
           id: string;
           city: string;
           state: string;
@@ -381,7 +381,7 @@ export interface Database {
           expires_at: string;
           created_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           city: string;
           state: string;
@@ -390,7 +390,7 @@ export interface Database {
           expires_at: string;
           created_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           city?: string;
           state?: string;
@@ -401,21 +401,21 @@ export interface Database {
         };
       };
       session_logs: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           user_id: string;
           action_type: 'score_refresh' | 'competitor_analysis' | 'report_export' | 'mystery_shop' | 'ai_chat_query' | 'schema_generate' | 'review_draft';
           created_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           user_id: string;
           action_type: 'score_refresh' | 'competitor_analysis' | 'report_export' | 'mystery_shop' | 'ai_chat_query' | 'schema_generate' | 'review_draft';
           created_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           user_id?: string;
@@ -424,7 +424,7 @@ export interface Database {
         };
       };
       vco_predictions: {;
-        Row: {;
+        Row: {
           id: string;
           dealership_id: string;
           vdp_id: string | null;
@@ -434,7 +434,7 @@ export interface Database {
           recommended_actions: any // JSONB;
           calculated_at: string;
         };
-        Insert: {;
+        Insert: {
           id?: string;
           dealership_id: string;
           vdp_id?: string | null;
@@ -444,7 +444,7 @@ export interface Database {
           recommended_actions?: any // JSONB;
           calculated_at?: string;
         };
-        Update: {;
+        Update: {
           id?: string;
           dealership_id?: string;
           vdp_id?: string | null;
