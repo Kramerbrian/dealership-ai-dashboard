@@ -239,7 +239,7 @@ export default function CinematicLandingPage() {
                 }}
                 transition={{
                   duration: 20,
-                  repeat: Infinity,
+                  repeat: -1,
                   ease: 'linear',
                 }}
                 className="absolute inset-0 rounded-full border-2 border-cyan-500/30"
@@ -250,7 +250,7 @@ export default function CinematicLandingPage() {
                 }}
                 transition={{
                   duration: 15,
-                  repeat: Infinity,
+                  repeat: -1,
                   ease: 'linear',
                 }}
                 className="absolute inset-4 rounded-full border border-emerald-500/20"
@@ -268,7 +268,7 @@ export default function CinematicLandingPage() {
                 }}
                 transition={{
                   duration: 3,
-                  repeat: Infinity,
+                  repeat: -1,
                   ease: 'easeInOut',
                 }}
                 className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center"
