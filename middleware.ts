@@ -165,6 +165,10 @@ async function dashboardMiddleware(req: NextRequest) {
   const { clerkMiddleware: clerkMw } = await getClerkMiddleware();
   const protectedRouteMatcher = await getProtectedRouteMatcher();
   
+  // Determine if we should set domain for cookies (only for production dashboard domain)
+  const hostname = req.headers.get('host') || '';
+  const isProductionDashboard = hostname === 'dash.dealershipai.com';
+
   return clerkMw(async (auth: any, req: NextRequest) => {
     // We're on dashboard domain - apply Clerk authentication to protected routes
     // Only protect routes that are explicitly marked as protected
@@ -181,8 +185,9 @@ async function dashboardMiddleware(req: NextRequest) {
     // Default: allow through (for routes that are neither explicitly public nor protected)
     return NextResponse.next();
   }, {
-    // CRITICAL: Set domain for Clerk cookies to match dashboard subdomain
-    domain: 'dash.dealershipai.com',
+    // IMPORTANT: Only set domain in production to avoid cookie issues in dev/preview
+    // For localhost and Vercel previews, omit domain to use default (current hostname)
+    ...(isProductionDashboard && { domain: 'dash.dealershipai.com' }),
     // CRITICAL: Tell Clerk these routes should skip auth entirely
     // Use glob patterns (*) not regex (.*)
     publicRoutes: [
