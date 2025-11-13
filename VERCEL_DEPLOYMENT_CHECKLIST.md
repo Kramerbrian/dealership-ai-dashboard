@@ -1,325 +1,144 @@
 # 🚀 Vercel Deployment Checklist
 
-## ✅ Step 1: Check Vercel Dashboard
+## ✅ Pre-Deployment Steps
 
-### Monitor Your Deployment:
-1. Go to https://vercel.com/dashboard
-2. Find your project: `dealership-ai-dashboard`
-3. Click on the project to view details
-4. Check the "Deployments" tab for current build status
+### 1. **Vercel Configuration** ✅
+- [x] `vercel.json` configured with `rootDirectory: "apps/web"`
+- [x] Build command includes Prisma generation
+- [x] Install command uses `--legacy-peer-deps` for peer dependency conflicts
 
-### Build Status Indicators:
-- 🟡 **Building** - Deployment in progress
-- ✅ **Ready** - Deployment successful
-- ❌ **Error** - Build failed (check logs)
+### 2. **Build Verification** ✅
+- [x] Local build successful: `cd apps/web && npm run build`
+- [x] No critical TypeScript errors (warnings are acceptable)
+- [x] All dependencies installed
 
----
+### 3. **Environment Variables Required in Vercel**
 
-## 🔧 Step 2: Configure Environment Variables
+Go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add:
 
-### Required for Production:
+#### **Critical (Required for Landing Page & Dashboard)**
 
-Navigate to: **Vercel Dashboard → Your Project → Settings → Environment Variables**
-
-Add these variables for **Production** environment:
-
-#### Clerk Authentication (Get from https://clerk.com)
-```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
-CLERK_SECRET_KEY=sk_live_xxx
-```
-
-#### Supabase Database (Get from https://supabase.com)
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
-SUPABASE_SERVICE_ROLE_KEY=xxx
-```
-
-#### Redis/Upstash (Get from https://upstash.com)
-```env
-UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-UPSTASH_REDIS_REST_TOKEN=xxx
-```
-
-#### Stripe Payments (Get from https://stripe.com)
-```env
-STRIPE_PUBLISHABLE_KEY=pk_live_xxx
-STRIPE_SECRET_KEY=sk_live_xxx
-STRIPE_WEBHOOK_SECRET=whsec_xxx
-```
-
-#### Analytics & Monitoring
-```env
-NEXT_PUBLIC_GA_ID=G-XXX
-NEXT_PUBLIC_POSTHOG_KEY=xxx
-SENTRY_DSN=xxx
-```
-
-#### Domain Configuration
-```env
-NEXT_PUBLIC_APP_URL=https://dealershipai.com
-```
-
-### Save Environment Variables:
-- Click "Save" after adding all variables
-- Vercel will automatically redeploy with new variables
-
----
-
-## 🌐 Step 3: Configure Custom Domain
-
-### Add Domain in Vercel Dashboard:
-1. Go to **Settings → Domains**
-2. Click **"Add Domain"**
-3. Enter: `dealershipai.com`
-4. Click **"Add"**
-5. Enter: `www.dealershipai.com`
-6. Click **"Add"**
-
-### Configure DNS Records:
-
-In your domain registrar (GoDaddy, Namecheap, etc.):
-
-```
-Type    Name    Value                 TTL
-A       @       76.76.21.21           3600
-CNAME   www     cname.vercel-dns.com  3600
-```
-
-### Verify DNS:
-- Wait 5-30 minutes for DNS propagation
-- Check status: https://dnschecker.org
-- Once verified, SSL certificate will be automatically issued
-
----
-
-## 🔄 Step 4: Configure Cron Jobs
-
-### Set Up Automated Zero-Click Recompute:
-
-Navigate to: **Vercel Dashboard → Your Project → Settings → Cron Jobs**
-
-Add cron job:
-```json
-{
-  "jobs": [
-    {
-      "path": "/api/zero-click/recompute",
-      "schedule": "0 */4 * * *",
-      "timezone": "UTC"
-    }
-  ]
-}
-```
-
-This runs the Zero-Click recompute API every 4 hours.
-
----
-
-## 🧪 Step 5: Test Your Deployment
-
-### 1. Check Health Endpoint
 ```bash
-curl https://dealershipai.com/api/health
+# Mapbox (Required for landing page map)
+NEXT_PUBLIC_MAPBOX_KEY=your_mapbox_token_here
+
+# Clerk Authentication (Required for dashboard)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_... or pk_test_...
+CLERK_SECRET_KEY=sk_live_... or sk_test_...
+
+# Supabase (Required for database)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Base URL (Optional but recommended)
+NEXT_PUBLIC_BASE_URL=https://dealershipai.com
 ```
 
-Expected response:
-```json
-{
-  "status": "healthy",
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "uptime": 123,
-  "version": "1.0.0"
-}
-```
+#### **Optional but Recommended**
 
-### 2. Test Zero-Click Summary API
 ```bash
-curl "https://dealershipai.com/api/zero-click/summary?tenantId=demo&days=30"
+# Database (if using direct PostgreSQL)
+DATABASE_URL=postgresql://...
+
+# Redis (if using Upstash)
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+
+# Analytics
+NEXT_PUBLIC_GA=G-XXXXXXXXXX
+
+# Sentry (Error tracking)
+NEXT_PUBLIC_SENTRY_DSN=https://...
 ```
 
-Expected response:
-```json
-{
-  "series": [
-    {
-      "id": "1",
-      "tenantId": "demo",
-      "zcr": 85,
-      "zcco": 42,
-      "airi": 28,
-      "adjustedZeroClick": 43
-    }
-  ]
-}
-```
+### 4. **Deployment Steps**
 
-### 3. Test Authentication
+1. **Commit and Push to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Configure Vercel deployment for monorepo"
+   git push origin main
+   ```
+
+2. **Vercel will automatically:**
+   - Detect the push to `main` branch
+   - Run `installCommand` from repository root
+   - Change to `apps/web` directory
+   - Run `buildCommand` (Prisma generate + Next.js build)
+   - Deploy the application
+
+3. **Monitor Deployment:**
+   - Go to Vercel Dashboard → Deployments
+   - Watch build logs for any errors
+   - Check deployment status
+
+### 5. **Post-Deployment Verification**
+
+#### **Landing Page** (`https://dealershipai.com/`)
+- [ ] Page loads without errors
+- [ ] Domain input form appears
+- [ ] "Analyze my visibility" button works
+- [ ] Mapbox map loads (check browser console for errors)
+- [ ] Clarity Stack panel displays after analysis
+- [ ] AI Intro Card displays after analysis
+
+#### **Dashboard** (`https://dealershipai.com/dash`)
+- [ ] Clerk sign-in redirect works
+- [ ] After sign-in, Pulse Overview displays
+- [ ] Navigation to `/dash/onboarding` works
+- [ ] Navigation to `/dash/autopilot` works
+- [ ] Navigation to `/dash/insights/ai-story` works
+
+#### **API Routes**
+- [ ] `/api/clarity/stack?domain=example.com` returns data
+- [ ] `/api/ai-story?tenant=example` returns data
+
+### 6. **Troubleshooting**
+
+#### **Build Fails:**
+- Check build logs in Vercel dashboard
+- Verify `rootDirectory` is set correctly
+- Ensure Prisma schema path is correct: `../../prisma/schema.prisma`
+- Check that all dependencies are in `apps/web/package.json`
+
+#### **Mapbox Not Loading:**
+- Verify `NEXT_PUBLIC_MAPBOX_KEY` is set in Vercel
+- Check browser console for Mapbox errors
+- Ensure Mapbox style URL is correct in code
+
+#### **Clerk Authentication Issues:**
+- Verify both `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set
+- Check Clerk dashboard for correct keys
+- Ensure keys match the environment (test vs. production)
+
+#### **Database Errors:**
+- Verify `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set
+- Check Supabase dashboard for correct values
+- Ensure database is accessible from Vercel
+
+## 📝 Current Configuration
+
+**File:** `vercel.json`
+- `rootDirectory`: `apps/web`
+- `installCommand`: `npm install --legacy-peer-deps`
+- `buildCommand`: `npm install --legacy-peer-deps && prisma generate --schema=../../prisma/schema.prisma && NEXT_TELEMETRY_DISABLED=1 next build`
+
+**Note:** The build command includes `npm install` again because Vercel's `installCommand` runs from root, but we need dependencies in the workspace directory.
+
+## 🎯 Quick Deploy Command
+
 ```bash
-curl https://dealershipai.com/auth/signin
+# 1. Ensure all changes are committed
+git add .
+git commit -m "Ready for Vercel deployment"
+
+# 2. Push to trigger deployment
+git push origin main
+
+# 3. Monitor in Vercel dashboard
+# https://vercel.com/dashboard
 ```
 
-### 4. Test Dashboard Pages
-```bash
-curl https://dealershipai.com/dashboard
-curl https://dealershipai.com/intelligence
-```
+## ✅ Ready to Deploy!
 
----
-
-## 📊 Step 6: Monitor Performance
-
-### Vercel Analytics:
-- Go to **Analytics** tab in Vercel dashboard
-- Monitor Core Web Vitals
-- Check error rates
-- Track API response times
-
-### Key Metrics to Watch:
-- **First Contentful Paint**: < 1.5s
-- **Largest Contentful Paint**: < 2.5s
-- **Time to Interactive**: < 3s
-- **Error Rate**: < 1%
-- **API Response Time**: < 200ms
-
----
-
-## 🔒 Step 7: Security Verification
-
-### SSL Certificate:
-- [ ] HTTPS enforced (automatic with Vercel)
-- [ ] SSL certificate active
-- [ ] Security headers configured
-
-### Authentication:
-- [ ] Clerk sign-in working
-- [ ] Clerk sign-up working
-- [ ] Session management secure
-
-### API Security:
-- [ ] Rate limiting active
-- [ ] CORS configured
-- [ ] Input validation working
-- [ ] No sensitive data exposed
-
----
-
-## 📈 Step 8: Verify Features
-
-### Zero-Click Intelligence:
-- [ ] Recompute API responding
-- [ ] Summary API returning data
-- [ ] Metrics displayed on dashboard
-- [ ] Automated retraining scheduled
-
-### Dashboard Features:
-- [ ] Intelligence Dashboard loads
-- [ ] KPI metrics display
-- [ ] Charts render correctly
-- [ ] Real-time updates work
-
-### Payment Processing:
-- [ ] Stripe checkout works
-- [ ] Webhooks receive events
-- [ ] Subscription management works
-- [ ] Billing portal accessible
-
----
-
-## 🎯 Success Checklist
-
-### Deployment:
-- [x] Code pushed to GitHub
-- [x] Vercel build successful
-- [ ] Custom domain configured
-- [ ] SSL certificate active
-- [ ] Environment variables set
-- [ ] Cron jobs configured
-
-### Testing:
-- [ ] Health check passes
-- [ ] Zero-Click APIs work
-- [ ] Authentication works
-- [ ] Dashboard loads
-- [ ] Payments process
-
-### Performance:
-- [ ] Page load < 3s
-- [ ] API response < 200ms
-- [ ] Error rate < 1%
-- [ ] Uptime > 99.9%
-
-### Security:
-- [ ] HTTPS enforced
-- [ ] Security headers set
-- [ ] Rate limiting active
-- [ ] No vulnerabilities
-
----
-
-## 🆘 Troubleshooting
-
-### Build Fails:
-1. Check build logs in Vercel dashboard
-2. Look for missing dependencies
-3. Check environment variables
-4. Review error messages
-
-### Domain Not Resolving:
-1. Check DNS propagation
-2. Verify DNS records
-3. Wait for DNS to propagate
-4. Clear DNS cache
-
-### API Not Responding:
-1. Check environment variables
-2. Verify API keys are correct
-3. Test locally first
-4. Check Vercel function logs
-
----
-
-## 📞 Support Resources
-
-### Vercel Support:
-- Dashboard: https://vercel.com/dashboard
-- Docs: https://vercel.com/docs
-- Status: https://vercel-status.com
-
-### DealershipAI Resources:
-- GitHub: https://github.com/Kramerbrian/dealership-ai-dashboard
-- Docs: See deployment guides in repository
-- API Reference: See API routes in `app/api/`
-
----
-
-## 🎉 Congratulations!
-
-**Your DealershipAI Intelligence Dashboard is now live in production!**
-
-Access your dashboard at: **https://dealershipai.com**
-
-Monitor your deployment: **https://vercel.com/dashboard**
-
-Track performance: **Vercel Analytics**
-
----
-
-## 📋 Quick Reference
-
-### Key URLs:
-- **Production**: https://dealershipai.com
-- **Dashboard**: https://dealershipai.com/dashboard
-- **Intelligence**: https://dealershipai.com/intelligence
-- **Health Check**: https://dealershipai.com/api/health
-- **Zero-Click Summary**: https://dealershipai.com/api/zero-click/summary
-
-### Key Files:
-- `SUCCESS_DEPLOYMENT_COMPLETE.md` - Deployment summary
-- `DEPLOY_NOW.md` - Quick deployment guide
-- `VERCEL_DEPLOYMENT_CHECKLIST.md` - This checklist
-
----
-
-**🎉 Ready to serve automotive dealerships with AI Intelligence!** 🚗📊✨
+Your project is configured for Vercel deployment. Just push to GitHub and Vercel will handle the rest!

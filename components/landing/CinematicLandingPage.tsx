@@ -192,9 +192,13 @@ export default function CinematicLandingPage() {
             transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
           >
             <h1 className="text-5xl md:text-7xl font-light mb-6 leading-tight">
-              A conversation with{' '}
+              Dealerships don't need more data.{' '}
               <span className="font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                a system
+                They need clarity.
+              </span>
+              <br />
+              <span className="font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                DealershipAI delivers it.
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
