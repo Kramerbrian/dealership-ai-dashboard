@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
 
-export async function GET(req: NextRequest) {
+export const GET = createPublicRoute(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
     const includeMetrics = searchParams.get('metrics') === 'true';

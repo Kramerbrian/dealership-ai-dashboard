@@ -1,42 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
-  const { userId } = await auth();
-  const { searchParams } = new URL(req.url);
-  const tenant = searchParams.get('tenant') || userId || 'default';
+  const url = new URL(req.url);
+  const tenant = url.searchParams.get('tenant') || 'dlr_example';
 
-  // Mock data - replace with real database queries later
   const data = {
     tenant,
-    current: 'Terry Reid Hyundai is a Hyundai dealer in Cape Coral with solid reviews, but limited information on service pricing and few guides that help shoppers make decisions.',
-    improved: 'Terry Reid Hyundai is one of Cape Coral\'s most trusted dealerships, known for clear pricing, up-to-date service information, and easy guides that help shoppers choose the right vehicle.',
+    current:
+      'This dealership is a well-known store in its area with solid reviews, but AI still struggles to see clear service information and buyer guides.',
+    improved:
+      'This dealership is seen as a trusted local store with clear pricing, current service information, and simple guides that help shoppers choose the right vehicle.',
     history: [
       {
-        as_of: '2025-11-01',
-        intro: 'Earlier version text with basic information...',
+        as_of: '2025-11-01T00:00:00Z',
+        intro:
+          'This dealership has good reviews, but limited online information and few detailed guides for shoppers.',
         events: [
-          'Fixed AutoDealer schema on homepage',
-          'Improved LocalBusiness NAP consistency',
-        ],
+          'Fixed basic AutoDealer schema on homepage',
+          'Aligned NAP details between website and GBP'
+        ]
       },
       {
-        as_of: '2025-12-01',
-        intro: 'Next version text with improved content...',
+        as_of: '2025-12-01T00:00:00Z',
+        intro:
+          'This dealership is improving its online clarity, with better service details and some early guides for shoppers.',
         events: [
-          'Added FAQ to Service pages',
-          'Improved review snippets on VDPs',
-        ],
-      },
-    ],
+          'Added FAQs to Service pages',
+          'Improved review snippets on VDPs'
+        ]
+      }
+    ]
   };
 
-  return NextResponse.json(data, {
-    headers: {
-      'Cache-Control': 'private, no-cache, no-store, must-revalidate',
-    },
-  });
+  return NextResponse.json(data, { status: 200 });
 }
-
