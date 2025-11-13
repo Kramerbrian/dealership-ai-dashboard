@@ -1,357 +1,129 @@
-# 🚀 100% Deployment Checklist
+# 🚀 Deployment Checklist - Commit 443cfa3
 
-**Status:** Ready for final deployment steps
+## ✅ Status: Files Already in Repository
 
----
+All files from commit `443cfa3` are already present in the repository.
 
-## ✅ **COMPLETED (100%)**
+## 📦 Files Verified
 
-- [x] All dependencies installed
-- [x] Middleware configured and verified
-- [x] All API endpoints created
-- [x] Error handling standardized
-- [x] Rate limiting implemented
-- [x] Clay UX components implemented
-- [x] Onboarding page created
-- [x] Admin analytics dashboard created
-- [x] Supabase migration file created
-- [x] Supabase CLI installed
-- [x] Documentation complete
+### Landing Page Components
+- ✅ `components/landing/AIIntroCard.tsx`
+- ✅ `components/landing/ClarityStackPanel.tsx`
+- ✅ `components/landing/DealerFlyInMap.tsx`
+- ✅ `components/landing/LandingAnalyzer.tsx`
 
----
+### Dashboard Components
+- ✅ `components/dashboard/DashboardShell.tsx`
+- ✅ `components/dashboard/PulseOverview.tsx`
+- ✅ `components/dashboard/AutopilotPanel.tsx`
 
-## 🔄 **REMAINING STEPS FOR 100% DEPLOYMENT**
+### Pages & Routes
+- ✅ `app/dash/page.tsx`
+- ✅ `app/api/clarity/stack/route.ts`
 
-### 1. **Environment Configuration** ⚠️ REQUIRED
+## 🔧 Pre-Deployment Steps
 
-#### A. Configure `.env.local` with Real Values
-
-Edit `.env.local` and fill in:
-
+### 1. Install Dependencies
 ```bash
-# Clerk Authentication (REQUIRED)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_... or pk_test_...
-CLERK_SECRET_KEY=sk_live_... or sk_test_...
-
-# Supabase (REQUIRED for telemetry)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-role-key-here
-SUPABASE_ANON_KEY=your-anon-key-here
-
-# DealershipAI GPT API (REQUIRED)
-DAI_API_KEY=sk-proj-...
-NEXT_PUBLIC_DAI_API_KEY=sk-proj-...
-NEXT_PUBLIC_API_BASE_URL=https://api.gpt.dealershipai.com
-
-# Application URLs
-NEXT_PUBLIC_BASE_URL=https://your-domain.com
-NEXT_PUBLIC_APP_URL=https://your-domain.com
-
-# Upstash Redis (OPTIONAL but recommended)
-UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token-here
-
-# Schema Engine (OPTIONAL)
-SCHEMA_ENGINE_URL=https://your-schema-engine.com
-
-# Admin Access (OPTIONAL)
-NEXT_PUBLIC_ADMIN_EMAILS=admin@yourdomain.com
+npm install --legacy-peer-deps
 ```
 
-**Where to get values:**
-- **Clerk:** Dashboard → API Keys
-- **Supabase:** Dashboard → Settings → API
-- **Upstash:** Console → Your Database → Details
-- **DealershipAI API:** Your API key
+### 2. Verify Environment Variables
 
----
+**Required in Vercel:**
+- ✅ `NEXT_PUBLIC_MAPBOX_KEY` - Mapbox API token
+- ✅ `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- ✅ `CLERK_SECRET_KEY` - Clerk secret key
+- ⚪ `NEXT_PUBLIC_BASE_URL` - Optional base URL
 
-### 2. **Database Setup** ⚠️ REQUIRED
+**Verify in Vercel Dashboard:**
+1. Go to Project Settings → Environment Variables
+2. Ensure all required variables are set for Production, Preview, and Development
 
-#### A. Run Supabase Migration
-
-**Option 1: Supabase CLI (Recommended)**
+### 3. Generate Prisma Client
 ```bash
-# Login (if not already)
-supabase login
-
-# Link your project
-supabase link --project-ref YOUR_PROJECT_REF
-
-# Push migration
-supabase db push
+npx prisma generate
 ```
 
-**Option 2: Manual SQL**
-1. Go to Supabase Dashboard → SQL Editor
-2. Copy SQL from `supabase/migrations/20250111000001_create_telemetry_events.sql`
-3. Paste and click **Run**
-
-**Verify:**
-```sql
-SELECT * FROM telemetry_events LIMIT 1;
-```
-
----
-
-### 3. **Upstash Redis Setup** ⚠️ OPTIONAL (Recommended)
-
-1. Go to [Upstash Console](https://console.upstash.com/)
-2. Create new Redis database
-3. Copy REST URL and token
-4. Add to `.env.local`
-
-**Without Upstash:** Rate limiting uses in-memory fallback (works for dev, not ideal for production)
-
----
-
-### 4. **Vercel Environment Variables** ⚠️ REQUIRED
-
-Add all `.env.local` variables to Vercel:
-
-1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
-2. Add each variable from `.env.local`
-3. Set for **Production**, **Preview**, and **Development**
-
-**Important:** 
-- Use `NEXT_PUBLIC_*` prefix for client-side variables
-- Never commit `.env.local` to git
-
----
-
-### 5. **Pre-Deployment Testing** ⚠️ REQUIRED
-
-#### A. Local Testing
-
+### 4. Test Build Locally (Optional)
 ```bash
-# Start dev server
-pnpm run dev
-
-# Test endpoints
-curl http://localhost:3000/api/health
-curl -X POST http://localhost:3000/api/telemetry \
-  -H "Content-Type: application/json" \
-  -d '{"type":"test","payload":{"test":true}}'
+NEXT_TELEMETRY_DISABLED=1 npm run build
 ```
 
-#### B. Verify Authentication
+## 🚀 Deployment Steps
 
-1. Visit `http://localhost:3000`
-2. Test sign-in/sign-up flow
-3. Verify onboarding redirect works
-4. Test dashboard access
+### Option 1: Automatic (Recommended)
+1. **Push to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Deploy landing page and dashboard (commit 443cfa3)"
+   git push origin main
+   ```
 
-#### C. Test Rate Limiting
+2. **Vercel will automatically:**
+   - Detect the push
+   - Run the build command from `vercel.json`
+   - Deploy to production
 
-```bash
-# Make 31 requests (should get rate limited)
-for i in {1..31}; do
-  curl -X POST http://localhost:3000/api/telemetry \
-    -H "Content-Type: application/json" \
-    -d '{"type":"test"}'
-  echo ""
-done
-```
+### Option 2: Manual Deploy
+1. **Deploy via Vercel CLI:**
+   ```bash
+   vercel --prod
+   ```
 
-#### D. Verify Supabase Integration
+## ✅ Post-Deployment Verification
 
-1. Make a telemetry request
-2. Check Supabase Dashboard → Table Editor → `telemetry_events`
-3. Verify event was stored
+### 1. Landing Page
+- [ ] Visit `https://dealershipai.com/`
+- [ ] Verify domain input form appears
+- [ ] Test "Analyze my visibility" button
+- [ ] Verify Mapbox map fly-in animation
+- [ ] Check Clarity Stack panel displays
+- [ ] Verify AI Intro Card shows current vs improved
 
----
+### 2. Dashboard (Requires Clerk Auth)
+- [ ] Visit `https://dealershipai.com/dash`
+- [ ] Verify Clerk sign-in redirect works
+- [ ] After sign-in, verify Pulse Overview displays
+- [ ] Check navigation to:
+  - `/dash/onboarding` - Onboarding flow
+  - `/dash/autopilot` - Autopilot panel
+  - `/dash/insights/ai-story` - AI Story page
 
-### 6. **Build Verification** ⚠️ REQUIRED
+### 3. API Routes
+- [ ] Test `/api/clarity/stack?domain=example.com`
+- [ ] Verify response includes scores, revenue, location
+- [ ] Test `/api/ai-story?tenant=example`
 
-```bash
-# Test production build
-pnpm run build
-
-# Check for errors
-# Should see: ✓ Compiled successfully
-```
-
-**Fix any build errors before deploying.**
-
----
-
-### 7. **Deploy to Vercel** ⚠️ REQUIRED
-
-#### A. Connect Repository
-
-1. Go to Vercel Dashboard
-2. Click **Add New Project**
-3. Import your GitHub repository
-4. Configure:
-   - **Framework Preset:** Next.js
-   - **Root Directory:** `./` (or leave default)
-   - **Build Command:** `pnpm run build` (or `npm run build`)
-   - **Output Directory:** `.next`
-
-#### B. Set Environment Variables
-
-Add all variables from `.env.local` to Vercel:
-- Production
-- Preview
-- Development
-
-#### C. Deploy
-
-1. Click **Deploy**
-2. Wait for build to complete
-3. Check deployment URL
-
----
-
-### 8. **Post-Deployment Verification** ⚠️ REQUIRED
-
-#### A. Health Checks
-
-```bash
-# Test production URL
-curl https://your-domain.com/api/health
-curl https://your-domain.com/api/system/endpoints
-```
-
-#### B. Authentication Flow
-
-1. Visit production URL
-2. Test sign-in/sign-up
-3. Verify onboarding works
-4. Test dashboard access
-
-#### C. API Endpoints
-
-Test critical endpoints:
-- `/api/v1/analyze`
-- `/api/telemetry`
-- `/api/pulse/impacts`
-- `/api/schema/validate`
-
-#### D. Admin Dashboard
-
-1. Sign in as admin user
-2. Visit `/admin`
-3. Verify analytics load
-4. Test CSV export
-
-#### E. Error Monitoring
-
-- Check Vercel logs for errors
-- Monitor Supabase for connection issues
-- Check rate limiting is working
-
----
-
-### 9. **Production Optimizations** ⚠️ OPTIONAL
-
-#### A. Performance
-
-- [ ] Enable Vercel Analytics
-- [ ] Set up CDN caching
-- [ ] Optimize images
-- [ ] Enable compression
-
-#### B. Monitoring
-
-- [ ] Set up error tracking (Sentry)
-- [ ] Configure uptime monitoring
-- [ ] Set up alerting
-- [ ] Monitor API usage
-
-#### C. Security
-
-- [ ] Enable HTTPS only
-- [ ] Set security headers
-- [ ] Configure CORS
-- [ ] Review rate limits
-
----
-
-## 📋 **QUICK DEPLOYMENT COMMANDS**
-
-```bash
-# 1. Configure environment
-cp .env.example .env.local
-# Edit .env.local with real values
-
-# 2. Run Supabase migration
-supabase login
-supabase link --project-ref YOUR_PROJECT_REF
-supabase db push
-
-# 3. Test locally
-pnpm run dev
-# Test endpoints and authentication
-
-# 4. Build
-pnpm run build
-
-# 5. Deploy to Vercel
-# Push to GitHub, then deploy via Vercel dashboard
-# Or use Vercel CLI:
-vercel --prod
-```
-
----
-
-## 🎯 **DEPLOYMENT PRIORITY**
-
-### Critical (Must Do)
-1. ✅ Configure `.env.local` with real values
-2. ✅ Run Supabase migration
-3. ✅ Add environment variables to Vercel
-4. ✅ Test locally
-5. ✅ Deploy to Vercel
-6. ✅ Verify production deployment
-
-### Important (Should Do)
-7. ⚠️ Set up Upstash Redis
-8. ⚠️ Configure monitoring
-9. ⚠️ Set up error tracking
-
-### Nice to Have
-10. ⚠️ Performance optimizations
-11. ⚠️ Advanced monitoring
-12. ⚠️ Security hardening
-
----
-
-## 🆘 **TROUBLESHOOTING**
+## 🐛 Troubleshooting
 
 ### Build Fails
-- Check for TypeScript errors: `pnpm run type-check`
-- Verify all imports are correct
-- Check environment variables are set
+- Check Vercel build logs
+- Verify all environment variables are set
+- Ensure `package.json` has all dependencies
 
-### Authentication Not Working
-- Verify Clerk keys are correct
+### Mapbox Not Loading
+- Verify `NEXT_PUBLIC_MAPBOX_KEY` is set in Vercel
+- Check browser console for Mapbox errors
+- Ensure Mapbox token has correct permissions
+
+### Clerk Auth Issues
+- Verify Clerk keys are set in Vercel
 - Check middleware configuration
-- Verify environment variables in Vercel
+- Ensure Clerk domain is configured correctly
 
-### Database Errors
-- Verify Supabase migration ran
-- Check connection string
-- Verify service role key
+### Missing Components
+- Verify all files from commit 443cfa3 are present
+- Check file paths match exactly
+- Ensure imports are correct
 
-### Rate Limiting Not Working
-- Check Upstash credentials
-- Verify environment variables
-- Check API endpoint logs
+## 📝 Notes
 
----
+- Commit `443cfa3` is already in the repository history
+- All files are present and ready for deployment
+- Build fixes have been applied (missing exports, error handlers)
+- Known Next.js 15.5.6 `_not-found` issue documented in `docs/BUILD_NOTES.md`
 
-## ✅ **READY TO DEPLOY**
+## 🎯 Ready to Deploy
 
-Once you've completed:
-- [x] Environment variables configured
-- [x] Supabase migration run
-- [x] Local testing passed
-- [x] Build successful
-- [x] Vercel environment variables set
-
-**You're ready to deploy! 🚀**
-
----
-
-**Next:** Run through the checklist above, then deploy to Vercel.
+All files are in place. Push to GitHub and Vercel will handle the rest!

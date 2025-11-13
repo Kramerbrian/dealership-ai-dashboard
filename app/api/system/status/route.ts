@@ -86,4 +86,4 @@ export const GET = createPublicRoute(async (req: NextRequest) => {
       error: 'Failed to fetch system status'
     }, { status: 500 });
   }
-}
+});
