@@ -26,7 +26,7 @@ try {
 }
 
 export interface AITask {
-  type: 'summarize' | 'reason' | 'code' | 'schema' | 'chat' | 'embedding';
+  type: 'summarize' | 'reason' | 'code' | 'schema' | 'chat' | 'embedding' | 'deploy' | 'verify-deployment';
   input: string;
   context?: Record<string, unknown>;
   tokens?: number;
@@ -41,6 +41,20 @@ export interface AIResponse {
   cost: number;
   latency: number;
   confidence?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DeploymentStatus {
+  status: 'healthy' | 'degraded' | 'failed' | 'deploying';
+  url: string;
+  checks: {
+    landingPage: boolean;
+    mapbox: boolean;
+    api: boolean;
+    components: boolean;
+  };
+  errors?: string[];
+  timestamp: string;
 }
 
 /**
@@ -156,9 +170,150 @@ export async function getCachedContext(query: string, limit = 3) {
 }
 
 /**
- * Chief Clarity Officer - Main orchestration function
+ * Verify landing page deployment
  */
-export async function executeAITask(task: AITask): Promise<AIResponse> {
+export async function verifyLandingPageDeployment(baseUrl?: string): Promise<DeploymentStatus> {
+  const url = baseUrl || process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://dealershipai.com';
+  const checks = {
+    landingPage: false,
+    mapbox: false,
+    api: false,
+    components: false,
+  };
+  const errors: string[] = [];
+
+  try {
+    // Check landing page loads
+    try {
+      const landingResponse = await fetch(`${url}/`, {
+        method: 'GET',
+        headers: { 'Accept': 'text/html' },
+        signal: AbortSignal.timeout(5000),
+      });
+      checks.landingPage = landingResponse.ok && landingResponse.status === 200;
+      if (!checks.landingPage) {
+        errors.push(`Landing page returned ${landingResponse.status}`);
+      }
+    } catch (error) {
+      errors.push(`Landing page check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    // Check API endpoint
+    try {
+      const apiResponse = await fetch(`${url}/api/clarity/stack?domain=test.com`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(5000),
+      });
+      checks.api = apiResponse.ok;
+      if (!checks.api) {
+        errors.push(`API endpoint returned ${apiResponse.status}`);
+      }
+    } catch (error) {
+      errors.push(`API check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    // Check Mapbox environment variable (indirect check)
+    checks.mapbox = !!(process.env.NEXT_PUBLIC_MAPBOX_KEY || process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN);
+    if (!checks.mapbox) {
+      errors.push('Mapbox access token not configured');
+    }
+
+    // Check components (verify LandingAnalyzer is accessible)
+    try {
+      const healthResponse = await fetch(`${url}/api/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000),
+      });
+      checks.components = healthResponse.ok;
+      if (!checks.components) {
+        errors.push(`Health check returned ${healthResponse.status}`);
+      }
+    } catch (error) {
+      errors.push(`Component check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    const allChecksPass = Object.values(checks).every(v => v === true);
+    const status: DeploymentStatus['status'] = allChecksPass 
+      ? 'healthy' 
+      : errors.length > 2 
+        ? 'failed' 
+        : 'degraded';
+
+    return {
+      status,
+      url,
+      checks,
+      errors: errors.length > 0 ? errors : undefined,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    return {
+      status: 'failed',
+      url,
+      checks,
+      errors: [error instanceof Error ? error.message : 'Unknown deployment verification error'],
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
+
+/**
+ * Monitor deployment with AI analysis
+ */
+export async function monitorDeployment(task: AITask): Promise<AIResponse> {
+  if (task.type !== 'verify-deployment' && task.type !== 'deploy') {
+    throw new Error('Monitor deployment only works with deploy or verify-deployment task types');
+  }
+
+  const startTime = Date.now();
+  const deploymentStatus = await verifyLandingPageDeployment();
+  
+  // Use AI to analyze deployment status
+  const analysisPrompt = `Analyze this landing page deployment status:
+
+URL: ${deploymentStatus.url}
+Status: ${deploymentStatus.status}
+Checks:
+- Landing Page: ${deploymentStatus.checks.landingPage ? '✅' : '❌'}
+- Mapbox: ${deploymentStatus.checks.mapbox ? '✅' : '❌'}
+- API: ${deploymentStatus.checks.api ? '✅' : '❌'}
+- Components: ${deploymentStatus.checks.components ? '✅' : '❌'}
+${deploymentStatus.errors ? `Errors: ${deploymentStatus.errors.join(', ')}` : ''}
+
+Provide:
+1. Overall assessment
+2. Critical issues (if any)
+3. Recommended actions
+4. Next steps for full deployment`;
+
+  const analysisTask: AITask = {
+    type: 'reason',
+    input: analysisPrompt,
+    priority: 'quality',
+  };
+
+  // Execute analysis using internal function to avoid recursion
+  const analysis = await executeAITaskInternal(analysisTask);
+
+  return {
+    ...analysis,
+    metadata: {
+      deploymentStatus,
+      verificationTime: Date.now() - startTime,
+    },
+  };
+}
+
+/**
+ * Internal AI task execution (avoids recursion for deployment tasks)
+ */
+async function executeAITaskInternal(task: AITask): Promise<AIResponse> {
+
+/**
+ * Internal AI task execution (avoids recursion for deployment tasks)
+ */
+async function executeAITaskInternal(task: AITask): Promise<AIResponse> {
   const startTime = Date.now();
   const route = routeTask(task);
 
@@ -287,6 +442,9 @@ function getSystemPrompt(taskType: string): string {
       return `${basePrompt} Validate and generate JSON-LD schema markup. Ensure compliance with Schema.org standards.`;
     case 'chat':
       return `${basePrompt} Engage naturally with dealers. Be helpful, specific, and avoid jargon.`;
+    case 'deploy':
+    case 'verify-deployment':
+      return `${basePrompt} You are overseeing the deployment of the DealershipAI landing page. Analyze deployment status, identify issues, and provide actionable recommendations. Be specific about what needs to be fixed and how.`;
     default:
       return basePrompt;
   }

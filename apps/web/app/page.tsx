@@ -1,4 +1,11 @@
-import { LandingAnalyzer } from '@/components/landing/LandingAnalyzer';
+'use client';
+
+import dynamic from 'next/dynamic';
+
+// Disable SSR for landing analyzer to avoid build issues
+const LandingAnalyzer = dynamic(() => import('@/components/landing/LandingAnalyzer'), {
+  ssr: false,
+});
 
 export default function HomePage() {
   return (

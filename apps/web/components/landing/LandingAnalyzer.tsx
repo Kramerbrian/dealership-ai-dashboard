@@ -99,8 +99,15 @@ export function LandingAnalyzer() {
                   lat={location.lat}
                   lng={location.lng}
                   mode={mapMode}
-                  nightStyleUrl={MAPBOX_STYLES.dark}
-                  dayStyleUrl={MAPBOX_STYLES.light}
+                  nightStyleUrl={
+                    process.env.NEXT_PUBLIC_MAPBOX_LANDING_STYLE ||
+                    process.env.NEXT_PUBLIC_MAPBOX_DARK_STYLE ||
+                    MAPBOX_STYLES.dark
+                  }
+                  dayStyleUrl={
+                    process.env.NEXT_PUBLIC_MAPBOX_LIGHT_STYLE ||
+                    MAPBOX_STYLES.light
+                  }
                 />
               ) : (
                 <div className="rounded-3xl border border-white/10 bg-white/[0.02] h-[320px] flex items-center justify-center text-white/40 text-sm">
