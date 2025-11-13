@@ -23,6 +23,8 @@ import {
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { ClerkConditional } from '@/components/providers/ClerkConditional';
 import { getEasterEggQuote } from '@/lib/agent/quoteEngine';
+import DealerFlyInMap from './DealerFlyInMap';
+import { Moon, Sun } from 'lucide-react';
 
 // Easter Egg Quote Component
 function EasterEggQuote() {
@@ -52,6 +54,7 @@ function EasterEggQuote() {
 export default function CinematicLandingPage() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mapMode, setMapMode] = useState<'night' | 'day'>('night');
   const showcaseRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: showcaseRef,
@@ -224,70 +227,74 @@ export default function CinematicLandingPage() {
             </div>
           </motion.div>
 
-          {/* Right: AI Chat Demo Orb */}
+          {/* Right: Cinematic Map with Day/Night Toggle */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="relative"
           >
-            <div className="relative w-full aspect-square max-w-md mx-auto">
-              {/* Orb Container */}
+            <div className="relative w-full max-w-2xl mx-auto">
+              {/* Day/Night Toggle */}
               <motion.div
-                animate={{
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 20,
-                  repeat: -1,
-                  ease: 'linear',
-                }}
-                className="absolute inset-0 rounded-full border-2 border-cyan-500/30"
-              />
-              <motion.div
-                animate={{
-                  rotate: [360, 0],
-                }}
-                transition={{
-                  duration: 15,
-                  repeat: -1,
-                  ease: 'linear',
-                }}
-                className="absolute inset-4 rounded-full border border-emerald-500/20"
-              />
-              
-              {/* Central Orb */}
-              <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                  boxShadow: [
-                    '0 0 20px rgba(6,182,212,0.3)',
-                    '0 0 40px rgba(16,185,129,0.4)',
-                    '0 0 20px rgba(6,182,212,0.3)',
-                  ],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: -1,
-                  ease: 'easeInOut',
-                }}
-                className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.6 }}
+                className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-xl rounded-full p-2 border border-white/10 flex gap-2"
               >
-                <Brain className="w-16 h-16 text-black" />
+                <button
+                  onClick={() => setMapMode('night')}
+                  className={`p-2 rounded-full transition-all ${
+                    mapMode === 'night'
+                      ? 'bg-cyan-500 text-black'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                  aria-label="Night mode"
+                >
+                  <Moon className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setMapMode('day')}
+                  className={`p-2 rounded-full transition-all ${
+                    mapMode === 'day'
+                      ? 'bg-amber-500 text-black'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                  aria-label="Day mode"
+                >
+                  <Sun className="w-4 h-4" />
+                </button>
               </motion.div>
 
-              {/* Prompt Example */}
+              {/* Mapbox Cinematic Animation */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="relative rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl"
+                style={{ minHeight: '500px' }}
+              >
+                <DealerFlyInMap
+                  lat={37.7749} // Default San Francisco - can be dynamic
+                  lng={-122.4194}
+                  mode={mapMode}
+                  className="h-[500px]"
+                />
+              </motion.div>
+
+              {/* Info Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.6 }}
-                className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-xl rounded-xl p-4 border border-white/10"
+                transition={{ delay: 1.2, duration: 0.6 }}
+                className="mt-4 bg-black/60 backdrop-blur-xl rounded-xl p-4 border border-white/10"
               >
-                <p className="text-sm text-white/80 mb-2">Example prompt:</p>
-                <p className="text-white font-mono text-xs">
-                  "What's my AI visibility score across ChatGPT, Claude, and Perplexity?"
+                <p className="text-sm text-white/80 mb-2">
+                  {mapMode === 'night' ? '🌙 Tenet Inversion' : '☀️ Inception Daydream'}
                 </p>
-                {/* Easter Egg Quote (10% chance) */}
+                <p className="text-white/60 text-xs">
+                  Cinematic map styles that match your dealership's time of day
+                </p>
                 <EasterEggQuote />
               </motion.div>
             </div>
