@@ -68,7 +68,7 @@ export const POST = createPublicRoute(async (request: Request) => {
       { status: 500 }
     );
   }
-}
+});
 
 // Get email capture stats
 export async function GET() {
