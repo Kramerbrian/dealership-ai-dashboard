@@ -1,0 +1,15 @@
+{
+  "total": 2,
+  "migrated": 1,
+  "needsMigration": 1,
+  "endpoints": [
+    {
+      "file": "app/api/integrations/stats/route.ts",
+      "path": "/api/integrations/stats",
+      "hasGet": true,
+      "hasPost": false,
+      "needsMigration": true,
+      "currentAuth": "manual"
+    }
+  ]
+}

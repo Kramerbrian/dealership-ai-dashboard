@@ -1,7 +1,8 @@
 {
-  "buildCommand": "npx prisma generate --schema=./apps/web/prisma/schema.prisma && NEXT_TELEMETRY_DISABLED=1 next build",
+  "buildCommand": "cd apps/web && npx prisma generate && NEXT_TELEMETRY_DISABLED=1 next build",
   "framework": "nextjs",
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "cd apps/web && npm install --legacy-peer-deps",
+  "outputDirectory": "apps/web/.next",
   "rewrites": [
     {
       "source": "/api/:path*",
