@@ -26,7 +26,7 @@ export default function MotionOrchestrator({
       scale: [1, 1.02, 1],
       transition: {
         duration: 2,
-        repeat: Infinity,
+        repeat: -1,
         ease: 'easeInOut',
       },
     });

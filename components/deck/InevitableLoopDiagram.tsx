@@ -20,7 +20,7 @@ export default function InevitableLoopDiagram() {
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
           animate={{ scale: [1, 1.05, 1], opacity: [0.6, 0.8, 0.6] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 3, repeat: -1, ease: 'easeInOut' }}
           className="w-32 h-32 rounded-full"
           style={{
             background: `radial-gradient(circle, ${TOKENS.color.accent.clarityBlue}40, transparent)`,
@@ -124,7 +124,7 @@ export default function InevitableLoopDiagram() {
       <motion.div
         className="absolute inset-0 pointer-events-none"
         animate={{ rotate: 360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 60, repeat: -1, ease: 'linear' }}
       >
         <div
           className="absolute inset-0 rounded-full"
