@@ -42,12 +42,24 @@ export const POST = createPublicRoute(async (request: Request) => {
       await redisClient.sadd('landing:unique_emails', email.toLowerCase());
     }
 
-    // Send email report via email service
-    try {
-      const { emailService } = await import('@/lib/services/email');
-      await emailService.sendUnlockEmail(email, 'AI Visibility Report');
-    } catch (emailError: any) {
-      console.warn('Failed to send unlock email:', emailError.message);
+    // Send email report via email service (only in nodejs runtime)
+    // Note: Edge runtime doesn't support SendGrid, so we skip email sending here
+    // Email will be sent via a separate API route or background job
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        // Queue email job instead of sending directly in edge runtime
+        const redisClient = redis();
+        if (redisClient) {
+          await redisClient.lpush('email:queue', JSON.stringify({
+            type: 'unlock',
+            email,
+            featureName: 'AI Visibility Report',
+            timestamp: new Date().toISOString(),
+          }));
+        }
+      } catch (emailError: any) {
+        console.warn('Failed to queue email:', emailError.message);
+      }
     }
 
     return NextResponse.json({
