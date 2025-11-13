@@ -1,7 +1,6 @@
 {
-  "buildCommand": "npm install --legacy-peer-deps && prisma generate --schema=../../prisma/schema.prisma && NEXT_TELEMETRY_DISABLED=1 next build",
+  "buildCommand": "npm install --legacy-peer-deps && prisma generate && NEXT_TELEMETRY_DISABLED=1 next build",
   "installCommand": "npm install --legacy-peer-deps",
-  "rootDirectory": "apps/web",
   "framework": "nextjs",
   "rewrites": [
     {
