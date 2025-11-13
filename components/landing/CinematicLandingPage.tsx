@@ -228,7 +228,8 @@ export default function CinematicLandingPage() {
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
-              DealershipAI analyzes what's coming, fixes what's broken, and guides what matters, before you realize it needs attention.
+              DealershipAI isn't software you use; it's cognition you borrow. 
+              An embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <ClerkConditional>
