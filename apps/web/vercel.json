@@ -1,0 +1,79 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "next.config.js",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, s-maxage=60, stale-while-revalidate=300"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/zero-click/recompute",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/nurture",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/www",
+      "destination": "https://dealershipai.com",
+      "permanent": true
+    }
+  ]
+}
+

@@ -7,6 +7,10 @@ import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
 import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
 import { ThemeProvider } from '@/lib/theme'
 
+// Force dynamic rendering for root layout
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 const inter = Inter({ 
   subsets: ['latin'],
   display: 'swap',
