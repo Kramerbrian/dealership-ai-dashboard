@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install --legacy-peer-deps && cd apps/web && npx prisma generate && NEXT_TELEMETRY_DISABLED=1 next build",
+  "buildCommand": "cd apps/web && npx prisma generate && cd ../.. && npx turbo run build --filter=@dealershipai/web",
   "framework": "nextjs",
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "apps/web/.next",
