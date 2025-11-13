@@ -1,247 +1,363 @@
 # Vercel + Environment Variables Sanity Checklist
 
-**"Am I insane or is the stack actually broken?" toolkit**
+**Purpose:** Quick reference for deploying DealershipAI to Vercel and verifying critical environment variables.
 
-Use this checklist to verify your Vercel deployment is configured correctly and all required environment variables are set.
+**Last Updated:** November 2025
 
 ---
 
-## 1. Vercel Project Basics
+## A. Vercel Project Basics
 
 In the Vercel dashboard → Project Settings:
 
-### Framework Preset
-- ✅ **Framework Preset**: `Next.js`
-- ✅ **Root Directory**: Leave empty (or set to repo root if monorepo)
-- ✅ **Build Command**: `npm run build` (or `next build`)
-- ✅ **Install Command**: Leave empty (Vercel runs `npm install` by default)
-- ✅ **Output Directory**: Leave empty for App Router (Next.js handles it automatically)
+### Required Settings
 
-**Note:** You shouldn't need to override these unless you're doing something custom.
+- ✅ **Framework Preset**: `Next.js`
+- ✅ **Root Directory**: `apps/web` (monorepo structure)
+- ✅ **Build Command**: `npm install --legacy-peer-deps && prisma generate --schema=../../prisma/schema.prisma && NEXT_TELEMETRY_DISABLED=1 next build`
+- ✅ **Install Command**: `npm install --legacy-peer-deps`
+- ✅ **Output Directory**: leave empty (Next.js App Router handles this automatically)
+
+**Note:** These are configured in `vercel.json` at the repo root. You shouldn't need to override them unless you're doing something custom.
 
 ---
 
-## 2. Required Environment Variables (Production)
+## B. Environment Variables That Must Exist (Production)
 
 These are the ones that will **actually break things** if missing.
 
-### 2.1 Mapbox (for DealerFlyInMap)
+### 1. Mapbox (for DealerFlyInMap)
 
-**Required if using map components on landing page:**
+If you're using the `DealerFlyInMap` component on the landing page:
 
-- `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` or `NEXT_PUBLIC_MAPBOX_KEY`
-  - **Where to set**: Vercel → Settings → Environment Variables
-  - **Value**: Your Mapbox public access token
-  - **Example**: `pk.eyJ1IjoibXl1c2VyIiwiYSI6Im...`
-  - **Environment**: Production, Preview, Development
+- **`NEXT_PUBLIC_MAPBOX_KEY`** or **`NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`**
+  - Set in **Vercel → Settings → Environment Variables**
+  - Same value as your Mapbox public access token
+  - Example: `pk.eyJ1IjoibXl1c2VyIiwiYSI6Im...`
 
 **If missing:**
 - The map may fail silently or throw errors in the browser
-- Build will pass, but landing experience is degraded
-- Healthcheck will show `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: false`
+- It won't necessarily break `next build`, but your landing experience is degraded
+- Healthcheck will show `NEXT_PUBLIC_MAPBOX_KEY: false`
 
 ---
 
-### 2.2 Clerk (Authentication)
+### 2. Clerk (Authentication)
 
-**Required for `/dash` and protected routes:**
+If `/dash` is Clerk-guarded (which it is in our code):
 
-#### Core Keys (Required)
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-  - Your Clerk publishable key (starts with `pk_`)
-- `CLERK_SECRET_KEY`
-  - Your Clerk secret key (starts with `sk_`)
+**Required:**
+- **`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`** - Public key from Clerk dashboard
+- **`CLERK_SECRET_KEY`** - Secret key from Clerk dashboard
 
-#### Optional URLs (Recommended)
-- `NEXT_PUBLIC_CLERK_SIGN_IN_URL` (default: `/sign-in`)
-- `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (default: `/sign-up`)
-- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` (default: `/dashboard`)
-- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` (default: `/dashboard`)
+**Optional (with defaults):**
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL` (defaults to `/sign-in`)
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (defaults to `/sign-up`)
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` (defaults to `/dash`)
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` (defaults to `/dash`)
+
+**If these are missing:**
+- Build may still pass, but `/dash` will throw runtime errors or redirect loops
+- Healthcheck will show `CLERK_SECRET_KEY: false` and mark overall status as `ok: false`
+- Users cannot access the dashboard
+
+---
+
+### 3. Base URL (Optional but Helpful)
+
+- **`NEXT_PUBLIC_BASE_URL`**
+
+This is handy when you fetch from your own APIs server-side:
+
+- **In production:** Set to your Vercel URL, e.g. `https://dealershipai.vercel.app`
+- **In dev:** Can be blank; your code should fall back to relative URLs
 
 **If missing:**
-- Build may pass, but `/dash` will throw runtime errors or redirect loops
-- Healthcheck will show `CLERK_SECRET_KEY: false` and mark overall status as broken
-- Users cannot authenticate
+Our examples already handle fallback:
+
+```typescript
+const base = process.env.NEXT_PUBLIC_BASE_URL || '';
+const url = base ? `${base}/api/clarity/stack?...` : `/api/clarity/stack?...`;
+```
+
+So this one is **optional**, not fatal. Healthcheck will show it as missing but won't fail.
 
 ---
 
-### 2.3 Base URL (Optional but Helpful)
+### 4. Database / Prisma (Only if Used in Landing Path)
 
-- `NEXT_PUBLIC_BASE_URL`
-  - **Production**: Your Vercel URL, e.g. `https://dealershipai.vercel.app`
-  - **Preview**: Leave empty (Vercel provides `VERCEL_URL`)
-  - **Development**: Leave empty (code falls back to relative URLs)
+- **`DATABASE_URL`** (or your specific DSN)
+
+**When required:**
+- If Prisma is used in `/app/page.tsx` or `/api/clarity/stack`
+- If any landing page components import Prisma client
+
+**When optional:**
+- If Prisma is only used in deeper parts of the app (e.g., `/api/leads/capture`)
+- If you're just shipping landing + dash without real DB connections
+
+**If missing and required:**
+- Build will fail with Prisma errors
+- Runtime will fail when those routes are hit
+
+---
+
+### 5. Supabase (If Using Lead Capture)
+
+- **`NEXT_PUBLIC_SUPABASE_URL`**
+- **`SUPABASE_SERVICE_ROLE_KEY`**
+
+**When required:**
+- If `/api/leads/capture` is enabled
+- If you're storing leads in Supabase
 
 **If missing:**
-- Code should handle fallback gracefully
-- Server-side API calls may fail if using absolute URLs
-- Healthcheck will show `NEXT_PUBLIC_BASE_URL: false` (not critical)
+- `/api/leads/capture` will return `503 Database not configured`
+- Landing page FreeScanWidget will still work, but leads won't be saved
 
 ---
 
-### 2.4 Database (Only if Prisma is used in landing/clarity paths)
+## C. Variables That Can Be Stubbed or Omitted (For Now)
 
-- `DATABASE_URL`
-  - Your database connection string
-  - Only required if `/app/page.tsx` or `/api/clarity/stack` imports Prisma
-  - If Prisma is only used in deeper parts of the app, you can ship landing + dash without it
+If you are just trying to get **landing + clarity API + dash** online:
 
-**If missing and Prisma is imported:**
-- Build will fail with database connection errors
-- Landing page won't load
-
----
-
-## 3. Optional Environment Variables
-
-These can be stubbed or omitted if the features aren't used yet.
-
-### Email Service
-- `SENDGRID_API_KEY` or `RESEND_API_KEY`
-  - Only needed if email capture routes are enabled
-  - Can be omitted if those routes are disabled
+### Email Services
+- `SENDGRID_API_KEY` - Can be omitted if email sending isn't used
+- `SENDGRID_FROM_EMAIL` - Can be omitted if email sending isn't used
 
 ### External APIs
-- `ANTHROPIC_API_KEY` (for Assistant API)
-- `OPENAI_API_KEY` (if using OpenAI)
-- `GOOGLE_ANALYTICS_ID` (for analytics)
+- `OPENAI_API_KEY` - Only needed if AI features are enabled
+- `ANTHROPIC_API_KEY` - Only needed if Claude features are enabled
+- `PERPLEXITY_API_KEY` - Only needed if Perplexity features are enabled
 
-**Rule:**
-> If a route isn't used for landing/clarity/dash and it breaks the build, move it or disable it.
-> You can re-enable once you care.
+### Redis / Rate Limiting
+- `UPSTASH_REDIS_REST_URL` - Optional, rate limiting will be disabled if missing
+- `UPSTASH_REDIS_REST_TOKEN` - Optional, rate limiting will be disabled if missing
+
+### Other Services
+- `CRON_SECRET` - Only needed if cron jobs are enabled
+- `SENTRY_DSN` - Optional, error tracking will be disabled if missing
+
+**The rule:**
+> If a route isn't used for landing/clarity/dash and it breaks the build, move it to `app/api_disabled/*` or disable it. You can re-enable once you care.
 
 ---
 
-## 4. Healthcheck Endpoints
+## D. Quick Verification
 
-### 4.1 Programmatic Check
+### 1. Check Health Endpoint
 
-**Endpoint**: `GET /api/health`
+After deployment, hit:
 
-**Returns JSON:**
+```
+https://your-vercel-domain.com/api/health
+```
+
+Expected response:
 ```json
 {
   "ok": true,
   "checks": {
     "env": {
-      "NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN": true,
+      "NEXT_PUBLIC_MAPBOX_KEY": true,
       "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": true,
-      "CLERK_SECRET_KEY": true
+      "CLERK_SECRET_KEY": true,
+      "NEXT_PUBLIC_BASE_URL": true
     },
     "clarity": {
       "ok": true,
       "status": 200,
       "hasScores": true,
-      "hasLocation": true
+      "hasLocation": true,
+      "hasIntros": true
     }
   },
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "version": "1.0.0"
+  "timestamp": "2025-11-13T22:00:00.000Z"
 }
 ```
 
-**Usage:**
-```bash
-curl https://your-vercel-domain.com/api/health
+### 2. Check Healthcheck Page
+
+Visit:
+
+```
+https://your-vercel-domain.com/healthcheck
 ```
 
-### 4.2 Human-Readable Check
+You should see a visual status page with green "OK" indicators.
 
-**Page**: `/healthcheck`
+### 3. Test Landing Page
 
-Visit in browser to see a visual status page.
+Visit:
 
-**What it checks:**
-- ✅ Environment variables presence
-- ✅ Clarity API reachability
-- ✅ Trust API endpoint existence
-- ✅ Assistant API endpoint existence
-
----
-
-## 5. Quick Verification Steps
-
-### Step 1: Check Healthcheck
-1. Visit `https://your-vercel-domain.com/healthcheck`
-2. Verify `Overall Status: OK`
-3. Check that all required env vars show `✓`
-
-### Step 2: Test Landing Page
-1. Visit `https://your-vercel-domain.com/`
-2. Verify page loads without errors
-3. Check browser console for any missing env var errors
-
-### Step 3: Test Dashboard (if Clerk is configured)
-1. Visit `https://your-vercel-domain.com/dash`
-2. Should redirect to sign-in if not authenticated
-3. Should load dashboard if authenticated
-
-### Step 4: Test Clarity API
-1. Visit `https://your-vercel-domain.com/api/clarity/stack?domain=exampledealer.com`
-2. Should return JSON with scores and location data
-
----
-
-## 6. Common Issues
-
-### Issue: Build passes but landing page shows errors
-**Solution**: Check browser console for missing `NEXT_PUBLIC_*` env vars
-
-### Issue: `/dash` redirects in a loop
-**Solution**: Verify `CLERK_SECRET_KEY` and `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` are set
-
-### Issue: Map doesn't load
-**Solution**: Verify `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` is set in Vercel
-
-### Issue: Healthcheck shows `ok: false`
-**Solution**: Check `checks.env` and `checks.clarity` in the response to identify missing vars
-
----
-
-## 7. Setting Environment Variables in Vercel
-
-1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
-2. Add each variable:
-   - **Key**: e.g. `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`
-   - **Value**: Your actual token/key
-   - **Environment**: Select Production, Preview, and/or Development
-3. Click "Save"
-4. **Important**: Redeploy for changes to take effect
-
----
-
-## 8. Next Steps
-
-Once healthcheck passes:
-
-1. ✅ Landing page loads
-2. ✅ Clarity API responds
-3. ✅ Dashboard authentication works
-4. ✅ All critical env vars are set
-
-You can then:
-- Set up monitoring (ping `/api/health` periodically)
-- Add GitHub Actions to verify health after deploys
-- Set up alerts for healthcheck failures
-
----
-
-## TL;DR
-
-**Must-have env vars:**
-- `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` (for map)
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (for auth)
-- `CLERK_SECRET_KEY` (for auth)
-- `DATABASE_URL` (only if Prisma used in landing/clarity)
-
-**Healthcheck:**
-- `/api/health` → JSON programmatic check
-- `/healthcheck` → Human-readable check
-
-**Quick test:**
-```bash
-curl https://your-vercel-domain.com/api/health | jq
+```
+https://your-vercel-domain.com/
 ```
 
-If `ok: true`, you're good to go! 🚀
+Should render:
+- Hero section with headline
+- FreeScanWidget (if enabled)
+- No console errors
 
+### 4. Test Dashboard
+
+Visit:
+
+```
+https://your-vercel-domain.com/dash
+```
+
+Should:
+- Redirect to `/sign-in` if not authenticated
+- Show dashboard with PulseOverview if authenticated
+
+---
+
+## E. Common Issues
+
+### Issue: Build Fails with "Module not found"
+
+**Solution:**
+- Check that `rootDirectory` in `vercel.json` is set to `apps/web`
+- Verify `package.json` exists in `apps/web/`
+- Run `npm install --legacy-peer-deps` locally to verify dependencies
+
+### Issue: Dashboard Shows Auth Errors
+
+**Solution:**
+- Verify `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set
+- Check that Clerk app is configured with correct redirect URLs
+- Verify environment variables are set for the correct environment (Production/Preview)
+
+### Issue: Map Doesn't Load
+
+**Solution:**
+- Verify `NEXT_PUBLIC_MAPBOX_KEY` is set
+- Check Mapbox token is valid and has correct permissions
+- Verify token isn't expired
+
+### Issue: Clarity API Returns 404
+
+**Solution:**
+- Verify `/api/clarity/stack/route.ts` exists in `apps/web/app/api/clarity/stack/`
+- Check that route is not in `api_disabled/`
+- Verify build completed successfully
+
+---
+
+## F. Environment-Specific Variables
+
+### Production
+- Set all required variables in Vercel → Settings → Environment Variables → Production
+- Use production Clerk keys
+- Use production database URLs
+
+### Preview
+- Can use same variables as Production (recommended)
+- Or use separate preview/staging keys
+
+### Development
+- Use `.env.local` file (not committed to git)
+- Can use development/staging keys
+
+---
+
+## G. Quick Setup Script
+
+For a new Vercel project, minimum required variables:
+
+```bash
+# In Vercel Dashboard → Settings → Environment Variables
+
+# Required
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Optional but recommended
+NEXT_PUBLIC_MAPBOX_KEY=pk.eyJ1Ijoi...
+NEXT_PUBLIC_BASE_URL=https://your-app.vercel.app
+
+# Optional (if using features)
+DATABASE_URL=postgresql://...
+NEXT_PUBLIC_SUPABASE_URL=https://...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+---
+
+## H. Verification Checklist
+
+Before considering deployment "done":
+
+- [ ] Build completes successfully in Vercel
+- [ ] `/api/health` returns `ok: true`
+- [ ] `/healthcheck` page shows green status
+- [ ] Landing page (`/`) loads without errors
+- [ ] Dashboard (`/dash`) redirects to sign-in when not authenticated
+- [ ] Dashboard loads when authenticated
+- [ ] `/api/clarity/stack` returns valid JSON with scores
+- [ ] No console errors in browser
+- [ ] Map loads (if Mapbox key is set)
+
+---
+
+## I. Support
+
+If healthcheck shows `ok: false`:
+
+1. Check `checks.env` for missing required variables
+2. Check `checks.clarity` for API endpoint issues
+3. Review Vercel build logs for errors
+4. Verify `vercel.json` configuration is correct
+
+For detailed troubleshooting, see `docs/TROUBLESHOOTING.md` (if it exists).
+
+---
+
+## J. Automated Healthcheck (GitHub Actions)
+
+We have an automated healthcheck that runs after every push to `main`:
+
+**File:** `.github/workflows/healthcheck.yml`
+
+### Setup
+
+1. **Set Production URL** (optional):
+   - Go to GitHub → Settings → Secrets and variables → Actions
+   - Add secret: `PRODUCTION_URL` = `https://dealershipai.com` (or your Vercel URL)
+
+2. **Set Slack Webhook** (optional):
+   - Create a Slack incoming webhook
+   - Add secret: `SLACK_WEBHOOK_URL` = your webhook URL
+
+### What It Does
+
+- ✅ Runs automatically on every push to `main`
+- ✅ Can be triggered manually via "Run workflow"
+- ✅ Checks `/api/health` endpoint
+- ✅ Fails if `ok: false` or non-200 status
+- ✅ Sends Slack notification on failure (if configured)
+- ✅ Comments on PRs with healthcheck status (if PR workflow)
+
+### Manual Trigger
+
+You can manually trigger the healthcheck:
+
+1. Go to GitHub → Actions → "Production Healthcheck"
+2. Click "Run workflow"
+3. Select branch (usually `main`)
+4. Click "Run workflow"
+
+### Viewing Results
+
+- **Success:** ✅ Green checkmark in GitHub Actions
+- **Failure:** ❌ Red X with detailed logs
+- **Slack:** Message sent to configured channel (if webhook is set)
+
+### Customization
+
+Edit `.github/workflows/healthcheck.yml` to:
+- Change the production URL
+- Add email notifications
+- Add more checks
+- Change trigger conditions
