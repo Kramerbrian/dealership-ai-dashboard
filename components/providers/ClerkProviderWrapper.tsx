@@ -8,13 +8,12 @@ export function ClerkProviderWrapper({ children }: { children: React.ReactNode }
 
   // Get domain to check if we're on the dashboard subdomain
   const domain = typeof window !== 'undefined' ? window.location.hostname : '';
-  
-  // Clerk should ONLY be enabled on dash.dealershipai.com (or localhost for dev)
-  const isDashboardDomain = 
-    domain === 'dash.dealershipai.com' || 
-    domain === 'localhost' || 
-    domain.startsWith('localhost:') ||
-    domain.includes('vercel.app'); // Allow Vercel preview URLs for testing
+
+  // Clerk should ONLY be enabled on dash.dealershipai.com
+  // For production: only dash.dealershipai.com should have Clerk
+  // For Vercel previews: disable Clerk (landing page only for previews)
+  // For local dev: disable Clerk by default (dashboard can be accessed via dash.localhost if needed)
+  const isDashboardDomain = domain === 'dash.dealershipai.com';
 
   // Debug logging in development
   if (process.env.NODE_ENV === 'development') {
