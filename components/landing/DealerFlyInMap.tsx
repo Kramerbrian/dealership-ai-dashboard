@@ -27,11 +27,11 @@ export function DealerFlyInMap({ lat, lng }: DealerFlyInMapProps) {
 
     const map = new mapboxgl.Map({
       container: mapNode.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style: 'mapbox://styles/briankramer/cmhwt6m5n006b01s1c6z9858y',
       center: [0, 20],
       zoom: 2,
-      pitch: 0,
-      bearing: 0,
+      pitch: 45,
+      bearing: 340,
       interactive: false
     });
 
