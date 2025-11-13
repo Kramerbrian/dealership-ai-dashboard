@@ -118,6 +118,12 @@ class EmailService {
       success: true,
       messageId: result[0]?.headers['x-message-id'] as string,
     };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to send email via SendGrid',
+      };
+    }
   }
 
   /**
