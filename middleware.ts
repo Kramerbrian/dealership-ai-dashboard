@@ -143,6 +143,13 @@ async function getClerkMiddleware() {
 async function dashboardMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Redirect /dash to root on dashboard subdomain to avoid conflicts
+  if (pathname === '/dash' || pathname.startsWith('/dash/')) {
+    const rootUrl = new URL(req.url);
+    rootUrl.pathname = pathname.replace(/^\/dash/, '') || '/';
+    return NextResponse.redirect(rootUrl, 308);
+  }
+
   // IMPORTANT: Check public routes FIRST, before any auth logic
   // This ensures public endpoints always bypass auth
   if (isPublicRoute(pathname)) {
