@@ -1,37 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { auth } from '@clerk/nextjs/server';
+import { createAuthRoute } from '@/lib/api/enhanced-route';
+import { getSupabaseClient } from '@/lib/db/pool';
 
 export const runtime = 'nodejs';
-
-/**
- * Get Supabase client (lazy initialization to avoid build-time errors)
- */
-function getSupabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-
-  if (!url || !key) {
-    return null;
-  }
-
-  return createClient(url, key);
-}
 
 /**
  * GET /api/integrations/stats
  * Get comprehensive integration statistics for a dealer
  */
-export async function GET(req: NextRequest) {
+export const GET = createAuthRoute(async (req: NextRequest) => {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
 
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -97,5 +76,5 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
