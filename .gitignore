@@ -130,3 +130,4 @@ temp/
 # Disabled page components
 .disabled-pages/
 GITHUB_SECRETS_REFERENCE.txt
+.next/
