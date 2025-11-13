@@ -12,6 +12,19 @@ const nextConfig = {
         fs: false,
       };
     }
+
+    // Bundle analyzer (only when ANALYZE=true)
+    if (!isServer && process.env.ANALYZE === 'true') {
+      const { BundleAnalyzerPlugin } = require('@next/bundle-analyzer');
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          openAnalyzer: false,
+          reportFilename: `../bundle-analyzer/${isServer ? 'server' : 'client'}.html`,
+        })
+      );
+    }
+
     return config;
   },
   eslint: {
@@ -123,22 +136,6 @@ const nextConfig = {
       'img.clerk.com',
     ],
   },
-  // Bundle analyzer
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config, { isServer }) => {
-      if (!isServer) {
-        const { BundleAnalyzerPlugin } = require('@next/bundle-analyzer');
-        config.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            openAnalyzer: false,
-            reportFilename: `../bundle-analyzer/${isServer ? 'server' : 'client'}.html`,
-          })
-        );
-      }
-      return config;
-    },
-  }),
 };
 
 module.exports = nextConfig;
