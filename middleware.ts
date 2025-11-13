@@ -114,7 +114,15 @@ async function publicMiddleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // All routes on main domain are public - allow through
+  // Redirect dashboard routes to dashboard subdomain
+  const dashboardPaths = ['/dash', '/dashboard', '/intelligence', '/cognitive', '/onboarding'];
+  if (dashboardPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
+    const dashboardUrl = new URL(req.url);
+    dashboardUrl.hostname = 'dash.dealershipai.com';
+    return NextResponse.redirect(dashboardUrl, 308); // Permanent redirect
+  }
+
+  // All other routes on main domain are public - allow through
   return NextResponse.next();
 }
 
