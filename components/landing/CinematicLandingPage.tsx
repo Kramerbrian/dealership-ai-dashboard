@@ -8,17 +8,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { 
-  Sparkles, 
-  Eye, 
-  Shield, 
+import {
+  Sparkles,
+  Eye,
+  Shield,
   Infinity,
   ArrowRight,
   Menu,
   X,
   TrendingUp,
   Zap,
-  Pulse
+  Activity
 } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { ClerkConditional } from '@/components/providers/ClerkConditional';
@@ -303,7 +303,7 @@ export default function CinematicLandingPage() {
                 }}
                 className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center"
               >
-                <Pulse className="w-16 h-16 text-black" />
+                <Activity className="w-16 h-16 text-black" />
               </motion.div>
 
               {/* Prompt Example */}
