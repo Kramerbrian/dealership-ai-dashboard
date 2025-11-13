@@ -11,6 +11,14 @@ export const runtime = 'nodejs';
  */
 export async function GET(req: NextRequest) {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -24,14 +32,6 @@ export async function GET(req: NextRequest) {
     const groupId = url.searchParams.get('groupId');
 
     // Get user's dealer groups
-    const supabase = getSupabase();
-    if (!supabase) {
-      return NextResponse.json(
-        { error: 'Database not configured' },
-        { status: 503 }
-      );
-    }
-
     const { data: groups, error: groupsError } = await supabase
       .from('dealer_groups')
       .select('id, group_name, group_slug')

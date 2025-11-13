@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase';;
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -12,9 +12,16 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get latest export metadata from Supabase
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
 
+    // Get latest export metadata from Supabase
+    
     const { data: latestExport, error } = await supabase
       .from('claude_exports')
       .select('*')
@@ -119,8 +126,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
+    
     const { data, error } = await supabase
       .from('claude_exports')
       .insert({
