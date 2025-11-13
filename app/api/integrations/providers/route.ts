@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export const runtime = 'nodejs';
+
+/**
+ * Get Supabase client (lazy initialization to avoid build-time errors)
+ */
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+
+  if (!url || !key) {
+    return null;
+  }
+
+  return createClient(url, key);
+}
 
 /**
  * GET /api/integrations/providers
@@ -14,6 +23,21 @@ export const runtime = 'nodejs';
  */
 export async function GET(req: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      // Return empty array if Supabase not configured (graceful degradation)
+      return NextResponse.json(
+        { providers: [] },
+        {
+          status: 200,
+          headers: {
+            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+          },
+        }
+      );
+    }
+
     const url = new URL(req.url);
     const category = url.searchParams.get('category');
 
