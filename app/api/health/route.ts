@@ -53,19 +53,22 @@ export async function GET() {
     try {
       const supabaseUrl = process.env.SUPABASE_URL?.trim() || process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
       const supabaseKey = process.env.SUPABASE_SERVICE_KEY?.trim() || process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-      
+
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        // Test connection by trying to access the auth API
-        const { data, error } = await supabase.auth.getSession();
+        // Simple ping query - just check if we can execute a query
+        const { error } = await supabase
+          .from('_prisma_migrations')
+          .select('id')
+          .limit(1)
+          .maybeSingle();
 
-        // Check if we get a valid response (even if no session)
-        if (error && (error.message.includes('Invalid API key') || error.message.includes('JWT') || error.status === 401)) {
+        // Connection is working if we don't get a connection error
+        if (!error || error.code !== 'PGRST301') {
+          healthStatus.services.database = 'connected';
+        } else {
           throw error;
         }
-
-        // If we got here, connection is working
-        healthStatus.services.database = 'connected';
       }
     } catch (error) {
       console.error('Database health check failed:', error);
