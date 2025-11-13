@@ -190,5 +190,8 @@
     "bullmq"
   ],
   "author": "DealershipAI Team",
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "cookie": "^0.7.0"
+  }
 }
