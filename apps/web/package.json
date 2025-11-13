@@ -16,9 +16,9 @@
   "dependencies": {
     "@clerk/nextjs": "^6.35.1",
     "@prisma/client": "^5.22.0",
-    "@sendgrid/mail": "^8.1.6",
+    "@sendgrid/mail": "^7.7.0",
     "@tanstack/react-query": "^5.90.6",
-    "cheerio": "^1.1.2",
+    "cheerio": "^1.0.0-rc.12",
     "date-fns": "^4.1.0",
     "framer-motion": "^10.18.0",
     "lottie-web": "^5.12.2",
