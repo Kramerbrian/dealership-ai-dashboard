@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { getSupabase } from '@/lib/supabase';;
+import { getSupabase } from '@/lib/supabase';
 import type { PulseCard } from '@/lib/types/pulse';
 
 

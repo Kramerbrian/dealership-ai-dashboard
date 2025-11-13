@@ -4,10 +4,9 @@
  * Real-time updates for Pulse Decision Inbox
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { getSupabase } from '@/lib/supabase';;
-
+import { getSupabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
