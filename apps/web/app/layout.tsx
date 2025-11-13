@@ -8,8 +8,7 @@ import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
 import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
 // ErrorBoundary imported dynamically to avoid circular dependencies
 const ErrorBoundary = dynamic(
-  () => import('@/components/ErrorBoundary').then(mod => ({ default: mod.ErrorBoundary })),
-  { ssr: false }
+  () => import('@/components/ErrorBoundary').then(mod => ({ default: mod.ErrorBoundary }))
 )
 import { ThemeProvider } from '@/lib/theme'
 
@@ -18,8 +17,7 @@ const ToasterWrapper = dynamic(
   () => import('sonner').then((mod) => {
     const Toaster = mod.Toaster;
     return (props: any) => <Toaster position="top-right" richColors {...props} />;
-  }).catch(() => () => null),
-  { ssr: false }
+  }).catch(() => () => null)
 )
 
 const inter = Inter({ 
