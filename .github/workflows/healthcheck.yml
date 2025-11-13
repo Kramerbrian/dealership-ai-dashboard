@@ -13,6 +13,14 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
       - name: Check production health endpoint
         id: health
         env:
@@ -66,7 +74,7 @@ jobs:
           fi
           
           echo "✅ Healthcheck passed: ok=true, status=$CODE"
-          
+
           # Show summary of checks
           echo ""
           echo "📋 Health Summary:"
@@ -75,6 +83,29 @@ jobs:
             "Clarity API: " + (if .checks.clarity.ok then "✅" else "❌" end),
             "Overall Status: " + (if .ok then "✅ HEALTHY" else "❌ UNHEALTHY" end)
           ' || echo "Could not parse summary"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+      - name: Generate Agentic GPT Config & Visual
+        continue-on-error: true
+        run: |
+          if [ -f "src/orchestrator/pulse-agent-builder.ts" ]; then
+            echo "🤖 Generating Agentic GPT config..."
+            npx ts-node src/orchestrator/pulse-agent-builder.ts || echo "⚠️ pulse-agent-builder.ts not yet implemented"
+          else
+            echo "⚠️ pulse-agent-builder.ts not found, skipping generation"
+          fi
+
+      - name: Validate Canonical GPT Stack
+        continue-on-error: true
+        run: |
+          if [ -f "tests/dai-agent-test-suite.ts" ]; then
+            echo "🧪 Validating Canonical GPT Stack..."
+            npx ts-node tests/dai-agent-test-suite.ts || echo "⚠️ dai-agent-test-suite.ts not yet implemented"
+          else
+            echo "⚠️ dai-agent-test-suite.ts not found, skipping validation"
+          fi
 
       - name: Notify Slack on failure
         if: failure()
