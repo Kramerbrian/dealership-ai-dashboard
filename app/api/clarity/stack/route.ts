@@ -2,150 +2,74 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-type Scores = { seo: number; aeo: number; geo: number; avi: number };
-
-type Location = { lat: number; lng: number; city?: string; state?: string };
-
-type RevenueAtRisk = {
-  monthly: number;
-  annual: number;
-  assumptions: {
-    monthly_opportunities: number;
-    avg_gross_per_unit: number;
-    ai_influence_rate: number;
-  };
-};
-
-type ClarityStackResponse = {
-  domain: string;
-  tenant?: string;
-  scores: Scores;
-  location?: Location;
-  gbp: {
-    health_score: number;
-    place_id?: string;
-    rating?: number;
-    review_count?: number;
-  };
-  ugc: {
-    score: number;
-    review_velocity_vs_market: number;
-    recent_reviews_90d: number;
-    issues: string[];
-  };
-  schema: {
-    score: number;
-    coverage: Record<string, number>;
-    issues: string[];
-  };
-  competitive: {
-    rank: number;
-    total: number;
-    leaders: { name: string; avi: number }[];
-    gap_to_leader: number;
-  };
-  revenue_at_risk: RevenueAtRisk;
-  ai_intro_current: string;
-  ai_intro_improved: string;
-  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
-};
-
-function clampScore(x: number) {
-  return Math.max(0, Math.min(100, Math.round(x)));
-}
-
-function computeAvi(seo: number, aeo: number, geo: number): number {
-  const avi = 0.4 * geo + 0.3 * aeo + 0.3 * seo;
-  return clampScore(avi);
-}
-
-function computeRevenueAtRisk(scores: Scores): RevenueAtRisk {
-  const monthly_opportunities = 450;
-  const avg_gross_per_unit = 1200;
-  const ai_influence_rate = 0.35;
-
-  const visibilityFraction = scores.avi / 100;
-  const missingFraction = 1 - visibilityFraction;
-
-  const monthly = Math.round(
-    missingFraction * monthly_opportunities * avg_gross_per_unit * ai_influence_rate
-  );
-  const annual = monthly * 12;
-
-  return {
-    monthly,
-    annual,
-    assumptions: { monthly_opportunities, avg_gross_per_unit, ai_influence_rate }
-  };
-}
-
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const domainParam = (url.searchParams.get('domain') || '').trim().toLowerCase();
-  const tenant = url.searchParams.get('tenant') || undefined;
-  const domain = domainParam || 'exampledealer.com';
+  const { searchParams } = new URL(req.url);
+  const domain = searchParams.get('domain') || 'demo-dealership.com';
 
-  // Stubbed scores for now. Replace with real analysis later.
+  // Mocked but realistic Clarity Stack data
+  // Replace with real analysis calls later
   const seo = 68;
   const aeo = 54;
   const geo = 41;
-  const avi = computeAvi(seo, aeo, geo);
-  const scores: Scores = { seo, aeo, geo, avi };
+  const avi = Math.round((seo + aeo + geo) / 3);
 
-  const revenue_at_risk = computeRevenueAtRisk(scores);
-
-  const data: ClarityStackResponse = {
-    domain,
-    tenant,
-    scores,
+  const data = {
+    scores: {
+      seo,
+      aeo,
+      geo,
+      avi,
+    },
     location: {
-      lat: 26.5629,
-      lng: -81.9495,
+      lat: 26.6406,
+      lng: -81.8723,
       city: 'Cape Coral',
-      state: 'FL'
+      state: 'FL',
     },
     gbp: {
-      health_score: 78,
-      place_id: 'gbp_stub_123',
+      score: 72,
       rating: 4.3,
-      review_count: 487
+      review_count: 127,
+      issues: ['Missing hours', 'Incomplete services'],
     },
     ugc: {
-      score: 82,
-      review_velocity_vs_market: 0.74,
-      recent_reviews_90d: 38,
-      issues: ['Service reviews under-used on key pages']
+      score: 65,
+      velocity: 8,
+      response_rate: 0.78,
+      issues: ['Slow response time', 'Generic responses'],
     },
     schema: {
-      score: 61,
-      coverage: {
-        AutoDealer: 1.0,
-        LocalBusiness: 0.9,
-        Vehicle: 0.35,
-        FAQPage: 0.2,
-        Review: 0.4
-      },
-      issues: [
-        'Vehicle schema missing on many VDPs',
-        'FAQ schema missing on Service pages'
-      ]
+      coverage: 0.45,
+      issues: ['Missing LocalBusiness schema', 'No Review schema'],
     },
     competitive: {
-      rank: 3,
-      total: 7,
+      rank: 7,
+      total: 12,
       leaders: [
-        { name: 'Scanlon Hyundai', avi: 87 },
-        { name: 'Maxx Motors', avi: 76 }
+        { name: 'Competitor A', score: 89 },
+        { name: 'Competitor B', score: 85 },
       ],
-      gap_to_leader: 35
+      gap: 21,
     },
-    revenue_at_risk,
-    ai_intro_current:
-      'This dealership has solid reviews, but limited information on service pricing and few guides that help shoppers make decisions.',
-    ai_intro_improved:
-      'This dealership is seen as a trusted local store with clear pricing, up-to-date service information, and simple guides that help shoppers choose the right vehicle.',
-    confidence: 'MEDIUM'
+    revenue_at_risk: {
+      monthly: 142000,
+      annual: 1704000,
+      assumptions: {
+        monthly_searches: 1200,
+        close_rate: 0.12,
+        avg_deal_gross: 3500,
+        ai_search_share: 0.45,
+      },
+    },
+    ai_intro_current: `${domain} is a car dealership located in Cape Coral, Florida. They offer new and used vehicles, financing options, and service appointments. The business has a Google Business Profile with a 4.3-star rating based on 127 reviews, but limited information on service pricing and few guides that help shoppers make decisions.`,
+    ai_intro_improved: `${domain} is one of Cape Coral's most trusted dealerships, known for clear pricing, up-to-date service information, and easy guides that help shoppers choose the right vehicle.`,
+    confidence: 'MEDIUM' as const,
   };
 
-  return NextResponse.json(data, { status: 200 });
+  return NextResponse.json(data, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+    },
+  });
 }
+

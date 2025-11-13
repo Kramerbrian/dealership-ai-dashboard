@@ -1,66 +1,85 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import mapboxgl, { Map } from 'mapbox-gl';
+import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_KEY || '';
+interface DealerFlyInMapProps {
+  location?: {
+    lat: number;
+    lng: number;
+    city?: string;
+    state?: string;
+  };
+}
 
-const containerStyle: React.CSSProperties = {
-  width: '100%',
-  height: '320px',
-  borderRadius: '24px',
-  overflow: 'hidden'
-};
-
-type DealerFlyInMapProps = {
-  lat: number;
-  lng: number;
-};
-
-export function DealerFlyInMap({ lat, lng }: DealerFlyInMapProps) {
-  const mapNode = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<Map | null>(null);
+export function DealerFlyInMap({ location }: DealerFlyInMapProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!mapNode.current || mapRef.current || !mapboxgl.accessToken) return;
+    if (!location || !mapContainer.current) return;
 
-    const map = new mapboxgl.Map({
-      container: mapNode.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [0, 20],
-      zoom: 2,
-      pitch: 0,
-      bearing: 0,
-      interactive: false
-    });
+    const mapboxKey = process.env.NEXT_PUBLIC_MAPBOX_KEY;
+    if (!mapboxKey) {
+      console.warn('Mapbox key not found. Map will not render.');
+      return;
+    }
 
-    mapRef.current = map;
+    // Dynamically load Mapbox GL
+    import('mapbox-gl').then((mapboxgl) => {
+      mapboxgl.default.accessToken = mapboxKey;
 
-    map.on('load', () => {
-      new mapboxgl.Marker({ color: '#3B82F6' })
-        .setLngLat([lng, lat])
-        .addTo(map);
+      if (mapRef.current) {
+        mapRef.current.remove();
+      }
 
-      map.flyTo({
-        center: [lng, lat],
-        zoom: 13.5,
-        speed: 0.8,
-        curve: 1.6,
-        essential: true
+      mapRef.current = new mapboxgl.default.Map({
+        container: mapContainer.current!,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [location.lng, location.lat],
+        zoom: 12,
+        pitch: 45,
+        bearing: -17.6,
+      });
+
+      // Add marker
+      new mapboxgl.default.Marker({ color: '#0ea5e9' })
+        .setLngLat([location.lng, location.lat])
+        .addTo(mapRef.current);
+
+      // Fly in animation
+      mapRef.current.flyTo({
+        center: [location.lng, location.lat],
+        zoom: 14,
+        duration: 2000,
+        essential: true,
       });
     });
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+      }
     };
-  }, [lat, lng]);
+  }, [location]);
+
+  if (!location) {
+    return null;
+  }
 
   return (
-    <div
-      ref={mapNode}
-      style={containerStyle}
-      className="shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
-    />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6 }}
+      className="w-full h-64 md:h-96 rounded-xl overflow-hidden border border-white/10 relative"
+    >
+      <div ref={mapContainer} className="w-full h-full" />
+      {location.city && location.state && (
+        <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg text-sm">
+          {location.city}, {location.state}
+        </div>
+      )}
+    </motion.div>
   );
 }
