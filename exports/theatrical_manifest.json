@@ -1,0 +1,100 @@
+{
+  "project_name": "DealershipAI • Theatrical PLG Experience",
+  "version": "1.0.0",
+  "description": "Cinematic landing + Clerk middleware + personalized onboarding + Pulse dashboard (Next.js 14 + Framer Motion + Tailwind + Zustand).",
+  "framework": {
+    "app": "Next.js 14",
+    "ui": "React 18",
+    "motion": "Framer Motion 11",
+    "auth": "Clerk",
+    "state": "Zustand",
+    "styling": "Tailwind CSS 3.4",
+    "deploy_target": "Vercel Edge"
+  },
+  "entry_points": {
+    "landing": "app/(landing)/page.tsx",
+    "onboarding": "app/(onboarding)/page.tsx",
+    "middleware": "app/layout.tsx",
+    "dashboard": "app/(dashboard)/preview/page.tsx"
+  },
+  "cinematic_components": {
+    "tron_acknowledgment": "components/TronAcknowledgment.tsx",
+    "ready_state": "components/OrchestratorReadyState.tsx",
+    "pulse_assimilation": "components/PulseAssimilation.tsx",
+    "system_online_overlay": "components/SystemOnlineOverlay.tsx"
+  },
+  "landing_components": {
+    "hero": "components/landing/Hero.tsx",
+    "doctrine_deck": "components/landing/DoctrineDeck.tsx",
+    "showcase": "components/landing/Showcase.tsx",
+    "footer": "components/landing/Footer.tsx"
+  },
+  "hooks": {
+    "brand_hue": "lib/hooks/useBrandHue.ts",
+    "reduced_motion": "lib/hooks/useReducedMotion.ts"
+  },
+  "stores": {
+    "prefs": "lib/store/prefs.ts",
+    "cognitive": "lib/store/cognitive.ts"
+  },
+  "integration": {
+    "api_routes": [
+      "app/api/marketpulse/compute/route.ts",
+      "app/api/save-metrics/route.ts"
+    ],
+    "dashboard_domain": "dash.dealershipai.com"
+  },
+  "branding": {
+    "theme": "Cupertino × Tron × Nolan",
+    "color_source": "useBrandHue",
+    "accent_default": 195,
+    "brand_tint_propagation": [
+      "SystemOnlineOverlay",
+      "OrchestratorReadyState",
+      "PulseAssimilation"
+    ]
+  },
+  "plg_flow": [
+    "Landing — collect dealer URL + role",
+    "Clerk sign-in middleware",
+    "Onboarding — collect PVR + AdExpense PVR",
+    "TronAcknowledgment → OrchestratorReadyState → PulseAssimilation",
+    "Dashboard — live Pulse metrics"
+  },
+  "auth": {
+    "provider": "Clerk",
+    "redirects": {
+      "signedOut": "/",
+      "afterSignIn": "/onboarding"
+    }
+  },
+  "env_keys": [
+    "CLERK_SECRET_KEY",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "ORCHESTRATOR_API",
+    "ORCHESTRATOR_TOKEN",
+    "SUPABASE_URL",
+    "SUPABASE_KEY"
+  },
+  "repository": {
+    "url": "https://github.com/Kramerbrian/dealership-ai-dashboard",
+    "branch": "main",
+    "vercel_project": "dealershipai"
+  },
+  "ai_assist": {
+    "cursor_ready": true,
+    "claude_ready": true,
+    "recommended_cursor_import": "@import Create DealershipAI Theatrical PLG Experience from https://dealershipai.com/exports/dealershipai_theatrical_export.zip",
+    "recommended_prompt": "Load theatrical_manifest.json, generate cinematic landing (brand-tinted), onboarding (Clerk-aware), and Pulse dashboard (connected to orchestrator)."
+  },
+  "deployment": {
+    "build": "npm run build",
+    "start": "npm run start",
+    "dev": "npm run dev",
+    "vercel_command": "vercel --prod"
+  },
+  "maintainers": [
+    { "name": "Brian Kramer", "role": "Architect", "email": "brian@dealershipai.com" }
+  ],
+  "last_updated": "2025-11-13T00:00:00Z"
+}
