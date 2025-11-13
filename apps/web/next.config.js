@@ -4,13 +4,21 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // Skip problematic routes during build
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     if (isServer) {
       // Ignore Supabase initialization errors in certain routes
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
       };
+      
+      // Workaround for Next.js 15 not-found page bug
+      // Ignore the problematic _not-found page module
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^\.\/app\/_not-found/,
+        })
+      );
     }
 
     // Bundle analyzer (only when ANALYZE=true)
@@ -30,9 +38,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // External packages for server components (Next.js 15+)
-  serverExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
-  
+
   // Security headers
   async headers() {
     return [
