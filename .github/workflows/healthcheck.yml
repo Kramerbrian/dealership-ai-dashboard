@@ -107,6 +107,39 @@ jobs:
             echo "⚠️ dai-agent-test-suite.ts not found, skipping validation"
           fi
 
+      - name: Postbuild - Version & Hash Canonical Bundle
+        continue-on-error: true
+        run: |
+          if [ ! -f "canonical/version.json" ]; then
+            echo "⚠️ canonical/version.json not found, skipping hash update"
+            exit 0
+          fi
+
+          echo "📦 Updating version metadata and hashes for DealershipAI Agentic Canonical..."
+
+          # Update version tag with timestamp
+          jq --arg date "$(date +'%Y.%m.%d-%H%M%S')" \
+            '.version = $date' canonical/version.json > tmp.$$.json && mv tmp.$$.json canonical/version.json
+
+          # Recalculate SHA256 hashes for all components
+          for file in $(jq -r '.components | .[] | .[]' canonical/version.json 2>/dev/null || echo ""); do
+            if [ -z "$file" ]; then
+              continue
+            fi
+
+            # Check if file exists in canonical/agentic/
+            if [ -f "canonical/agentic/$file" ]; then
+              hash=$(shasum -a 256 "canonical/agentic/$file" | cut -d " " -f 1)
+              jq --arg f "$file" --arg h "sha256:$hash" '.hashes[$f] = $h' \
+                canonical/version.json > tmp.$$.json && mv tmp.$$.json canonical/version.json
+              echo "✅ Updated hash for $file"
+            else
+              echo "⚠️ File not found: canonical/agentic/$file (keeping placeholder)"
+            fi
+          done
+
+          echo "✅ Canonical bundle updated with new hashes and timestamp."
+
       - name: Notify Slack on failure
         if: failure()
         env:
