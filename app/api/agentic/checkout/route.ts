@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createAuthRoute } from '@/lib/api/enhanced-route';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
-  try {
-    const { dealerId, source = "HAL_onboarding" } = await req.json();
+const CheckoutSchema = z.object({
+  dealerId: z.string().min(1, 'Dealer ID is required'),
+  source: z.string().optional().default('HAL_onboarding'),
+});
 
-    if (!dealerId) {
-      return NextResponse.json(
-        { error: "Missing required field: dealerId" },
-        { status: 400 }
-      );
-    }
+export const POST = createAuthRoute(async (req: NextRequest, { userId, tenantId }) => {
+  try {
+    const body = await req.json();
+    const { dealerId, source } = CheckoutSchema.parse(body);
 
     // TODO: create Stripe PaymentIntent / ACP session
     // For now, return stub response
@@ -31,5 +32,7 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, {
+  schema: CheckoutSchema,
+});
 

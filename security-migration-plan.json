@@ -1,0 +1,1620 @@
+{
+  "summary": {
+    "total": 205,
+    "adminNeedingAuth": 1,
+    "publicNeedingRateLimit": 12,
+    "postNeedingZod": 117
+  },
+  "endpoints": [
+    {
+      "file": "app/api/actions/draft-reviews/route.ts",
+      "path": "/api/actions/draft-reviews",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/actions/generate-schema/route.ts",
+      "path": "/api/actions/generate-schema",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/admin/flags/route.ts",
+      "path": "/api/admin/flags",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": true,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/admin/integrations/visibility/route.ts",
+      "path": "/api/admin/integrations/visibility",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": true,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/admin/setup/route.ts",
+      "path": "/api/admin/setup",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": true,
+      "isPublic": false,
+      "needsAuth": true,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/agentic/checkout/route.ts",
+      "path": "/api/agentic/checkout",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/advanced-analysis/route.ts",
+      "path": "/api/ai/advanced-analysis",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/analysis/route.ts",
+      "path": "/api/ai/analysis",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/analyze/route.ts",
+      "path": "/api/ai/analyze",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/automated-alerts/route.ts",
+      "path": "/api/ai/automated-alerts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/chat/route.ts",
+      "path": "/api/ai/chat",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/competitor-intelligence/route.ts",
+      "path": "/api/ai/competitor-intelligence",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/compute/route.ts",
+      "path": "/api/ai/compute",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/customer-behavior/route.ts",
+      "path": "/api/ai/customer-behavior",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/enhanced-analytics/route.ts",
+      "path": "/api/ai/enhanced-analytics",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/finetuning/route.ts",
+      "path": "/api/ai/finetuning",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/health/route.ts",
+      "path": "/api/ai/health",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/ai/market-trends/route.ts",
+      "path": "/api/ai/market-trends",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/metrics/route.ts",
+      "path": "/api/ai/metrics",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": false,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/offer/validate/route.ts",
+      "path": "/api/ai/offer/validate",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/predictive-analytics/route.ts",
+      "path": "/api/ai/predictive-analytics",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/predictive-optimization/route.ts",
+      "path": "/api/ai/predictive-optimization",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/trust-optimization/route.ts",
+      "path": "/api/ai/trust-optimization",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai/visibility-index/route.ts",
+      "path": "/api/ai/visibility-index",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai-chat/route.ts",
+      "path": "/api/ai-chat",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/ai-visibility/test/route.ts",
+      "path": "/api/ai-visibility/test",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/alerts/prioritization/route.ts",
+      "path": "/api/alerts/prioritization",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/analytics/ga4/route.ts",
+      "path": "/api/analytics/ga4",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/audit/route.ts",
+      "path": "/api/audit",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/auth/[...nextauth]/route.ts",
+      "path": "/api/auth/[...nextauth]",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/automation/fix/route.ts",
+      "path": "/api/automation/fix",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/calculator/ai-scores/route.ts",
+      "path": "/api/calculator/ai-scores",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/capture-email/route.ts",
+      "path": "/api/capture-email",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/chat/route.ts",
+      "path": "/api/chat",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/checkout/route.ts",
+      "path": "/api/checkout",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/claude/export/route.ts",
+      "path": "/api/claude/export",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/competitors/intelligence/route.ts",
+      "path": "/api/competitors/intelligence",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/console/query/route.ts",
+      "path": "/api/console/query",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/dealership/profile/route.ts",
+      "path": "/api/dealership/profile",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": false,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/driftguard/ack/route.ts",
+      "path": "/api/driftguard/ack",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/driftguard/promote/route.ts",
+      "path": "/api/driftguard/promote",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/driftguard/status/route.ts",
+      "path": "/api/driftguard/status",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/elevenlabs/agent/route.ts",
+      "path": "/api/elevenlabs/agent",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/elevenlabs/text-to-speech/route.ts",
+      "path": "/api/elevenlabs/text-to-speech",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/enhanced-dai/route.ts",
+      "path": "/api/enhanced-dai",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/features/config/route.ts",
+      "path": "/api/features/config",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/fix/action/route.ts",
+      "path": "/api/fix/action",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/fix/apply/route.ts",
+      "path": "/api/fix/apply",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/fix/deploy/route.ts",
+      "path": "/api/fix/deploy",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/fix/estimate/route.ts",
+      "path": "/api/fix/estimate",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/fix/pack/route.ts",
+      "path": "/api/fix/pack",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/fix-pack/roi/route.ts",
+      "path": "/api/fix-pack/roi",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/geo/domain-location/route.ts",
+      "path": "/api/geo/domain-location",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/geo/market-analysis/route.ts",
+      "path": "/api/geo/market-analysis",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/groups/route.ts",
+      "path": "/api/groups",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/growth/analytics/route.ts",
+      "path": "/api/growth/analytics",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/growth/viral-reports/route.ts",
+      "path": "/api/growth/viral-reports",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/health/route.ts",
+      "path": "/api/health",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/integrations/ai-platforms/route.ts",
+      "path": "/api/integrations/ai-platforms",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/integrations/google/route.ts",
+      "path": "/api/integrations/google",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/integrations/reviews/route.ts",
+      "path": "/api/integrations/reviews",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/integrations/route.ts",
+      "path": "/api/integrations",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/intel/simulate/route.ts",
+      "path": "/api/intel/simulate",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/landing/email-unlock/route.ts",
+      "path": "/api/landing/email-unlock",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/landing/session-stats/route.ts",
+      "path": "/api/landing/session-stats",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/landing/track-onboarding-start/route.ts",
+      "path": "/api/landing/track-onboarding-start",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/landing/track-share/route.ts",
+      "path": "/api/landing/track-share",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/leads/capture/route.ts",
+      "path": "/api/leads/capture",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/leads/route.ts",
+      "path": "/api/leads",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/locations/route.ts",
+      "path": "/api/locations",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/metrics/agentic/emit/route.ts",
+      "path": "/api/metrics/agentic/emit",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/metrics/piqr/route.ts",
+      "path": "/api/metrics/piqr",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/mystery-shop/route.ts",
+      "path": "/api/mystery-shop",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/notifications/workflow-status/route.ts",
+      "path": "/api/notifications/workflow-status",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/oel/route.ts",
+      "path": "/api/oel",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/optimizer/top-opportunity/route.ts",
+      "path": "/api/optimizer/top-opportunity",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/orchestrator/autonomy/route.ts",
+      "path": "/api/orchestrator/autonomy",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/orchestrator/route.ts",
+      "path": "/api/orchestrator",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/orchestrator/run/route.ts",
+      "path": "/api/orchestrator/run",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/orchestrator/status/route.ts",
+      "path": "/api/orchestrator/status",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/orchestrator/train/route.ts",
+      "path": "/api/orchestrator/train",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/orchestrator/v3/deploy/route.ts",
+      "path": "/api/orchestrator/v3/deploy",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/orchestrator/v3/generate-intro/route.ts",
+      "path": "/api/orchestrator/v3/generate-intro",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/orchestrator/v3/status/route.ts",
+      "path": "/api/orchestrator/v3/status",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/origins/bulk/route.ts",
+      "path": "/api/origins/bulk",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/origins/bulk-csv/commit/route.ts",
+      "path": "/api/origins/bulk-csv/commit",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/origins/bulk-csv/route.ts",
+      "path": "/api/origins/bulk-csv",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/parity/ingest/route.ts",
+      "path": "/api/parity/ingest",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/probe/verify/route.ts",
+      "path": "/api/probe/verify",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/probe/verify-bulk/route.ts",
+      "path": "/api/probe/verify-bulk",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/pulse/events/route.ts",
+      "path": "/api/pulse/events",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/pulse/impacts/compute/route.ts",
+      "path": "/api/pulse/impacts/compute",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/pulse/impacts/route.ts",
+      "path": "/api/pulse/impacts",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": false,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/pulse/ingest/route.ts",
+      "path": "/api/pulse/ingest",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/pulse/route.ts",
+      "path": "/api/pulse",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/pulse/scenario/route.ts",
+      "path": "/api/pulse/scenario",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/pulse/simulate/route.ts",
+      "path": "/api/pulse/simulate",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/px/route.ts",
+      "path": "/api/px",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/qai/calculate/route.ts",
+      "path": "/api/qai/calculate",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/qai/simple/route.ts",
+      "path": "/api/qai/simple",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/quick-audit/route.ts",
+      "path": "/api/quick-audit",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/refresh/route.ts",
+      "path": "/api/refresh",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/relevance/scenarios/route.ts",
+      "path": "/api/relevance/scenarios",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/save-metrics/route.ts",
+      "path": "/api/save-metrics",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/schema/request/route.ts",
+      "path": "/api/schema/request",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/schema/status/route.ts",
+      "path": "/api/schema/status",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/schema-validation/route.ts",
+      "path": "/api/schema-validation",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/share/track/route.ts",
+      "path": "/api/share/track",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/site-inject/rollback/route.ts",
+      "path": "/api/site-inject/rollback",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/site-inject/route.ts",
+      "path": "/api/site-inject",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/status/route.ts",
+      "path": "/api/status",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/stripe/checkout/route.ts",
+      "path": "/api/stripe/checkout",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/stripe/create-checkout/route.ts",
+      "path": "/api/stripe/create-checkout",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/stripe/portal/route.ts",
+      "path": "/api/stripe/portal",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/system/status/route.ts",
+      "path": "/api/system/status",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/targeting/underperforming-dealers/route.ts",
+      "path": "/api/targeting/underperforming-dealers",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/telemetry/route.ts",
+      "path": "/api/telemetry",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/test/route.ts",
+      "path": "/api/test",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/trust/calculate/route.ts",
+      "path": "/api/trust/calculate",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/user/onboarding-complete/route.ts",
+      "path": "/api/user/onboarding-complete",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/user/profile/route.ts",
+      "path": "/api/user/profile",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/user/subscription/route.ts",
+      "path": "/api/user/subscription",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/user/usage/route.ts",
+      "path": "/api/user/usage",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/v1/analyze/route.ts",
+      "path": "/api/v1/analyze",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/v1/health/route.ts",
+      "path": "/api/v1/health",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/v1/orchestrator/start/route.ts",
+      "path": "/api/v1/orchestrator/start",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/v1/probe/status/route.ts",
+      "path": "/api/v1/probe/status",
+      "methods": [
+        "GET"
+      ],
+      "isAdmin": false,
+      "isPublic": true,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": false
+    },
+    {
+      "file": "app/api/viral/audit-complete/route.ts",
+      "path": "/api/viral/audit-complete",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/websocket/route.ts",
+      "path": "/api/websocket",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    },
+    {
+      "file": "app/api/zero-click/recompute/route.ts",
+      "path": "/api/zero-click/recompute",
+      "methods": [
+        "POST"
+      ],
+      "isAdmin": false,
+      "isPublic": false,
+      "needsAuth": false,
+      "needsRateLimit": true,
+      "needsZod": true
+    }
+  ]
+}

@@ -12,19 +12,14 @@ export const GET = withAuth(
       const url = new URL(req.url);
       const domain = url.searchParams.get('domain');
 
-      // TODO: Fetch real GA4 data from Google Analytics API
-      // For now, return synthetic data
-      const synthetic = {
-        sessions: Math.floor(Math.random() * 5000) + 1000, // 1000-6000
-        aiAssistedSessions: Math.floor(Math.random() * 500) + 100, // 100-600
-        bounceRatePct: Math.floor(Math.random() * 20) + 45, // 45-65%
-        rangeDays: 30,
-      };
+      // Fetch real GA4 data from Google Analytics API
+      const { ga4Service } = await import('@/lib/services/ga4');
+      const summary = await ga4Service.getSummary(domain || '', 30);
 
       return NextResponse.json({
         ok: true,
         domain: domain || null,
-        ...synthetic,
+        ...summary,
       });
     } catch (error: any) {
       return NextResponse.json(

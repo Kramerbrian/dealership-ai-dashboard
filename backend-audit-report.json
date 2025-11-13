@@ -1,0 +1,3957 @@
+{
+  "summary": {
+    "totalEndpoints": 205,
+    "withAuthentication": 36,
+    "withRateLimiting": 8,
+    "withZodValidation": 19,
+    "withErrorHandling": 186,
+    "stubs": 22,
+    "incomplete": 150,
+    "withIssues": 184,
+    "withTodos": 28
+  },
+  "endpoints": [
+    {
+      "path": "/api/actions/draft-reviews",
+      "file": "app/api/actions/draft-reviews/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/actions/generate-schema",
+      "file": "app/api/actions/generate-schema/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/admin/flags",
+      "file": "app/api/admin/flags/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/admin/integrations/visibility",
+      "file": "app/api/admin/integrations/visibility/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/admin/seed",
+      "file": "app/api/admin/seed/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": true,
+      "todos": [
+        "'This endpoint requires Supabase configuration'"
+      ],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/admin/setup",
+      "file": "app/api/admin/setup/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": true,
+      "todos": [
+        "Supabase JS client doesn't support direct SQL execution"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/aeo/breakdown",
+      "file": "app/api/aeo/breakdown/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/aeo/leaderboard",
+      "file": "app/api/aeo/leaderboard/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/agentic/checkout",
+      "file": "app/api/agentic/checkout/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "create Stripe PaymentIntent / ACP session"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/ai-chat",
+      "file": "app/api/ai-chat/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai-scores",
+      "file": "app/api/ai-scores/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai-story",
+      "file": "app/api/ai-story/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai-visibility",
+      "file": "app/api/ai-visibility/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai-visibility/score",
+      "file": "app/api/ai-visibility/score/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai-visibility/test",
+      "file": "app/api/ai-visibility/test/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/advanced-analysis",
+      "file": "app/api/ai/advanced-analysis/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/analysis",
+      "file": "app/api/ai/analysis/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Replace with real AI analysis APIs",
+        "Implement real AI analysis"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/ai/analyze",
+      "file": "app/api/ai/analyze/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/answer-intel",
+      "file": "app/api/ai/answer-intel/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/automated-alerts",
+      "file": "app/api/ai/automated-alerts/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/chat",
+      "file": "app/api/ai/chat/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/competitor-intelligence",
+      "file": "app/api/ai/competitor-intelligence/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/compute",
+      "file": "app/api/ai/compute/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/customer-behavior",
+      "file": "app/api/ai/customer-behavior/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/enhanced-analytics",
+      "file": "app/api/ai/enhanced-analytics/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/finetuning",
+      "file": "app/api/ai/finetuning/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/health",
+      "file": "app/api/ai/health/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Wire to real AI visibility testing endpoints (RankEmbed, Perplexity, ChatGPT, Claude APIs)"
+      ],
+      "issues": [
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/market-trends",
+      "file": "app/api/ai/market-trends/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/metrics",
+      "file": "app/api/ai/metrics/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/offer/validate",
+      "file": "app/api/ai/offer/validate/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/performance-monitoring",
+      "file": "app/api/ai/performance-monitoring/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/predictive-analytics",
+      "file": "app/api/ai/predictive-analytics/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/predictive-optimization",
+      "file": "app/api/ai/predictive-optimization/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/real-time-monitoring",
+      "file": "app/api/ai/real-time-monitoring/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/trust-optimization",
+      "file": "app/api/ai/trust-optimization/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ai/visibility-index",
+      "file": "app/api/ai/visibility-index/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/alerts/prioritization",
+      "file": "app/api/alerts/prioritization/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/analytics/ga4",
+      "file": "app/api/analytics/ga4/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/analytics/predict",
+      "file": "app/api/analytics/predict/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/analytics/trends",
+      "file": "app/api/analytics/trends/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/analyze",
+      "file": "app/api/analyze/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/audit",
+      "file": "app/api/audit/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Implement real AI platform queries",
+        "Replace with real AI platform queries"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/auth/[...nextauth]",
+      "file": "app/api/auth/[...nextauth]/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/automation/fix",
+      "file": "app/api/automation/fix/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/calculator/ai-scores",
+      "file": "app/api/calculator/ai-scores/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/capture-email",
+      "file": "app/api/capture-email/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Send welcome email via email service",
+        "Add to CRM/marketing automation"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/chat",
+      "file": "app/api/chat/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/checkout",
+      "file": "app/api/checkout/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/clarity/stack",
+      "file": "app/api/clarity/stack/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/claude/download",
+      "file": "app/api/claude/download/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/claude/export",
+      "file": "app/api/claude/export/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/claude/manifest",
+      "file": "app/api/claude/manifest/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/claude/stats",
+      "file": "app/api/claude/stats/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/competitors",
+      "file": "app/api/competitors/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/competitors/intelligence",
+      "file": "app/api/competitors/intelligence/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/console/query",
+      "file": "app/api/console/query/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/cron/fleet-refresh",
+      "file": "app/api/cron/fleet-refresh/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/cron/nurture",
+      "file": "app/api/cron/nurture/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/dealership/profile",
+      "file": "app/api/dealership/profile/route.ts",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/dealerships/:id/competitors",
+      "file": "app/api/dealerships/[id]/competitors/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/dealerships/:id/qai",
+      "file": "app/api/dealerships/[id]/qai/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/dealerships/:id/quick-wins",
+      "file": "app/api/dealerships/[id]/quick-wins/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/diagnostics",
+      "file": "app/api/diagnostics/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/driftguard/ack",
+      "file": "app/api/driftguard/ack/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/driftguard/history",
+      "file": "app/api/driftguard/history/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/driftguard/promote",
+      "file": "app/api/driftguard/promote/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/driftguard/run",
+      "file": "app/api/driftguard/run/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/driftguard/status",
+      "file": "app/api/driftguard/status/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/econ/tsm",
+      "file": "app/api/econ/tsm/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/elevenlabs/agent",
+      "file": "app/api/elevenlabs/agent/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/elevenlabs/text-to-speech",
+      "file": "app/api/elevenlabs/text-to-speech/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/elevenlabs/voices",
+      "file": "app/api/elevenlabs/voices/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/enhanced-dai",
+      "file": "app/api/enhanced-dai/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/export/data",
+      "file": "app/api/export/data/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/exports/manifest",
+      "file": "app/api/exports/manifest/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/exports/theatrical",
+      "file": "app/api/exports/theatrical/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/features/config",
+      "file": "app/api/features/config/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Add admin authentication"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/fix-pack/roi",
+      "file": "app/api/fix-pack/roi/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Fetch from database",
+        "Save to database"
+      ],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/fix/action",
+      "file": "app/api/fix/action/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/fix/apply",
+      "file": "app/api/fix/apply/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/fix/deploy",
+      "file": "app/api/fix/deploy/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/fix/estimate",
+      "file": "app/api/fix/estimate/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/fix/pack",
+      "file": "app/api/fix/pack/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/formulas/weights",
+      "file": "app/api/formulas/weights/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ga4/summary",
+      "file": "app/api/ga4/summary/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Fetch real GA4 data from Google Analytics API"
+      ],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/geo/domain-location",
+      "file": "app/api/geo/domain-location/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/geo/market-analysis",
+      "file": "app/api/geo/market-analysis/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/groups",
+      "file": "app/api/groups/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/groups/:groupId/report",
+      "file": "app/api/groups/[groupId]/report/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/growth/analytics",
+      "file": "app/api/growth/analytics/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/growth/viral-reports",
+      "file": "app/api/growth/viral-reports/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/health",
+      "file": "app/api/health/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/integrations",
+      "file": "app/api/integrations/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/integrations/ai-platforms",
+      "file": "app/api/integrations/ai-platforms/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/integrations/google",
+      "file": "app/api/integrations/google/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/integrations/providers",
+      "file": "app/api/integrations/providers/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/integrations/reviews",
+      "file": "app/api/integrations/reviews/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/integrations/stats",
+      "file": "app/api/integrations/stats/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/intel/simulate",
+      "file": "app/api/intel/simulate/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/landing/email-unlock",
+      "file": "app/api/landing/email-unlock/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Integrate with email service provider (SendGrid, Resend, etc.)"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/landing/session-stats",
+      "file": "app/api/landing/session-stats/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/landing/track-onboarding-start",
+      "file": "app/api/landing/track-onboarding-start/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/landing/track-share",
+      "file": "app/api/landing/track-share/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/leads",
+      "file": "app/api/leads/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/leads/capture",
+      "file": "app/api/leads/capture/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Save to database",
+        "Send to CRM (HubSpot, Salesforce, etc.)",
+        "Send email notification"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/locations",
+      "file": "app/api/locations/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/marketpulse/compute",
+      "file": "app/api/marketpulse/compute/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": true,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/marketpulse/eeat/score",
+      "file": "app/api/marketpulse/eeat/score/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/metrics/agentic/emit",
+      "file": "app/api/metrics/agentic/emit/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "persist to agentic_metrics"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/metrics/eeat",
+      "file": "app/api/metrics/eeat/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/metrics/oel",
+      "file": "app/api/metrics/oel/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/metrics/oel/channels",
+      "file": "app/api/metrics/oel/channels/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/metrics/piqr",
+      "file": "app/api/metrics/piqr/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/metrics/qai",
+      "file": "app/api/metrics/qai/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "\"Good: service photos; missing customer stories\" },",
+        "\"Certifications present; add how-to posts\" },",
+        "\"Citations stable; PR/press could improve\" },",
+        "\"SLA improving; update privacy policy\" }"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/metrics/rar",
+      "file": "app/api/metrics/rar/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/migrate",
+      "file": "app/api/migrate/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/mystery-shop",
+      "file": "app/api/mystery-shop/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/notifications/workflow-status",
+      "file": "app/api/notifications/workflow-status/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/observability",
+      "file": "app/api/observability/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/oel",
+      "file": "app/api/oel/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Replace with actual data from your data sources"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/opportunities",
+      "file": "app/api/opportunities/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/optimizer/top-opportunity",
+      "file": "app/api/optimizer/top-opportunity/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/orchestrator",
+      "file": "app/api/orchestrator/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/orchestrator/autonomy",
+      "file": "app/api/orchestrator/autonomy/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": true,
+      "todos": [
+        "Log autonomy change to audit log"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/orchestrator/run",
+      "file": "app/api/orchestrator/run/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": true,
+      "todos": [
+        "Trigger actual orchestration pipeline"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/orchestrator/status",
+      "file": "app/api/orchestrator/status/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/orchestrator/train",
+      "file": "app/api/orchestrator/train/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Implement reinforce module",
+        "Add proper validation, signature verification, idempotency checks"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/orchestrator/v3/deploy",
+      "file": "app/api/orchestrator/v3/deploy/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/orchestrator/v3/generate-intro",
+      "file": "app/api/orchestrator/v3/generate-intro/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/orchestrator/v3/status",
+      "file": "app/api/orchestrator/v3/status/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/origins",
+      "file": "app/api/origins/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/origins/bulk",
+      "file": "app/api/origins/bulk/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/origins/bulk-csv",
+      "file": "app/api/origins/bulk-csv/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/origins/bulk-csv/commit",
+      "file": "app/api/origins/bulk-csv/commit/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/parity/ingest",
+      "file": "app/api/parity/ingest/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/performance-test",
+      "file": "app/api/performance-test/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/probe/verify",
+      "file": "app/api/probe/verify/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/probe/verify-bulk",
+      "file": "app/api/probe/verify-bulk/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse",
+      "file": "app/api/pulse/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/pulse/events",
+      "file": "app/api/pulse/events/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/impacts",
+      "file": "app/api/pulse/impacts/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "wire to your pulse compute job — this returns demo shape"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing Zod validation"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/pulse/impacts/compute",
+      "file": "app/api/pulse/impacts/compute/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/ingest",
+      "file": "app/api/pulse/ingest/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/radar",
+      "file": "app/api/pulse/radar/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/scenario",
+      "file": "app/api/pulse/scenario/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/score",
+      "file": "app/api/pulse/score/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/simulate",
+      "file": "app/api/pulse/simulate/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/snapshot",
+      "file": "app/api/pulse/snapshot/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/pulse/trends",
+      "file": "app/api/pulse/trends/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/px",
+      "file": "app/api/px/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/qai/calculate",
+      "file": "app/api/qai/calculate/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/qai/simple",
+      "file": "app/api/qai/simple/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/quick-audit",
+      "file": "app/api/quick-audit/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/refresh",
+      "file": "app/api/refresh/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/relevance/overlay",
+      "file": "app/api/relevance/overlay/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Replace with actual database queries"
+      ],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/relevance/scenarios",
+      "file": "app/api/relevance/scenarios/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/reviews/summary",
+      "file": "app/api/reviews/summary/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Fetch real review data from Google Places API or database"
+      ],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/save-metrics",
+      "file": "app/api/save-metrics/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/scan/quick",
+      "file": "app/api/scan/quick/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/scan/stream",
+      "file": "app/api/scan/stream/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/scenarios/templates",
+      "file": "app/api/scenarios/templates/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "complete"
+    },
+    {
+      "path": "/api/schema",
+      "file": "app/api/schema/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/schema-validation",
+      "file": "app/api/schema-validation/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/schema/request",
+      "file": "app/api/schema/request/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "forward to dAI Schema Engineer or internal generator"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/schema/status",
+      "file": "app/api/schema/status/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/schema/validate",
+      "file": "app/api/schema/validate/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/scores/history",
+      "file": "app/api/scores/history/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/share/track",
+      "file": "app/api/share/track/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/site-inject",
+      "file": "app/api/site-inject/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/site-inject/rollback",
+      "file": "app/api/site-inject/rollback/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/site-inject/versions",
+      "file": "app/api/site-inject/versions/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/status",
+      "file": "app/api/status/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/stripe/checkout",
+      "file": "app/api/stripe/checkout/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/stripe/create-checkout",
+      "file": "app/api/stripe/create-checkout/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/stripe/portal",
+      "file": "app/api/stripe/portal/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/stripe/verify-session",
+      "file": "app/api/stripe/verify-session/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/system/endpoints",
+      "file": "app/api/system/endpoints/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/system/status",
+      "file": "app/api/system/status/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/targeting/underperforming-dealers",
+      "file": "app/api/targeting/underperforming-dealers/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/telemetry",
+      "file": "app/api/telemetry/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": true,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Send to analytics warehouse (Supabase, BigQuery, etc.)"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/test",
+      "file": "app/api/test/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/test-analytics",
+      "file": "app/api/test-analytics/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/test-oauth",
+      "file": "app/api/test-oauth/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/trust/calculate",
+      "file": "app/api/trust/calculate/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/ugc",
+      "file": "app/api/ugc/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": true,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Integrate with review platform APIs"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/user/onboarding-complete",
+      "file": "app/api/user/onboarding-complete/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/user/profile",
+      "file": "app/api/user/profile/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/user/subscription",
+      "file": "app/api/user/subscription/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/user/usage",
+      "file": "app/api/user/usage/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/v1/analyze",
+      "file": "app/api/v1/analyze/route.ts",
+      "methods": [],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/v1/health",
+      "file": "app/api/v1/health/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/v1/orchestrator/start",
+      "file": "app/api/v1/orchestrator/start/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "In production, this should be a queue/worker pattern"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/v1/probe/status",
+      "file": "app/api/v1/probe/status/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/viral/audit-complete",
+      "file": "app/api/viral/audit-complete/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "complete"
+    },
+    {
+      "path": "/api/viral/metrics",
+      "file": "app/api/viral/metrics/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/visibility-roi",
+      "file": "app/api/visibility-roi/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Calculate from historical conversion data"
+      ],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "stub"
+    },
+    {
+      "path": "/api/visibility/aeo",
+      "file": "app/api/visibility/aeo/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/visibility/geo",
+      "file": "app/api/visibility/geo/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/visibility/history",
+      "file": "app/api/visibility/history/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/visibility/presence",
+      "file": "app/api/visibility/presence/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": true,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Fetch tenant engine preferences from database",
+        "Fetch actual presence data from orchestrator/visibility service"
+      ],
+      "issues": [],
+      "status": "stub"
+    },
+    {
+      "path": "/api/visibility/seo",
+      "file": "app/api/visibility/seo/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/websocket",
+      "file": "app/api/websocket/route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": false,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/zero-click",
+      "file": "app/api/zero-click/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": false,
+      "hasDatabase": false,
+      "hasTodos": true,
+      "todos": [
+        "Wire to Google Search Console / Pulse analyzer for real data"
+      ],
+      "issues": [
+        "Missing authentication",
+        "Missing error handling"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/zero-click/recompute",
+      "file": "app/api/zero-click/recompute/route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication",
+        "Missing rate limiting",
+        "Missing Zod validation"
+      ],
+      "status": "incomplete"
+    },
+    {
+      "path": "/api/zero-click/summary",
+      "file": "app/api/zero-click/summary/route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuth": false,
+      "hasRateLimit": false,
+      "hasZodValidation": false,
+      "hasErrorHandling": true,
+      "hasDatabase": true,
+      "hasTodos": false,
+      "todos": [],
+      "issues": [
+        "Missing authentication"
+      ],
+      "status": "incomplete"
+    }
+  ]
+}

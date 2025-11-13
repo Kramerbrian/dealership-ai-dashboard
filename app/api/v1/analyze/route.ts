@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { traced } from '@/lib/api-wrap';
+import { createPublicRoute } from '@/lib/api/enhanced-route';
+import { z } from 'zod';
 
-export const POST = traced(async (req: NextRequest) => {
+const AnalyzeSchema = z.object({
+  domain: z.string().url().optional(),
+  url: z.string().url().optional(),
+}).refine(data => data.domain || data.url, {
+  message: 'Either domain or url is required',
+});
+
+export const POST = createPublicRoute(async (req: NextRequest) => {
   try {
     const body = await req.json();
-    const { domain, url } = body;
-
-    if (!domain && !url) {
-      return NextResponse.json(
-        { error: 'Domain or URL required' },
-        { status: 400 }
-      );
-    }
+    const validated = AnalyzeSchema.parse(body);
+    const { domain, url } = validated;
 
     const target = domain || url;
 
@@ -59,4 +62,6 @@ export const POST = traced(async (req: NextRequest) => {
       { status: 500 }
     );
   }
-}, 'v1.analyze');
+}, {
+  schema: AnalyzeSchema,
+});
