@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx prisma generate && NEXT_TELEMETRY_DISABLED=1 next build",
+  "buildCommand": "npx prisma generate --schema=./apps/web/prisma/schema.prisma && NEXT_TELEMETRY_DISABLED=1 next build",
   "framework": "nextjs",
   "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
