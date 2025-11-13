@@ -93,9 +93,14 @@ class EmailService {
   }
 
   private async sendViaSendGrid(options: EmailOptions): Promise<EmailResult> {
-    // Dynamic import
-    const sgMail = await import('@sendgrid/mail');
-    sgMail.setApiKey(this.apiKey!);
+    // Dynamic import - only works in Node.js runtime, not Edge
+    if (typeof window !== 'undefined' || !process.env.SENDGRID_API_KEY) {
+      return { success: false, error: 'SendGrid not available in this runtime' };
+    }
+    
+    try {
+      const sgMail = await import('@sendgrid/mail');
+      sgMail.setApiKey(this.apiKey!);
 
     const recipients = Array.isArray(options.to) ? options.to : [options.to];
     
