@@ -6,12 +6,13 @@
  */
 
 export interface dAIContext {
-  role?: 'gm' | 'dealer_principal' | 'marketing' | 'used_car_manager' | 'sales_manager' | 'general';
+  role?: 'gm' | 'dealer_principal' | 'dp' | 'marketing' | 'marketing_director' | 'internet' | 'used_car_manager' | 'sales_manager' | 'general';
   market?: string; // e.g., "Naples, FL"
   store_name?: string;
   domain?: string;
   city?: string;
   state?: string;
+  oem_brand?: 'hyundai' | 'ford' | 'toyota' | 'used' | 'general';
 }
 
 export interface dAIPersonaConfig {
