@@ -1,22 +1,19 @@
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
-import { createPublicRoute } from '@/lib/api/enhanced-route';
-import { z } from 'zod';
-import { errorResponse, successResponse } from '@/lib/api/error-response';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-const EmailUnlockSchema = z.object({
-  email: z.string().email('Valid email is required'),
-  dealerName: z.string().optional(),
-  revenueAtRisk: z.number().optional(),
-});
-
-export const POST = createPublicRoute(async (request: Request) => {
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email, dealerName, revenueAtRisk } = EmailUnlockSchema.parse(body);
+    const { email, dealerName, revenueAtRisk } = await request.json();
+
+    if (!email || !email.includes('@')) {
+      return NextResponse.json(
+        { error: 'Valid email is required' },
+        { status: 400 }
+      );
+    }
 
     // Track email capture
     const redisClient = redis();
@@ -68,7 +65,7 @@ export const POST = createPublicRoute(async (request: Request) => {
       { status: 500 }
     );
   }
-});
+}
 
 // Get email capture stats
 export async function GET() {

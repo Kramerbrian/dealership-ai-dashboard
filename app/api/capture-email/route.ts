@@ -67,6 +67,4 @@ export const POST = createPublicRoute(async (req: NextRequest) => {
       { status: 500 }
     );
   }
-}, {
-  schema: CaptureEmailSchema,
-});
+}

@@ -150,12 +150,12 @@ export const GET = createAdminRoute(async () => {
 
   } catch (error: any) {
     return NextResponse.json(
-      {
+      { 
         tableExists: false,
-        error: error.message
+        error: error.message 
       },
       { status: 500 }
     );
   }
-});
+}
 
