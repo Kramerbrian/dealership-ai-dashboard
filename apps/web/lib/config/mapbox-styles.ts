@@ -15,10 +15,8 @@ export const MAPBOX_STYLES = {
    * Inception Daydream - Cinematic light mode
    * Soft whites, pale teals, warm golds, quiet labels
    * Use for: Insights pages, inspection views, detail analysis
-   *
-   * TODO: After uploading to Mapbox Studio, replace this URL
    */
-  light: 'mapbox://styles/briankramer/YOUR_DAYDREAM_STYLE_ID',
+  light: 'mapbox://styles/briankramer/cmhxie6qr009n01sa6jz81fur',
 } as const;
 
 export type MapTheme = keyof typeof MAPBOX_STYLES;
