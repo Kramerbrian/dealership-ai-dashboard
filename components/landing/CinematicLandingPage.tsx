@@ -175,7 +175,7 @@ export default function CinematicLandingPage() {
           }}
           transition={{
             duration: 4,
-            repeat: Infinity,
+            repeat: -1,
             ease: 'easeInOut',
           }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
