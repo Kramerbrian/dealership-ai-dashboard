@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import { DEFAULT_SPEC } from '@/lib/architecture/loop';
 import { motion } from 'framer-motion';
 

@@ -13,7 +13,7 @@ import { CommandPalette } from '@/components/ui/command-palette'
 import { AIChatWidget } from '@/components/ui/ai-chat-widget'
 import OnboardingGuard from '@/components/onboarding/OnboardingGuard'
 import SystemOnlineOverlay from '@/components/SystemOnlineOverlay'
-import { BrandColorProvider } from '@/contexts/BrandColorContext'
+import { BrandColorProvider } from '../../../contexts/BrandColorContext'
 
 export const dynamic = 'force-dynamic';
 

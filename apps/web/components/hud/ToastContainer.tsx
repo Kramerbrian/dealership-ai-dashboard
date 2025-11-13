@@ -1,7 +1,7 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHudStore } from '@/lib/store/hud';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import { CheckCircle, XCircle, Info } from 'lucide-react';
 
 export function ToastContainer() {

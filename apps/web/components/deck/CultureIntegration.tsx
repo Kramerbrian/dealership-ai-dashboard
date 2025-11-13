@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import { CULTURE_METRICS } from '@/lib/architecture/loop';
 
 export default function CultureIntegration() {

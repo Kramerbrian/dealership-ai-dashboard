@@ -1,7 +1,7 @@
 'use client';
 
 import { usePrefsStore } from '@/lib/store/prefs';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import { X, RotateCcw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

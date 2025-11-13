@@ -63,4 +63,4 @@ export const GET = createAdminRoute(async (req: NextRequest) => {
   } catch (e:any) {
     return NextResponse.json({ ok:false, error: e.message }, { status: 500 });
   }
-}
+});

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useHudStore } from '@/lib/store/hud';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 
 function GlowHalo({ severity, rounded = '9999px' }: { severity: 'none'|'high'|'critical'; rounded?: string }) {
   if (severity === 'none') return null;

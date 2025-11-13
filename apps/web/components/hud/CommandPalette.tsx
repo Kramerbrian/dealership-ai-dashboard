@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import { useHudStore } from '@/lib/store/hud';
 import { deployMockFix, openTriage, openInsightsAIV, compareCompetitors, togglePulse } from '@/lib/actions/mock';
 import { playSonic } from '@/lib/sound/palette';

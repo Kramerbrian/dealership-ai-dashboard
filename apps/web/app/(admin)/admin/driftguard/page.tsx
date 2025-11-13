@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import DriftTrendSpark from "@/src/components/drift/DriftTrendSpark";
+import DriftTrendSpark from "@/components/DriftTrendSpark";
 
 type Regr = { type:string; before:number; after:number };
 

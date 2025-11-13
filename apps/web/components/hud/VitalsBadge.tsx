@@ -1,6 +1,6 @@
 'use client';
 import { useVitals } from '@/lib/hooks/useVitals';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 
 export default function VitalsBadge() {
   const { lcp, cls, inp } = useVitals();

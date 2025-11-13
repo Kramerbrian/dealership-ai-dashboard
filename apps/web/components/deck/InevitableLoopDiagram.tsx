@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import type { LoopStage } from '@/lib/architecture/loop';
 
 const LOOP_STAGES: { stage: LoopStage; icon: string; color: string; description: string }[] = [

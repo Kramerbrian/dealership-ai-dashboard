@@ -1,7 +1,7 @@
 'use client';
 
 import { useToastStore } from '@/lib/store/toast';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 
 const tone = (lvl: 'info'|'success'|'warning'|'error') => {
   switch (lvl) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import { DEPLOYMENT_ROADMAP } from '@/lib/architecture/loop';
 import { CheckCircle2, Circle } from 'lucide-react';
 

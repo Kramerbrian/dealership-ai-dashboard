@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminRoute } from '@/lib/api/enhanced-route';
 import { traced } from '@/lib/api-wrap';
+import { z } from 'zod';
 
 /**
  * GET /api/admin/integrations/visibility

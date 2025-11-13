@@ -2,7 +2,7 @@
 
 import { usePrefsStore } from '@/lib/store/prefs';
 import { X } from 'lucide-react';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 
 export function SettingsModal() {
   const { openSettings, setOpenSettings, agentEnabled, setAgentEnabled, pgOnly, avoidTopics } =

@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { useCognitiveStore } from '@/lib/store/cognitive';
-import { TOKENS } from '@/styles/design-tokens';
+import { TOKENS } from '@/lib/design-tokens';
 import { getEasterEggQuote, getNeutralCoachLine } from '@/lib/agent/quoteEngine';
 import { playSonic } from '@/lib/sound/palette';
 import { tap, doubleTap } from '@/lib/sound/haptics';
