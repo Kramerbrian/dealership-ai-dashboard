@@ -51,6 +51,20 @@ export function setUserProperties(properties: Record<string, any>) {
   }
 }
 
+export function initPostHog() {
+  if (typeof window === 'undefined') return;
+  
+  // PostHog initialization would go here if needed
+  // For now, this is a stub that can be implemented later
+  if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+    // PostHog initialization code would go here
+  }
+}
+
+export function trackPageView(path: string) {
+  trackEvent('page_view', { path });
+}
+
 // Type declarations
 declare global {
   interface Window {

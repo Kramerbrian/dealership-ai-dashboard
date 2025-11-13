@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { apiError } from '@/lib/api/error-handler'
+import { createErrorResponse } from '@/lib/api/error-handler'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,10 +71,8 @@ export async function GET() {
     })
   } catch (error: any) {
     console.error('[system/endpoints] Error:', error)
-    return apiError(
-      'Failed to check endpoint status',
-      'ENDPOINT_CHECK_FAILED',
-      500
+    return createErrorResponse(
+      new Error('Failed to check endpoint status')
     )
   }
 }

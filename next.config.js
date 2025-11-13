@@ -19,8 +19,6 @@ const nextConfig = {
   },
   // External packages for server components (Next.js 15+)
   serverExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
-  // Disable static export to allow Clerk to work
-  output: 'standalone',
   
   // Security headers
   async headers() {
