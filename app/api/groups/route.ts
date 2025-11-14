@@ -107,6 +107,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+
     // Check if slug is already taken
     const { data: existing } = await supabase
       .from('dealer_groups')
