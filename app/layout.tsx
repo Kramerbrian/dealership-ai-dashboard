@@ -83,10 +83,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 
-        {/* JSON-LD Structured Data for AI Crawlers - TODO: Implement */}
-        {/* <JsonLd data={softwareApplicationSchema()} /> */}
-        {/* <JsonLd data={organizationSchema()} /> */}
-        {/* <JsonLd data={websiteSchema()} /> */}
+        {/* JSON-LD Structured Data - Removed to fix build error */}
 
         {process.env.NEXT_PUBLIC_GA && (
           <>
