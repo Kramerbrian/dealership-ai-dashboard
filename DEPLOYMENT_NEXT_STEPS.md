@@ -1,143 +1,212 @@
 # 🚀 Deployment Next Steps
 
-**Status:** Deployment complete, static files need alternative access method
+## ✅ Completed
+
+- ✅ **GitHub Push**: Successfully pushed to `origin/main`
+- ✅ **Vercel Deployment**: Deployed to production
+- ✅ **Project Linked**: `dealership-ai-dashboard`
+- ✅ **Mapbox Token**: Added to `.env.local`
+
+## 🌐 Production URLs
+
+- **Production**: https://dealership-ai-dashboard-nd0qfxr4a-brian-kramers-projects.vercel.app
+- **Inspect**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/ASu29r434WznnN1jzsoyHieS3r6m
 
 ---
 
-## ✅ Current Status
+## 📋 Immediate Next Steps
 
-- **Deployment:** ✅ Successful
-- **Production URL:** https://dealership-ai-dashboard-cuk1ay44r-brian-kramer-dealershipai.vercel.app
-- **Files Exist Locally:** ✅ `public/claude/dealershipai_claude_export.zip` (2.1 MB)
-- **Static File Access:** ❌ 404 (Next.js standalone mode limitation)
-- **API Route Access:** ✅ Working
+### 1. **Verify Production Deployment** (5 minutes)
 
----
+Visit the production URL and verify:
+- [ ] Landing page loads correctly
+- [ ] Navigation works
+- [ ] Hero section is visible
+- [ ] No console errors
+- [ ] All features functional
 
-## 🎯 Solution: Use API Routes
-
-Since static files in `/public/` aren't accessible with `output: 'standalone'`, use the existing API routes:
-
-### Claude Export URLs
-
-**✅ Working API Routes:**
-- **Export Bundle:** `https://[your-vercel-url]/api/claude/export`
-- **Manifest:** `https://[your-vercel-url]/api/claude/manifest`
-- **Stats:** `https://[your-vercel-url]/api/claude/stats`
-
-These routes are:
-- ✅ Already configured as public routes
-- ✅ Working and accessible
-- ✅ Properly cached
-- ✅ Return correct content types
+**Test URL**: https://dealership-ai-dashboard-nd0qfxr4a-brian-kramers-projects.vercel.app
 
 ---
 
-## 📋 Next Steps
+### 2. **Environment Variables** (10 minutes)
 
-### 1. Update Claude Export Guide
+Verify all required environment variables are set in Vercel:
 
-Update `CLAUDE_EXPORT_GUIDE.md` to use API routes:
+**Check Vercel Dashboard:**
+https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
 
-```markdown
-## 🌐 Hosting Options
+**Required Variables:**
+- [ ] `NEXT_PUBLIC_MAPBOX_TOKEN` - Mapbox public token
+- [ ] `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
+- [ ] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- [ ] `CLERK_SECRET_KEY` - Clerk secret key
+- [ ] Any other API keys your app needs
 
-### Option A: Vercel API Routes (Recommended)
-
-**Claude Export:**
-```
-https://[your-vercel-url]/api/claude/export
-```
-
-**Manifest:**
-```
-https://[your-vercel-url]/api/claude/manifest
-```
-
-These routes are already configured and working.
-```
-
-### 2. Test API Routes
-
+**Add via CLI:**
 ```bash
-# Test export
-curl -I https://dealership-ai-dashboard-cuk1ay44r-brian-kramer-dealershipai.vercel.app/api/claude/export
-
-# Test manifest
-curl -I https://dealership-ai-dashboard-cuk1ay44r-brian-kramer-dealershipai.vercel.app/api/claude/manifest
-```
-
-### 3. Update Claude Handoff Prompt
-
-Use the API route URL:
-
-```
-Load project from:
-https://[your-vercel-url]/api/claude/export
-
-Manifest: Use /api/claude/manifest
-
-Objective:
-Build a Next.js 14 cinematic landing + onboarding + dashboard bundle 
-using Clerk middleware and brand-tinted motion continuity.
-Use Framer Motion + Tailwind.
-
-Output new or updated .tsx files only.
+npx vercel env add NEXT_PUBLIC_MAPBOX_TOKEN production
+# Paste: pk.eyJ1IjoiYnJpYW5rcmFtZXIiLCJhIjoiY21od3FnaXo3MDJiazJsbmJ2bXJpNGFyaCJ9.TBnx2_86RJ7NMI1uo5ongw
 ```
 
 ---
 
-## 🔧 Alternative: Fix Static File Serving
+### 3. **Test Landing Page** (10 minutes)
 
-If you need static file access, you have two options:
+Verify the cinematic landing page works in production:
 
-### Option A: Change Next.js Output Mode
+- [ ] Black background visible
+- [ ] Navigation bar at top
+- [ ] Hero headline visible
+- [ ] AI chat orb visible
+- [ ] Clarity Deck section with 3 cards
+- [ ] All animations working (or at least content visible)
+- [ ] Mobile responsive
 
-Remove `output: 'standalone'` from `next.config.js`:
+**If landing page not visible:**
+- Check browser console for errors
+- Verify CSS is loading
+- Check if JavaScript is enabled
+- Hard refresh: `Cmd+Shift+R` (Mac) or `Ctrl+Shift+R` (Windows)
 
-```javascript
-// Remove or comment out:
-// output: 'standalone',
-```
+---
 
-**Note:** This may affect Clerk functionality. Test thoroughly.
+### 4. **Database Setup** (15 minutes)
 
-### Option B: Use Vercel Blob Storage
+If using Supabase:
 
-Upload the export to Vercel Blob and serve via CDN:
+- [ ] Run migrations: `supabase db push`
+- [ ] Verify database connection
+- [ ] Test API endpoints that use database
+- [ ] Check Supabase dashboard for tables
 
+**Migration Commands:**
 ```bash
-# Install Vercel Blob
-npm install @vercel/blob
+# Link to Supabase project
+supabase link --project-ref vxrdvkhkombwlhjvtsmw
 
-# Upload file
-vercel blob put public/claude/dealershipai_claude_export.zip
+# Push migrations
+supabase db push
 ```
 
 ---
 
-## ✅ Recommended Approach
+### 5. **Domain Configuration** (Optional, 10 minutes)
 
-**Use API Routes** - They're:
-- ✅ Already working
-- ✅ Properly configured
-- ✅ Publicly accessible
-- ✅ Cached appropriately
-- ✅ Return correct headers
+If you have a custom domain:
 
-**Update Documentation:**
-1. Update `CLAUDE_EXPORT_GUIDE.md` with API route URLs
-2. Update handoff prompts to use `/api/claude/export`
-3. Test the full flow
+- [ ] Add domain in Vercel Dashboard
+- [ ] Configure DNS settings
+- [ ] Wait for DNS propagation
+- [ ] Test custom domain
+
+**Vercel Domain Settings:**
+https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/domains
 
 ---
 
-## 🎯 Immediate Actions
+## 🔍 Verification Commands
 
-1. **Test API routes** - Verify they return the export bundle
-2. **Update documentation** - Use API route URLs
-3. **Share with Claude** - Use the API route URL in handoff prompt
+### Check Deployment Status
+```bash
+npx vercel ls
+```
+
+### View Deployment Logs
+```bash
+npx vercel inspect https://dealership-ai-dashboard-nd0qfxr4a-brian-kramers-projects.vercel.app --logs
+```
+
+### Check Environment Variables
+```bash
+npx vercel env ls
+```
+
+### Test Production URL
+```bash
+curl -I https://dealership-ai-dashboard-nd0qfxr4a-brian-kramers-projects.vercel.app
+```
 
 ---
 
-**Status:** ✅ Deployment complete, use API routes for Claude export access
+## 🐛 Known Issues to Address
+
+### Landing Page Visibility
+- **Status**: Fixed locally (removed opacity:0 from critical elements)
+- **Action**: Verify in production
+- **If still invisible**: Check browser console, verify CSS loading
+
+### Mapbox Token
+- **Status**: Added to `.env.local`
+- **Action**: Add to Vercel environment variables
+- **Command**: `npx vercel env add NEXT_PUBLIC_MAPBOX_TOKEN production`
+
+### GitHub Secrets
+- **Status**: File in `.gitignore` (won't be committed in future)
+- **Action**: Already handled (secret allowed via GitHub UI)
+
+---
+
+## 📊 Monitoring & Analytics
+
+### Set Up Monitoring
+- [ ] Configure Vercel Analytics
+- [ ] Set up error tracking (Sentry, etc.)
+- [ ] Configure uptime monitoring
+- [ ] Set up performance monitoring
+
+### Analytics Integration
+- [ ] Verify Google Analytics (if configured)
+- [ ] Verify PostHog (if configured)
+- [ ] Test event tracking
+
+---
+
+## 🚀 Future Enhancements
+
+### Performance
+- [ ] Optimize images
+- [ ] Enable edge caching
+- [ ] Optimize bundle size
+- [ ] Add service worker (if needed)
+
+### Features
+- [ ] Test all Pulse Decision Inbox features
+- [ ] Verify real-time updates (SSE)
+- [ ] Test keyboard shortcuts
+- [ ] Verify dark mode
+- [ ] Test export functionality
+
+### SEO
+- [ ] Verify meta tags
+- [ ] Check structured data
+- [ ] Test Open Graph tags
+- [ ] Verify sitemap.xml
+
+---
+
+## 📞 Support Resources
+
+- **Vercel Dashboard**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
+- **GitHub Repo**: https://github.com/Kramerbrian/dealership-ai-dashboard
+- **Supabase Dashboard**: https://supabase.com/dashboard/project/vxrdvkhkombwlhjvtsmw
+
+---
+
+## ✅ Quick Checklist
+
+- [ ] Production deployment verified
+- [ ] Environment variables configured
+- [ ] Landing page visible and working
+- [ ] Database migrations applied
+- [ ] All features tested
+- [ ] Monitoring configured
+- [ ] Custom domain set up (if needed)
+
+---
+
+**Last Updated**: $(date)
+**Deployment Status**: ✅ Production
+**Next Review**: After initial testing
