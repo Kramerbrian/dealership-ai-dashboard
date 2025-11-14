@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
       .eq('dealer_id', dealerId);
 
     // Merge health data with integrations
-    const enrichedIntegrations = (integrations || []).map((integration) => {
-      const health = healthData?.find(h => h.integration_id === integration.id);
+    const enrichedIntegrations = (integrations || []).map((integration: any) => {
+      const health = healthData?.find((h: any) => h.integration_id === integration.id);
       return {
         ...integration,
         health: health || null,
@@ -96,6 +96,14 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -161,7 +169,7 @@ export async function POST(req: NextRequest) {
         sync_interval_minutes: syncIntervalMinutes,
         next_sync_at: new Date(Date.now() + syncIntervalMinutes * 60 * 1000).toISOString(),
         created_by: userId,
-      })
+      } as any)
       .select()
       .single();
 
