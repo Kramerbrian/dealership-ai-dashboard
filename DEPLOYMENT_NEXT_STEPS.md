@@ -5,7 +5,6 @@
 - ✅ **GitHub Push**: Successfully pushed to `origin/main`
 - ✅ **Vercel Deployment**: Deployed to production
 - ✅ **Project Linked**: `dealership-ai-dashboard`
-- ✅ **Mapbox Token**: Added to `.env.local`
 
 ## 🌐 Production URLs
 
@@ -37,19 +36,12 @@ Verify all required environment variables are set in Vercel:
 https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings/environment-variables
 
 **Required Variables:**
-- [ ] `NEXT_PUBLIC_MAPBOX_TOKEN` - Mapbox public token
 - [ ] `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
 - [ ] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
 - [ ] `CLERK_SECRET_KEY` - Clerk secret key
 - [ ] Any other API keys your app needs
-
-**Add via CLI:**
-```bash
-npx vercel env add NEXT_PUBLIC_MAPBOX_TOKEN production
-# Paste: pk.eyJ1IjoiYnJpYW5rcmFtZXIiLCJhIjoiY21od3FnaXo3MDJiazJsbmJ2bXJpNGFyaCJ9.TBnx2_86RJ7NMI1uo5ongw
-```
 
 ---
 
@@ -137,11 +129,6 @@ curl -I https://dealership-ai-dashboard-nd0qfxr4a-brian-kramers-projects.vercel.
 - **Status**: Fixed locally (removed opacity:0 from critical elements)
 - **Action**: Verify in production
 - **If still invisible**: Check browser console, verify CSS loading
-
-### Mapbox Token
-- **Status**: Added to `.env.local`
-- **Action**: Add to Vercel environment variables
-- **Command**: `npx vercel env add NEXT_PUBLIC_MAPBOX_TOKEN production`
 
 ### GitHub Secrets
 - **Status**: File in `.gitignore` (won't be committed in future)
