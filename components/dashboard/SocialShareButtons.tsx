@@ -27,7 +27,7 @@ export default function SocialShareButtons({ dealership }: SocialShareButtonsPro
   const [copied, setCopied] = useState(false);
 
   const handleShare = async (platform: 'twitter' | 'linkedin' | 'facebook' | 'clipboard') => {
-    const result = await shareToSocial(platform, dealership);
+    const result = await shareToSocial(platform, dealership as any);
     if (platform === 'clipboard' && result.success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
