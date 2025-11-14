@@ -53,12 +53,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Use specified group or first group
-    const selectedGroupId = groupId || groups[0].id;
-    const selectedGroup = groups.find(g => g.id === selectedGroupId) || groups[0];
+    const selectedGroupId = groupId || (groups[0] as any).id;
+    const selectedGroup = groups.find((g: any) => g.id === selectedGroupId) || groups[0];
 
     // Get locations for this group
     const { data: locations, error: locationsError } = await supabase
-      .rpc('get_group_locations', { p_group_id: selectedGroupId });
+      .rpc('get_group_locations', { p_group_id: selectedGroupId } as any);
 
     if (locationsError) {
       console.error('[locations] Error fetching locations:', locationsError);
@@ -96,6 +96,14 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -149,9 +157,9 @@ export async function POST(req: NextRequest) {
       .eq('dealer_group_id', groupId)
       .eq('status', 'active');
 
-    if (count && count >= group.max_locations) {
+    if (count && count >= (group as any).max_locations) {
       return NextResponse.json(
-        { error: `Maximum locations (${group.max_locations}) reached for this plan` },
+        { error: `Maximum locations (${(group as any).max_locations}) reached for this plan` },
         { status: 403 }
       );
     }
@@ -175,7 +183,7 @@ export async function POST(req: NextRequest) {
         email,
         latitude: latitude ? parseFloat(latitude) : null,
         longitude: longitude ? parseFloat(longitude) : null,
-      })
+      } as any)
       .select()
       .single();
 
