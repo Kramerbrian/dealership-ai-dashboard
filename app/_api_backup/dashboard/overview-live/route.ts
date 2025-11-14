@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         google: settings.google_services,
         social: settings.social_media,
         reviews: settings.reviews,
-      };
+      } as any;
 
       const realData = await fetchDealerData(dealerId, dealerSettings);
 
@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
         },
         leads: generateLeadsData(metrics.aiVisibility.score),
         competitive: generateCompetitiveData(),
-        recommendations: recommendations.map((rec) => ({
+        recommendations: recommendations.map((rec: any) => ({
           id: rec.id,
           type: rec.category,
           priority: rec.severity,
