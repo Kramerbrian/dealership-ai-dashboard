@@ -284,16 +284,173 @@ if [ -z "$DATABASE_URL" ]; then echo "❌ DATABASE_URL not set"; fi
 
 ---
 
+## Roadmap and Feature Planning
+
+The roadmap manifest (`/dealershipai-roadmap-manifest.json`) documents quarterly milestones and feature flags:
+
+### View Roadmap
+```bash
+# See current quarter milestones
+jq '.roadmap.Q1_2025' dealershipai-roadmap-manifest.json
+
+# List all feature flags
+jq '.roadmap.Q1_2025.featureFlags' dealershipai-roadmap-manifest.json
+
+# View success metrics
+jq '.successMetrics' dealershipai-roadmap-manifest.json
+```
+
+### Feature Flag Management
+Feature flags control which features are enabled in production:
+
+```typescript
+// Example: Check if feature is enabled
+const ENABLE_DAI_COPILOT = process.env.ENABLE_DAI_COPILOT === 'true';
+```
+
+### Quarterly Planning
+Each quarter has:
+- **Theme**: Overarching focus area
+- **Milestones**: Major features with target dates
+- **Feature Flags**: Toggle switches for gradual rollout
+- **Success Metrics**: KPIs to measure progress
+
+---
+
+## Self-Optimization System
+
+The master manifest includes a `selfOptimization` block for continuous improvement:
+
+### Continuous Learning
+```bash
+# View telemetry sources
+jq '.selfOptimization.continuousLearning.telemetryCollection' dealershipai-master-manifest.json
+
+# Check quality gates
+jq '.selfOptimization.qualityGates' dealershipai-master-manifest.json
+```
+
+### Quality Gates
+Pre-deployment checks ensure quality standards:
+- **Lighthouse Performance**: >= 90
+- **TypeScript Type Checks**: 0 errors
+- **Security Audit**: 0 high/critical vulnerabilities
+
+Post-deployment checks monitor production health:
+- **Smoke Tests**: All pass (auto-rollback on failure)
+- **Error Rate**: < 1% in first hour
+- **Response Time**: p95 < 2s
+
+### Self-Healing
+Automatic recovery mechanisms:
+- **Retry Logic**: 3 attempts with exponential backoff
+- **Fallbacks**: Graceful degradation for AI, maps, Redis
+- **Health Checks**: Every 5 minutes with Slack alerts
+
+---
+
+## Versioning and Governance
+
+### Automatic Version Bumping
+Use the version bump script to update all manifests:
+
+```bash
+# Dry run (preview changes)
+node scripts/manifest-version-bump.js --dry-run
+
+# Apply version bump
+node scripts/manifest-version-bump.js
+
+# Expected output:
+# 🚀 DealershipAI Manifest Version Bump
+# 📦 New version: v2025.11.14
+# ✅ Updated manifests:
+#    dealershipai-master-manifest.json
+#    └─ v2025.11.13 → v2025.11.14
+#    dealershipai-roadmap-manifest.json
+#    └─ v2025.11.13 → v2025.11.14
+# ✅ Updated CHANGELOG.md
+```
+
+### Manual Version Update
+```bash
+# Update version in master manifest
+jq '.governance.currentVersion = "v2025.11.14"' dealershipai-master-manifest.json > tmp.json
+mv tmp.json dealershipai-master-manifest.json
+
+# Create git tag
+git tag v2025.11.14
+git push origin main --tags
+```
+
+### CHANGELOG Management
+All changes are tracked in `/docs/CHANGELOG.md`:
+
+```markdown
+## v2025.11.14 - 2025-11-14
+
+### Added
+- Roadmap manifest with quarterly milestones
+- Self-optimization block with continuous learning
+- Automated version bump script
+
+### Changed
+- Enhanced master manifest with governance metadata
+- Updated documentation with roadmap sections
+```
+
+---
+
+## Observability and Monitoring
+
+### Metrics Collection
+```bash
+# View telemetry sources
+jq '.selfOptimization.continuousLearning.telemetryCollection.sources' dealershipai-master-manifest.json
+
+# Output:
+# [
+#   "/data/copilot-events.json",
+#   "/data/lighthouse-history.json",
+#   "/api/copilot-events",
+#   "/api/nightly-lighthouse"
+# ]
+```
+
+### Business Metrics
+- Daily Active Users (DAU)
+- Conversion Rate
+- Feature Adoption
+- Copilot Engagement
+- NPS Score
+
+### Technical Metrics
+- Response Time (p50, p95, p99)
+- Error Rate
+- Lighthouse Scores
+- Cache Hit Rate
+- API Latency
+
+### Dashboards
+- **Internal**: `/pulse/dashboard` (Pulse Suite)
+- **External**: Vercel Analytics Dashboard
+- **Alerts**: Slack #dealershipai-alerts
+
+---
+
 ## Related Documentation
 
 - [Deployment Infrastructure](./deployment-infrastructure.md) - Complete deployment guide
 - [Completion Report](./deployment-completion-report.md) - Latest deployment summary
 - [Pulse Suite Architecture](./aim_vindex_pulse_suite.md) - AIM VIN-DEX Pulse Suite
 - [Environment Variables](./.env.production.example) - All environment variables
+- [Roadmap Manifest](/dealershipai-roadmap-manifest.json) - Quarterly feature planning
+- [CHANGELOG](./CHANGELOG.md) - Version history and release notes
 
 ---
 
 **Manifest Location**: `/dealershipai-master-manifest.json`
-**Last Updated**: 2025-11-13
+**Roadmap Location**: `/dealershipai-roadmap-manifest.json`
+**Last Updated**: 2025-11-14
 **Status**: ✅ Production Ready
-**Version**: v2025.11.13
+**Version**: v2025.11.14

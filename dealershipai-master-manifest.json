@@ -223,6 +223,240 @@
     "infrastructure": "/docs/deployment-infrastructure.md",
     "completionReport": "/docs/deployment-completion-report.md",
     "pulseArchitecture": "/docs/aim_vindex_pulse_suite.md",
-    "audioSpecs": "/public/audio/README.md"
+    "audioSpecs": "/public/audio/README.md",
+    "roadmapManifest": "/dealershipai-roadmap-manifest.json",
+    "masterManifestGuide": "/docs/master-manifest-guide.md"
+  },
+
+  "selfOptimization": {
+    "description": "Continuous learning and improvement loops for automated optimization",
+
+    "continuousLearning": {
+      "telemetryCollection": {
+        "sources": [
+          "/data/copilot-events.json",
+          "/data/lighthouse-history.json",
+          "/api/copilot-events",
+          "/api/nightly-lighthouse"
+        ],
+        "metrics": [
+          "User engagement rates",
+          "Copilot interaction quality",
+          "Performance scores",
+          "Feature adoption",
+          "Error rates",
+          "Conversion funnels"
+        ],
+        "aggregationSchedule": "daily at 2am",
+        "retentionPolicy": "90 days raw, 1 year aggregated"
+      },
+
+      "feedbackLoops": {
+        "user": {
+          "component": "/components/CopilotFeedback.tsx",
+          "endpoint": "/api/feedback",
+          "types": ["thumbs up/down", "written feedback", "bug reports"],
+          "responseTime": "24 hours for critical issues"
+        },
+        "system": {
+          "errorTracking": "automatic via middleware",
+          "performanceMonitoring": "Vercel Analytics + Lighthouse",
+          "alertThresholds": {
+            "errorRate": "> 1%",
+            "responseTime": "> 3s",
+            "lighthouseScore": "< 90"
+          }
+        }
+      },
+
+      "modelImprovement": {
+        "promptOptimization": {
+          "engine": "/lib/agent/quoteEngine.ts",
+          "testFramework": "/tests/copilot-prompts.test.ts",
+          "abTesting": true,
+          "rolloutStrategy": "canary → 10% → 50% → 100%"
+        },
+        "contextEnhancement": {
+          "copilotContext": "/lib/copilot-context.ts",
+          "moodEngine": "dynamic based on user behavior + metrics",
+          "personalization": "dealer-specific insights"
+        }
+      }
+    },
+
+    "qualityGates": {
+      "preDeployment": [
+        {
+          "gate": "Lighthouse Performance",
+          "threshold": ">= 90",
+          "blocker": true,
+          "automation": ".github/workflows/healthcheck.yml"
+        },
+        {
+          "gate": "TypeScript Type Checks",
+          "threshold": "0 errors",
+          "blocker": true,
+          "automation": "npm run type-check"
+        },
+        {
+          "gate": "Unit Tests",
+          "threshold": ">= 80% coverage",
+          "blocker": false,
+          "automation": "npm test"
+        },
+        {
+          "gate": "Security Audit",
+          "threshold": "0 high/critical vulnerabilities",
+          "blocker": true,
+          "automation": "npm audit"
+        }
+      ],
+
+      "postDeployment": [
+        {
+          "gate": "Smoke Tests",
+          "threshold": "all pass",
+          "automation": "scripts/verify-landing-deployment.js",
+          "rollbackTrigger": true
+        },
+        {
+          "gate": "Error Rate",
+          "threshold": "< 1% in first hour",
+          "automation": "Vercel Analytics",
+          "rollbackTrigger": true
+        },
+        {
+          "gate": "Response Time",
+          "threshold": "p95 < 2s",
+          "automation": "Vercel Analytics",
+          "rollbackTrigger": false
+        }
+      ]
+    },
+
+    "automation": {
+      "deploymentPipeline": {
+        "trigger": "push to main",
+        "workflow": ".github/workflows/deploy-cinematic-hero.yml",
+        "stages": [
+          "lint",
+          "type-check",
+          "build",
+          "preview",
+          "verify-preview",
+          "production",
+          "verify-production",
+          "notify"
+        ],
+        "rollbackStrategy": "automatic on failed quality gates"
+      },
+
+      "cronJobs": {
+        "optimization": [
+          {
+            "name": "Nightly Lighthouse",
+            "path": "/api/nightly-lighthouse",
+            "schedule": "0 3 * * *",
+            "purpose": "Track performance trends + identify regressions"
+          },
+          {
+            "name": "Zero-Click Recompute",
+            "path": "/api/zero-click/recompute",
+            "schedule": "0 */4 * * *",
+            "purpose": "Update competitive intelligence"
+          },
+          {
+            "name": "Fleet Refresh",
+            "path": "/api/cron/fleet-refresh",
+            "schedule": "0 8,12,16 * * *",
+            "purpose": "Sync multi-dealership data"
+          }
+        ]
+      },
+
+      "selfHealing": {
+        "retryLogic": {
+          "maxAttempts": 3,
+          "backoffStrategy": "exponential",
+          "retryableErrors": ["ECONNREFUSED", "ETIMEDOUT", "503", "429"]
+        },
+        "fallbacks": {
+          "ai": "Graceful degradation to cached responses",
+          "maps": "Default to generic location names",
+          "audio": "Silent mode (already muted by default)",
+          "redis": "In-memory cache fallback"
+        },
+        "healthChecks": {
+          "endpoint": "/api/health",
+          "frequency": "every 5 minutes",
+          "alerts": "Slack webhook on 3 consecutive failures"
+        }
+      }
+    },
+
+    "observability": {
+      "logging": {
+        "level": "info in production, debug in development",
+        "structured": true,
+        "destination": "Vercel logs + optional external service",
+        "retention": "30 days"
+      },
+
+      "tracing": {
+        "enabled": true,
+        "provider": "Vercel Observability",
+        "sampleRate": "100% for errors, 10% for success"
+      },
+
+      "metrics": {
+        "business": [
+          "Daily Active Users (DAU)",
+          "Conversion Rate",
+          "Feature Adoption",
+          "Copilot Engagement",
+          "NPS Score"
+        ],
+        "technical": [
+          "Response Time (p50, p95, p99)",
+          "Error Rate",
+          "Lighthouse Scores",
+          "Cache Hit Rate",
+          "API Latency"
+        ]
+      },
+
+      "dashboards": {
+        "internal": "/pulse/dashboard (Pulse Suite)",
+        "external": "Vercel Analytics Dashboard",
+        "alerts": "Slack #dealershipai-alerts"
+      }
+    },
+
+    "governance": {
+      "versionControl": {
+        "scheme": "semantic versioning (v2025.11.14)",
+        "autoIncrement": true,
+        "tags": "git tag v{version} on production deploy",
+        "changelog": "/docs/CHANGELOG.md"
+      },
+
+      "backups": {
+        "code": "Git repository (GitHub)",
+        "database": "Daily automated backups (7 day retention)",
+        "configuration": [
+          "/app/page.legacy.backup.tsx",
+          "/pulse/master-pulse-config.backup.json",
+          "/.disabled-pages/"
+        ],
+        "manifests": "Versioned in git with full history"
+      },
+
+      "auditing": {
+        "deployments": "Full audit log in Vercel",
+        "configChanges": "Git commit history",
+        "accessLogs": "Clerk session logs",
+        "securityEvents": "CSP violation reports"
+      }
+    }
   }
 }
