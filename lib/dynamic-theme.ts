@@ -91,9 +91,11 @@ export class DynamicThemeManager {
   }
 
   private applyTheme(theme: ThemeConfig) {
+    if (typeof document === 'undefined') return; // SSR safety
+
     const root = document.documentElement;
-    
-    // Apply CSS custom properties
+
+    // Apply CSS custom properties (legacy theme system)
     root.style.setProperty('--theme-primary', theme.colors.primary);
     root.style.setProperty('--theme-secondary', theme.colors.secondary);
     root.style.setProperty('--theme-background', theme.colors.background);
@@ -103,12 +105,27 @@ export class DynamicThemeManager {
     root.style.setProperty('--theme-warning', theme.colors.warning);
     root.style.setProperty('--theme-error', theme.colors.error);
 
+    // Also update mood-based theme variables for consistency
+    // Extract RGB from hex primary color for --accent-rgb
+    const primaryRgb = this.hexToRgb(theme.colors.primary);
+    if (primaryRgb) {
+      root.style.setProperty('--accent-rgb', primaryRgb);
+      root.style.setProperty('--accent-glow', `rgba(${primaryRgb}, 0.15)`);
+    }
+
     // Update body classes for Tailwind
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
     document.body.classList.add(`theme-${theme.mode}`);
 
     // Add visual indicator
     this.showThemeIndicator(theme);
+  }
+
+  private hexToRgb(hex: string): string | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? `${parseInt(result[1], 16)} ${parseInt(result[2], 16)} ${parseInt(result[3], 16)}`
+      : null;
   }
 
   private showThemeIndicator(theme: ThemeConfig) {

@@ -1,8 +1,19 @@
 :root {
-  --accent-rgb: 59 130 246; /* default blue */
+  /* Mood-based theme variables (copilot context) */
+  --accent-rgb: 59 130 246; /* default blue (neutral) */
   --accent-glow: rgba(59, 130, 246, 0.15);
   --vignette-brightness: 0.75;
   --heading-weight: 450;
+
+  /* TSM-based theme variables (dynamic-theme) */
+  --theme-primary: #3b82f6;
+  --theme-secondary: #8b5cf6;
+  --theme-background: #0f172a;
+  --theme-surface: rgba(255, 255, 255, 0.04);
+  --theme-text: #ffffff;
+  --theme-accent: #10b981;
+  --theme-warning: #f59e0b;
+  --theme-error: #ef4444;
 }
 
 /* background vignette and glow utilities */
