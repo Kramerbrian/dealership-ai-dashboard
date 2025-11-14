@@ -21,7 +21,7 @@ interface CachedContext {
 }
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;
-let embeddingsClient: OpenAIEmbeddings | null = null;
+let embeddingsClient: any | null = null;
 
 /**
  * Initialize Supabase client (lazy-loaded)
@@ -80,7 +80,7 @@ export async function storeContext(
         embedding: JSON.stringify(embedding),
         metadata: JSON.stringify(metadata),
         created_at: new Date().toISOString(),
-      })
+      } as any)
       .select('id')
       .single();
 
@@ -89,7 +89,7 @@ export async function storeContext(
       return null;
     }
 
-    return data?.id || null;
+    return (data as any)?.id || null;
   } catch (error) {
     console.error('Error in storeContext:', error);
     return null;
@@ -120,7 +120,7 @@ export async function getCachedContext(
       query_embedding: JSON.stringify(queryEmbedding),
       match_threshold: similarityThreshold,
       match_count: limit,
-    });
+    } as any);
 
     if (error) {
       console.error('Error retrieving context:', error);
@@ -128,7 +128,7 @@ export async function getCachedContext(
     }
 
     // Transform results
-    return (data || []).map((item: any) => ({
+    return ((data as any) || []).map((item: any) => ({
       id: item.id,
       content: item.content,
       embedding: JSON.parse(item.embedding),
