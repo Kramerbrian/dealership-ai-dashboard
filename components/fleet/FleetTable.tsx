@@ -8,6 +8,10 @@ import FixActionDrawer from '@/components/FixActionDrawer'
 
 const fetcher = (url: string) => fetch(url, { headers: { 'x-role': 'admin', 'x-tenant': 'demo-dealer-001' } }).then(r=>r.json())
 
+const SimpleCard = ({ label, value }: { label: string; value: string | number }) => (
+  <span className="text-xs px-2 py-1 bg-slate-800 rounded">{label}: {value}</span>
+)
+
 export default function FleetTable(){
   const { data, isLoading, error, mutate } = useSWR('/api/origins', fetcher)
   const [filter, setFilter] = useState('')
@@ -83,11 +87,11 @@ export default function FleetTable(){
                   <td className='p-3'>{row.tenant}</td>
                   <td className='p-3'>
                     <div className='flex gap-2 flex-wrap'>
-                      <EvidenceCard label='Schema' value={ev.schemaCount ?? 0} />
-                      <EvidenceCard label='CWV' value={ev.cwvScore ?? '—'} />
-                      <EvidenceCard label='Robots' value={ev.robotsOk ? 'OK' : 'Block?'} />
-                      <EvidenceCard label='Sitemap' value={ev.sitemapOk ? 'OK' : '—'} />
-                      <EvidenceCard label='Last AEO' value={last ? new Date(last).toLocaleString() : '—'} />
+                      <SimpleCard label='Schema' value={ev.schemaCount ?? 0} />
+                      <SimpleCard label='CWV' value={ev.cwvScore ?? '—'} />
+                      <SimpleCard label='Robots' value={ev.robotsOk ? 'OK' : 'Block?'} />
+                      <SimpleCard label='Sitemap' value={ev.sitemapOk ? 'OK' : '—'} />
+                      <SimpleCard label='Last AEO' value={last ? new Date(last).toLocaleString() : '—'} />
                     </div>
                   </td>
                   <td className='p-3'>
