@@ -35,7 +35,7 @@ export class TenantManager {
    */
   async getTenant(tenantId: string): Promise<Tenant | null> {
     try {
-      const tenant = await prisma.tenant.findUnique({
+      const tenant = await (prisma as any).tenant.findUnique({
         where: { id: tenantId },
         select: {
           id: true,
@@ -74,7 +74,7 @@ export class TenantManager {
     const tier = data.tier || 'free';
     const features = getFeatureFlags(tier);
 
-    const tenant = await prisma.tenant.create({
+    const tenant = await (prisma as any).tenant.create({
       data: {
         name: data.name,
         tier,
@@ -103,7 +103,7 @@ export class TenantManager {
         updateData.tier = data.tier;
       }
 
-      const tenant = await prisma.tenant.update({
+      const tenant = await (prisma as any).tenant.update({
         where: { id: tenantId },
         data: updateData,
         select: {
@@ -248,11 +248,11 @@ export class TenantManager {
     let withinLimits = true;
 
     for (const [key, limit] of Object.entries(tierLimits)) {
-      const used = usage[key as keyof typeof usage] || 0;
+      const used = usage[key as keyof typeof usage] as number || 0;
       const remaining = limit === -1 ? -1 : Math.max(0, limit - used);
       const exceeded = limit !== -1 && used > limit;
 
-      result[key] = { used, limit, remaining };
+      result[key] = { used: used as number, limit, remaining: remaining as number };
       
       if (exceeded) {
         withinLimits = false;
@@ -293,7 +293,7 @@ export class TenantManager {
 
       const limits = newLimits[newTier];
       const exceeded = Object.entries(limits).some(([key, limit]) => {
-        const used = usage[key as keyof typeof usage] || 0;
+        const used = usage[key as keyof typeof usage] as number || 0;
         return limit !== -1 && used > limit;
       });
 

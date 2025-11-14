@@ -1,0 +1,179 @@
+{
+  "manifestVersion": "2026-Q3",
+  "project": "DealershipAI – Full System Deployment",
+  "author": "DealershipAI Orchestrator 3.0",
+  "description": "Deploys and validates the entire post-landing architecture: Clerk middleware, Onboarding workflow, Pulse Dashboard, Copilot intelligence, and meta-orchestration.",
+  "preDeploy": {
+    "verifyLanding": [
+      "Landing cinematic page live at https://dealershipai.com",
+      "Rotator text active",
+      "Ambient hum muted by default",
+      "Schema + SEO validation pass (Lighthouse ≥ 90)"
+    ],
+    "branch": "main",
+    "repo": "github.com/dealershipai/dealershipai"
+  },
+  "deployTargets": {
+    "onboarding": {
+      "path": "/app/onboarding/",
+      "components": [
+        "/app/onboarding/page.tsx",
+        "/app/onboarding/components/DAICopilot.tsx",
+        "/app/onboarding/components/StepCards.tsx"
+      ],
+      "workflow": {
+        "steps": [
+          {
+            "id": "connectGBP",
+            "title": "Connect Google Business Profile",
+            "description": "OAuth connect GBP to pull initial visibility metrics."
+          },
+          {
+            "id": "runScan",
+            "title": "Run AI Visibility Scan",
+            "description": "Trigger /api/ai-scores → generate baseline AIV, AEO, GEO."
+          },
+          {
+            "id": "reviewPulse",
+            "title": "Review Pulse Metrics",
+            "description": "Display live Pulse cards for AI Visibility, Trust, Conversion, and Forecast."
+          },
+          {
+            "id": "enableAutoFix",
+            "title": "Enable Auto-Fix",
+            "description": "Activate automated schema and photo optimizations."
+          },
+          {
+            "id": "completeSetup",
+            "title": "Finish Setup",
+            "description": "Lock personalization token, redirect → /pulse/dashboard."
+          }
+        ],
+        "copilotIntegration": {
+          "hook": "/hooks/useDAICopilot.ts",
+          "toneSets": ["professional", "witty", "cinematic"],
+          "feedbackComponent": "/components/CopilotFeedback.tsx"
+        },
+        "successMetric": "onboardingCompletionRate ≥ 90%"
+      }
+    },
+    "clerkMiddleware": {
+      "file": "/middleware.ts",
+      "purpose": "Protect all authenticated routes under dash.dealershipai.com",
+      "checks": [
+        "First login → /onboarding",
+        "Returning user → /pulse/dashboard",
+        "Headers injected: x-dealer-id, x-user-role, x-session-id"
+      ],
+      "roles": ["admin", "dealer", "analyst"],
+      "sessionRotation": "hourly",
+      "status": "enabled"
+    },
+    "pulseDashboard": {
+      "path": "/app/pulse/",
+      "coreComponents": [
+        "/components/PulseDashboard.tsx",
+        "/components/PulseCard.tsx",
+        "/components/ForecastCard.tsx",
+        "/components/UGCCard.tsx"
+      ],
+      "dataSources": {
+        "aiScores": "/api/ai-scores",
+        "forecast": "/data/lighthouse-history.json",
+        "ugcHealth": "/api/ugc-health",
+        "traffic": "/api/traffic-metrics"
+      },
+      "copilot": {
+        "component": "/components/DAICopilot.tsx",
+        "voiceOrb": "/components/VoiceOrb.tsx",
+        "telemetry": "/api/copilot-events",
+        "themeController": "/lib/theme-controller.ts"
+      },
+      "performance": {
+        "edgeRuntime": true,
+        "p95Latency": "<150ms"
+      },
+      "successMetric": "activeDealers/day ≥ 85%"
+    },
+    "orchestrator": {
+      "file": "/lib/meta-orchestrator.ts",
+      "purpose": "Execute and validate all jobs defined in system manifests.",
+      "linkedManifests": [
+        "dealershipai-master-manifest.json",
+        "dealershipai-hyper-optimization-manifest.json",
+        "dealershipai-meta-intelligence-manifest.json"
+      ],
+      "outputs": {
+        "stateFile": "/public/system-state.json",
+        "history": "/data/orchestration-history.json"
+      },
+      "governance": {
+        "validator": "/lib/governance-validator.ts",
+        "safeModeHandler": "/lib/safe-mode-handler.ts",
+        "policies": "/policies/governance.yml"
+      },
+      "schedule": "0 1 * * *"
+    },
+    "agents": {
+      "correlationAgent": "/agents/correlation-agent/correlation_agent.py",
+      "causalAgent": "/agents/causal-agent/causal_inference.py",
+      "recommenderAgent": "/agents/recommender-agent/generate_insights.ts",
+      "dealerTwin": "/api/dealer-twin",
+      "knowledgeGraph": "/scripts/graph-sync.ts",
+      "executiveReports": "/scripts/executive-report.ts"
+    }
+  },
+  "workflowSequence": [
+    "Validate manifests",
+    "Run build → npm run build",
+    "Execute CI pipelines → deploy-cinematic-hero.yml → self-optimization.yml",
+    "Run meta-orchestrator",
+    "Verify DHI (Deployment Health Index) ≥ 80 before publish",
+    "Commit updated manifests to GitHub",
+    "Trigger Vercel production deployment",
+    "Post success summary to Slack #deployments"
+  ],
+  "deployment": {
+    "vercel": {
+      "domains": ["dash.dealershipai.com"],
+      "project": "dealershipai-dashboard",
+      "token": "@vercel_token_dashboard",
+      "buildCommand": "npm run build",
+      "startCommand": "npm start",
+      "env": {
+        "CLERK_SECRET_KEY": "@clerk_secret_key",
+        "NEXT_PUBLIC_CLERK_FRONTEND_API": "@clerk_frontend_api",
+        "GMAPS_KEY": "@gmaps_key",
+        "SLACK_WEBHOOK_URL": "@slack_webhook_url",
+        "OPENAI_API_KEY": "@openai_key"
+      }
+    },
+    "github": {
+      "actions": {
+        "buildDeploy": ".github/workflows/deploy-cinematic-hero.yml",
+        "selfOptimization": ".github/workflows/self-optimization.yml",
+        "metaOrchestrator": ".github/workflows/meta-orchestrator.yml"
+      },
+      "pushCommands": [
+        "git add .",
+        "git commit -m 'feat: deploy full DealershipAI system'",
+        "git push origin main"
+      ]
+    }
+  },
+  "postDeployChecks": [
+    "Visit dash.dealershipai.com → verify Clerk login → onboarding.",
+    "Confirm /pulse/dashboard loads within 1.5s.",
+    "Check Slack for deploy summary.",
+    "Run node scripts/validate-deployment.js → report PDF generated.",
+    "Ensure /pulse/meta/executive-console shows fresh metrics."
+  ],
+  "successCriteria": {
+    "LighthousePerformance": "≥ 90",
+    "CopilotSentiment": "≥ 0.8",
+    "ForecastAccuracy": "≤ ±5%",
+    "Accessibility": "≥ 95",
+    "Uptime": "≥ 99.99%"
+  }
+}
+

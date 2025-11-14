@@ -19,9 +19,6 @@ Go to **Vercel Dashboard → Your Project → Settings → Environment Variables
 #### **Critical (Required for Landing Page & Dashboard)**
 
 ```bash
-# Mapbox (Required for landing page map)
-NEXT_PUBLIC_MAPBOX_KEY=your_mapbox_token_here
-
 # Clerk Authentication (Required for dashboard)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_... or pk_test_...
 CLERK_SECRET_KEY=sk_live_... or sk_test_...
@@ -78,7 +75,6 @@ NEXT_PUBLIC_SENTRY_DSN=https://...
 - [ ] Page loads without errors
 - [ ] Domain input form appears
 - [ ] "Analyze my visibility" button works
-- [ ] Mapbox map loads (check browser console for errors)
 - [ ] Clarity Stack panel displays after analysis
 - [ ] AI Intro Card displays after analysis
 
@@ -100,11 +96,6 @@ NEXT_PUBLIC_SENTRY_DSN=https://...
 - Verify `rootDirectory` is set correctly
 - Ensure Prisma schema path is correct: `../../prisma/schema.prisma`
 - Check that all dependencies are in `apps/web/package.json`
-
-#### **Mapbox Not Loading:**
-- Verify `NEXT_PUBLIC_MAPBOX_KEY` is set in Vercel
-- Check browser console for Mapbox errors
-- Ensure Mapbox style URL is correct in code
 
 #### **Clerk Authentication Issues:**
 - Verify both `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set

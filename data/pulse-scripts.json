@@ -1,0 +1,27 @@
+[
+  {
+    "id": "onboarding",
+    "steps": [
+      "Welcome to Pulse. Let's connect your data sources.",
+      "Solid start. We're translating your visibility data.",
+      "You're now in sync. Time to explore your metrics."
+    ]
+  },
+  {
+    "id": "forecast",
+    "steps": [
+      "Forecasts are like weather—prepare before the storm.",
+      "Numbers improving. Keep the trend alive.",
+      "Forecasts stabilized. Nice navigation through uncertainty."
+    ]
+  },
+  {
+    "id": "aiVisibility",
+    "steps": [
+      "Visibility drives discovery—let's boost yours.",
+      "AI mentions increasing; you're on the radar.",
+      "Visibility locked in. Competitors now play catch-up."
+    ]
+  }
+]
+

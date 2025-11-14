@@ -1,52 +1,45 @@
-/**
- * Orchestrator Status API
- * Returns current AI CSO state for a dealer
- */
-
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { isSafeMode, getSafeModeStatus } from '@/lib/safe-mode-handler';
+import fs from 'fs';
+import path from 'path';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+/**
+ * GET /api/orchestrator/status
+ * Returns current orchestrator status and system state
+ */
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
+    const statePath = path.join(process.cwd(), 'public', 'system-state.json');
+    let state = null;
 
-    if (!dealerId) {
-      return NextResponse.json({ error: 'dealerId required' }, { status: 400 });
+    if (fs.existsSync(statePath)) {
+      try {
+        state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      } catch {
+        // Ignore parse errors
+      }
     }
 
-    // Get or create orchestrator state
-    let state = await prisma.orchestratorState.findUnique({
-      where: { dealerId },
-    });
-
-    if (!state) {
-      // Create default state
-      state = await prisma.orchestratorState.create({
-        data: {
-          dealerId,
-          confidence: 0.92,
-          autonomyEnabled: true,
-          currentMode: 'AI_CSO',
-          activeAgents: [],
-        },
-      });
-    }
+    const safeMode = isSafeMode();
+    const safeModeStatus = getSafeModeStatus();
 
     return NextResponse.json({
-      confidence: state.confidence,
-      autonomyEnabled: state.autonomyEnabled,
-      activeAgents: state.activeAgents,
-      lastOrchestration: state.lastOrchestration?.toISOString() || null,
-      orchestrationCount: state.orchestrationCount,
-      currentMode: state.currentMode,
-      lastScan: state.lastScan?.toISOString() || null,
+      ok: true,
+      safeMode,
+      safeModeStatus,
+      systemState: state,
+      timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
-    console.error('Orchestrator status error:', error);
-    return NextResponse.json({ error: 'Failed to fetch status' }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error.message || 'Failed to get orchestrator status',
+      },
+      { status: 500 }
+    );
   }
 }
-

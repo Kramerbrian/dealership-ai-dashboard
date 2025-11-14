@@ -1,0 +1,29 @@
+:root {
+  --accent-rgb: 59 130 246; /* default blue */
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --vignette-brightness: 0.75;
+  --heading-weight: 450;
+}
+
+/* background vignette and glow utilities */
+.theme-bg {
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--accent-rgb), var(--vignette-brightness)) 0%,
+    transparent 70%
+  );
+  transition: background 1.5s ease, filter 1.5s ease;
+}
+
+.glow-shadow {
+  box-shadow: 0 0 40px var(--accent-glow);
+  transition: box-shadow 1s ease;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: var(--heading-weight);
+  transition: font-weight 1.5s ease;
+}
+

@@ -1,0 +1,150 @@
+{
+  "manifestVersion": "2026-Q2",
+  "project": "DealershipAI Meta-Learning & Intelligence Orchestrator",
+  "author": "DealershipAI Orchestrator 3.0",
+  "purpose": "Formal definition of experiment engines, contextual feeds, reinforcement learning loops, and brand-voice intelligence for a self-evolving platform.",
+  "objectives": [
+    "Transform telemetry into continuously learning models.",
+    "Blend contextual data (weather, OEM, events) into forecasting and Copilot guidance.",
+    "Automate experimentation and reporting across all environments.",
+    "Preserve cinematic + Cupertino design language while enabling dynamic adaptation."
+  ],
+  "systems": {
+    "experimentEngine": {
+      "description": "Autonomous A/B + reinforcement experimentation service controlling feature flags, Copilot lines, and UI micro-variants.",
+      "service": "/lib/experiments/engine.ts",
+      "policy": {
+        "explorationRate": 0.05,
+        "successThreshold": "p95 uplift ≥ 3%",
+        "autoMerge": true
+      },
+      "data": {
+        "events": "/data/experiment-events.json",
+        "results": "/data/experiment-results.json"
+      },
+      "scheduler": "0 6 * * *",
+      "ciHook": ".github/workflows/meta-experiments.yml"
+    },
+    "dealerKnowledgeGraph": {
+      "description": "Graph database linking metrics, tones, feedback, weather, OEM incentives, and events for causal reasoning.",
+      "engine": "Neo4j Aura or Dgraph Cloud",
+      "syncScript": "/scripts/graph-sync.ts",
+      "api": "/api/knowledge-graph",
+      "updateInterval": "hourly",
+      "successMetric": "query latency < 50 ms"
+    },
+    "executiveGPTReports": {
+      "description": "LLM summarizer generating daily and weekly business intelligence briefs.",
+      "script": "/scripts/executive-report.ts",
+      "model": "gpt-4-turbo or claude-3-haiku",
+      "outputs": [
+        "/reports/daily-summary.pdf",
+        "/reports/weekly-board-digest.pdf"
+      ],
+      "delivery": {
+        "slack": "#executive-intel",
+        "email": ["executives@dealershipgroup.com"]
+      },
+      "schedule": "0 7 * * *"
+    },
+    "contextualFeeds": {
+      "weather": {
+        "provider": "open-meteo",
+        "endpoint": "/api/context/weather",
+        "refresh": "hourly"
+      },
+      "oemIncentives": {
+        "provider": "OEM partner feeds",
+        "endpoint": "/api/context/oem",
+        "refresh": "daily"
+      },
+      "localEvents": {
+        "provider": "Ticketmaster / Eventbrite",
+        "endpoint": "/api/context/events",
+        "refresh": "daily"
+      }
+    },
+    "neuroFeedback": {
+      "description": "Client-side focus tracking adjusts animation tempo and UI density based on cognitive-load proxies.",
+      "script": "/lib/neuro-feedback.ts",
+      "signals": ["hoverDelay", "scrollVelocity", "interactionGap"],
+      "modes": ["focus", "steady", "relaxed"],
+      "successMetric": "interaction abandonment < 2%"
+    },
+    "brandVoiceAI": {
+      "description": "Fine-tuned LLM maintaining consistent tone across Copilot, marketing copy, and reports.",
+      "trainingData": "/data/brand-voice-dataset.json",
+      "guardrails": {
+        "pgSafe": true,
+        "toneSpectrum": ["professional", "witty", "cinematic"]
+      },
+      "refresh": "monthly",
+      "successMetric": "tone-consistency > 95%"
+    },
+    "executiveConsole": {
+      "description": "Internal dashboard summarizing system health, experiments, tone metrics, forecast accuracy, and engagement.",
+      "path": "/pulse/meta/executive-console",
+      "dataSources": [
+        "BigQuery",
+        "/data/experiment-results.json",
+        "/data/mood-report.json",
+        "/data/lighthouse-history.json"
+      ],
+      "autoUpdate": true
+    }
+  },
+  "automation": {
+    "githubWorkflows": {
+      "experiments": ".github/workflows/meta-experiments.yml",
+      "executiveReports": ".github/workflows/meta-executive-reports.yml",
+      "contextSync": ".github/workflows/meta-context-feeds.yml"
+    },
+    "vercelCrons": [
+      {
+        "path": "/api/context/weather",
+        "schedule": "@hourly"
+      },
+      {
+        "path": "/api/context/oem",
+        "schedule": "0 5 * * *"
+      },
+      {
+        "path": "/api/context/events",
+        "schedule": "0 6 * * *"
+      }
+    ]
+  },
+  "dataGovernance": {
+    "privacy": "Anonymized dealerId hashing, opt-in contextual enrichment.",
+    "storage": "Supabase / BigQuery regional clusters.",
+    "retention": "180 days rolling for telemetry; 7 days for focus signals.",
+    "auditTrail": "/data/meta-audit.json"
+  },
+  "observability": {
+    "telemetry": "/pulse/meta/system-telemetry",
+    "alerts": {
+      "slack": "#meta-intel-alerts",
+      "conditions": [
+        "tone-consistency < 90%",
+        "forecast-drift > 5%",
+        "latency > 200 ms"
+      ]
+    },
+    "metrics": {
+      "toneAdaptation": "feedback > 0.8",
+      "contextFreshness": "data < 2 hours",
+      "reportDelivery": "100%"
+    }
+  },
+  "governance": {
+    "reviewTeams": ["Platform Engineering", "Data Science", "Design Systems", "Growth"],
+    "versioning": "semantic",
+    "autoIncrement": true,
+    "monthlySummary": {
+      "script": "/scripts/meta-summary.ts",
+      "recipients": ["leadership@dealershipgroup.com"],
+      "slackChannel": "#executive-intel"
+    }
+  }
+}
+

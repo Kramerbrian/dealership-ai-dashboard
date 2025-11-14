@@ -1,5 +1,7 @@
 'use client';
 
+import DAICopilot from '@/components/DAICopilot';
+
 type Scores = {
   seo: number;
   aeo: number;
@@ -190,6 +192,13 @@ export function PulseOverview({
           ))}
         </div>
       </section>
+
+      {/* DAICopilot - Contextual AI Assistant */}
+      <DAICopilot 
+        dealerId={domain.replace(/\./g, '_')} 
+        region="naples" 
+        brand="toyota" 
+      />
     </div>
   );
 }

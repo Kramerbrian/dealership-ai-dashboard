@@ -1,0 +1,29 @@
+# DealershipAI Governance Policy
+# Defines thresholds and rules for automated system validation
+
+performance:
+  minLighthouse: 90
+  maxLatency: 120  # milliseconds
+  minAccessibility: 95
+  minSEO: 95
+
+security:
+  enforceHttps: true
+  requireAuth: true
+  noPIIInLogs: true
+
+brand:
+  humorFrequency: "<=0.1"  # Maximum 10% of interactions
+  toneConsistency: 0.95     # Minimum 95% consistency
+  pgSafe: true
+
+stability:
+  minUptime: 99.9
+  maxErrorRate: 0.01  # 1%
+  maxConsecutiveFailures: 3
+
+compliance:
+  accessibility: true
+  gdprCompliant: true
+  auditTrail: true
+

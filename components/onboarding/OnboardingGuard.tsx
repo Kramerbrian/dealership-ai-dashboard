@@ -18,8 +18,9 @@ export default function OnboardingGuard({ children }: { children: React.ReactNod
     }
 
     // Check onboarding status
-    const onboardingComplete = localStorage.getItem('onboarding_complete') || 
-                               user.publicMetadata?.onboarding_complete;
+    const onboardingComplete =
+      user.publicMetadata?.onboardingComplete === true ||
+      localStorage.getItem('onboarding_complete') === 'true';
 
     if (!onboardingComplete && !window.location.pathname.startsWith('/onboarding')) {
       router.push('/onboarding');

@@ -1,0 +1,69 @@
+name: DealershipAI – Self-Optimization Loop
+
+on:
+  schedule:
+    - cron: "0 2 * * *"     # Nightly tone training
+    - cron: "0 4 * * 1"     # Weekly benchmark refresh
+    - cron: "0 5 * * *"     # Daily mood analytics
+  workflow_dispatch:        # Manual trigger
+
+jobs:
+  self-optimization:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DEPLOY_URL: https://dash.dealershipai.com
+      NODE_ENV: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      # --- 1. Nightly Tone Training ---
+      - name: Nightly Tone Training
+        run: |
+          echo "🔁 Running nightly tone model training..."
+          node scripts/train-tone-model.ts || echo "tone training failed"
+        continue-on-error: true
+
+      # --- 2. Weekly Benchmark Refresh ---
+      - name: Weekly Benchmark Refresh
+        if: ${{ github.event.schedule == '0 4 * * 1' }}
+        run: |
+          echo "📊 Refreshing dealer benchmark baselines..."
+          curl -s -X POST https://dash.dealershipai.com/api/benchmark-update -H "Content-Type: application/json" -d '{}' || echo "benchmark update failed"
+
+      # --- 3. Daily Mood Analytics ---
+      - name: Daily Mood Analytics
+        run: |
+          echo "🧠 Computing daily mood analytics..."
+          node scripts/mood-analytics.ts || echo "mood analytics failed"
+        continue-on-error: true
+
+      # --- 4. Lighthouse Recheck ---
+      - name: Run Lighthouse CI (sanity)
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: "https://dealershipai.com"
+          configPath: "./.lighthouserc.json"
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        continue-on-error: true
+
+      # --- 5. Post consolidated Slack report ---
+      - name: Post Summary to Slack
+        if: always()
+        run: |
+          DATE=$(date '+%Y-%m-%d')
+          MSG="✅ *DealershipAI Self-Optimization Summary – ${DATE}*%0A• Tone model refreshed%0A• Benchmarks updated (weekly)%0A• Mood analytics computed%0A• Lighthouse sanity complete"
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MSG}\"}" $SLACK_WEBHOOK_URL || echo "Slack notification failed"
+

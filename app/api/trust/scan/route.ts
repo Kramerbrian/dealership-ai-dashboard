@@ -6,12 +6,17 @@ import {
   type DealerData
 } from '@/lib/trust/core-metrics';
 import { z } from 'zod';
-import sgMail from '@sendgrid/mail';
 import { prisma } from '@/lib/prisma';
 
-// Initialize SendGrid
+// SendGrid is optional - only used if API key is available
+let sgMail: any = null;
 if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  try {
+    sgMail = require('@sendgrid/mail');
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  } catch (e) {
+    console.warn('SendGrid not available:', e);
+  }
 }
 
 const scanRequestSchema = z.object({

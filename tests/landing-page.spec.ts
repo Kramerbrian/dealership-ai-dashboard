@@ -11,7 +11,7 @@ test.describe('Landing Page', () => {
   });
 
   test('should display hero text correctly', async ({ page }) => {
-    const heroText = page.getByText(/first system in your store that hates wasted time/i);
+    const heroText = page.getByText(/provides clarity in a world of digital noise/i);
     await expect(heroText).toBeVisible();
   });
 

@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme controller CSS variables */
+@import './styles/theme.css';
+
 /* North Star Design System - Base Styles */
 
 @layer base {

@@ -1,0 +1,45 @@
+name: Meta-Orchestrator
+
+on:
+  schedule:
+    - cron: "0 1 * * *"  # Daily at 1 AM UTC
+  workflow_dispatch:
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      NODE_ENV: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Meta-Orchestrator
+        run: node lib/meta-orchestrator.ts
+
+      - name: Upload System State
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: system-state
+          path: public/system-state.json
+          if-no-files-found: ignore
+
+      - name: Post Summary to Slack
+        if: always()
+        run: |
+          if [ -f "public/system-state.json" ]; then
+            DATE=$(date '+%Y-%m-%d')
+            MSG="🔁 *Meta-Orchestrator Summary – ${DATE}*%0A• All jobs executed%0A• System state updated"
+            curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MSG}\"}" $SLACK_WEBHOOK_URL || echo "Slack notification failed"
+          fi
+

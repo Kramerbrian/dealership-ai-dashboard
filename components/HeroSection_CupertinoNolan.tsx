@@ -14,6 +14,8 @@ export default function HeroSection_CupertinoNolan() {
   const [time, setTime] = useState("");
   const [audioRef, setAudioRef] = useState<HTMLAudioElement | null>(null);
   const [muted, setMuted] = useState(true);
+  const [enteredURL, setEnteredURL] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -86,6 +88,33 @@ export default function HeroSection_CupertinoNolan() {
     setMuted(nextMuted);
     audioRef.volume = nextMuted ? 0 : 0.25;
   };
+
+  // Handle launch - fetch KPI data and redirect to onboarding
+  async function handleLaunch() {
+    if (!enteredURL) return;
+    setLoading(true);
+    const normalizedURL = enteredURL.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    localStorage.setItem('dealer:url', normalizedURL);
+
+    try {
+      const res = await fetch(`/api/marketpulse/compute?dealer=${encodeURIComponent(normalizedURL)}`);
+      const result = await res.json();
+      const aiv = Number(result?.aiv ?? 0.88);
+      const ati = Number(result?.ati ?? 0.82);
+      
+      // Transition to onboarding
+      setTimeout(() => {
+        window.location.href = `/onboarding?dealer=${encodeURIComponent(normalizedURL)}&aiv=${aiv}&ati=${ati}`;
+      }, 1500);
+    } catch (err) {
+      console.error('API error:', err);
+      setTimeout(() => {
+        window.location.href = `/onboarding?dealer=${encodeURIComponent(normalizedURL)}`;
+      }, 1500);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleMouse = (e: React.MouseEvent) => {
     if (typeof window !== 'undefined') {
@@ -173,24 +202,40 @@ export default function HeroSection_CupertinoNolan() {
         </span>
       </motion.p>
 
-      {/* CTA */}
+      {/* URL Input & CTA */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.8, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-        className="mt-10 z-10 flex flex-col items-center gap-3"
+        className="mt-10 z-10 flex flex-col items-center gap-4 w-full max-w-md mx-auto"
       >
-        <a
-          href="/dashboard"
-          onMouseEnter={() => {
-            if (audioRef && muted === true) audioRef.volume = 0.25;
-          }}
-          className="group inline-flex items-center gap-2 px-8 py-4 text-base font-medium tracking-tight rounded-full border border-slate-600/50
-                     hover:border-blue-500/80 hover:text-blue-400 transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] backdrop-blur-md"
-        >
-          Make the Machines Say My Name
-          <ArrowRight className="w-5 h-5 transition-transform duration-700 group-hover:translate-x-1" />
-        </a>
+        <div className="w-full flex gap-2">
+          <input
+            type="text"
+            value={enteredURL}
+            onChange={(e) => setEnteredURL(e.target.value)}
+            placeholder="Enter your dealership URL (e.g. naplesautogroup.com)"
+            className="flex-1 px-4 py-3 rounded-full bg-white/5 border border-slate-600/50 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/80 outline-none backdrop-blur-md transition-all"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && enteredURL && !loading) {
+                handleLaunch();
+              }
+            }}
+          />
+          <button
+            onClick={handleLaunch}
+            disabled={!enteredURL || loading}
+            onMouseEnter={() => {
+              if (audioRef && muted === true) audioRef.volume = 0.25;
+            }}
+            className="group px-6 py-3 text-base font-medium tracking-tight rounded-full border border-slate-600/50
+                     hover:border-blue-500/80 hover:text-blue-400 transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] backdrop-blur-md
+                     disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Calibrating...' : 'Launch'}
+            <ArrowRight className="w-4 h-4 inline-block ml-2 transition-transform duration-700 group-hover:translate-x-1" />
+          </button>
+        </div>
 
         {audioRef && (
           <button

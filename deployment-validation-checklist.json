@@ -1,0 +1,101 @@
+{
+  "manifestVersion": "2026-Q2",
+  "project": "DealershipAI Deployment Validation Checklist",
+  "purpose": "Confirms that every manifest, workflow, API, and UI subsystem is active, healthy, and synchronized after deployment.",
+  "sections": {
+    "manifests": {
+      "files": [
+        "dealershipai-master-manifest.json",
+        "dealershipai-roadmap-manifest.json",
+        "dealershipai-hyper-optimization-manifest.json",
+        "dealershipai-meta-intelligence-manifest.json"
+      ],
+      "checks": [
+        "All manifests exist and parse as valid JSON.",
+        "Each manifest has matching version fields.",
+        "Each manifest's 'lastUpdated' or 'lastExecuted' < 24h."
+      ]
+    },
+    "ciWorkflows": {
+      "files": [
+        ".github/workflows/deploy-cinematic-hero.yml",
+        ".github/workflows/self-optimization.yml",
+        ".github/workflows/hyper-perf-check.yml"
+      ],
+      "checks": [
+        "Each workflow YAML passes lint (`act validate`).",
+        "All scheduled jobs show last success < 24h in GitHub Actions UI.",
+        "Slack notifications received for last run."
+      ]
+    },
+    "vercelDeployment": {
+      "checks": [
+        "Production domains resolve: dealershipai.com and dash.dealershipai.com.",
+        "Environment variables populated in Vercel dashboard.",
+        "Cron jobs (/api/schedule-quarterly, /api/nightly-lighthouse) visible and active.",
+        "Vercel Analytics reports p95 latency < 120ms."
+      ]
+    },
+    "clerkAuth": {
+      "checks": [
+        "Clerk middleware responding on dash.dealershipai.com.",
+        "First-time login redirects to /onboarding.",
+        "Returning user routes directly to /dashboard.",
+        "Roles and metadata (dealerId, brand, region) populated in session."
+      ]
+    },
+    "onboarding": {
+      "checks": [
+        "All steps render correctly (Scan, Input, Summary).",
+        "KPI data fetched from /api/marketpulse/compute.",
+        "PVR values saved to Clerk metadata.",
+        "Completion routes to /preview/orchestrator."
+      ]
+    },
+    "dashboardPulse": {
+      "checks": [
+        "Pulse cards fetch live data from /api/pulse/snapshot.",
+        "Agent inbox tiles appear above baseline tiles.",
+        "Real-time updates via SSE or WebSocket.",
+        "Analytics graphs update correctly."
+      ]
+    },
+    "edgeFunctions": {
+      "checks": [
+        "/api/ai-scores, /api/pulse-stream respond from edge runtime (200).",
+        "Average latency <150ms in Vercel logs."
+      ]
+    },
+    "selfOptimization": {
+      "checks": [
+        "Nightly tone training ran successfully.",
+        "Benchmark refresh executed Monday 04:00 UTC.",
+        "Mood analytics generated /data/mood-report.json.",
+        "Slack summary message posted to #deployments."
+      ]
+    },
+    "metaIntelligence": {
+      "checks": [
+        "Knowledge graph updates hourly and answers queries <50ms.",
+        "Executive GPT report generated today in /reports/daily-summary.pdf.",
+        "Contextual feeds (weather, OEM, events) returning fresh data (<2h old).",
+        "Executive console dashboard accessible and rendering metrics."
+      ]
+    },
+    "securityAndCompliance": {
+      "checks": [
+        "All API routes use HTTPS.",
+        "No PII stored beyond hashed dealerId.",
+        "Audio muted by default and requires explicit un-mute.",
+        "Accessibility tests (axe-core) show 0 critical violations."
+      ]
+    }
+  },
+  "signOff": {
+    "reviewTeams": ["Platform Engineering", "Data Science", "Design Systems", "Growth"],
+    "approvalsRequired": 3,
+    "reportOutput": "/reports/deployment-validation-report.pdf",
+    "notifySlackChannel": "#deployments"
+  }
+}
+

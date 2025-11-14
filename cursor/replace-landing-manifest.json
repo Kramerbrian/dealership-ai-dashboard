@@ -1,0 +1,59 @@
+{
+  "manifestVersion": "1.1.0",
+  "author": "DealershipAI Orchestrator 3.0",
+  "timestamp": "2025-11-13T00:00:00Z",
+  "description": "Automated replacement of legacy landing page with Cupertino × Nolan cinematic version.",
+  "files": {
+    "backup": {
+      "source": "/app/page.tsx",
+      "destination": "/app/page.legacy.backup.tsx",
+      "action": "rename"
+    },
+    "replacement": {
+      "source": "/components/landing/CinematicLandingPage.tsx",
+      "destination": "/app/page.tsx",
+      "action": "replace",
+      "notes": "Uses CinematicLandingPage component with brand tinting and FreeScanWidget"
+    }
+  },
+  "deprecations": {
+    "oldHero": {
+      "path": "/components/HeroSection.tsx",
+      "status": "deprecated",
+      "message": "Replaced by CinematicLandingPage.tsx"
+    }
+  },
+  "postDeploy": {
+    "runTests": ["npm run lint", "npm run build"],
+    "verifyChecks": [
+      {
+        "check": "page import",
+        "expected": "CinematicLandingPage",
+        "file": "/app/page.tsx"
+      },
+      {
+        "check": "headline text",
+        "expected": "See what AI really thinks of your dealership",
+        "file": "/components/landing/CinematicLandingPage.tsx"
+      }
+    ],
+    "gitCommit": {
+      "message": "feat: deploy cinematic CinematicLandingPage with brand tinting",
+      "branch": "main",
+      "autoPush": true
+    },
+    "vercelDeploy": {
+      "enabled": true,
+      "project": "dealership-ai-dashboard",
+      "command": "vercel --prod --confirm"
+    },
+    "notify": [
+      {
+        "type": "slack",
+        "channel": "#deployments",
+        "message": "🚀 Landing page replaced with cinematic Cupertino × Nolan hero. Backup stored as page.legacy.backup.tsx."
+      }
+    ]
+  }
+}
+

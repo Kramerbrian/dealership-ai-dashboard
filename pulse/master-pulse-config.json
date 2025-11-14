@@ -1,0 +1,169 @@
+{
+  "specVersion": "2025-11-04",
+  "system": "DealershipAI Pulse Orchestrator",
+  "description": "Unifies Clerk authentication, dealer session state, and real-time KPI telemetry for the Pulse Dashboard cards.",
+  "authentication": {
+    "provider": "clerk",
+    "middleware": "/middleware.ts",
+    "sessionSync": {
+      "enabled": true,
+      "interval": 300,
+      "refreshTokenRotation": true,
+      "secureCookies": true
+    },
+    "roleMapping": {
+      "admin": ["view_all_dealers", "manage_forecasts", "deploy_schemas"],
+      "dealer": ["view_self", "view_pulse_cards", "run_auto_fix"],
+      "analyst": ["view_trends", "export_reports"]
+    },
+    "onAuthEvent": {
+      "login": {
+        "trigger": "POST /api/pulse-session-init",
+        "payload": "{user_id, email, dealerId, role}"
+      },
+      "logout": {
+        "trigger": "DELETE /api/pulse-session"
+      }
+    }
+  },
+  "telemetry": {
+    "provider": "pulse-core",
+    "realtime": true,
+    "interval": 60,
+    "sources": {
+      "aiScores": "/api/ai-scores",
+      "forecast": "/api/lighthouse-trends",
+      "reviews": "/api/reviews-summary",
+      "ugc": "/api/ugc-health",
+      "traffic": "/api/traffic-metrics"
+    },
+    "targets": {
+      "dashboard": "/components/PulseDashboard.tsx",
+      "cards": "/components/pulse-cards/",
+      "summaryFeed": "/components/PulseSummaryFeed.tsx"
+    },
+    "syncStrategy": {
+      "method": "websocket",
+      "fallback": "SSE",
+      "heartbeat": 30
+    }
+  },
+  "pulseCards": [
+    {
+      "id": "visibility",
+      "title": "AI Visibility Index",
+      "endpoint": "/api/ai-scores",
+      "fields": ["AIV", "ATI", "CVI"],
+      "refresh": 300,
+      "thresholds": {
+        "green": ">80",
+        "yellow": "60-79",
+        "red": "<60"
+      },
+      "chart": {
+        "type": "line",
+        "color": "blue",
+        "duration": "7d"
+      }
+    },
+    {
+      "id": "forecast",
+      "title": "Forecast Accuracy",
+      "endpoint": "/api/lighthouse-trends",
+      "fields": ["avg", "perf", "seo"],
+      "chart": {
+        "type": "area",
+        "color": "cyan",
+        "duration": "30d"
+      }
+    },
+    {
+      "id": "ugc",
+      "title": "Review & UGC Health",
+      "endpoint": "/api/ugc-health",
+      "fields": ["score", "responseRate", "sentiment"],
+      "chart": {
+        "type": "bar",
+        "color": "purple",
+        "duration": "7d"
+      }
+    },
+    {
+      "id": "traffic",
+      "title": "Site Traffic Pulse",
+      "endpoint": "/api/traffic-metrics",
+      "fields": ["sessions", "avgSessionDuration", "bounceRate"],
+      "chart": {
+        "type": "line",
+        "color": "green",
+        "duration": "7d"
+      }
+    }
+  ],
+  "middlewareBridge": {
+    "incoming": {
+      "path": "/middleware.ts",
+      "functions": ["clerkAuthMiddleware", "dealerSessionResolver"],
+      "description": "Intercepts all /pulse and /api routes to inject verified dealerId & role from Clerk session."
+    },
+    "outgoing": {
+      "broadcast": "/api/pulse-update",
+      "payload": "{dealerId, metric, value, timestamp}",
+      "channels": ["dashboard", "pulse-cards", "summary-feed"]
+    }
+  },
+  "security": {
+    "rateLimit": {
+      "perMinute": 60,
+      "burst": 10
+    },
+    "auditTrail": {
+      "enabled": true,
+      "logFile": "/data/pulse-audit.json"
+    },
+    "csrfProtection": true
+  },
+  "ui": {
+    "theme": {
+      "mode": "dark",
+      "accent": "blue",
+      "motion": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+    },
+    "layout": {
+      "grid": "4x3",
+      "responsive": true
+    },
+    "interactions": {
+      "hoverPulse": true,
+      "autoRefreshIndicators": true
+    }
+  },
+  "vercelIntegration": {
+    "envLink": true,
+    "deployHook": "/api/deploy-pulse",
+    "cronJobs": [
+      {
+        "path": "/api/nightly-lighthouse",
+        "schedule": "0 3 * * *"
+      }
+    ],
+    "analytics": "enabled"
+  },
+  "notifications": {
+    "slack": {
+      "channel": "#pulse-updates",
+      "message": "📡 Pulse Dashboard updated metrics for {dealerId}: {metric} → {value}."
+    },
+    "email": {
+      "enabled": true,
+      "template": "pulse-daily-summary",
+      "recipients": ["executives@dealershipgroup.com"]
+    }
+  },
+  "versioning": {
+    "autoIncrement": true,
+    "backupConfig": "/pulse/master-pulse-config.backup.json",
+    "lastUpdated": "2025-11-04T00:00:00Z"
+  }
+}
+

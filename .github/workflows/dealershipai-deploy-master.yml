@@ -1,0 +1,93 @@
+name: DealershipAI – Full System Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Full Platform
+    runs-on: ubuntu-latest
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SUPABASE_URL: https://gzlgfghpkbqlhgfozjkb.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DEPLOY_URL: https://dash.dealershipai.com
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      # -------- Manifest Validation --------
+      - name: Validate manifests
+        run: npm run manifests:validate
+
+      # -------- Run Orchestrator --------
+      - name: Execute Orchestrator
+        run: node lib/meta-orchestrator.ts
+
+      # -------- Build & Deploy to Vercel --------
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to Vercel (production)
+        run: npx vercel --prod --confirm --token=$VERCEL_TOKEN
+
+      # -------- Lighthouse Performance Check --------
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: "https://dash.dealershipai.com"
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Parse Lighthouse scores
+        id: lh
+        run: |
+          PERF=$(cat .lighthouseci/manifest.json | jq -r '.[0].summary.performance * 100')
+          echo "perf=$PERF" >> $GITHUB_OUTPUT
+          echo "Lighthouse performance: $PERF"
+
+      # -------- Governance Validation --------
+      - name: Governance Validator
+        run: npx tsx lib/governance-validator.ts
+
+      # -------- Conditional Rollback on Failure --------
+      - name: Auto-Rollback if thresholds fail
+        if: steps.lh.outputs.perf < 90
+        run: |
+          PERF=${{ steps.lh.outputs.perf }}
+          echo "⚠️ Performance below threshold (${PERF}%). Initiating rollback."
+          npx vercel rollback --token=$VERCEL_TOKEN
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"⚠️ DealershipAI rollback executed due to performance regression (Lighthouse score <90)."}' \
+          $SLACK_WEBHOOK_URL
+
+      # -------- Deployment Summary --------
+      - name: Post Slack Summary
+        if: success()
+        run: |
+          DATE=$(date '+%Y-%m-%d %H:%M:%S')
+          MSG="✅ *DealershipAI Deployment Complete* – ${DATE}\n• Orchestrator executed\n• Build & deploy success\n• Lighthouse OK\n<${DEPLOY_URL}|View Dashboard>"
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${MSG}\"}" $SLACK_WEBHOOK_URL
+
+      - name: Handle Failure
+        if: failure()
+        run: |
+          MSG="❌ *DealershipAI Deployment Failed*\nCheck GitHub Actions logs for details."
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${MSG}\"}" $SLACK_WEBHOOK_URL
