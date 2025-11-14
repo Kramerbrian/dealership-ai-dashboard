@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "id": "dai-orchestrator-agentic-commerce-v1",
+  "version": "2025.11.13",
+  "name": "DealershipAI Agentic Commerce Orchestrator",
+  "description": "Commerce-focused orchestration engine blending 10% real AI with 90% synthetic intelligence for 99% profit margins",
+
+  "orchestrator": {
+    "name": "The Beautiful Lie Machine",
+    "tagline": "Agentic Commerce Intelligence at Scale",
+    "mode": "hybrid",
+    "optimization_target": "profit_margin"
+  },
+
+  "economics": {
+    "target_profit_margin": 0.99,
+    "cost_per_real_query": 0.015,
+    "subscription_arpu": 499,
+    "blending_strategy": {
+      "real_percentage": 0.10,
+      "synthetic_percentage": 0.90,
+      "real_query_rate": 0.05
+    }
+  },
+
+  "intelligence_sources": {
+    "real_ai": {
+      "provider": "anthropic_claude_haiku",
+      "model": "claude-3-haiku-20240307",
+      "cost_per_1k_tokens": 0.00025,
+      "usage_trigger": "random_sampling",
+      "fallback": "synthetic_generation"
+    },
+    "free_data": {
+      "gmb": {
+        "endpoint": "google_my_business_api",
+        "cost": 0,
+        "refresh_interval": 86400,
+        "reliability": 0.95
+      },
+      "schema": {
+        "method": "web_crawl",
+        "cost": 0,
+        "refresh_interval": 604800,
+        "reliability": 0.98
+      },
+      "reviews": {
+        "sources": ["google", "yelp", "facebook", "dealer_rater"],
+        "aggregation": "weighted_average",
+        "cost": 0,
+        "refresh_interval": 43200,
+        "reliability": 0.92
+      },
+      "pagespeed": {
+        "api": "google_pagespeed_insights",
+        "cost": 0,
+        "refresh_interval": 604800,
+        "reliability": 0.99
+      }
+    }
+  },
+
+  "caching_strategy": {
+    "layers": [
+      {
+        "name": "analysis_cache",
+        "ttl": 86400,
+        "hit_rate_target": 0.85,
+        "storage": "redis",
+        "key_pattern": "dai:analysis:{domain}"
+      },
+      {
+        "name": "geo_pool",
+        "ttl": 604800,
+        "hit_rate_target": 0.10,
+        "storage": "redis",
+        "key_pattern": "dai:pool:{city}-{state}",
+        "variance_range": [-0.05, 0.05]
+      }
+    ],
+    "invalidation": {
+      "on_demand": true,
+      "force_refresh_param": "forceRefresh"
+    }
+  },
+
+  "analysis_pipeline": {
+    "steps": [
+      {
+        "name": "cache_lookup",
+        "priority": 1,
+        "expected_hit_rate": 0.85,
+        "cost": 0
+      },
+      {
+        "name": "geo_pool_lookup",
+        "priority": 2,
+        "expected_hit_rate": 0.10,
+        "cost": 0
+      },
+      {
+        "name": "real_ai_query",
+        "priority": 3,
+        "execution_rate": 0.05,
+        "cost": 0.015,
+        "fallback": "synthetic_generation"
+      },
+      {
+        "name": "free_data_aggregation",
+        "priority": 3,
+        "parallel": true,
+        "sources": ["gmb", "schema", "reviews", "pagespeed"],
+        "cost": 0
+      },
+      {
+        "name": "blending",
+        "priority": 4,
+        "weights": {
+          "real": 0.10,
+          "synthetic": 0.90
+        }
+      },
+      {
+        "name": "caching",
+        "priority": 5,
+        "layers": ["analysis_cache", "geo_pool"]
+      }
+    ]
+  },
+
+  "revenue_intelligence": {
+    "oci_calculation": {
+      "formula": "sum(issues.impact_monthly)",
+      "issue_categories": [
+        {
+          "id": "missing_schema",
+          "avg_impact_monthly": 8200,
+          "severity": "high",
+          "auto_fix_available": true
+        },
+        {
+          "id": "low_review_response",
+          "avg_impact_monthly": 3100,
+          "severity": "high",
+          "auto_fix_available": false
+        },
+        {
+          "id": "incomplete_faq",
+          "avg_impact_monthly": 2400,
+          "severity": "medium",
+          "auto_fix_available": true
+        },
+        {
+          "id": "missing_vehicle_schema",
+          "avg_impact_monthly": 5600,
+          "severity": "medium",
+          "auto_fix_available": true
+        },
+        {
+          "id": "incomplete_gbp",
+          "avg_impact_monthly": 3200,
+          "severity": "medium",
+          "auto_fix_available": false
+        }
+      ]
+    },
+    "roi_calculation": {
+      "formula": "monthly_at_risk / subscription_cost",
+      "target_roi": 10,
+      "confidence_threshold": 0.85
+    }
+  },
+
+  "commerce_funnel": {
+    "stages": [
+      {
+        "name": "free_scan",
+        "conversion_target": 0.35,
+        "tools": ["FreeScanWidget", "TrustScoreCalculator"],
+        "lead_capture": true
+      },
+      {
+        "name": "email_nurture",
+        "conversion_target": 0.15,
+        "sequence": ["day1", "day3", "day7"],
+        "automation": "cron"
+      },
+      {
+        "name": "trial_signup",
+        "conversion_target": 0.25,
+        "duration_days": 14,
+        "features": ["full_clarity_analysis", "oci_reports", "qai_tracking"]
+      },
+      {
+        "name": "paid_conversion",
+        "conversion_target": 0.60,
+        "arpu": 499,
+        "churn_target": 0.05
+      }
+    ],
+    "metrics": {
+      "cac_target": 150,
+      "ltv_target": 5988,
+      "ltv_cac_ratio": 40
+    }
+  },
+
+  "autonomous_features": {
+    "self_healing": {
+      "enabled": true,
+      "max_retries": 3,
+      "healing_methods": ["llm_diagnosis", "alternative_approach", "fallback_mode"]
+    },
+    "task_management": {
+      "dependency_resolution": "automatic",
+      "priority_sorting": ["critical", "high", "medium", "low"],
+      "progress_tracking": true
+    },
+    "error_handling": {
+      "graceful_degradation": true,
+      "fallback_chain": ["real_ai", "synthetic", "cached", "default"]
+    }
+  },
+
+  "monitoring": {
+    "business_metrics": [
+      "total_analyses",
+      "cache_hit_rate",
+      "real_query_percentage",
+      "cost_per_analysis",
+      "profit_margin",
+      "average_clarity_score",
+      "average_oci_value"
+    ],
+    "technical_metrics": [
+      "api_latency_p95",
+      "error_rate",
+      "redis_memory_usage",
+      "ai_api_success_rate"
+    ],
+    "alerts": {
+      "profit_margin_below": 0.95,
+      "real_query_rate_above": 0.08,
+      "cache_miss_rate_above": 0.30,
+      "error_rate_above": 0.05
+    }
+  },
+
+  "compliance": {
+    "data_retention": {
+      "analysis_results": 90,
+      "logs": 30,
+      "personal_data": 365
+    },
+    "privacy": {
+      "anonymize_domains": false,
+      "encrypt_at_rest": true,
+      "gdpr_compliant": true
+    }
+  },
+
+  "metadata": {
+    "created": "2025-11-13T00:00:00Z",
+    "updated": "2025-11-13T00:00:00Z",
+    "author": "Kramer",
+    "version_notes": "Commerce-optimized orchestration integrating profit margin optimization with autonomous intelligence"
+  }
+}

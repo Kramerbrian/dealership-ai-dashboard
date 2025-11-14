@@ -20,13 +20,15 @@
     ]
   },
   "hashes": {
-    "dai-agent-canonical.json": "sha256:<autofill-after-first-commit>",
-    "dai-orchestrator-agentic-commerce.json": "sha256:<autofill-after-first-commit>",
-    "dai-agent-runtime.ts": "sha256:<autofill-after-first-commit>",
-    "funnel-visual.ts": "sha256:<autofill-after-first-commit>",
-    "pulse-agent-builder.ts": "sha256:<autofill-after-first-commit>",
-    "dai-agent-test-suite.ts": "sha256:<autofill-after-first-commit>",
-    "dai-agent-ci-report.ts": "sha256:<autofill-after-first-commit>"
+    "dai-agent-canonical.json": "sha256:ae147a5e35aadc0ebf4e8f36542f50a040ea5f3fd42835251123ae9c3f9b2b14",
+    "dai-orchestrator-agentic-commerce.json": "sha256:ced59406a00d35fc42d1a0ee799e54ec09c835c3ad9f942d55b3d7667a1f8fe2",
+    "dai-agent-runtime.ts": "sha256:be95776bc54c9f9fd2ba5c5ad3475a6c47afc36ae98fc029c52ad83831e49f92",
+    "funnel-visual.ts": "sha256:7bb64a893fcfcb8edc37749695ee45fc8910faa65cc5e8bd6219c92d96c9255b",
+    "pulse-agent-builder.ts": "sha256:4e4968baa05073bae52d3d28da9a4373a939564e0268529d7107ea7636e0ef16",
+    "dai-agent.d.ts": "sha256:9213be48fa2cd9c66815b0dcd8cf76f9eb4b00a9ab9133e934bea3d711cdc2ce",
+    "dai-agent-test-suite.ts": "sha256:0bb2b32f58043907a0329cc507171a6278c0b0898229c73cb59e30ca5c4a06e2",
+    "dai-agent-ci-report.ts": "sha256:77f7b356d5a3dec34b6eb2cb205f5cb7d775952047a14115eaa65ac8de465c4f",
+    "dai-agent-ci.yml": "sha256:8fe4238d79f7ec2deff5ff96d96081e544544f8fe3d86032d71023e7bbbe73c6"
   },
   "notes": [
     "Canonical baseline of DealershipAI dAI Agent + Agentic Commerce Intelligence stack.",

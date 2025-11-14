@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "id": "dai-agent-canonical-v1",
+  "version": "2025.11.13",
+  "name": "DealershipAI Agentic Intelligence Agent",
+  "description": "Canonical configuration for DealershipAI's autonomous orchestration and agentic commerce intelligence system",
+
+  "agent": {
+    "id": "dai-orchestrator-3",
+    "name": "Orchestrator 3.0",
+    "type": "autonomous",
+    "model": "gpt-4o",
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "confidence_threshold": 0.85
+  },
+
+  "capabilities": [
+    {
+      "name": "clarity_analysis",
+      "description": "Analyze dealer visibility across AI platforms (ChatGPT, Claude, Perplexity, Gemini, Copilot)",
+      "tools": ["schema_validator", "gmb_analyzer", "review_aggregator"],
+      "expertise": ["SEO", "schema.org", "local_search", "ai_visibility"],
+      "priority": "critical"
+    },
+    {
+      "name": "revenue_intelligence",
+      "description": "Calculate OCI (Opportunity Cost Index) and revenue impact from visibility gaps",
+      "tools": ["financial_calculator", "competitor_analyzer", "market_data"],
+      "expertise": ["financial_modeling", "competitive_intelligence", "attribution"],
+      "priority": "high"
+    },
+    {
+      "name": "quality_assessment",
+      "description": "Compute QAI (Quality & Authority Index) for trust signals",
+      "tools": ["content_analyzer", "trust_scorer", "eeat_validator"],
+      "expertise": ["content_quality", "authority_signals", "expertise_validation"],
+      "priority": "high"
+    },
+    {
+      "name": "safety_reporting",
+      "description": "Generate ASR (Algorithmic Safety Report) for brand protection",
+      "tools": ["risk_analyzer", "compliance_checker", "brand_monitor"],
+      "expertise": ["risk_management", "compliance", "brand_safety"],
+      "priority": "medium"
+    },
+    {
+      "name": "ugc_management",
+      "description": "Analyze and manage user-generated content (reviews, testimonials)",
+      "tools": ["sentiment_analyzer", "review_aggregator", "response_generator"],
+      "expertise": ["sentiment_analysis", "reputation_management", "customer_engagement"],
+      "priority": "high"
+    },
+    {
+      "name": "autonomous_execution",
+      "description": "Self-healing task execution with dependency management",
+      "tools": ["task_planner", "dependency_resolver", "error_healer"],
+      "expertise": ["automation", "orchestration", "self_healing"],
+      "priority": "critical"
+    }
+  ],
+
+  "scoring_framework": {
+    "clarity_score": {
+      "range": [0, 100],
+      "weights": {
+        "geo": 0.25,
+        "schema": 0.30,
+        "ugc": 0.25,
+        "cwv": 0.10,
+        "freshness": 0.10
+      },
+      "thresholds": {
+        "excellent": 90,
+        "good": 75,
+        "fair": 60,
+        "poor": 0
+      }
+    },
+    "qai_score": {
+      "range": [0, 100],
+      "components": ["expertise", "authority", "trustworthiness", "experience"],
+      "thresholds": {
+        "high_trust": 85,
+        "medium_trust": 70,
+        "low_trust": 0
+      }
+    },
+    "oci_calculation": {
+      "formula": "sum(issues.impact_monthly)",
+      "roi_threshold": 10,
+      "confidence_level": 0.85
+    }
+  },
+
+  "data_strategy": {
+    "caching": {
+      "ttl_analysis": 86400,
+      "ttl_geo_pool": 604800,
+      "hit_rate_target": 0.85
+    },
+    "pooling": {
+      "enabled": true,
+      "variance_range": [-0.05, 0.05],
+      "geo_granularity": "city_state"
+    },
+    "blending": {
+      "real_query_rate": 0.05,
+      "synthetic_weight": 0.90,
+      "real_weight": 0.10
+    },
+    "free_sources": [
+      "google_my_business",
+      "schema_org_crawl",
+      "review_apis",
+      "pagespeed_insights",
+      "sitemap_analysis"
+    ]
+  },
+
+  "orchestration": {
+    "mode": "autonomous",
+    "task_selection": "priority_first",
+    "dependency_resolution": "automatic",
+    "self_healing": {
+      "enabled": true,
+      "max_retries": 3,
+      "healing_strategy": "llm_guided"
+    },
+    "progress_tracking": {
+      "log_level": "info",
+      "metrics": ["completion_rate", "confidence", "cost_usd"]
+    }
+  },
+
+  "platform_targets": {
+    "chatgpt": {
+      "enabled": true,
+      "priority": "high",
+      "visibility_weight": 0.30
+    },
+    "claude": {
+      "enabled": true,
+      "priority": "high",
+      "visibility_weight": 0.25
+    },
+    "perplexity": {
+      "enabled": true,
+      "priority": "medium",
+      "visibility_weight": 0.20
+    },
+    "gemini": {
+      "enabled": true,
+      "priority": "high",
+      "visibility_weight": 0.15
+    },
+    "copilot": {
+      "enabled": true,
+      "priority": "medium",
+      "visibility_weight": 0.10
+    }
+  },
+
+  "integration": {
+    "api_endpoints": {
+      "orchestrator": "/api/orchestrator",
+      "clarity": "/api/clarity/analyze",
+      "health": "/api/health"
+    },
+    "authentication": {
+      "type": "clerk",
+      "required": true,
+      "role_based": true
+    },
+    "rate_limiting": {
+      "enabled": true,
+      "requests_per_window": 10,
+      "window_seconds": 10
+    }
+  },
+
+  "monitoring": {
+    "metrics": [
+      "clarity_score",
+      "qai_score",
+      "oci_value",
+      "cache_hit_rate",
+      "real_query_percentage",
+      "cost_per_analysis",
+      "confidence_level"
+    ],
+    "alerts": {
+      "low_confidence": 0.70,
+      "high_cost": 0.10,
+      "cache_miss_rate": 0.30
+    },
+    "logging": {
+      "level": "info",
+      "destinations": ["console", "file"],
+      "retention_days": 30
+    }
+  },
+
+  "metadata": {
+    "created": "2025-11-13T00:00:00Z",
+    "updated": "2025-11-13T00:00:00Z",
+    "author": "Kramer",
+    "version_notes": "Canonical baseline integrating Orchestrator 3.0, DealershipAIOrchestrator, and GPT Bridge patterns"
+  }
+}

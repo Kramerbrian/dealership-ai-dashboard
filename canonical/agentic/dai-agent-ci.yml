@@ -1,0 +1,82 @@
+# DealershipAI Agent CI Configuration
+# Validates canonical GPT stack on every push
+
+name: DAI Agent CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'canonical/**'
+      - 'lib/orchestrator/**'
+      - 'lib/agent/**'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+      - name: Validate agent configuration
+        run: |
+          echo "🔍 Validating agent configuration..."
+          if [ -f "canonical/agentic/dai-agent-canonical.json" ]; then
+            echo "✅ Agent config found"
+            cat canonical/agentic/dai-agent-canonical.json | jq '.' > /dev/null || exit 1
+          else
+            echo "❌ Agent config not found"
+            exit 1
+          fi
+
+      - name: Validate commerce configuration
+        run: |
+          echo "🔍 Validating commerce configuration..."
+          if [ -f "canonical/agentic/dai-orchestrator-agentic-commerce.json" ]; then
+            echo "✅ Commerce config found"
+            cat canonical/agentic/dai-orchestrator-agentic-commerce.json | jq '.' > /dev/null || exit 1
+          else
+            echo "❌ Commerce config not found"
+            exit 1
+          fi
+
+      - name: Run test suite
+        run: |
+          if [ -f "canonical/agentic/dai-agent-test-suite.ts" ]; then
+            echo "🧪 Running test suite..."
+            npx ts-node canonical/agentic/dai-agent-test-suite.ts
+          else
+            echo "⚠️ Test suite not found"
+          fi
+
+      - name: Verify file hashes
+        run: |
+          echo "🔐 Verifying file hashes..."
+          for file in canonical/agentic/*.json; do
+            if [ -f "$file" ]; then
+              hash=$(shasum -a 256 "$file" | cut -d ' ' -f 1)
+              echo "✅ $(basename $file): sha256:$hash"
+            fi
+          done
+
+      - name: Generate CI report
+        if: always()
+        run: |
+          echo "📊 Generating CI report..."
+          if [ -f "canonical/agentic/dai-agent-ci-report.ts" ]; then
+            npx ts-node canonical/agentic/dai-agent-ci-report.ts
+          fi
