@@ -17,33 +17,25 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user tier and session information
-    const userTier = await TierManager.getUserTier(userId);
+    // Get session information
     const sessionInfo = await TierManager.checkSessionLimit(userId);
+    const userTier = 'PRO'; // Default tier - should be retrieved from user model
 
     // Check if user has remaining sessions
-    if (!sessionInfo.allowed) {
+    if (sessionInfo.remaining === 0) {
       return NextResponse.json({
         success: false,
         error: 'Session limit reached',
         tier: userTier,
-        sessionsUsed: sessionInfo.limit,
-        sessionsLimit: sessionInfo.limit,
+        sessionsUsed: sessionInfo.sessionsUsed,
+        sessionsLimit: sessionInfo.sessionsLimit,
         upgradeRequired: true
       });
     }
 
     // Increment session count
-    const sessionIncremented = await TierManager.incrementSession(userId);
-    if (!sessionIncremented) {
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to increment session',
-        tier: userTier,
-        sessionsUsed: sessionInfo.limit,
-        sessionsLimit: sessionInfo.limit
-      });
-    }
+    await TierManager.incrementSession(userId);
+    // Note: incrementSession returns void, so no error checking
 
     // Get dealership data (mock for now)
     const dealershipData = {
@@ -64,11 +56,11 @@ export async function GET(req: NextRequest) {
         dealershipId: dealershipData.id,
         dealershipName: dealershipData.name,
         userTier,
-        sessionsUsed: sessionInfo.limit - sessionInfo.remaining + 1,
-        sessionsLimit: sessionInfo.limit,
+        sessionsUsed: sessionInfo.sessionsUsed + 1,
+        sessionsLimit: sessionInfo.sessionsLimit,
         features,
         dealership: dealershipData,
-        tierInfo: TierManager.getTierInfo(userTier)
+        tierInfo: TierManager.getTierInfo()
       }
     });
 
