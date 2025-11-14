@@ -23,7 +23,7 @@ export const runtime = 'nodejs';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { groupId: string } }
+  context: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -35,7 +35,8 @@ export async function GET(
       );
     }
 
-    const { groupId} = params;
+    const params = await context.params;
+    const { groupId } = params;
 
     const supabase = getSupabase();
     if (!supabase) {
@@ -60,9 +61,12 @@ export async function GET(
       );
     }
 
+    // Type the group as any to access properties
+    const typedGroup = group as any;
+
     // Get aggregate report
     const { data: report, error: reportError } = await supabase
-      .rpc('get_group_aggregate_report', { p_group_id: groupId });
+      .rpc('get_group_aggregate_report', { p_group_id: groupId } as any);
 
     if (reportError) {
       console.error('[groups/report] Error fetching aggregate report:', reportError);
@@ -97,13 +101,13 @@ export async function GET(
     return NextResponse.json(
       {
         group: {
-          id: group.id,
-          name: group.group_name,
-          slug: group.group_slug,
-          planTier: group.plan_tier,
-          maxLocations: group.max_locations,
+          id: typedGroup.id,
+          name: typedGroup.group_name,
+          slug: typedGroup.group_slug,
+          planTier: typedGroup.plan_tier,
+          maxLocations: typedGroup.max_locations,
         },
-        summary: report && report.length > 0 ? report[0] : null,
+        summary: report && (report as any).length > 0 ? (report as any)[0] : null,
         rankings: rankings || [],
         consistency: consistency || [],
       },
