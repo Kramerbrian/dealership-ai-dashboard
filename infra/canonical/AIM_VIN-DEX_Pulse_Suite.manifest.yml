@@ -1,0 +1,26 @@
+canonical_id: AIM_VIN-DEX_Pulse_Suite
+bundle: DealershipAI Agentic Canonical
+version: 2025.11.13
+author: Kramer
+registry: DealershipAI Canonical Registry
+repository: DealershipAI-Core
+description: >
+  Canonical ingestion, enrichment, orchestration, and streaming layer for all Pulse-driven dealership intelligence.
+  Hosts real-time /api/pulse/ingest, routes validated PulseEvents to Orchestrator,
+  and surfaces live triage card streams via Pulse Engine GPTs.
+integrity_hash: c6e712f8a8f2d0b3b45d924af47a20c19bdfc18ce2cce1ab4a1a8a5d08fa5b99
+signature_type: sha256 + RSA hybrid
+signature_chain:
+  issuer: DealershipAI Canonical Authority
+  issued_to: Kramer / DealershipAI Core
+  key_fingerprint: 3A:F9:72:10:BB:4C:1E:57:AF:99:22:6C:FA:47:8D:B3
+  verification_endpoint: https://registry.dealershipai.io/verify
+validation:
+  schema_integrity: verified
+  role_awareness: validated
+  render_consistency: enforced
+  persistence_integrity: validated
+  stream_integrity: verified
+  last_verified: 2025-11-13T12:00:00Z
+  verified_by: Canonical Integrity Engine vNext
+

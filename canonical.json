@@ -1,0 +1,24 @@
+{
+  "canonical_id": "AIM_VIN-DEX_Pulse_Suite",
+  "registry": "DealershipAI Canonical Registry",
+  "bundle": "DealershipAI Agentic Canonical",
+  "version": "2025.11.13",
+  "entrypoints": [
+    "app/api/pulse-tasks/result/route.ts",
+    "app/api/stream/pulse-tasks/route.ts",
+    "app/api/stream/llm-json/route.ts",
+    "app/api/stream/llm/route.ts"
+  ],
+  "core_components": [
+    "lib/agents/llmClient.ts",
+    "hooks/useLLMJsonStream.ts",
+    "hooks/usePulseTaskStream.ts",
+    "components/PulseTaskCard.tsx",
+    "components/MultiPulseStreamDashboard.tsx"
+  ],
+  "integrity": {
+    "validated": true,
+    "checksum_sha256": "auto_generated_on_build"
+  }
+}
+
