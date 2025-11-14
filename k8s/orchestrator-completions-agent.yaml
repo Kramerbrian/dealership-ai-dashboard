@@ -1,0 +1,160 @@
+---
+# ServiceAccount for log reading
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: log-reader
+  namespace: dealershipai
+
+---
+# Role for reading pod logs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: log-reader
+  namespace: dealershipai
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list"]
+
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: log-reader
+  namespace: dealershipai
+subjects:
+  - kind: ServiceAccount
+    name: log-reader
+    namespace: dealershipai
+roleRef:
+  kind: Role
+  name: log-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# CronJob: Orchestrator Completions Agent
+# Runs every Tuesday at 09:00 America/New_York
+# Scrapes last 24h of orchestrator logs and posts to Agent API
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: orchestrator-completions-agent
+  namespace: dealershipai
+spec:
+  schedule: "0 9 * * 2"            # Tuesdays 09:00 ET
+  timeZone: "America/New_York"     # requires K8s ≥1.27; else drop and use UTC offset in schedule
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: log-reader
+          restartPolicy: OnFailure
+          containers:
+            - name: assist-poster
+              image: alpine:3.20
+              env:
+                - name: AGENTAPI_BASE
+                  value: "https://agentapi.yourdomain.com"
+                - name: AGENTAPI_TIMEOUT_MS
+                  value: "10000"
+                - name: TENANT_ID
+                  valueFrom:
+                    fieldRef: { fieldPath: metadata.namespace }
+                - name: AGENTAPI_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: agentapi-cred
+                      key: AGENTAPI_TOKEN
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  
+                  # Install dependencies
+                  apk add --no-cache bash curl jq kubectl coreutils grep
+                  
+                  # Get last 24h of relevant lines (first 5 hits)
+                  LOGS="$(kubectl -n ${TENANT_ID} logs deploy/orchestrator --since=24h \
+                      | grep 'POST https' | grep 'completions' \
+                      | head -5 \
+                      | sed 's/"/\\"/g' )"
+                  
+                  # Build structured Assist payload
+                  SESSION="$(date +%s)"
+                  PAYLOAD="$(jq -n \
+                    --arg tenant "$TENANT_ID" \
+                    --arg logs "$LOGS" \
+                    --arg sid "$SESSION" \
+                    '{
+                      session_id: $sid,
+                      context: {
+                        tenant: $tenant,
+                        doctrine: { ui_elements_max:7, depth_max:3, snap_p95_ms:200 },
+                        tools: [
+                          {name:"open_pulse_detail"},
+                          {name:"queue_refresh"},
+                          {name:"site_inject"},
+                          {name:"auto_fix"},
+                          {name:"open_incident"}
+                        ]
+                      },
+                      instructions: {
+                        require_structured_output: true,
+                        schema: {
+                          type:"object",
+                          properties:{
+                            summary:{type:"string"},
+                            error_count:{type:"integer"},
+                            recommendations:{type:"array","items":{type:"string"}},
+                            actions:{type:"array","items":{
+                              type:"object",
+                              properties:{
+                                id:{type:"string"},
+                                intent:{type:"string"},
+                                confidence:{type:"number"},
+                                requires_approval:{type:"boolean"},
+                                tool:{type:"string"},
+                                input:{type:"object"},
+                                preview:{type:"object"}
+                              },
+                              required:["id","intent","confidence"]
+                            }}
+                          },
+                          required:["summary","error_count","recommendations","actions"]
+                        }
+                      },
+                      messages: [
+                        {role:"system", content: "You are the Orchestrator SRE Agent. Summarize API call anomalies and propose safe, guardrailed actions. Only call tools if asked in follow-up."},
+                        {role:"user", content: ("Analyze last 24h top 5 POST /completions lines and prepare actions.\n\nLogs:\n" + $logs)}
+                      ]
+                    }')"
+                  
+                  # POST to agent
+                  echo "$PAYLOAD" | tee /tmp/assist_payload.json >/dev/null
+                  
+                  HTTP_CODE=$(curl -sS -o /tmp/assist_resp.json -w "%{http_code}" \
+                    -H "Authorization: Bearer ${AGENTAPI_TOKEN}" \
+                    -H "Content-Type: application/json" \
+                    --max-time ${AGENTAPI_TIMEOUT_MS} \
+                    -X POST "${AGENTAPI_BASE}/v1/assist" \
+                    -d "@/tmp/assist_payload.json")
+                  
+                  echo "HTTP $HTTP_CODE"
+                  echo "Agent response:"
+                  cat /tmp/assist_resp.json
+                  
+                  # Exit with error if HTTP code is not 2xx
+                  if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                    echo "ERROR: Agent API returned non-2xx status: $HTTP_CODE"
+                    exit 1
+                  fi
+

@@ -226,7 +226,7 @@ export default function CinematicLandingPage() {
           >
             <h1 className="text-5xl md:text-7xl font-light mb-6 leading-tight">
               <span className="font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                DealershipAI is the first system in your store that hates wasted time as much as you do.
+                dealershipAI provides clarity, in a world of digital noise.
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
