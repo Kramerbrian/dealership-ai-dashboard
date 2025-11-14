@@ -143,7 +143,6 @@ Expected response:
   "ok": true,
   "checks": {
     "env": {
-      "NEXT_PUBLIC_MAPBOX_KEY": true,
       "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": true,
       "CLERK_SECRET_KEY": true,
       "NEXT_PUBLIC_BASE_URL": true
@@ -251,7 +250,6 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
 # Optional but recommended
-NEXT_PUBLIC_MAPBOX_KEY=pk.eyJ1Ijoi...
 NEXT_PUBLIC_BASE_URL=https://your-app.vercel.app
 
 # Optional (if using features)
@@ -274,7 +272,6 @@ Before considering deployment "done":
 - [ ] Dashboard loads when authenticated
 - [ ] `/api/clarity/stack` returns valid JSON with scores
 - [ ] No console errors in browser
-- [ ] Map loads (if Mapbox key is set)
 
 ---
 

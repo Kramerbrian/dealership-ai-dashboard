@@ -14,7 +14,6 @@ import { useRouter } from 'next/navigation';
 const REQUIRED_PUBLIC_ENV = [
   'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
   'NEXT_PUBLIC_APP_URL',
-  'NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN',
 ];
 
 const REQUIRED_SERVER_ENV = [

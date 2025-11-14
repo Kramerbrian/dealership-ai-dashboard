@@ -4,6 +4,11 @@ export function useLandingPage() {
       urlInput: '',
       urlError: '',
       profileData: { name: '', url: '' },
+      urlModalVisible: false,
+      profileModalVisible: false,
+      isAnalyzing: false,
+      analysisResult: null as any,
+      profileErrors: {} as Record<string, string>
     },
     schema: {
       hero: {
@@ -13,19 +18,30 @@ export function useLandingPage() {
       },
       features: [] as Array<any>,
       url_entry_modal: {
-        inputs: [] as Array<any>
+        inputs: [] as Array<any>,
+        title: '',
+        actions: [] as Array<any>
       },
       profile_section: {
-        form_fields: [] as Array<any>
+        form: {
+          fields: [] as Array<any>,
+          save_button: { text: '', variant: '', label: '' }
+        }
       },
       footer: {
-        links: [] as Array<any>
+        links: [] as Array<any>,
+        legal: ''
       }
     },
     actions: {
       analyzeUrl: async () => {},
       saveProfile: () => false,
       openUrlModal: () => {},
+      closeUrlModal: () => {},
+      openProfileModal: () => {},
+      closeProfileModal: () => {},
+      handleUrlChange: (value: string) => {},
+      handleProfileChange: (field: string, value: string) => {},
     },
     url: '',
     handleUrlChange: () => {},

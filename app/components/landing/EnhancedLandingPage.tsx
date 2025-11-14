@@ -125,7 +125,7 @@ export default function EnhancedLandingPage({
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {schema.features.map((feature, index) => (
+            {schema.features.map((feature: any, index: number) => (
               <div 
                 key={index} 
                 className="group bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-200 hover:transform hover:scale-105"
@@ -188,7 +188,7 @@ export default function EnhancedLandingPage({
             </div>
 
             <div className="space-y-4">
-              {schema.url_entry_modal.inputs.map((input) => (
+              {schema.url_entry_modal.inputs.map((input: any) => (
                 <div key={input.id}>
                   <label htmlFor={input.id} className="block text-sm font-medium mb-2">
                     {input.label}
@@ -268,7 +268,7 @@ export default function EnhancedLandingPage({
             </div>
 
             <div className="space-y-4">
-              {schema.profile_section.form.fields.map((field) => (
+              {schema.profile_section.form.fields.map((field: any) => (
                 <div key={field.id}>
                   <label className="block text-sm font-medium mb-2">
                     {field.label}
@@ -309,7 +309,7 @@ export default function EnhancedLandingPage({
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-gray-400 mb-4">{schema.footer.legal}</p>
           <div className="flex justify-center gap-6">
-            {schema.footer.links.map((link, index) => (
+            {schema.footer.links.map((link: any, index: number) => (
               <a
                 key={index}
                 href={link.url}
