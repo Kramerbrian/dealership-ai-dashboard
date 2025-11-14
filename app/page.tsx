@@ -1,7 +1,7 @@
 'use client';
 
-import { CinematicLandingPage } from '@/components/landing/CinematicLandingPage';
+import HeroSection_CupertinoNolan from '@/components/HeroSection_CupertinoNolan';
 
 export default function HomePage() {
-  return <CinematicLandingPage />;
+  return <HeroSection_CupertinoNolan />;
 }
