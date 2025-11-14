@@ -68,27 +68,27 @@ export class UCB1Bandit {
     // Calculate UCB1 values for all arms
     const ucbValues = this.arms.map(arm => {
       const stats = this.stats.get(arm.id);
-      if (!stats) return 0;
-      
+      if (!stats) return null;
+
       const averageReward = stats.averageReward;
       const confidence = Math.sqrt(2 * Math.log(this.totalPulls) / stats.pulls);
       const ucbValue = averageReward + confidence;
-      
+
       return {
         armId: arm.id,
         ucbValue,
         averageReward,
         confidence
       };
-    });
-    
+    }).filter((v): v is { armId: string; ucbValue: number; averageReward: number; confidence: number } => v !== null);
+
     // Select arm with highest UCB value
-    const bestArm = ucbValues.reduce((best, current) => 
+    const bestArm = ucbValues.reduce((best, current) =>
       current.ucbValue > best.ucbValue ? current : best
     );
-    
+
     const selectedArm = this.arms.find(arm => arm.id === bestArm.armId);
-    
+
     return {
       selectedArm: bestArm.armId,
       confidence: bestArm.confidence,
