@@ -425,35 +425,38 @@ const DTRI_Dashboard: React.FC = () => {
               <div className="bg-white rounded-2xl p-6 border border-slate-200">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">E-E-A-T External Perception Components</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(data.eeat.components).map(([key, component], index) => (
-                    <motion.div
-                      key={key}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="p-4 bg-slate-50 rounded-xl"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-slate-900 capitalize">{key}</h4>
-                        <div className={`text-xl font-bold ${getScoreColor(component.score)}`}>
-                          {(component.score * 100).toFixed(1)}%
+                  {Object.entries(data.eeat.components).map(([key, component], index) => {
+                    const comp = component as { score: number; w: number };
+                    return (
+                      <motion.div
+                        key={key}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="p-4 bg-slate-50 rounded-xl"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-slate-900 capitalize">{key}</h4>
+                          <div className={`text-xl font-bold ${getScoreColor(comp.score)}`}>
+                            {(comp.score * 100).toFixed(1)}%
+                          </div>
                         </div>
-                      </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
-                        <motion.div
-                          className={`h-2 rounded-full ${
-                            component.score >= 0.9 ? 'bg-emerald-500' :
-                            component.score >= 0.8 ? 'bg-blue-500' :
-                            component.score >= 0.7 ? 'bg-amber-500' : 'bg-red-500'
-                          }`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${component.score * 100}%` }}
-                          transition={{ duration: 1, delay: index * 0.1 }}
-                        />
-                      </div>
-                      <div className="text-xs text-slate-600">Weight: {(component.w * 100).toFixed(0)}%</div>
-                    </motion.div>
-                  ))}
+                        <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
+                          <motion.div
+                            className={`h-2 rounded-full ${
+                              comp.score >= 0.9 ? 'bg-emerald-500' :
+                              comp.score >= 0.8 ? 'bg-blue-500' :
+                              comp.score >= 0.7 ? 'bg-amber-500' : 'bg-red-500'
+                            }`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${comp.score * 100}%` }}
+                            transition={{ duration: 1, delay: index * 0.1 }}
+                          />
+                        </div>
+                        <div className="text-xs text-slate-600">Weight: {(comp.w * 100).toFixed(0)}%</div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
