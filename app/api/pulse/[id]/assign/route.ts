@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getSupabase();
@@ -29,6 +29,7 @@ export async function POST(
 
     const { searchParams } = new URL(req.url);
     const dealerId = searchParams.get('dealerId') || 'demo-tenant';
+    const params = await context.params;
     const pulseId = params.id;
     const body = await req.json();
     const { assigneeId, assigneeName, note } = body;
@@ -55,19 +56,23 @@ export async function POST(
       );
     }
 
+    // Type the card as any to access properties
+    const typedCard = card as any;
+
     // Update card with assignment
-    const { error: updateError } = await supabase
+    const updateData: any = {
+      context: {
+        ...typedCard.context,
+        assigned_to: assigneeId,
+        assigned_to_name: assigneeName || assigneeId,
+        assigned_at: new Date().toISOString(),
+        assigned_by: userId,
+        assignment_note: note || null,
+      },
+    };
+    const { error: updateError } = await (supabase
       .from('pulse_cards')
-      .update({
-        context: {
-          ...card.context,
-          assigned_to: assigneeId,
-          assigned_to_name: assigneeName || assigneeId,
-          assigned_at: new Date().toISOString(),
-          assigned_by: userId,
-          assignment_note: note || null,
-        },
-      })
+      .update as any)(updateData)
       .eq('id', pulseId);
 
     if (updateError) {
@@ -85,19 +90,19 @@ export async function POST(
         ts: new Date().toISOString(),
         level: 'info',
         kind: 'incident_opened',
-        title: `Assigned to ${assigneeName || assigneeId}: ${card.title}`,
+        title: `Assigned to ${assigneeName || assigneeId}: ${typedCard.title}`,
         detail: note || `Pulse card assigned by ${userId}`,
-        thread_type: card.thread_type,
-        thread_id: card.thread_id,
+        thread_type: typedCard.thread_type,
+        thread_id: typedCard.thread_id,
         actions: ['open'],
         dedupe_key: `assignment:${pulseId}`,
         context: {
-          ...card.context,
+          ...typedCard.context,
           original_pulse_id: pulseId,
           assignment_event: true,
         },
       },
-    });
+    } as any);
 
     return NextResponse.json({
       success: true,
