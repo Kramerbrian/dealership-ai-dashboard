@@ -10,8 +10,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createHash } from 'crypto';
 
-import agentConfig from './dai-agent-canonical.json';
-import commerceConfig from './dai-orchestrator-agentic-commerce.json';
+import agentConfig from './dai-agent-canonical.json' assert { type: 'json' };
+import commerceConfig from './dai-orchestrator-agentic-commerce.json' assert { type: 'json' };
 
 export interface AgentBuildOptions {
   outputDir?: string;

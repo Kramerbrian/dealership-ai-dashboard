@@ -5,8 +5,19 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import agentConfig from './dai-agent-canonical.json';
-import commerceConfig from './dai-orchestrator-agentic-commerce.json';
+import { fileURLToPath } from 'url';
+
+// ES module compatibility
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load JSON configs using fs.readFileSync for compatibility
+const agentConfig = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'dai-agent-canonical.json'), 'utf-8')
+);
+const commerceConfig = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'dai-orchestrator-agentic-commerce.json'), 'utf-8')
+);
 
 interface TestResult {
   name: string;
@@ -47,7 +58,7 @@ test('Commerce config has required fields', () => {
 
 test('Agent capabilities are valid', () => {
   return agentConfig.capabilities.length > 0 &&
-    agentConfig.capabilities.every(cap =>
+    agentConfig.capabilities.every((cap: any) =>
       cap.name && cap.description && Array.isArray(cap.tools)
     );
 });
@@ -61,18 +72,18 @@ test('Economics targets are within range', () => {
 
 test('Platform targets sum to valid weights', () => {
   const totalWeight = Object.values(agentConfig.platform_targets)
-    .reduce((sum, target) => sum + target.visibility_weight, 0);
+    .reduce((sum: number, target: any) => sum + target.visibility_weight, 0);
   return Math.abs(totalWeight - 1.0) < 0.01; // Allow small floating point error
 });
 
 test('Caching strategy has valid TTLs', () => {
-  return commerceConfig.caching_strategy.layers.every(layer =>
+  return commerceConfig.caching_strategy.layers.every((layer: any) =>
     layer.ttl > 0 && layer.hit_rate_target >= 0 && layer.hit_rate_target <= 1
   );
 });
 
 test('Analysis pipeline steps are ordered', () => {
-  const priorities = commerceConfig.analysis_pipeline.steps.map(s => s.priority);
+  const priorities = commerceConfig.analysis_pipeline.steps.map((s: any) => s.priority);
   for (let i = 1; i < priorities.length; i++) {
     if (priorities[i] < priorities[i - 1]) return false;
   }
@@ -80,7 +91,7 @@ test('Analysis pipeline steps are ordered', () => {
 });
 
 test('Funnel stages have valid conversion rates', () => {
-  return commerceConfig.commerce_funnel.stages.every(stage =>
+  return commerceConfig.commerce_funnel.stages.every((stage: any) =>
     stage.conversion_target >= 0 && stage.conversion_target <= 1
   );
 });

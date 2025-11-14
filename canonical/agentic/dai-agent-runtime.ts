@@ -27,8 +27,8 @@ import type {
 } from '../../../lib/orchestrator/gpt-bridge';
 
 // Import canonical configurations
-import agentConfig from './dai-agent-canonical.json';
-import commerceConfig from './dai-orchestrator-agentic-commerce.json';
+import agentConfig from './dai-agent-canonical.json' assert { type: 'json' };
+import commerceConfig from './dai-orchestrator-agentic-commerce.json' assert { type: 'json' };
 
 /**
  * DAI Agent Runtime Configuration
