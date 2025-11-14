@@ -236,7 +236,7 @@ export class SecurityManager {
         action: 'api_key_revoked',
         resource: 'api_key',
         metadata: { keyId }
-      });
+      } as any);
 
       return true;
 
@@ -328,7 +328,7 @@ export class SecurityManager {
         ipAddress: ip,
         userAgent: 'system',
         metadata: { reason }
-      });
+      } as any);
       return true;
     } catch (error) {
       console.error('Blacklist IP error:', error);
@@ -347,7 +347,7 @@ export class SecurityManager {
         ipAddress: ip,
         userAgent: 'system',
         metadata: {}
-      });
+      } as any);
       return true;
     } catch (error) {
       console.error('Unblacklist IP error:', error);
