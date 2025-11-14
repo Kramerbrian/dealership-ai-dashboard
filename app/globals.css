@@ -56,6 +56,15 @@
     }
   }
 
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
   .animate-fade-in {
     animation: fade-in 0.4s ease-out;
   }
@@ -66,6 +75,10 @@
 
   .animate-morph {
     animation: morph 3s ease-in-out infinite;
+  }
+
+  .animate-scroll {
+    animation: scroll 30s linear infinite;
   }
 
   /* Only apply animations if motion is safe */
