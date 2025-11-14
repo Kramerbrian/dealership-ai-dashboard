@@ -44,42 +44,37 @@ function processRealSEOData(realData: any, domain: string, timeRange: string): S
     overallScore: Math.round((seoScore + aeoScore + geoScore) / 3),
     technicalSEO: {
       score: seoScore,
-      pageSpeed: realData.pageSpeed?.data?.performance ? Math.round(realData.pageSpeed.data.performance * 100) : 0,
-      mobileUsability: realData.pageSpeed?.data?.accessibility ? Math.round(realData.pageSpeed.data.accessibility * 100) : 0,
-      coreWebVitals: {
-        lcp: realData.pageSpeed?.data?.largestContentfulPaint || 0,
-        fid: realData.pageSpeed?.data?.totalBlockingTime || 0,
-        cls: realData.pageSpeed?.data?.cumulativeLayoutShift || 0
-      }
+      issues: [],
+      recommendations: []
     },
     contentSEO: {
       score: Math.round((seoScore + aeoScore) / 2),
-      keywordRankings: realData.searchConsole?.data?.rows?.length || 0,
+      keywordDensity: realData.searchConsole?.data?.rows?.length || 0,
       contentQuality: realData.pageSpeed?.data?.seo ? Math.round(realData.pageSpeed.data.seo * 100) : 0,
-      internalLinking: Math.floor(Math.random() * 20) + 80 // Mock for now
+      recommendations: []
     },
     localSEO: {
       score: Math.round(geoScore * 0.8),
-      gmbOptimization: Math.floor(Math.random() * 15) + 85, // Mock for now
-      localCitations: Math.floor(Math.random() * 10) + 90, // Mock for now
-      reviewManagement: Math.floor(Math.random() * 20) + 80 // Mock for now
+      gbpOptimization: Math.floor(Math.random() * 15) + 85,
+      localCitations: Math.floor(Math.random() * 10) + 90,
+      recommendations: []
     },
     backlinks: {
-      score: Math.floor(Math.random() * 30) + 70, // Mock for now
-      totalBacklinks: Math.floor(Math.random() * 1000) + 500, // Mock for now
-      domainAuthority: Math.floor(Math.random() * 20) + 60, // Mock for now
-      referringDomains: Math.floor(Math.random() * 200) + 100 // Mock for now
+      score: Math.floor(Math.random() * 30) + 70,
+      totalBacklinks: Math.floor(Math.random() * 1000) + 500,
+      domainAuthority: Math.floor(Math.random() * 20) + 60,
+      recommendations: []
     },
     performance: {
       score: realData.pageSpeed?.data?.performance ? Math.round(realData.pageSpeed.data.performance * 100) : 0,
-      pageLoadSpeed: realData.pageSpeed?.data?.firstContentfulPaint || 0,
-      mobileScore: realData.pageSpeed?.data?.performance ? Math.round(realData.pageSpeed.data.performance * 100) : 0,
-      desktopScore: realData.pageSpeed?.data?.performance ? Math.round(realData.pageSpeed.data.performance * 100) : 0
+      pageSpeed: realData.pageSpeed?.data?.firstContentfulPaint || 0,
+      mobileUsability: realData.pageSpeed?.data?.performance ? Math.round(realData.pageSpeed.data.performance * 100) : 0,
+      recommendations: []
     },
-    traffic: {
-      organicTraffic: realData.analytics?.data?.rows?.reduce((sum: number, row: any) => 
-        sum + (parseInt(row.metricValues?.[0]?.value || '0')), 0) || 0,
-      trafficChange: Math.floor(Math.random() * 40) - 20, // Mock for now
+    trends: {
+      scoreChange: Math.floor(Math.random() * 40) - 20,
+      keywordRankings: realData.searchConsole?.data?.rows?.length || 0,
+      trafficChange: Math.floor(Math.random() * 40) - 20,
       period: timeRange
     }
   };
@@ -134,10 +129,9 @@ export async function GET(req: NextRequest) {
     const timeRange = searchParams.get('timeRange') || '30d';
     
     // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.SEO_DATA(domain, timeRange);
-    
-    const cachedData = await cache.get(cacheKey);
+    const cacheKey = `seo:${domain}:${timeRange}`;
+
+    const cachedData = await CacheManager.get(cacheKey);
     if (cachedData) {
       const duration = Date.now() - startTime;
       
@@ -182,7 +176,7 @@ export async function GET(req: NextRequest) {
     );
     
     // Cache the result
-    await cache.set(cacheKey, seoData, CACHE_TTL.SEO_DATA);
+    await CacheManager.set(cacheKey, seoData, CACHE_TTL.MEDIUM);
     
     const duration = Date.now() - startTime;
     
