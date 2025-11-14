@@ -98,22 +98,25 @@ export default function HeroSection_CupertinoNolan() {
 
     try {
       const res = await fetch(`/api/marketpulse/compute?dealer=${encodeURIComponent(normalizedURL)}`);
+      if (!res.ok) {
+        throw new Error(`API returned ${res.status}`);
+      }
       const result = await res.json();
       const aiv = Number(result?.aiv ?? 0.88);
       const ati = Number(result?.ati ?? 0.82);
-      
-      // Transition to onboarding
+
+      // Transition to onboarding after delay
       setTimeout(() => {
         window.location.href = `/onboarding?dealer=${encodeURIComponent(normalizedURL)}&aiv=${aiv}&ati=${ati}`;
       }, 1500);
     } catch (err) {
       console.error('API error:', err);
+      // Still redirect on error, just without metrics
       setTimeout(() => {
         window.location.href = `/onboarding?dealer=${encodeURIComponent(normalizedURL)}`;
       }, 1500);
-    } finally {
-      setLoading(false);
     }
+    // Note: Don't set loading=false here since we're redirecting anyway
   }
 
   const handleMouse = (e: React.MouseEvent) => {
