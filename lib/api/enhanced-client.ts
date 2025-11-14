@@ -10,11 +10,11 @@ export interface ApiConfig {
 }
 
 export interface ApiError {
-  code: string;
+  readonly code: string;
   message: string;
-  details?: any;
-  statusCode?: number;
-  timestamp: string;
+  readonly details?: any;
+  readonly statusCode?: number;
+  readonly timestamp: string;
 }
 
 export class EnhancedApiClient {
@@ -139,18 +139,18 @@ export class EnhancedApiClient {
 
 // Custom error class
 export class ApiError extends Error {
-  public readonly code: string;
+  public readonly code!: string;
   public readonly details?: any;
   public readonly statusCode?: number;
-  public readonly timestamp: string;
+  public readonly timestamp!: string;
 
   constructor(code: string, message: string, details?: any, statusCode?: number) {
     super(message);
     this.name = 'ApiError';
-    this.code = code;
-    this.details = details;
-    this.statusCode = statusCode;
-    this.timestamp = new Date().toISOString();
+    (this as any).code = code;
+    (this as any).details = details;
+    (this as any).statusCode = statusCode;
+    (this as any).timestamp = new Date().toISOString();
   }
 }
 
