@@ -46,7 +46,7 @@ export interface AIResponse {
 /**
  * Cost-optimized routing decision engine
  */
-function routeTask(task: AITask): 'anthropic-haiku' | 'anthropic-sonnet' | 'openai-gpt4o' | 'openai-gpt4-turbo' {
+function routeTask(task: AITask): 'anthropic-haiku' | 'anthropic-sonnet' | 'openai-gpt4o' | 'openai-gpt4-turbo' | 'openai-ada' {
   // Low-complexity tasks → Claude Haiku (80% of jobs)
   if (task.type === 'summarize' || task.type === 'chat') {
     if ((task.tokens || 0) < 1500) {
@@ -82,11 +82,11 @@ function routeTask(task: AITask): 'anthropic-haiku' | 'anthropic-sonnet' | 'open
 /**
  * Initialize model clients (lazy-loaded)
  */
-let anthropicHaiku: ChatAnthropic | null = null;
-let anthropicSonnet: ChatAnthropic | null = null;
-let openaiGPT4o: ChatOpenAI | null = null;
-let openaiGPT4Turbo: ChatOpenAI | null = null;
-let embeddings: OpenAIEmbeddings | null = null;
+let anthropicHaiku: any = null;
+let anthropicSonnet: any = null;
+let openaiGPT4o: any = null;
+let openaiGPT4Turbo: any = null;
+let embeddings: any = null;
 
 function getAnthropicHaiku() {
   if (!anthropicHaiku) {
@@ -168,9 +168,9 @@ export async function executeAITask(task: AITask): Promise<AIResponse> {
     ['human', '{input}'],
   ]);
 
-  let model: ChatAnthropic | ChatOpenAI;
+  let model: any;
   let modelName: string;
-  let fallbackModel: ChatAnthropic | ChatOpenAI | null = null;
+  let fallbackModel: any = null;
 
   // Initialize primary model
   switch (route) {

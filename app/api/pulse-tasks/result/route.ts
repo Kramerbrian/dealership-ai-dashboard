@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs'; // Prisma requires Node.js runtime
 export const dynamic = 'force-dynamic';
 
 /**
