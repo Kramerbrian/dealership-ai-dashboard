@@ -51,10 +51,10 @@ export async function calculateKPICIs(tenantId: string, weeks: number = 12): Pro
     LIMIT ${weeks}
   `);
 
-  const aivValues = result.rows.map((r: any) => Number(r.aiv_pct || 0));
-  const atiValues = result.rows.map((r: any) => Number(r.ati_pct || 0));
-  const crsValues = result.rows.map((r: any) => Number(r.crs_pct || 0));
-  const lastUpdated = result.rows[0]?.as_of || new Date().toISOString();
+  const aivValues = (result as any).rows.map((r: any) => Number(r.aiv_pct || 0));
+  const atiValues = (result as any).rows.map((r: any) => Number(r.ati_pct || 0));
+  const crsValues = (result as any).rows.map((r: any) => Number(r.crs_pct || 0));
+  const lastUpdated = (result as any).rows[0]?.as_of || new Date().toISOString();
 
   return {
     aiv_ci: calculateCI95(aivValues),

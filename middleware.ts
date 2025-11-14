@@ -146,6 +146,7 @@ async function dashboardMiddleware(req: NextRequest) {
     protectedRouteMatcher = createRouteMatcher([
       '/dashboard(.*)',
       '/dash(.*)',
+      '/pulse(.*)', // ADDED - Pulse dashboard requires auth
       '/intelligence(.*)',
       // '/onboarding(.*)', // REMOVED - onboarding must be public for Clerk handshake
       '/api/ai(.*)',

@@ -18,7 +18,7 @@ async function fetchClarity(domain?: string) {
   return res.json();
 }
 
-export default async function DashPage({ searchParams }: { searchParams?: { domain?: string; __clerk_handshake?: string } }) {
+export default async function DashPage({ searchParams }: { searchParams?: { domain?: string; dealer?: string; __clerk_handshake?: string } }) {
   // Check if this is a Clerk handshake - allow it to complete
   const isClerkHandshake = searchParams && '__clerk_handshake' in searchParams;
   
@@ -34,12 +34,14 @@ export default async function DashPage({ searchParams }: { searchParams?: { doma
   
   if (isClerkConfigured && !auth.isAuthenticated && !isClerkHandshake) {
     const qs = new URLSearchParams();
-    if (searchParams?.domain) qs.set('redirect_domain', searchParams.domain);
+    const domainParam = searchParams?.domain || searchParams?.dealer;
+    if (domainParam) qs.set('redirect_domain', domainParam);
     const redirectUrl = qs.toString() ? `/sign-in?${qs.toString()}` : '/sign-in';
     redirect(redirectUrl);
   }
 
-  const domain = searchParams?.domain || 'exampledealer.com';
+  // Support both 'domain' and 'dealer' params for compatibility
+  const domain = searchParams?.domain || searchParams?.dealer || 'exampledealer.com';
   const data = await fetchClarity(domain);
 
   return (

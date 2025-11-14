@@ -165,7 +165,7 @@ export class SecurityManager {
         action: 'api_key_created',
         resource: 'api_key',
         metadata: { keyId: apiKey.id, name }
-      });
+      } as any);
 
       return apiKey;
 

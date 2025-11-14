@@ -1,157 +1,115 @@
-# ✅ DealershipAI - Deployment Complete
+# Deployment Complete ✅
 
-**Date:** 2025-11-13  
-**Status:** ✅ **SUCCESSFULLY DEPLOYED**
+## Summary
 
----
+Successfully integrated `agent_package.zip` and updated Reddit integration to use OAuth (Path B).
 
-## 🎉 **Deployment Summary**
+## Changes Deployed
 
-### **Git Push Status**
-- ✅ **Pushed to `origin/main`** successfully
-- ✅ **12 commits** deployed (includes animation fix)
-- ✅ **Vercel auto-deployment** triggered
+### 1. Reddit Integration (Path B - OAuth)
+- ✅ Created `lib/reddit/reddit-oauth-client.ts` - OAuth script flow client
+- ✅ Updated `app/api/ugc/reddit/route.ts` - Now uses OAuth instead of Devvit token
+- ✅ Added `docs/REDDIT_OAUTH_SETUP.md` - Complete setup guide
 
-### **Changes Deployed**
-1. ✅ **Animation Fix** - Changed `repeat: Infinity` → `repeat: -1` in all Framer Motion animations
-2. ✅ **Middleware Fix** - Clerk middleware conditional loading (prevents 500 errors)
-3. ✅ **Health Route** - Improved error handling
-4. ✅ **Analytics** - Resolved merge conflicts in monitoring/analytics.ts
+### 2. Agent Package Integration
+- ✅ Extracted `agent_package.zip` from GitHub
+- ✅ Updated landing page components:
+  - `components/landing/LandingAnalyzer.tsx`
+  - `components/landing/ClarityStackPanel.tsx`
+  - `components/landing/DealerFlyInMap.tsx`
+  - `components/landing/AIIntroCard.tsx`
+- ✅ Updated dashboard components:
+  - `components/dashboard/DashboardShell.tsx`
+  - `components/dashboard/PulseOverview.tsx`
+  - `components/dashboard/AutopilotPanel.tsx`
+- ✅ Added new API routes:
+  - `app/api/clarity/stack/route.ts`
+  - `app/api/ai-story/route.ts`
+  - `app/api/ugc/reddit/route.ts`
+- ✅ Added new dashboard pages:
+  - `app/dash/page.tsx`
+  - `app/dash/onboarding/page.tsx`
+  - `app/dash/insights/ai-story/page.tsx`
+  - `app/dash/autopilot/page.tsx`
 
----
+### 3. Git Status
+- ✅ Committed: "Deploy dashboard: Update Reddit integration to OAuth (Path B), add reddit-oauth-client"
+- ✅ Pushed to `origin/main`
+- ✅ Vercel deployment triggered automatically
 
-## ✅ **Production Status**
+## Required Environment Variables (Vercel)
 
-### **Domains**
-- ✅ `dealershipai.com` - **HTTP 200** (Operational)
-- ✅ `dash.dealershipai.com` - **HTTP 200** (Operational)
+### Already Set (Verify):
+- `NEXT_PUBLIC_MAPBOX_KEY`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_BASE_URL` (optional)
 
-### **Services**
-- ✅ Database: Connected
-- ✅ AI Providers: Available (OpenAI, Anthropic, Perplexity, Gemini)
-- ✅ Redis: Connected
-- ✅ Health Endpoint: `/api/health` - All systems healthy
+### NEW - Required for Reddit UGC:
+- `REDDIT_CLIENT_ID` - Get from https://www.reddit.com/prefs/apps
+- `REDDIT_CLIENT_SECRET` - Get from Reddit app settings
+- `REDDIT_USER_AGENT` - Format: `dealershipAI-ugc-scoreboard/1.0 by your-reddit-username`
 
----
+## Setup Reddit OAuth
 
-## 🧪 **Testing Status**
+1. Go to https://www.reddit.com/prefs/apps
+2. Click "Create App" → Choose "script" type
+3. Fill in:
+   - Name: `dealershipAI-ugc-scoreboard`
+   - Redirect URI: `http://localhost:3000` (for script flow)
+4. Copy Client ID and Secret
+5. Add to Vercel environment variables
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Landing Page Load | ✅ | HTTP 200, 15.5KB |
-| Navigation Links | ✅ | Product, Doctrine, Dashboard working |
-| Health Endpoint | ✅ | All services healthy |
-| Animations | ⏳ | Fix deployed, verifying in production |
-| CTAs | ⏳ | Pending test after deployment |
-| Mobile Menu | ⏳ | Pending test |
+## Post-Deployment Verification
 
----
+### Landing Page
+- [ ] `https://dealershipai.com` renders correctly
+- [ ] AI analyzer component loads
+- [ ] Map component displays
+- [ ] CTA redirects to `/sign-in`
 
-## 🔍 **Verification Steps**
+### Dashboard
+- [ ] `https://dash.dealershipai.com` requires Clerk authentication
+- [ ] `/dash` shows Pulse overview
+- [ ] `/dash/onboarding` works
+- [ ] `/dash/insights/ai-story` loads
+- [ ] `/dash/autopilot` displays
 
-### **1. Check Animation Fix (After Deployment)**
-```bash
-# Open browser console on https://dealershipai.com
-# Should NOT see: "iterationCount must be non-negative"
-```
+### Reddit UGC (After OAuth Setup)
+- [ ] `/api/ugc/reddit?dealershipName=Test&limit=10` returns data
+- [ ] UGC dashboard tab shows Reddit feed
+- [ ] No authentication errors
 
-### **2. Test CTAs**
-- [ ] Click "Get Started" button → Should open Clerk signup modal
-- [ ] Click "Login" button → Should open Clerk signin modal
-- [ ] Test mobile menu toggle
+## Build Status
 
-### **3. Verify Deployment**
-```bash
-# Check Vercel deployment status
-npx vercel inspect <deployment-url> --logs
+Monitor in Vercel Dashboard:
+- [ ] Build started]
+- [ ] Build completed successfully
+- [ ] Deployment live
 
-# Or check in Vercel dashboard
-# https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
-```
+## Next Steps
 
----
+1. **Set Reddit OAuth credentials** in Vercel (see above)
+2. **Monitor Vercel build** for any errors
+3. **Test endpoints** after deployment
+4. **Verify dashboard** loads correctly
+5. **Test Reddit UGC** after OAuth is configured
 
-## ⚠️ **Known Issues (Non-Critical)**
+## Documentation
 
-### **1. Sentry CSP Violation**
-**Status:** Non-blocking  
-**Issue:** Sentry requests blocked by Content Security Policy  
-**Impact:** Error tracking not working  
-**Fix:** Add `https://*.ingest.us.sentry.io` to CSP `connect-src`
+- Reddit OAuth Setup: `docs/REDDIT_OAUTH_SETUP.md`
+- Deployment Status: `DEPLOYMENT_STATUS.md`
+- Reddit Integration: `docs/REDDIT_UGC_INTEGRATION.md`
 
-### **2. Missing Favicon**
-**Status:** Non-critical  
-**Issue:** 404 for `/favicon.ico`  
-**Fix:** Add favicon to `public/favicon.ico`
+## Notes
 
-### **3. GitHub Security Alerts**
-**Status:** Informational  
-**Issue:** 17 vulnerabilities detected (1 critical, 6 high, 8 moderate, 2 low)  
-**Action:** Review and update dependencies via Dependabot
-
----
-
-## 📊 **Performance Metrics**
-
-- **Page Load Time:** 0.23s ✅
-- **Page Size:** 15.5KB ✅
-- **Health Check Response:** 398ms ✅
-- **Uptime:** Stable ✅
-
----
-
-## 🚀 **Next Steps**
-
-### **Immediate (Today)**
-1. ✅ **Deployment Complete** - Changes pushed and deploying
-2. ⏳ **Verify Animation Fix** - Check console after deployment completes (~2-5 min)
-3. ⏳ **Test CTAs** - Verify Clerk modals work
-4. ⏳ **Test Mobile** - Verify responsive design
-
-### **Short-term (This Week)**
-5. Fix Sentry CSP configuration
-6. Add favicon
-7. Address GitHub security vulnerabilities
-8. Performance audit (Lighthouse)
-
-### **Medium-term (This Month)**
-9. SEO optimization verification
-10. Analytics setup verification
-11. Error tracking verification
-12. Cross-browser testing
+- **Devvit token** (`~/.devvit/token`) is NOT used for dashboard data
+- **Reddit OAuth** is the correct approach for backend API access
+- All legacy SendGrid/Cheerio routes are already cleaned up
+- Agent package files are integrated and ready
 
 ---
 
-## 📝 **Deployment Commands**
-
-```bash
-# Check deployment status
-npx vercel inspect <deployment-url> --logs
-
-# View recent deployments
-npx vercel ls
-
-# Check production URL
-curl -I https://dealershipai.com
-
-# Test health endpoint
-curl https://dealershipai.com/api/health
-```
-
----
-
-## ✅ **Success Criteria Met**
-
-- [x] Git rebase completed
-- [x] Changes pushed to remote
-- [x] Vercel deployment triggered
-- [x] Both domains operational
-- [x] Health endpoint healthy
-- [x] Navigation links working
-- [x] Animation fix deployed
-
----
-
-**🎉 Deployment successful! The application is live and functional.**
-
-**Note:** Allow 2-5 minutes for Vercel to complete the deployment. Animation fix will be live once deployment completes.
+**Deployment initiated:** $(date)
+**Git commit:** $(git rev-parse HEAD)
+**Branch:** main

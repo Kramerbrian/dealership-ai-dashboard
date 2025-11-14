@@ -16,7 +16,8 @@ const navItems = [
 export function DashboardShell({ children }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const domain = searchParams.get('domain') || '';
+  // Support both 'domain' and 'dealer' params for compatibility
+  const domain = searchParams.get('domain') || searchParams.get('dealer') || '';
 
   return (
     <div className="min-h-dvh bg-neutral-950 text-white flex">
@@ -32,8 +33,10 @@ export function DashboardShell({ children }: Props) {
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const active = pathname === item.href;
-            const href = domain
-              ? `${item.href}?domain=${encodeURIComponent(domain)}`
+            // Preserve domain parameter in navigation
+            const currentDomain = searchParams.get('domain') || searchParams.get('dealer') || '';
+            const href = currentDomain
+              ? `${item.href}?domain=${encodeURIComponent(currentDomain)}`
               : item.href;
             return (
               <Link

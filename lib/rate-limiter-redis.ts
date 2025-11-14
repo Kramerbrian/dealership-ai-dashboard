@@ -192,7 +192,7 @@ export class TokenBucketRateLimiter {
  * Create rate limiter instances for different use cases
  */
 export function createRateLimiters(redis?: Redis) {
-  const redisClient = redis || getRedis();
+  const redisClient = (redis || getRedis()) as any;
   return {
     // API rate limiter: 1000 requests per minute
     api: new RedisRateLimiter(redisClient, {
@@ -200,21 +200,21 @@ export function createRateLimiters(redis?: Redis) {
       maxRequests: 1000,
       keyPrefix: 'rate_limit:api'
     }),
-    
+
     // Webhook rate limiter: 100 requests per minute
     webhook: new RedisRateLimiter(redisClient, {
       windowMs: 60 * 1000, // 1 minute
       maxRequests: 100,
       keyPrefix: 'rate_limit:webhook'
     }),
-    
+
     // Tenant-specific rate limiter: 10000 requests per hour
     tenant: new RedisRateLimiter(redisClient, {
       windowMs: 60 * 60 * 1000, // 1 hour
       maxRequests: 10000,
       keyPrefix: 'rate_limit:tenant'
     }),
-    
+
     // Token bucket for burst handling
     burst: new TokenBucketRateLimiter(redisClient, {
       capacity: 100,

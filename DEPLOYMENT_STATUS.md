@@ -1,164 +1,98 @@
-# 🚀 DealershipAI - Deployment Status & Next Steps
+# Deployment Status
 
-**Last Updated:** 2025-11-13 17:45 UTC  
-**Status:** ✅ **PRODUCTION LIVE** - Minor fixes pending deployment
+## Completed Steps
 
----
+### 1. Repository Update
+- ✅ Updated Reddit integration to use OAuth (Path B) instead of Devvit token
+- ✅ Created `lib/reddit/reddit-oauth-client.ts` for OAuth script flow
+- ✅ Updated `/api/ugc/reddit` to use OAuth client
+- ✅ Added documentation: `docs/REDDIT_OAUTH_SETUP.md`
 
-## ✅ **Completed**
+### 2. Files Modified
+- `lib/reddit/reddit-oauth-client.ts` - New OAuth client (Path B)
+- `app/api/ugc/reddit/route.ts` - Updated to use OAuth
+- `docs/REDDIT_OAUTH_SETUP.md` - Setup documentation
 
-### 1. **Production Deployment**
-- ✅ Direct Vercel deployment successful
-- ✅ Both domains operational:
-  - `dealershipai.com` - HTTP 200 ✅
-  - `dash.dealershipai.com` - HTTP 200 ✅
-- ✅ Health endpoint: All services healthy
-  - Database: connected
-  - AI Providers: available
-  - Redis: connected
+### 3. Git Status
+- ✅ Changes committed: "Deploy dashboard: Update Reddit integration to OAuth (Path B), add reddit-oauth-client"
 
-### 2. **Landing Page**
-- ✅ Page loads successfully
-- ✅ SEO metadata (JSON-LD, OpenGraph, Twitter cards)
-- ✅ Navigation links functional (Product, Doctrine, Dashboard)
-- ✅ Content rendering correctly
+## Next Steps (Manual)
 
-### 3. **Code Fixes**
-- ✅ Animation fix applied locally (`repeat: Infinity` → `repeat: -1`)
-  - Fixed in: `apps/web/components/landing/CinematicLandingPage.tsx`
-  - Lines: 178, 242, 253, 271
-- ✅ Merge conflicts resolved in `apps/web/lib/monitoring/analytics.ts`
-
----
-
-## ⚠️ **Pending Deployment**
-
-### 1. **Animation Fix** (Non-blocking)
-**Status:** Fixed locally, needs deployment  
-**Error:** `TypeError: Failed to execute 'animate' on 'Element': iterationCount must be non-negative`
-
-**Action Required:**
+### 1. Download and Integrate agent_package.zip
 ```bash
-# After git push, Vercel will auto-deploy
+# Download from GitHub
+curl -L -o /tmp/agent_package.zip https://raw.githubusercontent.com/Kramerbrian/dealership-ai-dashboard/main/agent_package.zip
+
+# Unzip into repo root
+unzip -o /tmp/agent_package.zip -d .
+
+# Move legacy API routes (if they exist)
+mkdir -p app/api_disabled
+# Move any routes using SendGrid/Cheerio to app/api_disabled
+```
+
+### 2. Move Legacy API Routes
+If you have routes using `@sendgrid/mail` or `cheerio`, move them:
+```bash
+# Example (adjust paths as needed)
+mv app/api/capture-email app/api_disabled/ 2>/dev/null || true
+mv app/api/analyze app/api_disabled/ 2>/dev/null || true
+```
+
+### 3. Set Environment Variables in Vercel
+Go to Vercel Dashboard → Project Settings → Environment Variables:
+
+**Required:**
+- `NEXT_PUBLIC_MAPBOX_KEY` - Mapbox access token
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- `CLERK_SECRET_KEY` - Clerk secret key
+- `REDDIT_CLIENT_ID` - Reddit OAuth client ID (NEW)
+- `REDDIT_CLIENT_SECRET` - Reddit OAuth client secret (NEW)
+- `REDDIT_USER_AGENT` - Reddit user agent string (NEW)
+
+**Optional:**
+- `NEXT_PUBLIC_BASE_URL` - Production domain URL
+
+### 4. Commit and Push
+```bash
+git add .
+git commit -m "Deploy dashboard from agent_package.zip"
 git push origin main
 ```
 
-### 2. **Sentry CSP Configuration** (Non-blocking)
-**Status:** Sentry blocked by Content Security Policy  
-**Error:** CSP violation for `*.ingest.us.sentry.io`
+### 5. Monitor Vercel Build
+- Watch build logs in Vercel dashboard
+- Verify build completes successfully
+- Check for any missing environment variables
 
-**Action Required:**
-Add to `next.config.js` or middleware CSP:
-```javascript
-connect-src: '... https://*.ingest.us.sentry.io'
-```
+### 6. Post-Deploy Verification
 
----
+**Landing Page:**
+- ✅ `https://dealershipai.com` renders landing page
+- ✅ AI analyzer and map components load
+- ✅ CTA redirects to `/sign-in`
 
-## 🔄 **In Progress**
+**Dashboard:**
+- ✅ `https://dash.dealershipai.com` requires Clerk auth
+- ✅ `/dash` shows Pulse overview
+- ✅ `/dash/onboarding` works
+- ✅ `/dash/insights/ai-story` loads
+- ✅ `/dash/autopilot` displays
 
-### 1. **Git Rebase**
-**Status:** 7 commits remaining  
-**Current:** Resolved analytics.ts conflict, animation fixes committed
+**Reddit UGC:**
+- ✅ `/api/ugc/reddit?dealershipName=Test&limit=10` returns data
+- ✅ UGC dashboard tab shows Reddit feed
 
-**Next Steps:**
-```bash
-# Complete rebase (if no more conflicts)
-git rebase --continue
+## Notes
 
-# Or abort and merge instead
-git rebase --abort
-git merge origin/main
-```
+- **Reddit Integration**: Now uses OAuth (Path B) - see `docs/REDDIT_OAUTH_SETUP.md`
+- **Devvit Token**: Not used for dashboard - only for CLI/Devvit apps
+- **Legacy Routes**: Any SendGrid/Cheerio routes should be moved to `app/api_disabled`
 
----
+## Error Handling
 
-## 📋 **Immediate Actions**
-
-### **Priority 1: Complete Git Sync**
-```bash
-# Option A: Continue rebase
-git rebase --continue
-git push origin main --force-with-lease
-
-# Option B: Abort and merge
-git rebase --abort
-git merge origin/main
-git push origin main
-```
-
-### **Priority 2: Deploy Animation Fix**
-- Animation fix is committed locally
-- Push to trigger Vercel auto-deployment
-- Verify console error disappears after deployment
-
-### **Priority 3: Test CTAs**
-- [ ] "Get Started" button (Clerk signup modal)
-- [ ] "Login" button (Clerk signin modal)
-- [ ] Mobile menu toggle
-- [ ] All footer links
-
----
-
-## 🧪 **Testing Status**
-
-| Test | Status | Notes |
-|------|--------|-------|
-| Landing page loads | ✅ | HTTP 200, 15.5KB |
-| Navigation links | ✅ | Product, Doctrine, Dashboard work |
-| Health endpoint | ✅ | All services healthy |
-| Animations | ⚠️ | Console error (fixed locally, needs deploy) |
-| CTAs | ⏳ | Pending test |
-| Mobile menu | ⏳ | Pending test |
-| Sentry tracking | ⚠️ | CSP blocking (non-critical) |
-
----
-
-## 🔧 **Configuration Issues**
-
-### **Sentry CSP**
-**Problem:** Sentry requests blocked by Content Security Policy  
-**Impact:** Error tracking not working  
-**Severity:** Low (non-blocking)
-
-**Fix:**
-Update CSP headers in `next.config.js` or middleware:
-```javascript
-{
-  'connect-src': [
-    "'self'",
-    'https://*.ingest.us.sentry.io',  // Add this
-    // ... existing sources
-  ]
-}
-```
-
----
-
-## 📊 **Performance Metrics**
-
-- **Page Load:** 0.23s (excellent)
-- **Page Size:** 15.5KB (optimized)
-- **Health Check:** 398ms response time
-- **Uptime:** 2119 seconds (35+ minutes)
-
----
-
-## 🎯 **Next Steps Summary**
-
-1. **Complete git rebase/merge** → Push to remote
-2. **Deploy animation fix** → Auto-deploy via Vercel
-3. **Test CTAs** → Verify Clerk modals work
-4. **Fix Sentry CSP** → Add to allowlist (optional)
-5. **Mobile testing** → Test responsive design
-
----
-
-## 📝 **Notes**
-
-- **Git Rebase:** Currently in progress, 7 commits remaining
-- **Animation Fix:** Applied locally, awaiting deployment
-- **Sentry:** CSP blocking but non-critical
-- **Production:** Fully functional, minor console errors
-
-**All critical functionality is working. Remaining items are polish and optimization.**
+If build fails:
+1. Check Vercel build logs
+2. Verify all environment variables are set
+3. Check for missing dependencies
+4. Verify no legacy routes are causing issues

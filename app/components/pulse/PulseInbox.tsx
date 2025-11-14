@@ -40,15 +40,30 @@ export default function PulseInbox() {
   const pulse = useHudStore((s) => s.pulse);
   const [openThread, setOpenThread] = useState<PulseThread | null>(null);
   const threadFor = useHudStore((s) => s.threadFor);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // initial load + poll
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const r = await fetch('/api/pulse');
-      const j = await r.json();
-      if (!alive) return;
-      addMany((j.items || []) as PulseCard[]);
+      try {
+        // Extract dealer from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const dealerId = urlParams.get('dealer') || 'demo-tenant';
+        
+        const r = await fetch(`/api/pulse?dealerId=${encodeURIComponent(dealerId)}`);
+        if (!r.ok) {
+          throw new Error(`API returned ${r.status}`);
+        }
+        const j = await r.json();
+        if (!alive) return;
+        // API returns { cards: PulseCard[] } not { items: PulseCard[] }
+        addMany((j.cards || j.items || []) as PulseCard[]);
+      } catch (error) {
+        console.error('[PulseInbox] Failed to load cards:', error);
+        // Don't break the UI, just log the error
+      }
     };
     load();
     const t = setInterval(load, 10000);

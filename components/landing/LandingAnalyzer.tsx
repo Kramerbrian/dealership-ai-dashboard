@@ -47,8 +47,8 @@ export function LandingAnalyzer() {
   }
 
   function handleUnlockDashboard() {
-    const q = new URLSearchParams({ domain: domain.trim() }).toString();
-    router.push(`/dash?${q}`);
+    const q = new URLSearchParams({ dealer: domain.trim() }).toString();
+    router.push(`/onboarding?${q}`);
   }
 
   return (

@@ -70,13 +70,13 @@ export class SchemaFormulas {
     
     // Count mentions across all AI engines
     Object.values(aiResults).forEach(results => {
-      results.forEach(result => {
+      results.forEach((result: any) => {
         // Check for dealer URL in content
         if (result.content.toLowerCase().includes(dealerUrl.toLowerCase())) {
           totalMentions++;
         }
         // Check for dealer domain in citations
-        result.citations.forEach(citation => {
+        result.citations.forEach((citation: any) => {
           if (citation.includes(dealerUrl)) {
             totalMentions++;
           }
@@ -96,8 +96,8 @@ export class SchemaFormulas {
     
     // Count explicit URL references across all AI engines
     Object.values(aiResults).forEach(results => {
-      results.forEach(result => {
-        result.citations.forEach(citation => {
+      results.forEach((result: any) => {
+        result.citations.forEach((citation: any) => {
           if (citation.includes(dealerUrl)) {
             totalCitations++;
           }
