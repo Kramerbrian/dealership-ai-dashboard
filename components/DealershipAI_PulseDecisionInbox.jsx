@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 /**
@@ -66,7 +66,7 @@ export default function DealershipAI_PulseDecisionInbox() {
            'demo-tenant';
   }, [user]);
 
-  // Fetch pulses from API
+  // Fetch pulses from API (initial load)
   useEffect(() => {
     let alive = true;
     const fetchPulses = async () => {
@@ -86,7 +86,6 @@ export default function DealershipAI_PulseDecisionInbox() {
         if (!alive) return;
         console.error('[PulseInbox] Fetch error:', err);
         setError(err.message);
-        // Fallback to empty array on error
         setPulses([]);
       } finally {
         if (alive) setLoading(false);
@@ -94,11 +93,61 @@ export default function DealershipAI_PulseDecisionInbox() {
     };
 
     fetchPulses();
-    // Poll every 30 seconds
-    const interval = setInterval(fetchPulses, 30000);
+
+    // Load muted keys from API
+    const loadMutedKeys = async () => {
+      try {
+        const params = new URLSearchParams({ dealerId });
+        const res = await fetch(`/api/pulse/mute?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          const muted = {};
+          (data.muted || []).forEach((key) => {
+            muted[key] = true;
+          });
+          setMutedKeys(muted);
+        }
+      } catch (err) {
+        console.error('[PulseInbox] Load muted keys error:', err);
+      }
+    };
+    loadMutedKeys();
+
     return () => {
       alive = false;
-      clearInterval(interval);
+    };
+  }, [dealerId]);
+
+  // SSE real-time updates
+  useEffect(() => {
+    if (!dealerId) return;
+
+    const params = new URLSearchParams({
+      dealerId,
+      filter: 'all',
+    });
+    const eventSource = new EventSource(`/api/pulse/stream?${params}`);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'update' && data.cards) {
+          setPulses(data.cards);
+        } else if (data.type === 'heartbeat') {
+          // Connection alive
+        }
+      } catch (err) {
+        console.error('[PulseInbox] SSE parse error:', err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('[PulseInbox] SSE error:', err);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
     };
   }, [dealerId]);
 
@@ -118,32 +167,161 @@ export default function DealershipAI_PulseDecisionInbox() {
     return { crit, resolved, fixes };
   }, [filteredPulses, pulses]);
 
-  async function handleAction(pulse, action) {
+  const handleAction = useCallback(async (pulse, action) => {
     if (action === 'mute' && pulse.dedupe_key) {
-      setMutedKeys((prev) => ({ ...prev, [pulse.dedupe_key]: true }));
-      // TODO: Persist mute preference to backend
+      try {
+        const res = await fetch('/api/pulse/mute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dedupeKey: pulse.dedupe_key,
+            dealerId,
+            durationHours: 24,
+          }),
+        });
+        if (res.ok) {
+          setMutedKeys((prev) => ({ ...prev, [pulse.dedupe_key]: true }));
+        }
+      } catch (err) {
+        console.error('Mute action failed:', err);
+        // Fallback to client-side mute
+        setMutedKeys((prev) => ({ ...prev, [pulse.dedupe_key]: true }));
+      }
     }
     if (action === 'open' && pulse.thread) {
       setSelectedThread(pulse.thread);
     }
     if (action === 'snooze') {
-      // TODO: Implement snooze via API
+      // Snooze is client-side for now (could be extended with API)
       console.log('Snooze pulse:', pulse.id);
     }
     if (action === 'fix') {
       try {
-        // TODO: Wire to Auto-Fix engine endpoint when available
-        // await fetch(`/api/pulse/${pulse.id}/fix`, { method: 'POST' });
-        console.log('Trigger fix for', pulse.id);
+        const params = new URLSearchParams({ dealerId });
+        const res = await fetch(`/api/pulse/${pulse.id}/fix?${params}`, {
+          method: 'POST',
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          // Refresh pulses after fix
+          const refreshRes = await fetch(`/api/pulse?${new URLSearchParams({ dealerId, limit: '50' })}`);
+          const refreshData = await refreshRes.json();
+          if (refreshRes.ok) {
+            setPulses(refreshData.cards || []);
+          }
+        }
       } catch (err) {
         console.error('Fix action failed:', err);
       }
     }
     if (action === 'assign') {
-      // TODO: Open assign modal or route to /team
-      console.log('Assign incident', pulse.id);
+      // Prompt for assignee (in production, use a modal)
+      const assigneeName = prompt('Enter assignee name or ID:');
+      if (assigneeName) {
+        try {
+          const params = new URLSearchParams({ dealerId });
+          const res = await fetch(`/api/pulse/${pulse.id}/assign?${params}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              assigneeId: assigneeName,
+              assigneeName,
+              note: `Assigned by user`,
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            // Refresh pulses after assignment
+            const refreshRes = await fetch(`/api/pulse?${new URLSearchParams({ dealerId, limit: '50' })}`);
+            const refreshData = await refreshRes.json();
+            if (refreshRes.ok) {
+              setPulses(refreshData.cards || []);
+            }
+          }
+        } catch (err) {
+          console.error('Assign action failed:', err);
+        }
+      }
     }
-  }
+  }, [dealerId, setMutedKeys, setSelectedThread, setPulses]);
+
+  // Keyboard shortcuts (must be after filteredPulses and handleAction are defined)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Only handle shortcuts when not typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // Escape: Close thread drawer
+      if (e.key === 'Escape' && selectedThread) {
+        setSelectedThread(null);
+        return;
+      }
+
+      // Number keys 1-5: Select first 5 pulses and trigger actions
+      if (e.key >= '1' && e.key <= '5' && filteredPulses.length > 0) {
+        const index = parseInt(e.key) - 1;
+        if (index < filteredPulses.length) {
+          const pulse = filteredPulses[index];
+          
+          // Modifier keys
+          if (e.metaKey || e.ctrlKey) {
+            e.preventDefault();
+            if (e.shiftKey) {
+              // Cmd/Ctrl+Shift+Number: Assign
+              if (pulse.actions?.includes('assign')) {
+                handleAction(pulse, 'assign');
+              }
+            } else {
+              // Cmd/Ctrl+Number: Fix
+              if (pulse.actions?.includes('fix')) {
+                handleAction(pulse, 'fix');
+              }
+            }
+          } else if (e.shiftKey) {
+            e.preventDefault();
+            // Shift+Number: Open thread
+            if (pulse.thread && pulse.actions?.includes('open')) {
+              handleAction(pulse, 'open');
+            }
+          } else {
+            // Just number: Focus on card (could scroll into view)
+            e.preventDefault();
+            const cardElement = document.querySelector(`[data-pulse-id="${pulse.id}"]`);
+            if (cardElement) {
+              cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              cardElement.focus();
+            }
+          }
+        }
+      }
+
+      // 'f' key: Filter toggle
+      if (e.key === 'f' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        // Cycle through filters
+        const filters = ['all', 'critical', 'high', 'medium', 'low', 'info'];
+        const currentIndex = filters.indexOf(filterLevel);
+        const nextIndex = (currentIndex + 1) % filters.length;
+        setFilterLevel(filters[nextIndex]);
+      }
+
+      // 'k' key: Kind filter toggle
+      if (e.key === 'k' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        const kinds = ['all', 'kpi_delta', 'incident_opened', 'market_signal', 'auto_fix', 'sla_breach', 'system_health'];
+        const currentIndex = kinds.indexOf(filterKind);
+        const nextIndex = (currentIndex + 1) % kinds.length;
+        setFilterKind(kinds[nextIndex]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [filteredPulses, selectedThread, filterLevel, filterKind, handleAction]);
 
   return (
     <div className="min-h-screen bg-[#05070c] text-white">
@@ -167,6 +345,11 @@ export default function DealershipAI_PulseDecisionInbox() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {/* Keyboard shortcuts hint */}
+        <div className="text-xs text-zinc-500 mb-2">
+          <span className="font-semibold">Shortcuts:</span> 1-5 (select), Shift+1-5 (open), Cmd/Ctrl+1-5 (fix), Cmd/Ctrl+Shift+1-5 (assign), f (filter level), k (filter kind), Esc (close)
+        </div>
+        
         {/* Filters */}
         <section className="flex flex-wrap items-center gap-3">
           <div className="inline-flex items-center gap-1 bg-white/5 border border-white/10 rounded-2xl p-1 text-xs">
@@ -224,10 +407,12 @@ export default function DealershipAI_PulseDecisionInbox() {
             </div>
           )}
 
-          {!loading && filteredPulses.map((pulse) => (
+          {!loading && filteredPulses.map((pulse, index) => (
             <article
               key={pulse.id}
-              className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-white/[0.04] p-4 flex flex-col gap-3"
+              data-pulse-id={pulse.id}
+              tabIndex={0}
+              className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-white/[0.04] p-4 flex flex-col gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">

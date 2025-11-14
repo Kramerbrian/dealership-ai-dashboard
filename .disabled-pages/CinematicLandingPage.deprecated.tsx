@@ -81,7 +81,7 @@ function TextRotator({ items, interval = 2000 }: { items: string[]; interval?: n
   );
 }
 
-export default function CinematicLandingPage() {
+function CinematicLandingPage() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dealerDomain, setDealerDomain] = useState<string | null>(null);
@@ -675,4 +675,7 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
 
   return <>{displayValue.toFixed(suffix ? 1 : 0)}{suffix}</>;
 }
+
+export default CinematicLandingPage;
+export { CinematicLandingPage };
 

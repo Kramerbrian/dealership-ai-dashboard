@@ -121,3 +121,4 @@ jobs:
           channel: '#deployments'
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
         if: always()
+        continue-on-error: true
