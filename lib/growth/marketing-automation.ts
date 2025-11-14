@@ -72,7 +72,7 @@ Bad news: You're invisible to {{invisiblePlatforms}} AI platforms.
 Good news: We found exactly how to fix it.
 
 Your biggest quick win: {{topRecommendation}}
-Potential revenue impact: ${{monthlyLoss}}/month
+Potential revenue impact: ${'{{monthlyLoss}}'}/month
 
 [Fix This Now →]
         `,
@@ -248,7 +248,7 @@ Our AI just discovered something big:
 By fixing your {{schemaType}} schema, you'd likely:
 • Appear in 45% more AI searches
 • Capture {{leads}} extra leads/month
-• Generate ~${{revenue}} in additional revenue
+• Generate ~${'{{revenue}}'} in additional revenue
 
 Pro users get auto-fix for this.
 DIY users get the checklist.
@@ -323,10 +323,10 @@ What works better for you?
    */
   async sendDigest(userId: string): Promise<void> {
     const pending = await this.getPendingNotifications(userId);
-    
+
     // Group by priority
-    const critical = pending.filter(n => n.urgency === 'critical');
-    const others = pending.filter(n => n.urgency !== 'critical');
+    const critical = pending.filter((n: any) => n.urgency === 'critical');
+    const others = pending.filter((n: any) => n.urgency !== 'critical');
     
     // Send critical immediately, batch others
     if (critical.length > 0) {
@@ -390,10 +390,10 @@ What works better for you?
     trafficSplit: number = 0.5
   ): Promise<void> {
     const users = await this.getCampaignUsers(campaignId);
-    
+
     for (const user of users) {
       const variant = Math.random() < trafficSplit ? variants[0] : variants[1];
-      await this.triggerEmail(user.id, variant.id, {});
+      await this.triggerEmail((user as any).id, (variant as any).id, {});
     }
   }
 
@@ -422,12 +422,12 @@ What works better for you?
   }> {
     const user = await this.getUserData(userId);
     const factors: string[] = [];
-    
+
     // Check churn indicators
-    if (user.lastLogin > 30) factors.push('inactive_30_days');
-    if (user.usageDeclining) factors.push('declining_usage');
-    if (user.competitorScore > user.aiScore + 20) factors.push('falling_behind');
-    if (user.supportTickets > 3) factors.push('frustrated_user');
+    if ((user as any).lastLogin > 30) factors.push('inactive_30_days');
+    if ((user as any).usageDeclining) factors.push('declining_usage');
+    if ((user as any).competitorScore > (user as any).aiScore + 20) factors.push('falling_behind');
+    if ((user as any).supportTickets > 3) factors.push('frustrated_user');
     
     let risk: 'low' | 'medium' | 'high' = 'low';
     if (factors.length >= 3) risk = 'high';
