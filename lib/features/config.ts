@@ -15,7 +15,7 @@ export interface FeatureConfig {
   showDecayBanner: boolean;
 }
 
-const DEFAULT_CONFIG: FeatureConfig = {
+export const DEFAULT_CONFIG: FeatureConfig = {
   geoPooling: true,
   liveActivityFeed: true,
   instantAnalyzer: true,

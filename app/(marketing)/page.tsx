@@ -1,194 +1,250 @@
-"use client";
+/**
+ * DealershipAI Cinematic Landing Page
+ * Christopher Nolan-inspired with 3-stage continuity system
+ * Quick Start: Copy to app/(marketing)/page.tsx or app/(landing)/page.tsx
+ */
 
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
-import LetterFadeText from "@/components/LetterFadeText";
-import { TimelineRail } from "@/components/TimelineRail";
-import FOMOTimer from "@/components/plg/FOMOTimer";
-import ProgressiveBlur from "@/components/plg/ProgressiveBlur";
-import ThemeToggle from "@/components/ThemeToggle";
-import TOKENS from "@/design/tokens";
-import { GRADIENTS, GRADIENT_SHADOWS } from "@/design/gradients";
+'use client';
 
-export default function Landing() {
-  const { isSignedIn } = useUser();
-  const [scrollDepth, setScrollDepth] = useState(0);
-  const [ctaText, setCtaText] = useState("Define My Signals");
-  const ctaHref = isSignedIn ? "/dashboard" : "/sign-in?redirect_url=/onboarding";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useUser, SignInButton } from '@clerk/nextjs';
+import { Sparkles, TrendingUp, Shield, Zap, Eye } from 'lucide-react';
 
+// Brand hue system (inline, no external deps)
+const useBrand = (domain: string) => {
+  const hue = domain ? (domain.charCodeAt(0) * 7) % 360 : 210;
+  return {
+    accent: `hsl(${hue}, 70%, 55%)`,
+    soft: `hsl(${hue}, 60%, 45%)`,
+    gradient: `linear-gradient(135deg, hsl(${hue}, 70%, 55%), hsl(${hue + 30}, 70%, 55%))`
+  };
+};
+
+// Continuity system for enter/exit fades
+const Continuity = ({ phase, children }: { phase: 'enter' | 'exit' | 'idle'; children: React.ReactNode }) => {
+  return (
+    <AnimatePresence mode="wait">
+      {phase !== 'idle' && (
+        <motion.div
+          key={phase}
+          initial={phase === 'enter' ? { opacity: 0, scale: 1.1 } : { opacity: 1, scale: 1 }}
+          animate={phase === 'enter' ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+export default function DealershipAILanding() {
+  const router = useRouter();
+  const { user, isLoaded } = useUser();
+  const [stage, setStage] = useState<'intro' | 'hero' | 'analyzing'>('intro');
+  const [phase, setPhase] = useState<'enter' | 'exit' | 'idle'>('enter');
+  const [domain, setDomain] = useState('');
+  const brand = useBrand(domain);
+
+  // Stage 1: Intro (0-1.8s)
   useEffect(() => {
-    const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY;
-      const depth = scrollTop / (documentHeight - windowHeight);
-      setScrollDepth(depth);
-
-      if (depth > 0.8) {
-        setCtaText("Still here? Analyze your site.");
-      } else if (depth > 0.5) {
-        setCtaText("See your AI visibility score");
-      } else {
-        setCtaText("Define My Signals");
+    const timer = setTimeout(() => {
+      if (stage === 'intro') {
+        setStage('hero');
       }
-    };
+    }, 1800);
+    return () => clearTimeout(timer);
+  }, [stage]);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!domain.trim()) return;
 
-  return (
-    <main className="min-h-screen bg-[radial-gradient(90%_60%_at_50%_-10%,#0b1220,transparent),linear-gradient(#0a0f1a,#05070c)] text-white">
-      <FOMOTimer />
-      <header className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between">
-        <LogoClay />
-        <nav className="hidden md:flex gap-6 text-sm text-white/70">
-          <a href="#why" className="hover:text-white">Why</a>
-          <a href="#how" className="hover:text-white">How</a>
-          <a href="#pricing" className="hover:text-white">Pricing</a>
-        </nav>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <Link
-            href={ctaHref}
-            className="inline-flex items-center justify-center h-11 px-5 rounded-2xl bg-white/90 text-[#0a0f1a] hover:bg-white transition-colors"
-          >
-            {isSignedIn ? "Open Dashboard" : "Start"}
-          </Link>
-        </div>
-      </header>
+    // Stage 3: Analyzing
+    setStage('analyzing');
+    setPhase('exit');
 
-      <section className="mx-auto max-w-6xl px-6 pt-16 pb-10">
-        <ClayHeroCard ctaText={ctaText} ctaHref={ctaHref} />
-      </section>
+    // Store for onboarding continuity
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dai:dealer', domain);
+    }
 
-      <section id="why" className="mx-auto max-w-6xl px-6 pb-24">
-        <FeatureRow />
-      </section>
-    </main>
-  );
-}
+    // Transition to onboarding
+    setTimeout(() => {
+      router.push('/onboarding');
+    }, 1400);
+  };
 
-function ClayHeroCard({ ctaText, ctaHref }: { ctaText: string; ctaHref: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.28, ease: "easeOut" }}
-      className="relative overflow-hidden rounded-[28px] p-10 md:p-14 backdrop-blur-xl bg-white/[0.06] border border-white/10 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.5),0_2px_0_0_rgba(255,255,255,0.06)_inset]"
-    >
-      <TimelineRail />
-      <Badge>Clay UI • GEO-ready</Badge>
-
-      <h1 className="mt-4 text-4xl md:text-6xl font-semibold tracking-tight">
-        <LetterFadeText text="Every decision impacts your visibility to AI search." />
-        <br className="hidden md:block" />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#66d1ff] to-[#8ef0df]">
-          <LetterFadeText text="Let's define yours." />
-        </span>
-      </h1>
-
-      <p className="mt-5 text-white/70 max-w-2xl">
-        Invisible online? That's cute—if it were 1998. dealershipAI reveals how discoverable, trusted, and visible your dealership really is — across Google, ChatGPT, Perplexity, and every surface that now decides who wins the click.
-      </p>
-
-      <div className="mt-8 flex flex-col sm:flex-row gap-3">
-        <PrimaryCTA href={ctaHref}>{ctaText}</PrimaryCTA>
-        <ProgressiveBlur>
-          <GhostCTA href="#how">See How It Works</GhostCTA>
-        </ProgressiveBlur>
-      </div>
-
-      <ClayKPIChips />
-    </motion.div>
-  );
-}
-
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs bg-white/[0.08] border border-white/10">
-      <span className="size-1.5 rounded-full bg-[#66d1ff]" />
-      {children}
-    </div>
-  );
-}
-
-function PrimaryCTA({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className={`h-12 px-6 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r ${GRADIENTS.primary} text-white ${GRADIENT_SHADOWS.primary} transition-all`}
-    >
-      {children}
-    </Link>
-  );
-}
-
-function GhostCTA({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="h-12 px-6 inline-flex items-center justify-center rounded-2xl bg-white/[0.06] border border-white/10 text-white/90 hover:bg-white/[0.09] transition-colors"
-    >
-      {children}
-    </Link>
-  );
-}
-
-function ClayKPIChips() {
-  const chips = [
-    { label: "Clarity", value: "74" },
-    { label: "Trust (ATI)", value: "68" },
-    { label: "GEO Coverage", value: "61%" },
-    { label: "Revenue at Risk", value: "$14.7k/mo" },
-  ];
-  return (
-    <div className="mt-10 flex flex-wrap gap-3">
-      {chips.map((c) => (
-        <div
-          key={c.label}
-          className="px-4 h-10 inline-flex items-center rounded-2xl bg-white/[0.06] border border-white/10 text-white/80"
-          aria-label={`${c.label} ${c.value}`}
+  // Stage 1: Intro
+  if (stage === 'intro') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div
+          initial={{ scale: 1.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.8, ease: [0.19, 1, 0.22, 1] }}
+          className="text-center"
         >
-          <span className="text-white/60 mr-2">{c.label}</span>
-          <span className="font-semibold">{c.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function LogoClay() {
-  return (
-    <div className="inline-flex items-center gap-2">
-      <div className="size-7 rounded-xl bg-white/[0.14] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-center">
-        <span className="text-xs font-bold tracking-tight">ai</span>
+          <h1 className="text-6xl font-light text-white mb-4">DealershipAI</h1>
+          <p className="text-white/60 text-sm">Cognitive Operations Platform</p>
+        </motion.div>
       </div>
-      <span className="font-medium text-white/90">dealership</span>
-    </div>
-  );
-}
+    );
+  }
 
-function FeatureRow() {
-  const items = [
-    { h: "Zero-Click Visibility", p: "GEO + AEO + SEO coverage that AI can cite." },
-    { h: "Trust Signals", p: "ATI, listings integrity, schema health, real reviews." },
-    { h: "Pulse Fixes", p: "One-tap repairs for issues costing money today." },
-  ];
-  return (
-    <div className="grid md:grid-cols-3 gap-4">
-      {items.map((x) => (
-        <div
-          key={x.h}
-          className="rounded-[24px] p-6 bg-white/[0.06] border border-white/10 backdrop-blur shadow-[0_10px_28px_-12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]"
-        >
-          <h3 className="text-lg font-semibold">{x.h}</h3>
-          <p className="mt-2 text-sm text-white/70">{x.p}</p>
+  // Stage 2: Hero
+  if (stage === 'hero') {
+    return (
+      <Continuity phase={phase}>
+        <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
+          {/* Nav */}
+          <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10">
+            <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+              <div className="text-xl font-light">DealershipAI</div>
+              {isLoaded && !user && (
+                <SignInButton mode="modal">
+                  <button className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-sm">
+                    Sign In
+                  </button>
+                </SignInButton>
+              )}
+            </div>
+          </nav>
+
+          {/* Hero Section */}
+          <div className="max-w-6xl mx-auto px-6 pt-32 pb-20">
+            {/* Headline */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-center mb-12"
+            >
+              <h1 
+                className="text-6xl md:text-7xl font-light mb-6 bg-clip-text text-transparent"
+                style={{ backgroundImage: brand.gradient }}
+              >
+                When ChatGPT doesn't know you exist,
+                <br />
+                <span className="font-normal">you might as well be selling horse carriages.</span>
+              </h1>
+              <p className="text-xl text-white/70 max-w-2xl mx-auto">
+                See your AI visibility across ChatGPT, Claude, Perplexity, and Gemini in 15 seconds.
+              </p>
+            </motion.div>
+
+            {/* URL Input */}
+            <motion.form
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              onSubmit={handleSubmit}
+              className="max-w-2xl mx-auto mb-16"
+            >
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  placeholder="terryreidhyundai.com"
+                  className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-white/40 transition-colors"
+                />
+                {user ? (
+                  <button
+                    type="submit"
+                    className="px-8 py-4 rounded-xl font-semibold text-black transition-all"
+                    style={{ background: brand.gradient }}
+                  >
+                    Analyze →
+                  </button>
+                ) : (
+                  <SignInButton mode="modal">
+                    <button
+                      type="button"
+                      className="px-8 py-4 rounded-xl font-semibold text-black transition-all"
+                      style={{ background: brand.gradient }}
+                    >
+                      Start Free Scan →
+                    </button>
+                  </SignInButton>
+                )}
+              </div>
+            </motion.form>
+
+            {/* 5 Pillars Preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="grid md:grid-cols-5 gap-4 mb-16"
+            >
+              {[
+                { name: 'AI Visibility', score: 87, icon: Eye, color: 'cyan' },
+                { name: 'Zero-Click Shield', score: 92, icon: Shield, color: 'emerald' },
+                { name: 'UGC Health', score: 78, icon: TrendingUp, color: 'blue' },
+                { name: 'Geo Trust', score: 85, icon: Sparkles, color: 'purple' },
+                { name: 'SGP Integrity', score: 91, icon: Zap, color: 'orange' },
+              ].map((pillar, idx) => {
+                const Icon = pillar.icon;
+                return (
+                  <motion.div
+                    key={pillar.name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.7 + idx * 0.1 }}
+                    className="p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
+                  >
+                    <Icon className="w-6 h-6 mb-3 text-white/60" />
+                    <div className="text-3xl font-light mb-1">{pillar.score}</div>
+                    <div className="text-xs text-white/50">{pillar.name}</div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+
+            {/* Social Proof */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              className="text-center space-y-4"
+            >
+              <div className="text-4xl font-light">
+                <span className="text-red-400">$142K</span> Monthly Loss
+              </div>
+              <div className="text-white/60">
+                73% of dealers are invisible to AI search
+              </div>
+              <div className="text-sm text-white/40">
+                Average scan time: 15 seconds • ROI: Pays for itself in 2 hours
+              </div>
+            </motion.div>
+          </div>
         </div>
-      ))}
+      </Continuity>
+    );
+  }
+
+  // Stage 3: Analyzing
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <motion.div
+        initial={{ scale: 1, opacity: 1 }}
+        animate={{ scale: 0.85, opacity: 0.8 }}
+        transition={{ duration: 1.4, ease: [0.19, 1, 0.22, 1] }}
+        className="text-center"
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full mx-auto mb-4"
+        />
+        <h2 className="text-2xl font-light text-white">Analyzing your dealership...</h2>
+        <p className="text-white/60 text-sm mt-2">This will only take a moment</p>
+      </motion.div>
     </div>
   );
 }
-

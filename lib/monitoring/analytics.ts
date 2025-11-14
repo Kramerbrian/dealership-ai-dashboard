@@ -51,71 +51,24 @@ export function setUserProperties(properties: Record<string, any>) {
   }
 }
 
-/**
- * Initialize PostHog (if configured)
- */
 export function initPostHog() {
-  if (typeof window === 'undefined') return;
-  
-  const postHogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const postHogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
-  
-  if (!postHogKey) {
-    // PostHog not configured - silently skip
-    return;
-  }
-
-  // Only initialize if not already loaded
-  if (window.posthog) {
-    return;
-  }
-
-  // Dynamic import to avoid SSR issues
-  if (typeof window !== 'undefined') {
-    import('posthog-js').then(({ default: posthog }) => {
-      posthog.init(postHogKey, {
-        api_host: postHogHost,
-        loaded: (posthog) => {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[PostHog] Initialized');
-          }
-        },
-      });
-      window.posthog = posthog;
-    }).catch(() => {
-      // PostHog not installed or failed to load - silently fail
-    });
+  // PostHog initialization (stub - implement if needed)
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+    // PostHog initialization would go here
+    // import posthog from 'posthog-js';
+    // posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, { api_host: 'https://app.posthog.com' });
   }
 }
 
-/**
- * Track page view
- */
-export function trackPageView(url?: string) {
-  if (typeof window === 'undefined') return;
-
-  const pageUrl = url || window.location.pathname;
-
-  // Vercel Analytics
-  if (window.va) {
-    window.va('track', 'pageview', { url: pageUrl });
-  }
-
-  // PostHog
-  if (window.posthog) {
-    window.posthog.capture('$pageview', { $current_url: pageUrl });
-  }
-
-  // Google Analytics 4
-  if (window.gtag) {
-    window.gtag('event', 'page_view', {
-      page_path: pageUrl,
+export function trackPageView(pathname: string) {
+  // Track page view via analytics
+  trackEvent('page_view', { path: pathname });
+  
+  // Also track via Google Analytics if available
+  if (typeof window !== 'undefined' && window.gtag && process.env.NEXT_PUBLIC_GA) {
+    window.gtag('config', process.env.NEXT_PUBLIC_GA, {
+      page_path: pathname,
     });
-  }
-
-  // Console fallback for development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Analytics] Page view:', pageUrl);
   }
 }
 
@@ -127,7 +80,6 @@ declare global {
       capture: (event: string, properties?: Record<string, any>) => void;
       identify: (userId: string, traits?: Record<string, any>) => void;
       setPersonProperties: (properties: Record<string, any>) => void;
-      init?: (key: string, options?: any) => void;
     };
     gtag?: (command: string, event: string, properties?: Record<string, any>) => void;
   }

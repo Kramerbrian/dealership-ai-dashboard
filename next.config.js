@@ -1,12 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Set output file tracing root to silence workspace warning
-  outputFileTracingRoot: require('path').join(__dirname),
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Skip problematic routes during build
-  webpack: (config, { isServer }) => {
+      eslint: {
+        ignoreDuringBuilds: true,
+      },
+  // External packages for server components (Next.js 15+)
+  serverExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
+  // Disable static export to allow Clerk to work
+  output: 'standalone',
+  
+  // Fix workspace root warning
+  outputFileTracingRoot: __dirname,
+  
+  // Optimize webpack for better module resolution and prevent circular dependencies
+  webpack: (config, { isServer, webpack }) => {
     if (isServer) {
       // Ignore Supabase initialization errors in certain routes
       config.resolve.fallback = {
@@ -14,15 +23,25 @@ const nextConfig = {
         fs: false,
       };
     }
+    // Fix for webpack module loading issues
+    config.resolve.extensionAlias = {
+      '.js': ['.js', '.ts', '.tsx'],
+      '.jsx': ['.jsx', '.tsx'],
+    };
+    // Ignore server router files that might conflict
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/server\/routers\/_app$/,
+      })
+    );
+    // Prevent circular dependencies
+    config.optimization = {
+      ...config.optimization,
+      moduleIds: 'deterministic',
+    };
     return config;
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // External packages for server components (Next.js 15+)
-  serverExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
-  // Disable static export to allow Clerk to work
-  output: 'standalone',
+  
   
   // Security headers
   async headers() {
@@ -65,12 +84,12 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://vercel.live",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' 'unsafe-hashes' https://js.stripe.com https://js.clerk.com https://js.clerk.dev https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://vercel.live https://*.vercel.live",
               "worker-src 'self' blob: https://*.clerk.accounts.dev",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://*.ingest.us.sentry.io https://*.ingest.sentry.io",
+              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com",
               "object-src 'none'",
               "base-uri 'self'",
@@ -127,22 +146,8 @@ const nextConfig = {
       'img.clerk.com',
     ],
   },
-  // Bundle analyzer
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config, { isServer }) => {
-      if (!isServer) {
-        const { BundleAnalyzerPlugin } = require('@next/bundle-analyzer');
-        config.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            openAnalyzer: false,
-            reportFilename: `../bundle-analyzer/${isServer ? 'server' : 'client'}.html`,
-          })
-        );
-      }
-      return config;
-    },
-  }),
+  // Bundle analyzer - configured via separate config when ANALYZE=true
+  // Run: ANALYZE=true npm run build
 };
 
 module.exports = nextConfig;

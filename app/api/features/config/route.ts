@@ -1,33 +1,18 @@
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
-
-// Default feature configuration
-const DEFAULT_CONFIG = {
-  onboarding: {
-    enabled: true,
-    requireEmail: true,
-  },
-  shareToUnlock: {
-    enabled: true,
-    platforms: ['twitter', 'linkedin'],
-  },
-  telemetry: {
-    enabled: true,
-    trackPageViews: true,
-  },
-};
-
-type FeatureConfig = typeof DEFAULT_CONFIG;
+import { DEFAULT_CONFIG } from '@/lib/features/config';
+import type { FeatureConfig } from '@/lib/features/config';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
   try {
     // Try to fetch from Redis (can be updated via admin panel)
-    const config = await redis.get('feature:config');
-
-    if (config) {
-      return NextResponse.json(JSON.parse(config));
+    if (redis) {
+      const config = await redis.get('feature:config');
+      if (config) {
+        return NextResponse.json(typeof config === 'string' ? JSON.parse(config) : config);
+      }
     }
 
     // Return default config
@@ -45,7 +30,9 @@ export async function POST(req: Request) {
     const config: FeatureConfig = { ...DEFAULT_CONFIG, ...body };
 
     // Store in Redis
-    await redis.set('feature:config', JSON.stringify(config));
+    if (redis) {
+      await redis.set('feature:config', JSON.stringify(config));
+    }
 
     return NextResponse.json({ ok: true, config });
   } catch (error: any) {

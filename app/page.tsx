@@ -1,57 +1,30 @@
-// Cinematic Landing Page - Christopher Nolan Inspired
-"use client";
-import CinematicLandingPage from "@/components/landing/CinematicLandingPage";
-import AIGEOSchema from "@/components/SEO/AIGEOSchema";
-import LandingPageMeta from "@/components/SEO/LandingPageMeta";
+'use client';
 
-// JSON-LD SEO Components
-function JsonLd({ children }: { children: string }) {
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: children }} />;
-}
+import { LandingAnalyzer } from '@/components/landing/LandingAnalyzer';
+import { motion } from 'framer-motion';
 
-const SoftwareApplicationLd = () => JSON.stringify({
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'DealershipAI',
-  applicationCategory: 'BusinessApplication',
-  applicationSubCategory: 'Analytics',
-  operatingSystem: 'Web Browser',
-  offers: { '@type':'Offer', price:'0', priceCurrency:'USD', description:'Free AI visibility analysis' },
-  description: 'AI visibility analysis tool for automotive dealerships. Analyzes presence across ChatGPT, Claude, Perplexity, Gemini, and Copilot.',
-  featureList: [
-    'ChatGPT visibility analysis',
-    'Claude AI ranking check',
-    'Perplexity search optimization',
-    'Gemini presence audit',
-    'Microsoft Copilot visibility',
-    'Competitive analysis',
-    'Revenue impact calculation'
-  ],
-  screenshot: 'https://dealershipai.com/screenshot.png',
-  aggregateRating: { '@type':'AggregateRating', ratingValue:'4.9', ratingCount:'847' },
-  publisher: {
-    '@type':'Organization', name:'DealershipAI', url:'https://dealershipai.com', logo:'https://dealershipai.com/logo.png'
-  }
-});
-
-const FaqLd = () => JSON.stringify({
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    { '@type':'Question', name:'How do I check my dealership\'s AI search visibility?', acceptedAnswer: { '@type':'Answer', text:'Use DealershipAI\'s free instant analyzer to check your visibility across ChatGPT, Claude, Perplexity, Gemini, and Copilot. Enter your domain and get results in 10 seconds.' } },
-    { '@type':'Question', name:'What is AI search optimization for dealerships?', acceptedAnswer: { '@type':'Answer', text:'AI search optimization (AEO) ensures your dealership appears in AI-powered search results from ChatGPT, Claude, Perplexity, and other AI assistants. It\'s critical for modern car dealership marketing.' } },
-    { '@type':'Question', name:'How much revenue am I losing from poor AI visibility?', acceptedAnswer: { '@type':'Answer', text:'Average dealerships lose $43,000/month in potential sales from poor AI search visibility. DealershipAI\'s analysis shows your exact revenue at risk.' } }
-  ]
-});
-
-export default function Landing() {
+export default function HomePage() {
   return (
-    <>
-      <AIGEOSchema mode="landing" />
-      <LandingPageMeta />
-      <JsonLd>{SoftwareApplicationLd()}</JsonLd>
-      <JsonLd>{FaqLd()}</JsonLd>
-      <CinematicLandingPage />
-    </>
+    <main className="min-h-dvh bg-neutral-950 text-white">
+      {/* Hero Section */}
+      <section className="mx-auto max-w-5xl px-6 pt-16 pb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center"
+        >
+          <h1 className="text-4xl md:text-5xl font-semibold mb-4">
+            Every decision changes how AI sees your dealership.
+          </h1>
+          <p className="mt-3 text-sm text-white/60 max-w-xl mx-auto">
+            See how you show up across Google, AI search, and generative answers before you even log in.
+          </p>
+        </motion.div>
+      </section>
+
+      {/* Landing Analyzer - Master PLG Component */}
+      <LandingAnalyzer />
+    </main>
   );
 }

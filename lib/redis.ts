@@ -39,6 +39,11 @@ export const redis = (() => {
   return null as unknown as Redis;
 })();
 
+// Export getRedis function for backward compatibility
+export function getRedis(): Redis {
+  return redis;
+}
+
 /**
  * Cache Get - Safe wrapper with error handling
  */

@@ -9,7 +9,7 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { initPostHog, trackPageView } from '@/lib/monitoring/analytics';
+import { initPostHog, trackPageView, trackEvent } from '@/lib/monitoring/analytics';
 import { initSentry, setUser } from '@/lib/monitoring/sentry';
 
 export function MonitoringProvider({ children }: { children: React.ReactNode }) {
