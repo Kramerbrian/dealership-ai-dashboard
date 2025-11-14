@@ -1,80 +1,14 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 /**
  * DealershipAI Pulse Decision Inbox (JSX version)
  * - Default home = triage / incidents
  * - Pulse cards = decision items, not ticker noise
+ * - Fetches from /api/pulse endpoint
  */
-
-const PULSE_SEED = [
-  {
-    id: 'p-aiv-drop',
-    ts: new Date().toISOString(),
-    level: 'critical',
-    kind: 'kpi_delta',
-    title: 'AI Visibility dropped -7 points',
-    detail: 'ChatGPT and Perplexity answers shifted to a competitor in your DMA.',
-    delta: -7,
-    thread: { type: 'kpi', id: 'aiv' },
-    actions: ['open', 'fix', 'assign', 'snooze', 'mute'],
-    dedupe_key: 'kpi:aiv',
-    ttl_sec: 3600
-  },
-  {
-    id: 'p-schema-fix',
-    ts: new Date().toISOString(),
-    level: 'high',
-    kind: 'auto_fix',
-    title: 'Schema patch applied to 37 VDPs',
-    detail: 'Vehicle JSON-LD repaired; coverage +12%.',
-    delta: '+12 coverage',
-    thread: { type: 'incident', id: 'schema_coverage' },
-    actions: ['open'],
-    dedupe_key: 'auto_fix:schema_vdp',
-    ttl_sec: 86400
-  },
-  {
-    id: 'p-gbp-sla',
-    ts: new Date().toISOString(),
-    level: 'high',
-    kind: 'sla_breach',
-    title: 'GBP replies overdue on 12 reviews',
-    detail: '7+ days with no response. Trust score (ATI) at risk.',
-    delta: null,
-    thread: { type: 'incident', id: 'gbp_reviews' },
-    actions: ['open', 'assign', 'snooze', 'mute'],
-    dedupe_key: 'sla:gbp_reviews',
-    ttl_sec: 86400
-  },
-  {
-    id: 'p-market-ev',
-    ts: new Date().toISOString(),
-    level: 'medium',
-    kind: 'market_signal',
-    title: 'EV segment −3% MoM; trucks −1.5%',
-    detail: 'Pulse data suggests rebalancing homepage and SRP hero focus.',
-    delta: '-3% EV',
-    thread: { type: 'market', id: 'segment_mix' },
-    actions: ['open', 'snooze', 'mute'],
-    dedupe_key: 'market:segment-mix',
-    ttl_sec: 86400
-  },
-  {
-    id: 'p-system-ok',
-    ts: new Date().toISOString(),
-    level: 'info',
-    kind: 'system_health',
-    title: 'Core Web Vitals stable',
-    detail: 'LCP 2.1s • CLS 0.06 • INP 180ms.',
-    delta: null,
-    thread: null,
-    actions: ['open'],
-    dedupe_key: 'system:cwv',
-    ttl_sec: 86400
-  }
-];
 
 const LEVEL_COLORS = {
   critical: 'bg-rose-500/20 text-rose-200 border-rose-400/40',
