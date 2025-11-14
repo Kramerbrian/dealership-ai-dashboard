@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 function generateEnhancedScores() {
   const metrics = ['DTRI', 'VAI', 'PIQR', 'QAI', 'HRP', 'SEO', 'AEO', 'GEO'];
   const verticals = ['Trust', 'Visibility', 'Authority', 'Engagement', 'Conversion', 'Local', 'Social', 'Content'];
-  const scores = [];
+  const scores: any[] = [];
   
   // Generate more realistic time-series data
   const now = new Date();
@@ -230,12 +230,12 @@ export async function POST(req: Request) {
 
     const enhancedForecast = () => {
       const latest = Object.fromEntries(revenue.map((r: any) => [r.vertical, Math.round(r.predicted_revenue || 0)]));
-      const total = Object.values(latest).reduce((a: number, b: number) => a + b, 0);
+      const total = (Object.values(latest) as number[]).reduce((a: number, b: number) => a + b, 0);
       const avgConfidence = revenue.reduce((sum, r) => sum + r.confidence, 0) / revenue.length;
-      
+
       const growth = total > 200000 ? 'Strong growth expected' : total > 100000 ? 'Moderate growth' : 'Conservative outlook';
-      
-      return `🔮 **90-Day Revenue Forecast:**\n${Object.entries(latest).map(([v, x]) => `• ${v}: $${x.toLocaleString()}`).join("\n")}\n\n💰 **Total Projected:** $${total.toLocaleString()}\n📈 **Outlook:** ${growth}\n🎯 **Confidence:** ${Math.round(avgConfidence * 100)}%`;
+
+      return `🔮 **90-Day Revenue Forecast:**\n${Object.entries(latest).map(([v, x]) => `• ${v}: $${(x as number).toLocaleString()}`).join("\n")}\n\n💰 **Total Projected:** $${total.toLocaleString()}\n📈 **Outlook:** ${growth}\n🎯 **Confidence:** ${Math.round(avgConfidence * 100)}%`;
     }
 
     const enhancedCompetitors = () => {

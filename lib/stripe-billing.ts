@@ -3,7 +3,7 @@ import { userManager, SUBSCRIPTION_PLANS, SubscriptionPlan } from './user-manage
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-10-29.clover',
 });
 
 // Stripe configuration
@@ -66,7 +66,7 @@ export class BillingManager {
   async createCheckoutSession(userId: string, plan: SubscriptionPlan, customerId?: string) {
     try {
       const planConfig = SUBSCRIPTION_PLANS[plan];
-      const stripeProduct = STRIPE_PRODUCTS[plan];
+      const stripeProduct = (STRIPE_PRODUCTS as any)[plan];
 
       if (!stripeProduct) {
         throw new Error(`Stripe product not configured for plan: ${plan}`);
@@ -245,7 +245,7 @@ export class BillingManager {
 
   // Handle payment failed
   private async handlePaymentFailed(invoice: Stripe.Invoice) {
-    const subscriptionId = invoice.subscription as string;
+    const subscriptionId = (invoice as any).subscription as string;
     
     if (!subscriptionId) {
       console.error('No subscription ID in failed invoice');
@@ -318,7 +318,7 @@ export class BillingManager {
   // Create usage record (for usage-based billing)
   async createUsageRecord(subscriptionItemId: string, quantity: number) {
     try {
-      const usageRecord = await stripe.subscriptionItems.createUsageRecord(
+      const usageRecord = await (stripe.subscriptionItems as any).createUsageRecord(
         subscriptionItemId,
         {
           quantity,
@@ -349,9 +349,9 @@ export function formatPrice(amount: number, currency: string = 'usd'): string {
 }
 
 export function getPlanStripePriceId(plan: SubscriptionPlan): string {
-  return STRIPE_PRODUCTS[plan]?.priceId || '';
+  return (STRIPE_PRODUCTS as any)[plan]?.priceId || '';
 }
 
 export function getPlanStripeProductId(plan: SubscriptionPlan): string {
-  return STRIPE_PRODUCTS[plan]?.productId || '';
+  return (STRIPE_PRODUCTS as any)[plan]?.productId || '';
 }
