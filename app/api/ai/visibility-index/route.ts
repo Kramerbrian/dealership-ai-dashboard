@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Mock SLO tracking function
+const trackSLO = (metric: string, duration: number) => {
+  // In production, this would send metrics to monitoring system
+  console.log(`[SLO] ${metric}: ${duration}ms`);
+};
+
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const { searchParams } = new URL(request.url);
     const domain = searchParams.get('domain');
