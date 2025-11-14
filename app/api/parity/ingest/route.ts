@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       }
       
       // Create parity snapshot
-      const paritySnapshot = await prisma.paritySnapshot.create({
+      const paritySnapshot = await (prisma as any).paritySnapshot.create({
         data: {
           vin,
           sourceOfTruth,
@@ -38,13 +38,13 @@ export async function POST(req: NextRequest) {
       });
       
       // Update inventory item if it exists
-      const inventoryItem = await prisma.inventoryItem.findUnique({
+      const inventoryItem = await (prisma as any).inventoryItem.findUnique({
         where: { vin }
       });
       
       if (inventoryItem) {
         // Calculate new parity match rate
-        const allSnapshots = await prisma.paritySnapshot.findMany({
+        const allSnapshots = await (prisma as any).paritySnapshot.findMany({
           where: { vin },
           orderBy: { capturedAt: 'desc' },
           take: 10
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
         const matchRate = calculateParityMatchRate(allSnapshots);
         
         // Update inventory item
-        await prisma.inventoryItem.update({
+        await (prisma as any).inventoryItem.update({
           where: { vin },
           data: {
             parityMatchRate: matchRate,
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         });
         
         // Create score snapshot
-        await prisma.scoreSnapshot.create({
+        await (prisma as any).scoreSnapshot.create({
           data: {
             vin,
             scoreType: 'parity_match',
