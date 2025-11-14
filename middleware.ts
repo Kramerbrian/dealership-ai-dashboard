@@ -48,6 +48,7 @@ const publicRoutes = [
   '/api/schema-validation',
   '/.well-known/ai-plugin.json',
   '/api/gpt',
+  '/api/marketpulse', // Allow marketpulse API for landing page analysis
   '/robots.txt',
   '/sitemap.xml',
   '/sign-in',
@@ -56,29 +57,13 @@ const publicRoutes = [
   '/auth/signup',
 ];
 
-// Protected routes that require authentication (only on dashboard domain)
-// This will be initialized lazily when needed (only on dashboard domain)
-async function getProtectedRouteMatcher() {
-  const { createRouteMatcher: createMatcher } = await getClerkMiddleware();
-  return createMatcher([
-    '/dashboard(.*)',
-    '/dash(.*)',
-    '/intelligence(.*)',
-    '/onboarding(.*)',
-    '/api/ai(.*)',
-    '/api/parity(.*)',
-    '/api/intel(.*)',
-    '/api/compliance(.*)',
-    '/api/audit(.*)',
-    '/api/user(.*)',
-    '/api/pulse(.*)',
-    '/api/save-metrics',
-  ]);
-}
+// Note: getProtectedRouteMatcher is now inlined in dashboardMiddleware
+// to avoid duplicate imports and improve error handling
 
 function isPublicRoute(pathname: string): boolean {
   return (
     publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/')) ||
+    pathname.startsWith('/onboarding') || // Explicitly allow onboarding (needed for Clerk handshake)
     pathname.startsWith('/(mkt)') ||
     pathname.startsWith('/(auth)') || // Auth route group
     pathname.startsWith('/api/v1/') ||
@@ -88,6 +73,7 @@ function isPublicRoute(pathname: string): boolean {
     pathname.startsWith('/.well-known/') ||
     pathname.startsWith('/api/gpt/') ||
     pathname.startsWith('/api/test') ||
+    pathname.startsWith('/api/marketpulse') || // Explicitly allow marketpulse API
     pathname.startsWith('/pricing') ||
     pathname.startsWith('/instant') ||
     pathname.startsWith('/claude/') || // Claude export bundle
@@ -114,12 +100,24 @@ async function publicMiddleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow /onboarding on main domain for initial flow (before auth)
+  // This allows users to enter dealership URL and get redirected to onboarding
+  if (pathname === '/onboarding' || pathname.startsWith('/onboarding/')) {
+    return NextResponse.next();
+  }
+
   // Redirect dashboard routes to dashboard subdomain
-  const dashboardPaths = ['/dash', '/dashboard', '/intelligence', '/cognitive', '/onboarding'];
+  const dashboardPaths = ['/dash', '/dashboard', '/intelligence', '/cognitive'];
   if (dashboardPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
-    const dashboardUrl = new URL(req.url);
-    dashboardUrl.hostname = 'dash.dealershipai.com';
-    return NextResponse.redirect(dashboardUrl, 308); // Permanent redirect
+    try {
+      const dashboardUrl = new URL(req.url);
+      dashboardUrl.hostname = 'dash.dealershipai.com';
+      return NextResponse.redirect(dashboardUrl, 308); // Permanent redirect
+    } catch (error: any) {
+      // If URL construction fails, log and allow through
+      console.error('[Middleware] Failed to construct redirect URL:', error);
+      return NextResponse.next();
+    }
   }
 
   // All other routes on main domain are public - allow through
@@ -158,40 +156,57 @@ async function dashboardMiddleware(req: NextRequest) {
 
   // If Clerk is not configured, allow all routes (demo mode)
   if (!isClerkConfigured) {
+    console.warn('[Middleware] Clerk not configured - running in demo mode');
     return NextResponse.next();
   }
 
   // Lazy load Clerk middleware only when needed
-  const { clerkMiddleware: clerkMw } = await getClerkMiddleware();
-  const protectedRouteMatcher = await getProtectedRouteMatcher();
+  let clerkMw: any;
+  let protectedRouteMatcher: any;
+  
+  try {
+    const { clerkMiddleware, createRouteMatcher } = await getClerkMiddleware();
+    clerkMw = clerkMiddleware;
+    
+    // Create protected route matcher
+    // NOTE: /onboarding is NOT in protected routes - it's public to allow Clerk handshake
+    protectedRouteMatcher = createRouteMatcher([
+      '/dashboard(.*)',
+      '/dash(.*)',
+      '/intelligence(.*)',
+      // '/onboarding(.*)', // REMOVED - onboarding must be public for Clerk handshake
+      '/api/ai(.*)',
+      '/api/parity(.*)',
+      '/api/intel(.*)',
+      '/api/compliance(.*)',
+      '/api/audit(.*)',
+      '/api/user(.*)',
+      '/api/pulse(.*)',
+      '/api/save-metrics',
+    ]);
+  } catch (error: any) {
+    console.error('[Middleware] Failed to load Clerk middleware:', error);
+    // If Clerk fails to load, allow public routes, block protected routes
+    if (isPublicRoute(pathname)) {
+      return NextResponse.next();
+    }
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('redirect_url', req.url);
+    signInUrl.searchParams.set('error', 'clerk_load_error');
+    return NextResponse.redirect(signInUrl);
+  }
   
   // Determine if we should set domain for cookies (only for production dashboard domain)
   const hostname = req.headers.get('host') || '';
   const isProductionDashboard = hostname === 'dash.dealershipai.com';
 
-  return clerkMw(async (auth: any, req: NextRequest) => {
-    // We're on dashboard domain - apply Clerk authentication to protected routes
-    // Only protect routes that are explicitly marked as protected
-    if (protectedRouteMatcher(req)) {
-      const { userId } = await auth();
-      if (!userId) {
-        // Redirect to sign-in for protected routes
-        const signInUrl = new URL('/sign-in', req.url);
-        signInUrl.searchParams.set('redirect_url', req.url);
-        return NextResponse.redirect(signInUrl);
-      }
-    }
-
-    // Default: allow through (for routes that are neither explicitly public nor protected)
-    return NextResponse.next();
-  }, {
-    // IMPORTANT: Only set domain in production to avoid cookie issues in dev/preview
-    // For localhost and Vercel previews, omit domain to use default (current hostname)
-    ...(isProductionDashboard && { domain: 'dash.dealershipai.com' }),
+    // Clerk middleware options
+  const clerkOptions: any = {
     // CRITICAL: Tell Clerk these routes should skip auth entirely
-    // Use glob patterns (*) not regex (.*)
+    // IMPORTANT: /onboarding must be public to allow Clerk handshake to complete
     publicRoutes: [
       '/',
+      '/onboarding(/*)', // Allow onboarding during Clerk handshake
       '/api/v1(/*)',
       '/api/health',
       '/api/status',
@@ -203,6 +218,7 @@ async function dashboardMiddleware(req: NextRequest) {
       '/api/schema(/*)',
       '/api/test(/*)',
       '/api/gpt(/*)',
+      '/api/marketpulse(/*)', // Allow marketpulse API for landing page
       '/.well-known(/*)',
       '/pricing',
       '/instant',
@@ -211,21 +227,107 @@ async function dashboardMiddleware(req: NextRequest) {
       '/auth/signin(/*)',
       '/auth/signup(/*)',
     ]
-  })(req);
+  };
+
+  // IMPORTANT: Only set domain in production to avoid cookie issues in dev/preview
+  if (isProductionDashboard) {
+    clerkOptions.domain = 'dash.dealershipai.com';
+  }
+
+  // Call Clerk middleware with proper error handling
+  try {
+    // Use Clerk middleware with auth callback
+    const result = await clerkMw(async (auth: any) => {
+      // We're on dashboard domain - apply Clerk authentication to protected routes
+      // Only protect routes that are explicitly marked as protected
+      if (protectedRouteMatcher(req)) {
+        try {
+          const { userId } = await auth();
+          if (!userId) {
+            // Redirect to sign-in for protected routes
+            const signInUrl = new URL('/sign-in', req.url);
+            signInUrl.searchParams.set('redirect_url', req.url);
+            return NextResponse.redirect(signInUrl);
+          }
+        } catch (authError: any) {
+          console.error('[Middleware] Auth check failed:', authError);
+          // If auth check fails, allow through for public routes
+          if (isPublicRoute(pathname)) {
+            return NextResponse.next();
+          }
+          // For protected routes, redirect to sign-in
+          const signInUrl = new URL('/sign-in', req.url);
+          signInUrl.searchParams.set('redirect_url', req.url);
+          signInUrl.searchParams.set('error', 'auth_check_failed');
+          return NextResponse.redirect(signInUrl);
+        }
+      }
+
+      // Default: allow through (for routes that are neither explicitly public nor protected)
+      return NextResponse.next();
+    }, clerkOptions)(req);
+    
+    return result;
+  } catch (error: any) {
+    console.error('[Middleware] Clerk middleware invocation error:', error);
+    console.error('[Middleware] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      pathname,
+      hostname,
+      isClerkConfigured,
+      errorName: error.name,
+      errorCode: error.code,
+    });
+    
+    // If Clerk middleware fails, allow through for public routes (including onboarding)
+    if (isPublicRoute(pathname) || pathname.startsWith('/onboarding')) {
+      console.warn('[Middleware] Allowing public route despite middleware error:', pathname);
+      return NextResponse.next();
+    }
+    
+    // For protected routes, redirect to sign-in with error info
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('redirect_url', req.url);
+    signInUrl.searchParams.set('error', 'middleware_error');
+    return NextResponse.redirect(signInUrl);
+  }
 }
 
 // Export conditional middleware: only use Clerk on dashboard domain
 export default async function middleware(req: NextRequest) {
-  const hostname = req.headers.get('host') || '';
-  
-  // CRITICAL: If NOT on dashboard domain, use simple pass-through (NO Clerk)
-  // This prevents Clerk from being imported or invoked at all on the main domain
-  if (!isDashboardDomain(hostname)) {
-    return publicMiddleware(req);
+  try {
+    const hostname = req.headers.get('host') || '';
+    
+    // CRITICAL: If NOT on dashboard domain, use simple pass-through (NO Clerk)
+    // This prevents Clerk from being imported or invoked at all on the main domain
+    if (!isDashboardDomain(hostname)) {
+      return await publicMiddleware(req);
+    }
+    
+    // If on dashboard domain, use Clerk middleware (lazy loaded)
+    return await dashboardMiddleware(req);
+  } catch (error: any) {
+    // Catch any unexpected errors in middleware to prevent 500s
+    console.error('[Middleware] Unexpected error:', {
+      message: error.message,
+      stack: error.stack,
+      pathname: req.nextUrl.pathname,
+      hostname: req.headers.get('host'),
+    });
+    
+    // For API routes, return error response instead of crashing
+    if (req.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'Middleware error', message: error.message },
+        { status: 500 }
+      );
+    }
+    
+    // For other routes, allow through to prevent complete failure
+    // This ensures the site remains functional even if middleware has issues
+    return NextResponse.next();
   }
-  
-  // If on dashboard domain, use Clerk middleware (lazy loaded)
-  return dashboardMiddleware(req);
 }
 
 export const config = {
