@@ -50,10 +50,6 @@ Visit: `https://your-vercel-domain.vercel.app/healthcheck`
 
 ### ⚠️ Optional (But Recommended)
 
-- [ ] `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` or `NEXT_PUBLIC_MAPBOX_KEY`
-  - Starts with `pk.`
-  - Found in Mapbox Account → Access Tokens
-  - **If missing**: Map components won't work
 
 - [ ] `NEXT_PUBLIC_BASE_URL`
   - Your production URL, e.g. `https://dealershipai.vercel.app`
@@ -161,13 +157,6 @@ Visit: `https://your-vercel-domain.vercel.app/healthcheck`
 - If endpoint exists but fails: Check `/app/api/clarity/stack/route.ts`
 - Verify `NEXT_PUBLIC_BASE_URL` is set correctly
 
-### Issue: Mapbox token missing
-
-**Solution**:
-1. Go to Mapbox Account → Access Tokens
-2. Copy your default public token
-3. Set as `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` in Vercel
-4. Redeploy
 
 ---
 

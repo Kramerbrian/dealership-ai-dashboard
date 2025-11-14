@@ -58,31 +58,52 @@ jobs:
             exit 1
           fi
           
-          # Check JSON response for ok: true
-          OK=$(echo "$BODY" | jq -r '.ok // empty' || echo "false")
+          # Check for either format:
+          # 1. Simple format: { "ok": true, "checks": {...} }
+          # 2. Comprehensive format: { "status": "healthy", "services": {...} }
+          OK=$(echo "$BODY" | jq -r '.ok // empty' || echo "")
+          STATUS=$(echo "$BODY" | jq -r '.status // empty' || echo "")
           
-          if [ "$OK" != "true" ]; then
-            echo "❌ Healthcheck failed: ok != true in response JSON"
+          # Accept either ok: true OR status: "healthy"
+          if [ "$OK" = "true" ] || [ "$STATUS" = "healthy" ]; then
+            echo "✅ Healthcheck passed: status=$CODE"
+            if [ -n "$OK" ]; then
+              echo "   Format: Simple (ok: true)"
+            else
+              echo "   Format: Comprehensive (status: healthy)"
+            fi
+          else
+            echo "❌ Healthcheck failed: neither ok=true nor status=healthy"
             echo "Response ok value: '$OK'"
+            echo "Response status value: '$STATUS'"
             
             # Show what checks failed
             echo ""
-            echo "🔍 Failed checks:"
-            echo "$BODY" | jq '.checks // {}' || echo "Could not parse checks"
+            echo "🔍 Response details:"
+            echo "$BODY" | jq '.checks // .services // {}' || echo "Could not parse response"
             
             exit 1
           fi
-          
-          echo "✅ Healthcheck passed: ok=true, status=$CODE"
 
           # Show summary of checks
           echo ""
           echo "📋 Health Summary:"
-          echo "$BODY" | jq -r '
-            "Environment Variables: " + (if .checks.env then "✅" else "❌" end),
-            "Clarity API: " + (if .checks.clarity.ok then "✅" else "❌" end),
-            "Overall Status: " + (if .ok then "✅ HEALTHY" else "❌ UNHEALTHY" end)
-          ' || echo "Could not parse summary"
+          if echo "$BODY" | jq -e '.checks' > /dev/null 2>&1; then
+            # Simple format
+            echo "$BODY" | jq -r '
+              "Environment Variables: " + (if .checks.env then "✅" else "❌" end),
+              "Clarity API: " + (if .checks.clarity.ok then "✅" else "❌" end),
+              "Overall Status: " + (if .ok then "✅ HEALTHY" else "❌ UNHEALTHY" end)
+            ' || echo "Could not parse summary"
+          else
+            # Comprehensive format
+            echo "$BODY" | jq -r '
+              "Database: " + (.services.database // "unknown"),
+              "Redis: " + (.services.redis // "not configured"),
+              "AI Providers: " + (if .services.ai_providers then "✅" else "❌" end),
+              "Overall Status: " + (.status // "unknown")
+            ' || echo "Could not parse summary"
+          fi
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps

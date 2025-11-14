@@ -47,7 +47,6 @@ https://your-vercel-domain.vercel.app/healthcheck
 
 ### Recommended
 
-- `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` - Mapbox public token (starts with `pk.`)
 - `NEXT_PUBLIC_BASE_URL` - Your production URL (e.g. `https://dealershipai.vercel.app`)
 
 ## 🔧 Setting Variables in Vercel

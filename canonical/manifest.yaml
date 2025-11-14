@@ -1,0 +1,82 @@
+# ================================
+# DealershipAI Canonical Manifest
+# ================================
+
+bundle: DealershipAI Agentic Canonical
+agent_name: PulseAgent_vNext — AgenticCommerce_RoleAware
+version: 2025.11.13
+author: Kramer
+status: Canonicalized
+description: >
+  Canonical orchestration layer for DealershipAI's Agentic Commerce Intelligence.
+  Defines AI funnel logic, visualization presets, and role-aware strategy across dealership ecosystems.
+
+documentation:
+  path: /docs/canonical/PulseAgent_vNext-AgenticCommerce_RoleAware.md
+  format: markdown
+  visibility: public
+
+inherits:
+  - base: DealershipAI_Core
+  - schema: AgenticCommerce_FunnelIntelligence
+  - visualization: dAI_Visual_Foundation
+
+render_presets:
+  funnel_visualization:
+    aspect_ratio: "4:3"
+    style: "clean executive infographic"
+    watermark: "bottom-right dAI Orchestrator"
+  dashboard_visualization:
+    aspect_ratio: "16:9"
+    style: "executive dark mode dashboard"
+    watermark: "bottom-right dAI Orchestrator"
+  trajectory_visualization:
+    aspect_ratio: "21:9"
+    style: "cinematic line graph"
+    watermark: "bottom-right dAI Orchestrator"
+
+role_awareness:
+  Dealer Principal:
+    focus: "Profitability, market truth, and AI ROI clarity"
+  General Manager:
+    focus: "Operational transparency, accountability, funnel throughput"
+  Marketing Director:
+    focus: "AI visibility, schema dominance, reputation performance"
+  Used Car Manager:
+    focus: "Inventory velocity and trust-driven remarketing"
+
+pulse_logic:
+  inputs:
+    - AI Visibility Score
+    - Schema Coverage Ratio
+    - Authority Depth Index
+    - UGC Health Score
+    - Revenue at Risk
+  outputs:
+    - pulse_cards
+    - priority_stack
+    - daily_digest
+    - visualization
+
+render_logic:
+  auto_aspect_ratio: true
+  auto_watermark: true
+  enforce_palette: true
+  color_palette:
+    primary: "#14b8a6"
+    secondary: "#8b5cf6"
+  style_aesthetic: "executive minimalism + cinematic clarity"
+
+metadata:
+  created: 2025-11-13
+  canonicalized: true
+  hash_signature: "vNext_2025.11.13_AgenticCommerce_RoleAware"
+  repository: DealershipAI-Core
+  license: Proprietary © 2025 Kramer
+
+integrity_checks:
+  schema_valid: true
+  visual_consistency: enforced
+  role_logic: validated
+  last_verified: 2025-11-13T09:00:00Z
+

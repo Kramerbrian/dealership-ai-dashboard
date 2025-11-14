@@ -7,14 +7,20 @@
  * and provides a detailed report.
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load .env.local if it exists
+config({ path: resolve(process.cwd(), '.env.local') });
+// Also load .env as fallback
+config();
+
 const REQUIRED_VARS = {
   production: [
     'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
     'CLERK_SECRET_KEY',
   ],
   optional: [
-    'NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN',
-    'NEXT_PUBLIC_MAPBOX_KEY',
     'NEXT_PUBLIC_BASE_URL',
     'DATABASE_URL',
     'ANTHROPIC_API_KEY',

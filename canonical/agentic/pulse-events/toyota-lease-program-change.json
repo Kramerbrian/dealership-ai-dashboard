@@ -1,0 +1,39 @@
+{
+  "id": "pulse_evt_toyota_camry_lease_2025_11_15_SET",
+  "ts": "2025-11-13T03:05:00Z",
+  "dealer_id": "crm_naples_toyota",
+  "brand": "Toyota",
+  "level": "critical",
+  "kind": "market_signal",
+  "source": "aim_vindex_suite",
+  "tags": [
+    "oem_program_change",
+    "toyota",
+    "camry",
+    "lease",
+    "incentive",
+    "SET_region"
+  ],
+  "summary": "New SET Toyota Camry lease subvention announced for Naples DMA.",
+  "details": {
+    "program_type": "lease",
+    "region": "SET",
+    "effective_from": "2025-11-15",
+    "effective_to": "2026-01-02",
+    "msrp_cap": 36500,
+    "rebate_delta": 750,
+    "mf_delta_bps": -35,
+    "residual_delta_pct": 1.0,
+    "headline": "2025 Camry LE lease $299/mo for 36 months, $2,999 due at signing"
+  },
+  "metrics": {
+    "estimated_used_price_impact_pct": -2.7,
+    "near_new_gap_target_ratio": 0.87
+  },
+  "dedupe_key": "toyota_camry_lease_SET_2025-11-15",
+  "thread_ref": {
+    "type": "market",
+    "key": "oem_toyota_camry_lease"
+  }
+}
+

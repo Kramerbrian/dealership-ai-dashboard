@@ -32,6 +32,7 @@
     "health:check:vercel": "curl -X GET ${PRODUCTION_URL:-https://dealershipai.com}/api/health | jq '.'",
     "verify:env": "tsx scripts/verify-env.ts",
     "verify:health": "tsx scripts/test-healthcheck.ts",
+    "setup:prod": "bash scripts/setup-production-env.sh",
     "consolidate:setup": "tsx scripts/setup-master-project.ts",
     "consolidate:migrate": "tsx scripts/consolidate-supabase.ts migrate",
     "consolidate:validate": "tsx scripts/consolidate-supabase.ts validate",

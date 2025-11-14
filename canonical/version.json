@@ -2,6 +2,8 @@
   "bundle": "DealershipAI Agentic Canonical",
   "version": "2025.11.13",
   "author": "Kramer",
+  "agent_name": "PulseAgent_vNext — AgenticCommerce_RoleAware",
+  "description": "The canonical orchestration layer for dealership agentic funnel intelligence. Unifies role-aware strategy, funnel analytics, AI visibility metrics, and visual storytelling across dealership, OEM, and marketplace ecosystems.",
   "components": {
     "configs": [
       "dai-agent-canonical.json",
@@ -19,6 +21,52 @@
       "dai-agent-ci.yml"
     ]
   },
+  "visualization_presets": {
+    "funnel_visualization": {
+      "aspect_ratio": "4:3",
+      "style": "clean executive infographic",
+      "render_mode": "minimalist white background, teal/violet dual funnel",
+      "watermark": "bottom-right 'dAI Orchestrator'"
+    },
+    "dashboard_visualization": {
+      "aspect_ratio": "16:9",
+      "style": "executive dark mode dashboard",
+      "render_mode": "data-centric panels, high contrast typography, teal/violet accents",
+      "watermark": "bottom-right 'dAI Orchestrator'"
+    },
+    "trajectory_visualization": {
+      "aspect_ratio": "21:9",
+      "style": "cinematic progress graph",
+      "render_mode": "wide-screen gradient background, ascending trajectory, labeled KPIs",
+      "watermark": "bottom-right 'dAI Orchestrator'"
+    }
+  },
+  "role_awareness": {
+    "Dealer Principal": "Focus on market truth, gross efficiency, and AI-driven profitability.",
+    "General Manager": "Operational flow clarity and team accountability through AI funnel transparency.",
+    "Marketing Director": "AI visibility optimization, reputation leverage, and cross-platform schema strength.",
+    "Used Car Manager": "Inventory velocity, trust ranking, and AI-based remarketing insights."
+  },
+  "pulse_logic": {
+    "inputs": [
+      "AI Visibility Score",
+      "Schema Coverage Ratio",
+      "Authority Depth Index",
+      "UGC Health Score",
+      "Revenue at Risk"
+    ],
+    "outputs": [
+      "pulse_cards",
+      "priority_stack",
+      "daily_digest",
+      "visualization"
+    ]
+  },
+  "render_logic": {
+    "auto_aspect_ratio": true,
+    "auto_watermark": true,
+    "style_enforcement": "consistent teal/violet palette, minimalist, cinematic motion aesthetic"
+  },
   "hashes": {
     "dai-agent-canonical.json": "sha256:ae147a5e35aadc0ebf4e8f36542f50a040ea5f3fd42835251123ae9c3f9b2b14",
     "dai-orchestrator-agentic-commerce.json": "sha256:ced59406a00d35fc42d1a0ee799e54ec09c835c3ad9f942d55b3d7667a1f8fe2",
@@ -34,5 +82,10 @@
     "Canonical baseline of DealershipAI dAI Agent + Agentic Commerce Intelligence stack.",
     "Includes runtime, wit logic, headline intelligence, visualization, and CI validation.",
     "Use pulse-agent-builder.ts to generate and version future Agentic GPT configs."
-  ]
+  ],
+  "status": "Canonicalized ✅",
+  "manifest": {
+    "yaml": "canonical/manifest.yaml",
+    "format": "yaml"
+  }
 }

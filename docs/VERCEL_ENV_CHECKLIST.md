@@ -26,23 +26,7 @@ In the Vercel dashboard → Project Settings:
 
 These are the ones that will **actually break things** if missing.
 
-### 1. Mapbox (for DealerFlyInMap)
-
-If you're using the `DealerFlyInMap` component on the landing page:
-
-- **`NEXT_PUBLIC_MAPBOX_KEY`** or **`NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`**
-  - Set in **Vercel → Settings → Environment Variables**
-  - Same value as your Mapbox public access token
-  - Example: `pk.eyJ1IjoibXl1c2VyIiwiYSI6Im...`
-
-**If missing:**
-- The map may fail silently or throw errors in the browser
-- It won't necessarily break `next build`, but your landing experience is degraded
-- Healthcheck will show `NEXT_PUBLIC_MAPBOX_KEY: false`
-
----
-
-### 2. Clerk (Authentication)
+### 2.1 Clerk (Authentication)
 
 If `/dash` is Clerk-guarded (which it is in our code):
 
@@ -63,7 +47,7 @@ If `/dash` is Clerk-guarded (which it is in our code):
 
 ---
 
-### 3. Base URL (Optional but Helpful)
+### 2.1 Base URL (Optional but Helpful)
 
 - **`NEXT_PUBLIC_BASE_URL`**
 
@@ -228,13 +212,6 @@ Should:
 - Verify `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set
 - Check that Clerk app is configured with correct redirect URLs
 - Verify environment variables are set for the correct environment (Production/Preview)
-
-### Issue: Map Doesn't Load
-
-**Solution:**
-- Verify `NEXT_PUBLIC_MAPBOX_KEY` is set
-- Check Mapbox token is valid and has correct permissions
-- Verify token isn't expired
 
 ### Issue: Clarity API Returns 404
 

@@ -1,0 +1,42 @@
+{
+  "dealer_id": "crm_naples_toyota",
+  "name": "Germain Toyota of Naples",
+  "slug": "germain-toyota-of-naples",
+  "tier": "enterprise",
+  "brands": ["Toyota"],
+  "geo": {
+    "city": "Naples",
+    "state": "FL",
+    "dma": "Fort Myers-Naples"
+  },
+  "inventory_profile": {
+    "new_units": 183,
+    "used_units": 247,
+    "model_mix": {
+      "camry": 28,
+      "corolla": 22,
+      "rav4": 31,
+      "tacoma": 19
+    }
+  },
+  "scores": {
+    "aiv": 78,
+    "ati": 82,
+    "cvi": 61,
+    "ori": 59,
+    "gri": 72
+  },
+  "competitive_set": [
+    "autonation-toyota-fort-myers",
+    "germain-honda",
+    "fort-myers-nissan"
+  ],
+  "pulse_ruleset_id": "toyota_default_v1",
+  "auto_fix_policy_id": "tier3_enterprise_default_v1",
+  "auto_fix_enabled": true,
+  "channels": {
+    "slack_webhook": "https://hooks.slack.com/services/FAKE/FAKE/FAKE",
+    "email_alert": "gm@germaintoyotaofnaples.com"
+  }
+}
+

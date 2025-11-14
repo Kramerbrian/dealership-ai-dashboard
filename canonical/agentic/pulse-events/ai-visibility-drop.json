@@ -1,0 +1,36 @@
+{
+  "id": "pulse_evt_aiv_drop_2025_11_13_naples_toyota",
+  "ts": "2025-11-13T10:15:00Z",
+  "dealer_id": "crm_naples_toyota",
+  "brand": "Toyota",
+  "level": "high",
+  "kind": "kpi_delta",
+  "source": "aim_visibility_monitor",
+  "tags": [
+    "ai_visibility_drop",
+    "chatgpt",
+    "perplexity",
+    "zero_click"
+  ],
+  "summary": "AI Visibility Score dropped 7 points vs last 7 days.",
+  "details": {
+    "aiv_prev": 78,
+    "aiv_current": 71,
+    "window": "7d",
+    "platforms": {
+      "chatgpt": { "prev": 0.42, "current": 0.34 },
+      "perplexity": { "prev": 0.39, "current": 0.31 },
+      "gemini": { "prev": 0.47, "current": 0.45 }
+    }
+  },
+  "metrics": {
+    "aiv_delta": -7,
+    "zero_click_coverage_delta": -6
+  },
+  "dedupe_key": "aiv_drop_7pt_2025-11-13_naples_toyota",
+  "thread_ref": {
+    "type": "kpi",
+    "key": "ai_visibility"
+  }
+}
+
