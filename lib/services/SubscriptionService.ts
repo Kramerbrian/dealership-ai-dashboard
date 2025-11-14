@@ -44,7 +44,7 @@ export interface BillingInfo {
 }
 
 export class SubscriptionService {
-  private stripe: Stripe;
+  private stripe!: Stripe;
   private isInitialized: boolean = false;
 
   // Subscription tiers configuration
@@ -127,12 +127,12 @@ export class SubscriptionService {
       
       if (stripeSecretKey) {
         this.stripe = new Stripe(stripeSecretKey, {
-          apiVersion: '2024-06-20'
+          apiVersion: '2025-10-29.clover'
         });
         this.isInitialized = true;
-        logger.info('Stripe client initialized successfully', { component: 'SubscriptionService' });
+        logger.info('Stripe client initialized successfully', 'SubscriptionService');
       } else {
-        logger.warn('Stripe secret key not configured, using mock data', { component: 'SubscriptionService' });
+        logger.warn('Stripe secret key not configured, using mock data', 'SubscriptionService');
         this.isInitialized = false;
       }
     } catch (error) {
@@ -160,7 +160,7 @@ export class SubscriptionService {
    */
   async createCustomer(email: string, name: string, metadata?: Record<string, string>): Promise<string> {
     if (!this.isInitialized) {
-      logger.warn('Stripe not initialized, returning mock customer ID', { email });
+      logger.warn('Stripe not initialized, returning mock customer ID', 'SubscriptionService', undefined, { email });
       return 'cus_mock_' + Date.now();
     }
 
@@ -174,7 +174,7 @@ export class SubscriptionService {
         }
       });
 
-      logger.info('Stripe customer created', { customerId: customer.id, email });
+      logger.info('Stripe customer created', 'SubscriptionService', undefined, { customerId: customer.id, email });
       return customer.id;
     } catch (error) {
       logger.error('Failed to create Stripe customer', 'SubscriptionService', error as Error, { email });
@@ -294,7 +294,7 @@ export class SubscriptionService {
         return null;
       }
 
-      const upcomingInvoice = await this.stripe.invoices.retrieveUpcoming({
+      const upcomingInvoice = await this.stripe.invoices.upcoming({
         customer: customerId
       });
 

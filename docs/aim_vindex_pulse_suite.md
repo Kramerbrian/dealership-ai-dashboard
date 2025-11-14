@@ -47,72 +47,64 @@ interface PulseIngestResponse {
 
 ---
 
-## 2. Signal Lifecycle
+## 2. Lifecycle: Ingest → Validate → Orchestrate → Act
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 1: INGEST                                            │
-│  • POST /api/pulse/ingest receives event                    │
-│  • Validates payload against PulseEventPayload schema       │
-│  • Assigns unique pulse_id                                  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 2: VALIDATE                                          │
-│  • Check dealer_id exists in database                       │
-│  • Verify event_type is whitelisted                         │
-│  • Ensure required data fields present                      │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 3: ORCHESTRATE                                       │
-│  • Route to Orchestrator 3.0 if event requires action       │
-│  • Generate task plan via OpenAI GPT-4o-mini                │
-│  • Execute autonomous tasks with self-healing               │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 4: ACT                                               │
-│  • Feed AIM GPT conversational context                      │
-│  • Enable natural language queries about event              │
-│  • Store in thread history for continuity                   │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 5: PERSIST                                           │
-│  • Write to `pulse_events` table (Prisma)                   │
-│  • Link to dealer, user, mission if applicable              │
-│  • Enable audit trail and replay                            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 6: STREAM                                            │
-│  • Broadcast via Pulse Engine to dashboard cards            │
-│  • Update real-time notifications                           │
-│  • Generate narrative summaries                             │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 7: EXECUTE                                           │
-│  • Schema Engineer auto-fixes schema errors                 │
-│  • GBP Drift auto-corrects mismatches                       │
-│  • Log outcomes to mission history                          │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 8: MONITOR                                           │
-│  • Track success rates across components                    │
-│  • Alert on failures or degraded performance                │
-│  • Feed learning back to Orchestrator 3.0                   │
-└─────────────────────────────────────────────────────────────┘
-```
+1. **Ingest**
+   - `/api/pulse/ingest` captures live OEM / market / CRM feeds and creates canonical `PulseEvent` records.
+
+2. **Validate & Orchestrate**
+   - Orchestrator 3.0 validates events against brand/dealer guardrails.
+   - Events are converted into `PulseTask` queue items.
+   - Cron endpoint `/api/cron/pulse-tasks` drains the queue in batches (size controlled by `PULSE_TASK_BATCH_SIZE`).
+
+3. **Agentic Execution (Act – Phase 1)**
+   - Each `PulseTask` calls **one** GPT agent via the shared `llmClient`:
+     - `aim_gpt` → valuation intelligence (spreads, risk, Best End User confidence).
+     - `pulse_engine` → narrative + triage card copy.
+     - `schema_engine` → auto-fix plan (schema / GBP / CMS).
+   - All agents use typed JSON contracts defined in `lib/agents/contracts.ts`.
+
+4. **Persistence**
+   - Agent responses are persisted into dedicated tables:
+     - `aimRecommendations` – valuation and pricing recommendations.
+     - `pulseCards` – rendered narrative + actions for UI.
+     - `autoFixActions` – structured `SchemaEngineAction[]` for executor.
+
+5. **UI Streaming & Triage**
+   - Pulse Engine UI renders triage cards and actionables as a real-time stream.
+   - Operators see: what changed, why it matters, and what to do next.
+
+6. **Executor Layer (Act – Phase 2)**
+   - A downstream executor applies `SchemaEngineAction[]` to real systems:
+     - Schema (JSON-LD) injection.
+     - GBP updates.
+     - Site CMS / landing page offer blocks.
+   - All changes remain governed by the dealer's `AutoFixPolicy` and OEM/brand guardrails.
+
+7. **Environment & Canonical Integrity**
+   - Core env vars:
+     - `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
+     - Model overrides: `AIM_GPT_MODEL`, `PULSE_ENGINE_MODEL`, `SCHEMA_ENGINE_MODEL`
+     - `PULSE_TASK_BATCH_SIZE`
+   - Canonical manifest:
+     - `/infra/canonical/AIM_VIN-DEX_Pulse_Suite.manifest.yml`
+     - `integrity_hash`: `c6e712f8a8f2d0b3b45d924af47a20c19bdfc18ce2cce1ab4a1a8a5d08fa5b99`
+   - Verification endpoint:
+     - `https://registry.dealershipai.io/verify?canonical_id=AIM_VIN-DEX_Pulse_Suite`
+
+8. **Scope & Release Tagging**
+   - Scope:
+     - Ingestion → **contract-verified**
+     - Orchestration → **guardrail-verified**
+     - Streaming → **stream-verified**
+     - Persistence → **DB-verified**
+     - UI → **UX-validated**
+   - Canonical release tagging:
+     ```bash
+     git tag -a v2025.11.13-canonical -m "AIM VIN-DEX Pulse Suite Canonical Release"
+     git push origin v2025.11.13-canonical
+     ```
+   - Registry auto-registers this tag as the canonical build for `AIM_VIN-DEX_Pulse_Suite`.
 
 ---
 
