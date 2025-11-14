@@ -49,43 +49,98 @@ function kindChip(kind) {
 }
 
 export default function DealershipAI_PulseDecisionInbox() {
+  const { user } = useUser();
   const [filterKind, setFilterKind] = useState('all');
   const [filterLevel, setFilterLevel] = useState('all');
   const [mutedKeys, setMutedKeys] = useState({});
   const [selectedThread, setSelectedThread] = useState(null);
+  const [pulses, setPulses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const pulses = useMemo(() => {
-    return PULSE_SEED.filter((p) => {
+  // Get dealerId from user metadata or fallback
+  const dealerId = useMemo(() => {
+    return user?.publicMetadata?.dealerId || 
+           user?.publicMetadata?.dealer || 
+           user?.id || 
+           'demo-tenant';
+  }, [user]);
+
+  // Fetch pulses from API
+  useEffect(() => {
+    let alive = true;
+    const fetchPulses = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams({
+          dealerId,
+          limit: '50',
+        });
+        const res = await fetch(`/api/pulse?${params}`);
+        if (!res.ok) throw new Error(`Failed to fetch: ${res.statusText}`);
+        const data = await res.json();
+        if (!alive) return;
+        setPulses(data.cards || []);
+        setError(null);
+      } catch (err) {
+        if (!alive) return;
+        console.error('[PulseInbox] Fetch error:', err);
+        setError(err.message);
+        // Fallback to empty array on error
+        setPulses([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+
+    fetchPulses();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchPulses, 30000);
+    return () => {
+      alive = false;
+      clearInterval(interval);
+    };
+  }, [dealerId]);
+
+  const filteredPulses = useMemo(() => {
+    return pulses.filter((p) => {
       if (p.dedupe_key && mutedKeys[p.dedupe_key]) return false;
       if (filterKind !== 'all' && p.kind !== filterKind) return false;
       if (filterLevel !== 'all' && p.level !== filterLevel) return false;
       return true;
     });
-  }, [filterKind, filterLevel, mutedKeys]);
+  }, [pulses, filterKind, filterLevel, mutedKeys]);
 
   const todaySummary = useMemo(() => {
-    const crit = pulses.filter((p) => p.level === 'critical').length;
-    const resolved = PULSE_SEED.filter((p) => p.kind === 'incident_resolved').length;
-    const fixes = pulses.filter((p) => p.kind === 'auto_fix').length;
+    const crit = filteredPulses.filter((p) => p.level === 'critical').length;
+    const resolved = pulses.filter((p) => p.kind === 'incident_resolved').length;
+    const fixes = filteredPulses.filter((p) => p.kind === 'auto_fix').length;
     return { crit, resolved, fixes };
-  }, [pulses]);
+  }, [filteredPulses, pulses]);
 
-  function handleAction(pulse, action) {
+  async function handleAction(pulse, action) {
     if (action === 'mute' && pulse.dedupe_key) {
       setMutedKeys((prev) => ({ ...prev, [pulse.dedupe_key]: true }));
+      // TODO: Persist mute preference to backend
     }
     if (action === 'open' && pulse.thread) {
       setSelectedThread(pulse.thread);
     }
     if (action === 'snooze') {
-      // Just a stub; real impl would store until expiration
+      // TODO: Implement snooze via API
+      console.log('Snooze pulse:', pulse.id);
     }
     if (action === 'fix') {
-      // Wire to Auto-Fix engine / runAutoFix endpoint
-      console.log('Trigger fix for', pulse.id);
+      try {
+        // TODO: Wire to Auto-Fix engine endpoint when available
+        // await fetch(`/api/pulse/${pulse.id}/fix`, { method: 'POST' });
+        console.log('Trigger fix for', pulse.id);
+      } catch (err) {
+        console.error('Fix action failed:', err);
+      }
     }
     if (action === 'assign') {
-      // Open assign modal or route to /team
+      // TODO: Open assign modal or route to /team
       console.log('Assign incident', pulse.id);
     }
   }
@@ -153,13 +208,23 @@ export default function DealershipAI_PulseDecisionInbox() {
 
         {/* Pulse list */}
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {pulses.length === 0 && (
+          {loading && (
+            <div className="col-span-full text-sm text-zinc-400 border border-white/10 rounded-2xl p-6 bg-white/5 text-center">
+              Loading pulse data...
+            </div>
+          )}
+          {error && (
+            <div className="col-span-full text-sm text-rose-400 border border-rose-400/40 rounded-2xl p-6 bg-rose-500/10">
+              Error loading pulses: {error}
+            </div>
+          )}
+          {!loading && !error && filteredPulses.length === 0 && (
             <div className="col-span-full text-sm text-zinc-400 border border-white/10 rounded-2xl p-6 bg-white/5">
               Nothing urgent in this view. Enjoy the quiet.
             </div>
           )}
 
-          {pulses.map((pulse) => (
+          {!loading && filteredPulses.map((pulse) => (
             <article
               key={pulse.id}
               className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-white/[0.04] p-4 flex flex-col gap-3"
@@ -224,28 +289,48 @@ export default function DealershipAI_PulseDecisionInbox() {
 
       {/* Thread drawer */}
       {selectedThread && (
-        <ThreadDrawer refInfo={selectedThread} onClose={() => setSelectedThread(null)} />
+        <ThreadDrawer 
+          refInfo={selectedThread} 
+          onClose={() => setSelectedThread(null)}
+          dealerId={dealerId}
+        />
       )}
     </div>
   );
 }
 
-function ThreadDrawer({ refInfo, onClose }) {
-  // In a real build, fetch thread history from /api/pulse/thread?id=...
-  const mockHistory = [
-    {
-      id: 'evt-1',
-      ts: 'Today 09:12',
-      title: 'AI Visibility dropped -7 points',
-      note: 'ChatGPT answers shifted to competitor "Naples Toyota Auto Mall".'
-    },
-    {
-      id: 'evt-2',
-      ts: 'Today 09:14',
-      title: 'Incident created: AIV band breach',
-      note: 'Auto-promoted to incident with playbook attached.'
-    }
-  ];
+function ThreadDrawer({ refInfo, onClose, dealerId }) {
+  const [threadEvents, setThreadEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!refInfo?.id) return;
+    
+    let alive = true;
+    const fetchThread = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams({ dealerId: dealerId || 'demo-tenant' });
+        const res = await fetch(`/api/pulse/thread/${refInfo.id}?${params}`);
+        if (!res.ok) throw new Error(`Failed to fetch thread: ${res.statusText}`);
+        const data = await res.json();
+        if (!alive) return;
+        setThreadEvents(data.thread?.events || []);
+        setError(null);
+      } catch (err) {
+        if (!alive) return;
+        console.error('[ThreadDrawer] Fetch error:', err);
+        setError(err.message);
+        setThreadEvents([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+
+    fetchThread();
+    return () => { alive = false; };
+  }, [refInfo?.id, dealerId]);
 
   return (
     <div className="fixed inset-0 z-30 flex">
@@ -269,17 +354,28 @@ function ThreadDrawer({ refInfo, onClose }) {
           Showing latest events for this KPI / incident. Use this to see cause → effect quickly.
         </div>
         <div className="flex-1 overflow-y-auto space-y-3 mt-2">
-          {mockHistory.map((evt) => (
+          {loading && (
+            <div className="text-xs text-zinc-400 text-center py-4">Loading thread history...</div>
+          )}
+          {error && (
+            <div className="text-xs text-rose-400 text-center py-4">Error: {error}</div>
+          )}
+          {!loading && !error && threadEvents.length === 0 && (
+            <div className="text-xs text-zinc-400 text-center py-4">No events found for this thread.</div>
+          )}
+          {!loading && threadEvents.map((evt) => (
             <div
               key={evt.id}
               className="border border-white/10 rounded-2xl p-3 bg-white/[0.03] text-xs space-y-1"
             >
               <div className="flex justify-between text-[11px] text-zinc-400">
-                <span>{evt.ts}</span>
-                <span>event</span>
+                <span>{new Date(evt.ts).toLocaleString()}</span>
+                <span>{evt.kind}</span>
               </div>
               <div className="font-semibold text-zinc-100">{evt.title}</div>
-              <div className="text-zinc-300">{evt.note}</div>
+              {evt.detail && (
+                <div className="text-zinc-300">{evt.detail}</div>
+              )}
             </div>
           ))}
         </div>
