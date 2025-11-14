@@ -125,7 +125,7 @@ export class ViralGrowthEngine {
     // Platform-specific (ChatGPT clout)
     const topPlatform = Object.entries(data.platformScores)
       .sort(([,a]: any, [,b]: any) => b - a)[0];
-    if (topPlatform && topPlatform[1] > 75) {
+    if (topPlatform && (topPlatform[1] as number) > 75) {
       hooks.push(`🤖 ${topPlatform[1]}% visible on ${topPlatform[0]}`);
     }
     
@@ -209,7 +209,26 @@ export class ViralGrowthEngine {
   }
   
   // Helper methods
-  private async fetchDealershipData(id: string) { 
+  private async fetchDealershipData(id: string): Promise<{
+    name: string;
+    website: string;
+    aiVisibility: number;
+    rank: number;
+    market: string;
+    location: string;
+    monthlyOpportunity: number;
+    scoreChange: number;
+    platformScores: {
+      ChatGPT: number;
+      Claude: number;
+      Gemini: number;
+      Perplexity: number;
+    };
+    quickWins: Array<{ title: string; impact: string; effort: string }>;
+    tier: string;
+    reviewCount: number;
+    schemaScore: number;
+  }> {
     // Mock implementation - replace with actual API call
     return {
       name: 'Demo Dealership',
@@ -230,7 +249,9 @@ export class ViralGrowthEngine {
         { title: 'Fix schema markup', impact: 'high', effort: 'low' },
         { title: 'Optimize Google Business', impact: 'medium', effort: 'low' }
       ],
-      tier: 'free'
+      tier: 'free',
+      reviewCount: 230,
+      schemaScore: 78
     };
   }
   
@@ -283,8 +304,14 @@ export class ViralGrowthEngine {
     }; 
   }
   
-  private async findCompetitor(name: string, location: string) { 
-    return null; 
+  private async findCompetitor(name: string, location: string): Promise<{
+    name: string;
+    aiVisibility: number;
+    reviewCount: number;
+    schemaScore: number;
+    rank: number;
+  } | null> {
+    return null;
   }
   
   private analytics = { 
