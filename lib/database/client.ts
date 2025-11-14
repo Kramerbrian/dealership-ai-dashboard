@@ -71,31 +71,41 @@ export const prisma = {
 // ============================================================================
 
 // Mock Supabase client for build
+type MockQueryChain = {
+  data: any;
+  error: any;
+  single: () => Promise<{ data: any; error: any }>;
+  limit: (count: number) => MockQueryChain;
+  order: (column: string, options: any) => MockQueryChain;
+  eq: (column: string, value: any) => MockQueryChain;
+  gt: (column: string, value: any) => MockQueryChain;
+};
+
+const createMockChain = (data: any = null, error: any = null): MockQueryChain => ({
+  data,
+  error,
+  single: () => Promise.resolve({ data, error }),
+  limit: (count: number) => createMockChain([], null),
+  order: (column: string, options: any) => createMockChain([], null),
+  eq: (column: string, value: any) => createMockChain(data, error),
+  gt: (column: string, value: any) => createMockChain(data, error),
+});
+
 export const supabase = {
   from: (table: string) => ({
-    select: (columns = '*') => ({
-      eq: (column: string, value: any) => ({
-        single: () => Promise.resolve({ data: null, error: { message: 'Not found' } }),
-        limit: (count: number) => Promise.resolve({ data: [], error: null }),
-        order: (column: string, options: any) => ({
-          limit: (count: number) => Promise.resolve({ data: [], error: null })
-        })
-      }),
-      order: (column: string, options: any) => ({
-        limit: (count: number) => Promise.resolve({ data: [], error: null })
-      }),
-      limit: (count: number) => Promise.resolve({ data: [], error: null })
-    }),
+    select: (columns = '*') => createMockChain([], null),
     insert: (data: any) => ({
       select: () => ({
         single: () => Promise.resolve({ data: null, error: { message: 'Insert failed' } })
-      })
+      }),
+      error: { message: 'Insert failed' },
     }),
     update: (data: any) => ({
       eq: (column: string, value: any) => ({
         select: () => ({
           single: () => Promise.resolve({ data: null, error: { message: 'Update failed' } })
-        })
+        }),
+        error: { message: 'Update failed' },
       })
     }),
     delete: () => ({
@@ -208,13 +218,14 @@ export async function createUser(user: Omit<User, 'id' | 'created_at'>): Promise
 // ============================================================================
 
 export async function getLatestQAIScore(dealershipId: string): Promise<QAIScore | null> {
-  const { data, error } = await supabase
+  const chain = supabase
     .from('qai_scores')
     .select('*')
     .eq('dealership_id', dealershipId)
     .order('calculated_at', { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
+
+  const { data, error } = await chain.single();
 
   if (error) {
     console.error('Error fetching QAI score:', error);
@@ -225,15 +236,15 @@ export async function getLatestQAIScore(dealershipId: string): Promise<QAIScore 
 }
 
 export async function storeQAIScore(dealershipId: string, score: QAIScore): Promise<boolean> {
-  const { error } = await supabase
+  const result = await supabase
     .from('qai_scores')
     .insert({
       dealership_id: dealershipId,
       ...score,
     });
 
-  if (error) {
-    console.error('Error storing QAI score:', error);
+  if (result.error) {
+    console.error('Error storing QAI score:', result.error);
     return false;
   }
 
@@ -245,13 +256,14 @@ export async function storeQAIScore(dealershipId: string, score: QAIScore): Prom
 // ============================================================================
 
 export async function getLatestEEATScore(dealershipId: string): Promise<EEATScore | null> {
-  const { data, error } = await supabase
+  const chain = supabase
     .from('eeat_scores')
     .select('*')
     .eq('dealership_id', dealershipId)
     .order('calculated_at', { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
+
+  const { data, error } = await chain.single();
 
   if (error) {
     console.error('Error fetching E-E-A-T score:', error);
@@ -262,15 +274,15 @@ export async function getLatestEEATScore(dealershipId: string): Promise<EEATScor
 }
 
 export async function storeEEATScore(dealershipId: string, score: EEATScore): Promise<boolean> {
-  const { error } = await supabase
+  const result = await supabase
     .from('eeat_scores')
     .insert({
       dealership_id: dealershipId,
       ...score,
     });
 
-  if (error) {
-    console.error('Error storing E-E-A-T score:', error);
+  if (result.error) {
+    console.error('Error storing E-E-A-T score:', result.error);
     return false;
   }
 
@@ -282,22 +294,23 @@ export async function storeEEATScore(dealershipId: string, score: EEATScore): Pr
 // ============================================================================
 
 export async function getLatestAIPlatformScores(dealershipId: string): Promise<AIPlatformScore[]> {
-  const { data, error } = await supabase
+  const chain = supabase
     .from('ai_platform_scores')
     .select('*')
     .eq('dealership_id', dealershipId)
     .order('measured_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching AI platform scores:', error);
+  // For queries that return arrays, access data/error directly from the chain
+  if (chain.error) {
+    console.error('Error fetching AI platform scores:', chain.error);
     return [];
   }
 
-  return data || [];
+  return chain.data || [];
 }
 
 export async function storeAIPlatformScores(dealershipId: string, scores: AIPlatformScore[]): Promise<boolean> {
-  const { error } = await supabase
+  const result = await supabase
     .from('ai_platform_scores')
     .insert(
       scores.map(score => ({
@@ -306,8 +319,8 @@ export async function storeAIPlatformScores(dealershipId: string, scores: AIPlat
       }))
     );
 
-  if (error) {
-    console.error('Error storing AI platform scores:', error);
+  if (result.error) {
+    console.error('Error storing AI platform scores:', result.error);
     return false;
   }
 
@@ -329,14 +342,12 @@ export async function getCompetitors(dealershipId: string, limit?: number): Prom
     query = query.limit(limit);
   }
 
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching competitors:', error);
+  if (query.error) {
+    console.error('Error fetching competitors:', query.error);
     return [];
   }
 
-  return data || [];
+  return query.data || [];
 }
 
 export async function storeCompetitors(dealershipId: string, competitors: Omit<Competitor, 'id' | 'dealership_id' | 'updated_at'>[]): Promise<boolean> {
@@ -347,7 +358,7 @@ export async function storeCompetitors(dealershipId: string, competitors: Omit<C
     .eq('dealership_id', dealershipId);
 
   // Then insert new ones
-  const { error } = await supabase
+  const result = await supabase
     .from('competitors')
     .insert(
       competitors.map(competitor => ({
@@ -356,8 +367,8 @@ export async function storeCompetitors(dealershipId: string, competitors: Omit<C
       }))
     );
 
-  if (error) {
-    console.error('Error storing competitors:', error);
+  if (result.error) {
+    console.error('Error storing competitors:', result.error);
     return false;
   }
 
@@ -379,14 +390,12 @@ export async function getQuickWins(dealershipId: string, limit?: number): Promis
     query = query.limit(limit);
   }
 
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching quick wins:', error);
+  if (query.error) {
+    console.error('Error fetching quick wins:', query.error);
     return [];
   }
 
-  return data || [];
+  return query.data || [];
 }
 
 export async function storeQuickWins(dealershipId: string, quickWins: Omit<QuickWin, 'id' | 'dealership_id' | 'created_at'>[]): Promise<boolean> {
@@ -397,7 +406,7 @@ export async function storeQuickWins(dealershipId: string, quickWins: Omit<Quick
     .eq('dealership_id', dealershipId);
 
   // Then insert new ones
-  const { error } = await supabase
+  const result = await supabase
     .from('quick_wins')
     .insert(
       quickWins.map(quickWin => ({
@@ -406,8 +415,8 @@ export async function storeQuickWins(dealershipId: string, quickWins: Omit<Quick
       }))
     );
 
-  if (error) {
-    console.error('Error storing quick wins:', error);
+  if (result.error) {
+    console.error('Error storing quick wins:', result.error);
     return false;
   }
 
@@ -419,18 +428,18 @@ export async function storeQuickWins(dealershipId: string, quickWins: Omit<Quick
 // ============================================================================
 
 export async function getMysteryShops(dealershipId: string): Promise<MysteryShop[]> {
-  const { data, error } = await supabase
+  const chain = supabase
     .from('mystery_shops')
     .select('*')
     .eq('dealership_id', dealershipId)
     .order('conducted_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching mystery shops:', error);
+  if (chain.error) {
+    console.error('Error fetching mystery shops:', chain.error);
     return [];
   }
 
-  return data || [];
+  return chain.data || [];
 }
 
 export async function createMysteryShop(dealershipId: string, shop: Omit<MysteryShop, 'id' | 'dealership_id' | 'conducted_at'>): Promise<MysteryShop | null> {
@@ -510,7 +519,7 @@ function calculateSessionCost(action: SessionAction, tier: 'FREE' | 'PRO' | 'ENT
   }
   
   // Pro+ gets free schema generation and review drafting
-  if ((action === 'schema_generate' || action === 'review_draft') && tier !== 'FREE') {
+  if ((action === 'schema_generate' || action === 'review_draft') && (tier === 'PRO' || tier === 'ENTERPRISE')) {
     return 0;
   }
   
@@ -523,13 +532,14 @@ function calculateSessionCost(action: SessionAction, tier: 'FREE' | 'PRO' | 'ENT
 
 export async function getOrCreateGeoPool(city: string, state: string): Promise<any> {
   // Check if pool exists and is not expired
-  const { data: existingPool } = await supabase
+  const chain = supabase
     .from('geo_pools')
     .select('*')
     .eq('city', city)
     .eq('state', state)
-    .gt('expires_at', new Date().toISOString())
-    .single();
+    .gt('expires_at', new Date().toISOString());
+
+  const { data: existingPool } = await chain.single();
 
   if (existingPool) {
     return existingPool;
@@ -579,7 +589,7 @@ export async function logActivity(
   target?: string,
   delta?: string
 ): Promise<boolean> {
-  const { error } = await supabase
+  const result = await supabase
     .from('activity_log')
     .insert({
       dealership_id: dealershipId,
@@ -589,8 +599,8 @@ export async function logActivity(
       delta,
     });
 
-  if (error) {
-    console.error('Error logging activity:', error);
+  if (result.error) {
+    console.error('Error logging activity:', result.error);
     return false;
   }
 

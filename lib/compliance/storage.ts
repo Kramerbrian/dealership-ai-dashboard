@@ -76,7 +76,14 @@ function getRedisClient(): Redis {
     }
   }
 
-  return redisClient;
+  // Return mock client if Redis is null
+  return redisClient || {
+    get: async () => null,
+    set: async () => 'OK',
+    setex: async () => 'OK',
+    del: async () => 1,
+    connect: async () => {},
+  } as any;
 }
 
 // ============================================================================
@@ -127,6 +134,11 @@ export async function getCurrentPolicyVersion(): Promise<GooglePolicyVersion | n
 
     // Fallback to PostgreSQL
     const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.warn('[Storage] Supabase not available');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('google_policy_versions')
       .select('*')
@@ -139,11 +151,11 @@ export async function getCurrentPolicyVersion(): Promise<GooglePolicyVersion | n
       return null;
     }
 
-    if (data) {
+    if (data && typeof data === 'object' && 'version' in data) {
       const version: GooglePolicyVersion = {
-        version: data.version,
-        lastUpdated: data.last_updated,
-        changes: data.changes || [],
+        version: (data as any).version,
+        lastUpdated: (data as any).last_updated,
+        changes: (data as any).changes || [],
       };
 
       // Cache in Redis
@@ -167,6 +179,12 @@ export async function savePolicyVersion(version: GooglePolicyVersion): Promise<v
     const redis = getRedisClient();
     const supabase = getSupabaseClient();
 
+    if (!supabase) {
+      console.warn('[Storage] Supabase not available, only caching in Redis');
+      await redis.setex(POLICY_VERSION_KEY, POLICY_VERSION_TTL, JSON.stringify(version));
+      return;
+    }
+
     // Save to PostgreSQL
     const { error } = await supabase
       .from('google_policy_versions')
@@ -175,7 +193,7 @@ export async function savePolicyVersion(version: GooglePolicyVersion): Promise<v
         last_updated: version.lastUpdated,
         last_checked: new Date().toISOString(),
         changes: version.changes,
-      });
+      } as any);
 
     if (error) {
       console.error('[Storage] Failed to save policy version to DB:', error);
@@ -212,6 +230,9 @@ export interface SaveAuditInput {
 export async function saveAuditResult(input: SaveAuditInput): Promise<number> {
   try {
     const supabase = getSupabaseClient();
+    if (!supabase) {
+      throw new Error('Supabase not available');
+    }
 
     const { data, error } = await supabase
       .from('google_policy_audits')
@@ -231,7 +252,7 @@ export async function saveAuditResult(input: SaveAuditInput): Promise<number> {
         violations: input.result.violations,
         raw_data: input.rawData,
         scan_duration_ms: input.scanDurationMs,
-      })
+      } as any)
       .select('id')
       .single();
 
@@ -240,8 +261,12 @@ export async function saveAuditResult(input: SaveAuditInput): Promise<number> {
       throw error;
     }
 
-    console.log('[Storage] Audit result saved, ID:', data.id);
-    return data.id;
+    if (data && typeof data === 'object' && 'id' in data) {
+      console.log('[Storage] Audit result saved, ID:', (data as any).id);
+      return (data as any).id;
+    }
+
+    throw new Error('No ID returned from insert');
   } catch (error) {
     console.error('[Storage] Failed to save audit result:', error);
     throw error;
@@ -257,6 +282,10 @@ export async function getAuditResults(
 ): Promise<any[]> {
   try {
     const supabase = getSupabaseClient();
+    if (!supabase) {
+      throw new Error('Supabase not available');
+    }
+
     const { limit = 100, days = 30 } = options;
 
     const cutoffDate = new Date();
@@ -304,6 +333,9 @@ export interface SaveDriftEventInput {
 export async function saveDriftEvent(input: SaveDriftEventInput): Promise<number> {
   try {
     const supabase = getSupabaseClient();
+    if (!supabase) {
+      throw new Error('Supabase not available');
+    }
 
     const { data, error } = await supabase
       .from('google_policy_drift_events')
@@ -313,7 +345,7 @@ export async function saveDriftEvent(input: SaveDriftEventInput): Promise<number
         changes: input.changes,
         action_required: input.actionRequired,
         notified_at: new Date().toISOString(),
-      })
+      } as any)
       .select('id')
       .single();
 
@@ -322,8 +354,12 @@ export async function saveDriftEvent(input: SaveDriftEventInput): Promise<number
       throw error;
     }
 
-    console.log('[Storage] Drift event saved, ID:', data.id);
-    return data.id;
+    if (data && typeof data === 'object' && 'id' in data) {
+      console.log('[Storage] Drift event saved, ID:', (data as any).id);
+      return (data as any).id;
+    }
+
+    throw new Error('No ID returned from insert');
   } catch (error) {
     console.error('[Storage] Failed to save drift event:', error);
     throw error;
@@ -336,6 +372,9 @@ export async function saveDriftEvent(input: SaveDriftEventInput): Promise<number
 export async function getDriftEvents(limit = 10): Promise<any[]> {
   try {
     const supabase = getSupabaseClient();
+    if (!supabase) {
+      throw new Error('Supabase not available');
+    }
 
     const { data, error } = await supabase
       .from('google_policy_drift_events')
@@ -388,6 +427,9 @@ export async function getComplianceSummary(
 ): Promise<ComplianceSummary> {
   try {
     const supabase = getSupabaseClient();
+    if (!supabase) {
+      throw new Error('Supabase not available');
+    }
 
     // Get current period data
     const currentPeriodStart = new Date();
