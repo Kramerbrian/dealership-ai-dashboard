@@ -326,22 +326,22 @@ export class WhiteLabelPartnerProgram {
         },
         metrics: {
           newClients: partner.clients.length,
-          totalRevenue: partner.commissions.reduce((sum, c) => sum + c.amount, 0),
-          averageClientValue: partner.clients.length > 0 
-            ? partner.commissions.reduce((sum, c) => sum + c.amount, 0) / partner.clients.length 
+          totalRevenue: partner.commissions.reduce((sum: number, c: any) => sum + c.amount, 0),
+          averageClientValue: partner.clients.length > 0
+            ? partner.commissions.reduce((sum: number, c: any) => sum + c.amount, 0) / partner.clients.length
             : 0,
           commissionEarned: partner.commissions
-            .filter(c => c.status === 'paid')
-            .reduce((sum, c) => sum + c.amount, 0)
+            .filter((c: any) => c.status === 'paid')
+            .reduce((sum: number, c: any) => sum + c.amount, 0)
         },
-        clients: partner.clients.map(client => ({
+        clients: partner.clients.map((client: any) => ({
           name: client.name,
           domain: client.domain,
           tier: client.tier,
           revenue: client.monthlyRevenue,
           status: client.status
         })),
-        commissions: partner.commissions.map(commission => ({
+        commissions: partner.commissions.map((commission: any) => ({
           clientId: commission.clientId,
           amount: commission.amount,
           percentage: commission.percentage,
