@@ -111,13 +111,13 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
   requiredTier,
   featureName
 }) => {
-  const pricing = {
+  const pricing: Record<PlanTier, { name: string; price: number; color: string }> = {
     FREE: { name: 'Free', price: 0, color: 'text-slate-600' },
     PRO: { name: 'Pro', price: 97, color: 'text-blue-600' },
     ENTERPRISE: { name: 'Enterprise', price: 297, color: 'text-purple-600' }
   };
 
-  const features = {
+  const features: Record<PlanTier, string[]> = {
     FREE: [
       'Basic AI Visibility Scores',
       '5 Sessions per Month',
@@ -234,7 +234,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
                       </div>
 
                       <ul className="space-y-3 mb-6">
-                        {features[tier as PlanTier].map((feature, index) => (
+                        {features[tier as PlanTier].map((feature: string, index: number) => (
                           <li key={index} className="flex items-center space-x-3">
                             <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                             <span className="text-sm text-slate-700">{feature}</span>
@@ -301,7 +301,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
 // Helper functions
 function getTierLevel(tier: PlanTier): number {
-  const levels = { FREE: 0, PRO: 1, ENTERPRISE: 2 };
+  const levels: Record<PlanTier, number> = { FREE: 0, PRO: 1, ENTERPRISE: 2 };
   return levels[tier];
 }
 

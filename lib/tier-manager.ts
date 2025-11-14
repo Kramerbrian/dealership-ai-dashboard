@@ -35,6 +35,9 @@ const mockPrisma = {
   }
 };
 
+// Plan tier type
+export type PlanTier = 'FREE' | 'PRO' | 'ENTERPRISE';
+
 // Session limits by tier
 const SESSION_LIMITS = {
   FREE: parseInt(process.env.FREE_SESSION_LIMIT || '0'),
