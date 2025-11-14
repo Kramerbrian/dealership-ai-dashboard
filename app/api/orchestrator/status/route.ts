@@ -8,16 +8,31 @@ export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/orchestrator/status
- * Returns current orchestrator status and system state
+ * Returns current orchestrator status, system state, and job details
  */
 export async function GET() {
   try {
     const statePath = path.join(process.cwd(), 'public', 'system-state.json');
     let state = null;
+    let jobs: Record<string, any> = {};
 
     if (fs.existsSync(statePath)) {
       try {
-        state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        const stateData = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        state = stateData;
+        
+        // Extract job details from orchestrator results
+        if (stateData?.results) {
+          jobs = Object.entries(stateData.results).reduce((acc, [id, result]: [string, any]) => {
+            acc[id] = {
+              id,
+              success: result.success || false,
+              duration: result.duration || '0s',
+              lastRun: result.lastRun || new Date().toISOString(),
+            };
+            return acc;
+          }, {} as Record<string, any>);
+        }
       } catch {
         // Ignore parse errors
       }
@@ -30,7 +45,8 @@ export async function GET() {
       ok: true,
       safeMode,
       safeModeStatus,
-      systemState: state,
+      state: state?.orchestrator || state,
+      jobs,
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
