@@ -223,8 +223,8 @@ export class ABTestingService {
     };
 
     this.tests.set(id, newTest);
-    logger.info('A/B test created', { component: 'ABTestingService', testId: id, testName: test.name });
-    
+    logger.info('A/B test created', 'ABTestingService', { testId: id, testName: test.name });
+
     return newTest;
   }
 
@@ -256,8 +256,8 @@ export class ABTestingService {
     };
 
     this.tests.set(testId, updatedTest);
-    logger.info('A/B test updated', { component: 'ABTestingService', testId, updates });
-    
+    logger.info('A/B test updated', 'ABTestingService', { testId, updates });
+
     return updatedTest;
   }
 
@@ -269,7 +269,7 @@ export class ABTestingService {
     if (!test) return false;
 
     if (test.status !== 'draft') {
-      logger.warn('Cannot start test that is not in draft status', { testId, status: test.status });
+      logger.warn('Cannot start test that is not in draft status', 'ABTestingService', { testId, status: test.status });
       return false;
     }
 
@@ -277,7 +277,7 @@ export class ABTestingService {
     test.startDate = new Date();
     this.tests.set(testId, test);
 
-    logger.info('A/B test started', { component: 'ABTestingService', testId, testName: test.name });
+    logger.info('A/B test started', 'ABTestingService', { testId, testName: test.name });
     return true;
   }
 
@@ -289,14 +289,14 @@ export class ABTestingService {
     if (!test) return false;
 
     if (test.status !== 'running') {
-      logger.warn('Cannot pause test that is not running', { testId, status: test.status });
+      logger.warn('Cannot pause test that is not running', 'ABTestingService', { testId, status: test.status });
       return false;
     }
 
     test.status = 'paused';
     this.tests.set(testId, test);
 
-    logger.info('A/B test paused', { component: 'ABTestingService', testId });
+    logger.info('A/B test paused', 'ABTestingService', { testId });
     return true;
   }
 
@@ -308,7 +308,7 @@ export class ABTestingService {
     if (!test) return false;
 
     if (test.status !== 'running' && test.status !== 'paused') {
-      logger.warn('Cannot complete test that is not running or paused', { testId, status: test.status });
+      logger.warn('Cannot complete test that is not running or paused', 'ABTestingService', { testId, status: test.status });
       return false;
     }
 
@@ -316,7 +316,7 @@ export class ABTestingService {
     test.endDate = new Date();
     this.tests.set(testId, test);
 
-    logger.info('A/B test completed', { component: 'ABTestingService', testId });
+    logger.info('A/B test completed', 'ABTestingService', { testId });
     return true;
   }
 
@@ -361,7 +361,7 @@ export class ABTestingService {
     };
 
     this.events.push(testEvent);
-    logger.info('A/B test event tracked', { component: 'ABTestingService', testId, variantId, event });
+    logger.info('A/B test event tracked', 'ABTestingService', { testId, variantId, event });
   }
 
   /**
