@@ -151,9 +151,8 @@ export class TierManager {
    */
   static async hasFeatureAccess(userId: string, feature: keyof typeof FEATURE_ACCESS): Promise<FeatureAccess> {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { plan: true }
+      const user = await mockPrisma.user.findUnique({
+        where: { id: userId }
       });
 
       if (!user) {
@@ -164,7 +163,7 @@ export class TierManager {
         };
       }
 
-      const currentTier = user.plan as 'FREE' | 'PRO' | 'ENTERPRISE';
+      const currentTier = (user as any).plan as 'FREE' | 'PRO' | 'ENTERPRISE';
       const requiredTier = FEATURE_ACCESS[feature].requiredTier;
 
       const hasAccess = (() => {
@@ -198,16 +197,15 @@ export class TierManager {
    */
   static async getUpgradeRecommendation(userId: string): Promise<UpgradeRecommendation | null> {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { plan: true }
+      const user = await mockPrisma.user.findUnique({
+        where: { id: userId }
       });
 
       if (!user) {
         return null;
       }
 
-      const currentTier = user.plan as 'FREE' | 'PRO' | 'ENTERPRISE';
+      const currentTier = (user as any).plan as 'FREE' | 'PRO' | 'ENTERPRISE';
       const sessionInfo = await this.checkSessionLimit(userId);
       const usagePercentage = (sessionInfo.sessionsUsed / sessionInfo.sessionsLimit) * 100;
 
@@ -300,7 +298,7 @@ export class TierManager {
    */
   static async resetUserSessions(userId: string): Promise<void> {
     try {
-      await redisClient.resetUserSessions(userId);
+      await mockRedisClient.resetUserSessions(userId);
     } catch (error) {
       console.error('Session reset failed:', error);
     }
@@ -317,7 +315,7 @@ export class TierManager {
     recommendations: string[];
   }> {
     try {
-      const sessionUsage = await redisClient.getUserSessionUsage(userId);
+      const sessionUsage = await mockRedisClient.getUserSessionUsage(userId);
       
       const totalSessions = sessionUsage.analysis.used + sessionUsage.eeat.used + 
                            sessionUsage.mystery_shop.used + sessionUsage.api_call.used;
