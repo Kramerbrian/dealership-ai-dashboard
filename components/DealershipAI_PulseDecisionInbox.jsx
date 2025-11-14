@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 
 /**
  * DealershipAI Pulse Decision Inbox (JSX version)
@@ -57,6 +58,11 @@ export default function DealershipAI_PulseDecisionInbox() {
   const [pulses, setPulses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignPulse, setAssignPulse] = useState(null);
+  const [assigneeInput, setAssigneeInput] = useState('');
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [fixSuccess, setFixSuccess] = useState(null);
 
   // Get dealerId from user metadata or fallback
   const dealerId = useMemo(() => {
@@ -203,45 +209,29 @@ export default function DealershipAI_PulseDecisionInbox() {
         });
         const data = await res.json();
         if (res.ok && data.success) {
+          // Show success feedback
+          setFixSuccess(`Fixed: ${pulse.title}`);
+          setTimeout(() => setFixSuccess(null), 3000);
           // Refresh pulses after fix
           const refreshRes = await fetch(`/api/pulse?${new URLSearchParams({ dealerId, limit: '50' })}`);
           const refreshData = await refreshRes.json();
           if (refreshRes.ok) {
             setPulses(refreshData.cards || []);
           }
+        } else {
+          setFixSuccess(`Failed to fix: ${data.error || 'Unknown error'}`);
+          setTimeout(() => setFixSuccess(null), 3000);
         }
       } catch (err) {
         console.error('Fix action failed:', err);
+        setFixSuccess(`Error: ${err.message}`);
+        setTimeout(() => setFixSuccess(null), 3000);
       }
     }
     if (action === 'assign') {
-      // Prompt for assignee (in production, use a modal)
-      const assigneeName = prompt('Enter assignee name or ID:');
-      if (assigneeName) {
-        try {
-          const params = new URLSearchParams({ dealerId });
-          const res = await fetch(`/api/pulse/${pulse.id}/assign?${params}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              assigneeId: assigneeName,
-              assigneeName,
-              note: `Assigned by user`,
-            }),
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            // Refresh pulses after assignment
-            const refreshRes = await fetch(`/api/pulse?${new URLSearchParams({ dealerId, limit: '50' })}`);
-            const refreshData = await refreshRes.json();
-            if (refreshRes.ok) {
-              setPulses(refreshData.cards || []);
-            }
-          }
-        } catch (err) {
-          console.error('Assign action failed:', err);
-        }
-      }
+      // Open assign modal
+      setAssignPulse(pulse);
+      setAssignModalOpen(true);
     }
   }, [dealerId, setMutedKeys, setSelectedThread, setPulses]);
 
@@ -323,6 +313,48 @@ export default function DealershipAI_PulseDecisionInbox() {
     };
   }, [filteredPulses, selectedThread, filterLevel, filterKind, handleAction]);
 
+  // Handle assign submission
+  const handleAssignSubmit = useCallback(async () => {
+    if (!assignPulse || !assigneeInput) return;
+    
+    setAssignLoading(true);
+    try {
+      const params = new URLSearchParams({ dealerId });
+      const res = await fetch(`/api/pulse/${assignPulse.id}/assign?${params}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assigneeId: assigneeInput,
+          assigneeName: assigneeInput,
+          note: `Assigned by user`,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Refresh pulses after assignment
+        const refreshRes = await fetch(`/api/pulse?${new URLSearchParams({ dealerId, limit: '50' })}`);
+        const refreshData = await refreshRes.json();
+        if (refreshRes.ok) {
+          setPulses(refreshData.cards || []);
+        }
+        setAssignModalOpen(false);
+        setAssigneeInput('');
+        setAssignPulse(null);
+        setFixSuccess(`Assigned to ${assigneeInput}`);
+        setTimeout(() => setFixSuccess(null), 3000);
+      } else {
+        setFixSuccess(`Failed to assign: ${data.error || 'Unknown error'}`);
+        setTimeout(() => setFixSuccess(null), 3000);
+      }
+    } catch (err) {
+      console.error('Assign action failed:', err);
+      setFixSuccess(`Error: ${err.message}`);
+      setTimeout(() => setFixSuccess(null), 3000);
+    } finally {
+      setAssignLoading(false);
+    }
+  }, [assignPulse, assigneeInput, dealerId, setPulses]);
+
   return (
     <div className="min-h-screen bg-[#05070c] text-white">
       {/* Top nav */}
@@ -398,7 +430,35 @@ export default function DealershipAI_PulseDecisionInbox() {
           )}
           {error && (
             <div className="col-span-full text-sm text-rose-400 border border-rose-400/40 rounded-2xl p-6 bg-rose-500/10">
-              Error loading pulses: {error}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <p className="font-semibold mb-2">Error loading pulses</p>
+                  <p className="text-rose-300">{error}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setError(null);
+                    setLoading(true);
+                    const params = new URLSearchParams({ dealerId, limit: '50' });
+                    fetch(`/api/pulse?${params}`)
+                      .then(res => {
+                        if (!res.ok) throw new Error(`Failed to fetch: ${res.statusText}`);
+                        return res.json();
+                      })
+                      .then(data => {
+                        setPulses(data.cards || []);
+                        setError(null);
+                      })
+                      .catch(err => {
+                        setError(err.message);
+                      })
+                      .finally(() => setLoading(false));
+                  }}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           )}
           {!loading && !error && filteredPulses.length === 0 && (
@@ -471,6 +531,64 @@ export default function DealershipAI_PulseDecisionInbox() {
           ))}
         </section>
       </main>
+
+      {/* Success notification */}
+      {fixSuccess && (
+        <div className="fixed bottom-4 right-4 z-50 px-4 py-3 bg-emerald-600 text-white rounded-lg shadow-lg text-sm">
+          {fixSuccess}
+        </div>
+      )}
+
+      {/* Assign Modal */}
+      <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
+        <DialogContent className="bg-[#05070c] border-white/10">
+          <DialogHeader>
+            <DialogTitle>Assign Pulse</DialogTitle>
+            <DialogDescription>
+              Assign "{assignPulse?.title}" to a team member
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Assignee Name or ID
+              </label>
+              <input
+                type="text"
+                value={assigneeInput}
+                onChange={(e) => setAssigneeInput(e.target.value)}
+                placeholder="Enter assignee name or ID"
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && assigneeInput && !assignLoading) {
+                    handleAssignSubmit();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setAssignModalOpen(false);
+                  setAssigneeInput('');
+                  setAssignPulse(null);
+                }}
+                className="px-4 py-2 text-sm text-zinc-300 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAssignSubmit}
+                disabled={!assigneeInput || assignLoading}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {assignLoading ? 'Assigning...' : 'Assign'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Thread drawer */}
       {selectedThread && (

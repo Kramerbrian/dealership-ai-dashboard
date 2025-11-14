@@ -16,6 +16,7 @@ export default function HeroSection_CupertinoNolan() {
   const [muted, setMuted] = useState(true);
   const [enteredURL, setEnteredURL] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -89,34 +90,92 @@ export default function HeroSection_CupertinoNolan() {
     audioRef.volume = nextMuted ? 0 : 0.25;
   };
 
+  // Validate URL format
+  function isValidURL(url: string): boolean {
+    if (!url || url.trim().length === 0) return false;
+    // Remove protocol and www, then check if it looks like a domain
+    const cleaned = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    // Basic domain validation: at least one dot, alphanumeric and hyphens
+    const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    return domainRegex.test(cleaned);
+  }
+
   // Handle launch - fetch KPI data and redirect to onboarding
   async function handleLaunch() {
     if (!enteredURL) return;
+    
+    // Validate URL before proceeding
+    if (!isValidURL(enteredURL)) {
+      setError('Please enter a valid domain (e.g., naplesautogroup.com)');
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
     const normalizedURL = enteredURL.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
     localStorage.setItem('dealer:url', normalizedURL);
 
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
     try {
-      const res = await fetch(`/api/marketpulse/compute?dealer=${encodeURIComponent(normalizedURL)}`);
+      const res = await fetch(`/api/marketpulse/compute?dealer=${encodeURIComponent(normalizedURL)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (!res.ok) {
-        throw new Error(`API returned ${res.status}`);
+        const errorText = await res.text().catch(() => 'Unknown error');
+        throw new Error(`API returned ${res.status}: ${errorText}`);
       }
+      
       const result = await res.json();
+      
+      // Validate response structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid API response format');
+      }
+      
       const aiv = Number(result?.aiv ?? 0.88);
       const ati = Number(result?.ati ?? 0.82);
-
-      // Transition to onboarding after delay
+      
+      // Transition to onboarding - keep loading true until redirect
       setTimeout(() => {
+        // Loading will remain true until redirect (component unmounts)
         window.location.href = `/onboarding?dealer=${encodeURIComponent(normalizedURL)}&aiv=${aiv}&ati=${ati}`;
       }, 1500);
-    } catch (err) {
+    } catch (err: any) {
+      clearTimeout(timeoutId); // Ensure timeout is cleared on error
       console.error('API error:', err);
-      // Still redirect on error, just without metrics
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to analyze dealership. Redirecting anyway...';
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message?.includes('400')) {
+        errorMessage = 'Invalid dealership URL. Please check the format and try again.';
+      } else if (err.message?.includes('500')) {
+        errorMessage = 'Server error. Please try again in a moment.';
+      }
+      
+      setError(errorMessage);
+      
+      // Still redirect to onboarding even on error (graceful degradation)
+      // Keep loading true until redirect to prevent duplicate clicks
       setTimeout(() => {
+        // Loading will remain true until redirect (component unmounts)
         window.location.href = `/onboarding?dealer=${encodeURIComponent(normalizedURL)}`;
-      }, 1500);
+      }, 2000);
+      // Note: setLoading(false) removed - loading stays true until redirect prevents duplicate clicks
     }
-    // Note: Don't set loading=false here since we're redirecting anyway
   }
 
   const handleMouse = (e: React.MouseEvent) => {
@@ -216,7 +275,10 @@ export default function HeroSection_CupertinoNolan() {
           <input
             type="text"
             value={enteredURL}
-            onChange={(e) => setEnteredURL(e.target.value)}
+            onChange={(e) => {
+              setEnteredURL(e.target.value);
+              setError(null); // Clear error when user types
+            }}
             placeholder="Enter your dealership URL (e.g. naplesautogroup.com)"
             className="flex-1 px-4 py-3 rounded-full bg-white/5 border border-slate-600/50 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/80 outline-none backdrop-blur-md transition-all"
             onKeyDown={(e) => {
@@ -239,6 +301,12 @@ export default function HeroSection_CupertinoNolan() {
             <ArrowRight className="w-4 h-4 inline-block ml-2 transition-transform duration-700 group-hover:translate-x-1" />
           </button>
         </div>
+        
+        {error && (
+          <div className="w-full px-4 py-2 bg-rose-500/20 border border-rose-500/40 rounded-lg text-rose-200 text-sm">
+            {error}
+          </div>
+        )}
 
         {audioRef && (
           <button

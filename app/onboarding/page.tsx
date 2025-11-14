@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Loader2, TrendingUp, Shield, Zap, Eye } from 'lucide-react';
@@ -23,14 +23,16 @@ type MarketPulseData = {
   confidence: number;
 };
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Get dealer from URL params, ignoring Clerk handshake params
   const dealer = searchParams.get('dealer') || '';
   const [data, setData] = useState<MarketPulseData | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanStep, setScanStep] = useState(0);
   const [introDone, setIntroDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const scanSteps = [
     { label: 'Analyzing dealership visibility...', icon: Eye },
@@ -46,36 +48,57 @@ export default function OnboardingPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch KPI data
+  // Handle redirect if dealer param is missing (after Clerk handshake completes)
   useEffect(() => {
     if (!dealer) {
-      router.push('/');
-      return;
-    }
-
-    async function fetchData() {
-      try {
-        const res = await fetch(`/api/marketpulse/compute?dealer=${encodeURIComponent(dealer)}`);
-        const result = await res.json();
-        setData(result);
-
-        // Animate scan steps
-        for (let i = 0; i < scanSteps.length; i++) {
-          setTimeout(() => {
-            setScanStep(i);
-            if (i === scanSteps.length - 1) {
-              setTimeout(() => setLoading(false), 1000);
-            }
-          }, i * 800);
+      // Wait for Clerk handshake to complete before redirecting
+      const redirectTimer = setTimeout(() => {
+        const currentDealer = new URLSearchParams(window.location.search).get('dealer');
+        if (!currentDealer) {
+          router.push('/');
         }
-      } catch (err) {
-        console.error('Failed to fetch market pulse:', err);
-        setLoading(false);
-      }
+      }, 3000);
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [dealer, router]);
+
+  // Fetch KPI data
+  const fetchData = React.useCallback(async () => {
+    if (!dealer) {
+      return; // Don't fetch if no dealer param
     }
 
-    fetchData();
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`/api/marketpulse/compute?dealer=${encodeURIComponent(dealer)}`);
+      if (!res.ok) {
+        throw new Error(`API returned ${res.status}`);
+      }
+      const result = await res.json();
+      setData(result);
+
+      // Animate scan steps
+      for (let i = 0; i < scanSteps.length; i++) {
+        setTimeout(() => {
+          setScanStep(i);
+          if (i === scanSteps.length - 1) {
+            setTimeout(() => setLoading(false), 1000);
+          }
+        }, i * 800);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch market pulse:', err);
+      setError(err.message || 'Failed to load dealership data');
+      setLoading(false);
+    }
   }, [dealer]);
+
+  useEffect(() => {
+    if (dealer) {
+      fetchData();
+    }
+  }, [dealer, fetchData]);
 
   // Extract dealership name from URL
   const dealerName = dealer
@@ -85,6 +108,18 @@ export default function OnboardingPage() {
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+
+  // Show loading state if dealer param is missing (might be processing Clerk handshake)
+  if (!dealer) {
+    return (
+      <main className="min-h-screen bg-[#0a0f14] text-white overflow-hidden relative font-sans flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <p className="text-white/70">Loading onboarding...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#0a0f14] text-white overflow-hidden relative font-sans">
@@ -141,7 +176,22 @@ export default function OnboardingPage() {
             transition={{ delay: 0.8 }}
             className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 mb-8"
           >
-            {loading ? (
+            {error ? (
+              <div className="text-center space-y-4">
+                <div className="text-rose-400 text-lg font-semibold mb-2">Error loading data</div>
+                <p className="text-rose-300 text-sm">{error}</p>
+                <button
+                  onClick={() => {
+                    setError(null);
+                    setLoading(true);
+                    fetchData();
+                  }}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : loading ? (
               <div className="space-y-6">
                 {scanSteps.map((step, index) => {
                   const Icon = step.icon;
@@ -234,6 +284,23 @@ export default function OnboardingPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#0a0f14] text-white overflow-hidden relative font-sans flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+            <p className="text-white/70">Loading...</p>
+          </div>
+        </main>
+      }
+    >
+      <OnboardingContent />
+    </Suspense>
   );
 }
 
