@@ -1,4 +1,33 @@
-import type { ProductInput, FAQ, HowTo, Video } from './types'
+// JSON-LD Schema types
+type ProductInput = {
+  name: string;
+  sku: string;
+  description: string;
+  images: string[];
+  price?: number;
+  currency?: string;
+  availability?: string;
+  url?: string;
+};
+
+type FAQ = {
+  question: string;
+  answer: string;
+};
+
+type HowTo = {
+  name: string;
+  steps: string[];
+};
+
+type Video = {
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  contentUrl: string;
+  embedUrl?: string;
+};
 
 export function productLD(p: ProductInput) {
   return {
@@ -20,7 +49,7 @@ export function faqLD(faq: FAQ[]) {
 }
 export function howtoLD(h: HowTo) {
   return {
-    '@context': 'https://schema.org', '@type': 'HowTo', name: h.name, step: h.steps.map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s }))
+    '@context': 'https://schema.org', '@type': 'HowTo', name: h.name, step: h.steps.map((s: string, i: number) => ({ '@type': 'HowToStep', position: i + 1, name: s }))
   }
 }
 export function videoLD(v: Video) {
