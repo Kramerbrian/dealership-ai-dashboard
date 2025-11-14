@@ -135,7 +135,7 @@ export default function PulseInbox() {
                   {e.actions?.includes('mute') && e.dedupe_key && (
                     <button
                       className="h-8 px-3 rounded border"
-                      onClick={() => mute(e.dedupe_key!, 60 * 24)}
+                      onClick={() => mute(e.dedupe_key!)}
                     >
                       Mute 24h
                     </button>
