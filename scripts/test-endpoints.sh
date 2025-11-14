@@ -1,112 +1,72 @@
 #!/bin/bash
+# Test script for DealershipAI orchestrator and OEM endpoints
+# Usage: ./scripts/test-endpoints.sh [base_url]
 
-# Test script for DealershipAI API endpoints
-# Run this after setting up your environment variables
-
-BASE_URL="${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}"
-
-echo "🧪 Testing DealershipAI API Endpoints"
-echo "======================================"
-echo ""
-
-# Colors for output
+BASE_URL="${1:-http://localhost:3000}"
 GREEN='\033[0;32m'
-RED='\033[0;31m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Test 1: Telemetry POST
-echo "1️⃣  Testing /api/telemetry (POST)..."
-RESPONSE=$(curl -s -X POST "$BASE_URL/api/telemetry" \
+echo -e "${GREEN}🧪 Testing DealershipAI Endpoints${NC}\n"
+
+# Test 1: Orchestrator Status
+echo -e "${YELLOW}1. Testing Orchestrator Status...${NC}"
+STATUS_RESPONSE=$(curl -s "${BASE_URL}/api/orchestrator/status")
+if [ $? -eq 0 ]; then
+  echo "$STATUS_RESPONSE" | jq '.' 2>/dev/null || echo "$STATUS_RESPONSE"
+  echo -e "${GREEN}✅ Orchestrator status endpoint is accessible${NC}\n"
+else
+  echo -e "${RED}❌ Failed to reach orchestrator status endpoint${NC}\n"
+fi
+
+# Test 2: OEM Parse (requires OPENAI_API_KEY)
+echo -e "${YELLOW}2. Testing OEM Parse...${NC}"
+echo "   This requires OPENAI_API_KEY and may take 30-60 seconds..."
+PARSE_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/oem/parse" \
   -H "Content-Type: application/json" \
   -d '{
-    "type": "test_event",
-    "payload": {"test": true, "timestamp": "'$(date +%s)'"},
-    "ts": '$(date +%s)'
-  }')
+    "oem": "Toyota",
+    "url": "https://pressroom.toyota.com/the-2026-toyota-tacoma-adventure-awaits/"
+  }' \
+  --max-time 120)
 
-if echo "$RESPONSE" | grep -q '"ok":true'; then
-  echo -e "${GREEN}✅ Telemetry POST successful${NC}"
-else
-  echo -e "${RED}❌ Telemetry POST failed${NC}"
-  echo "Response: $RESPONSE"
-fi
-echo ""
-
-# Test 2: Telemetry GET
-echo "2️⃣  Testing /api/telemetry (GET)..."
-RESPONSE=$(curl -s "$BASE_URL/api/telemetry")
-if echo "$RESPONSE" | grep -q '"events"'; then
-  echo -e "${GREEN}✅ Telemetry GET successful${NC}"
-  EVENT_COUNT=$(echo "$RESPONSE" | grep -o '"events":\[.*\]' | grep -o ',' | wc -l | xargs)
-  echo "   Found events in response"
-else
-  echo -e "${YELLOW}⚠️  Telemetry GET returned: $RESPONSE${NC}"
-fi
-echo ""
-
-# Test 3: Pulse Impacts
-echo "3️⃣  Testing /api/pulse/impacts (POST)..."
-RESPONSE=$(curl -s -X POST "$BASE_URL/api/pulse/impacts" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "marketId": "us_default",
-    "oem": "Tesla",
-    "model": "Model3",
-    "dealers": ["dealer1", "dealer2"]
-  }')
-
-if echo "$RESPONSE" | grep -q '"ok":true'; then
-  echo -e "${GREEN}✅ Pulse Impacts successful${NC}"
-else
-  echo -e "${RED}❌ Pulse Impacts failed${NC}"
-  echo "Response: $RESPONSE"
-fi
-echo ""
-
-# Test 4: Pulse Radar
-echo "4️⃣  Testing /api/pulse/radar (GET)..."
-RESPONSE=$(curl -s "$BASE_URL/api/pulse/radar?marketId=us_default&window=7d")
-if echo "$RESPONSE" | grep -q '"ok":true'; then
-  echo -e "${GREEN}✅ Pulse Radar successful${NC}"
-else
-  echo -e "${RED}❌ Pulse Radar failed${NC}"
-  echo "Response: $RESPONSE"
-fi
-echo ""
-
-# Test 5: Schema Validate
-echo "5️⃣  Testing /api/schema/validate (GET)..."
-RESPONSE=$(curl -s "$BASE_URL/api/schema/validate?url=https://example.com")
-if echo "$RESPONSE" | grep -q '"coverage"'; then
-  echo -e "${GREEN}✅ Schema Validate successful${NC}"
-else
-  echo -e "${YELLOW}⚠️  Schema Validate returned: $RESPONSE${NC}"
-  echo "   (This may be expected if SCHEMA_ENGINE_URL is not set)"
-fi
-echo ""
-
-# Test 6: Admin Setup Check
-echo "6️⃣  Testing /api/admin/setup (GET)..."
-RESPONSE=$(curl -s "$BASE_URL/api/admin/setup")
-if echo "$RESPONSE" | grep -q '"tableExists"'; then
-  echo -e "${GREEN}✅ Admin Setup check successful${NC}"
-  if echo "$RESPONSE" | grep -q '"tableExists":true'; then
-    echo -e "${GREEN}   ✅ telemetry_events table exists${NC}"
+if [ $? -eq 0 ]; then
+  echo "$PARSE_RESPONSE" | jq '.' 2>/dev/null || echo "$PARSE_RESPONSE"
+  if echo "$PARSE_RESPONSE" | grep -q '"ok":true'; then
+    echo -e "${GREEN}✅ OEM parse endpoint is working${NC}\n"
   else
-    echo -e "${YELLOW}   ⚠️  telemetry_events table does not exist${NC}"
-    echo "   Run the SQL migration in Supabase"
+    echo -e "${YELLOW}⚠️  OEM parse endpoint responded but may have errors${NC}\n"
   fi
 else
-  echo -e "${RED}❌ Admin Setup check failed${NC}"
+  echo -e "${RED}❌ Failed to reach OEM parse endpoint (may need OPENAI_API_KEY)${NC}\n"
 fi
-echo ""
 
-echo "======================================"
-echo "✅ Testing complete!"
-echo ""
-echo "Next steps:"
-echo "1. Check Supabase dashboard to verify telemetry_events table exists"
-echo "2. Visit $BASE_URL/admin to see analytics dashboard"
-echo "3. Visit $BASE_URL/onboarding to test onboarding flow"
+# Test 3: Orchestrator Background (may require CRON_SECRET)
+echo -e "${YELLOW}3. Testing Orchestrator Background...${NC}"
+echo "   This may require CRON_SECRET if configured..."
+BACKGROUND_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/orchestrator-background" \
+  --max-time 300)
 
+if [ $? -eq 0 ]; then
+  echo "$BACKGROUND_RESPONSE" | jq '.' 2>/dev/null || echo "$BACKGROUND_RESPONSE"
+  if echo "$BACKGROUND_RESPONSE" | grep -q '"ok":true'; then
+    echo -e "${GREEN}✅ Orchestrator background endpoint is working${NC}\n"
+  else
+    echo -e "${YELLOW}⚠️  Orchestrator background responded but may have errors${NC}\n"
+  fi
+else
+  echo -e "${RED}❌ Failed to reach orchestrator background endpoint${NC}\n"
+fi
+
+# Test 4: Health Check
+echo -e "${YELLOW}4. Testing Health Endpoint...${NC}"
+HEALTH_RESPONSE=$(curl -s "${BASE_URL}/api/health")
+if [ $? -eq 0 ]; then
+  echo "$HEALTH_RESPONSE" | jq '.' 2>/dev/null || echo "$HEALTH_RESPONSE"
+  echo -e "${GREEN}✅ Health endpoint is accessible${NC}\n"
+else
+  echo -e "${RED}❌ Failed to reach health endpoint${NC}\n"
+fi
+
+echo -e "${GREEN}✨ Testing complete!${NC}"

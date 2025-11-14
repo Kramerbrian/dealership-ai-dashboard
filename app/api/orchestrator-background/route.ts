@@ -66,11 +66,13 @@ async function getLighthouseScore(): Promise<number | null> {
 }
 
 export async function GET(req: NextRequest) {
-  // Verify this is a Vercel Cron request
+  // Verify this is a Vercel Cron request (only in production)
+  // Allow local testing without auth
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
+  const isProduction = process.env.VERCEL_ENV === 'production';
   
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (isProduction && cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

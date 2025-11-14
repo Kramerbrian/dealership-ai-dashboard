@@ -85,6 +85,18 @@
     {
       "path": "/api/orchestrator-background",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/oem/monitor",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/executive-digest",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/process-training-queue",
+      "schedule": "*/15 * * * *"
     }
   ],
   "redirects": [

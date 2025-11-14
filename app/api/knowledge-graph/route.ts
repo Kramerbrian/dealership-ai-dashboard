@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { fetchWeatherContext } from '@/lib/context/weather';
 
 // Run on Vercel Edge Runtime for global low-latency
 export const runtime = 'edge';
@@ -214,12 +215,15 @@ function generateMockResponse(queryType: string, dealerId: string) {
       ];
 
     case 'weather':
+      // Return mock data if no live weather available
+      // In production with WEATHER_API_KEY configured, this will be replaced by live data
       return [
         {
           condition: 'Clear',
           temperature: 72,
           timestamp: new Date().toISOString(),
           impact: 0.15,
+          _note: 'Mock data - configure WEATHER_API_KEY for live weather',
         },
       ];
 
