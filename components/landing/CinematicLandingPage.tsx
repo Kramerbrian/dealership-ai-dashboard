@@ -24,6 +24,7 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@cl
 import { ClerkConditional } from '@/components/providers/ClerkConditional';
 import { getEasterEggQuote } from '@/lib/agent/quoteEngine';
 import { FreeScanWidget } from '@/components/FreeScanWidget';
+import { useBrandHue } from '@/lib/hooks/useBrandHue';
 
 // Easter Egg Quote Component
 function EasterEggQuote() {
@@ -83,6 +84,7 @@ function TextRotator({ items, interval = 2000 }: { items: string[]; interval?: n
 export default function CinematicLandingPage() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dealerDomain, setDealerDomain] = useState<string | null>(null);
   const showcaseRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: showcaseRef,
@@ -94,8 +96,18 @@ export default function CinematicLandingPage() {
   const showcaseX = useTransform(scrollYProgress, [0, 0.5, 1], [0, -50, 0]);
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [1, 1, 0.8, 0.6]);
 
+  // Brand hue tinting - get from localStorage or use default
+  const hue = useBrandHue(dealerDomain);
+
   useEffect(() => {
     setMounted(true);
+    // Try to get dealer domain from localStorage (set during onboarding or scan)
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('dai:domain') || 
+                     localStorage.getItem('onboarding_data') ? 
+                       JSON.parse(localStorage.getItem('onboarding_data') || '{}').dealerUrl : null;
+      setDealerDomain(stored);
+    }
   }, []);
 
   // Always render - the mounted check was causing issues
@@ -105,13 +117,18 @@ export default function CinematicLandingPage() {
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       {/* Fixed Translucent Nav */}
       <motion.nav
-        initial={{ y: -100 }}
+        initial={{ y: 0 }}
         animate={{ y: 0 }}
         className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10"
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500" />
+            <div
+              className="h-8 w-8 rounded-full"
+              style={{
+                backgroundImage: `linear-gradient(to bottom right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+              }}
+            />
             <span className="font-semibold text-lg">DealershipAI</span>
           </Link>
 
@@ -137,7 +154,12 @@ export default function CinematicLandingPage() {
                   </button>
                 </SignInButton>
                 <SignUpButton mode="modal">
-                  <button className="px-6 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-semibold hover:from-cyan-400 hover:to-emerald-400 transition-all">
+                  <button
+                    className="px-6 py-2 rounded-full text-black font-semibold hover:opacity-90 transition-all"
+                    style={{
+                      backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                    }}
+                  >
                     Get Started
                   </button>
                 </SignUpButton>
@@ -181,7 +203,12 @@ export default function CinematicLandingPage() {
                       </button>
                     </SignInButton>
                     <SignUpButton mode="modal">
-                      <button className="block w-full text-left px-6 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-semibold">
+                      <button
+                        className="block w-full text-left px-6 py-2 rounded-full text-black font-semibold"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                        }}
+                      >
                         Get Started
                       </button>
                     </SignUpButton>
@@ -197,9 +224,14 @@ export default function CinematicLandingPage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
         {/* Neural Glass Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-slate-900 to-black" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.15),transparent_70%)]" />
+        <div
+          className="absolute inset-0 opacity-15"
+          style={{
+            backgroundImage: `radial-gradient(circle at 50% 50%, hsl(${hue}, 70%, 60%), transparent 70%)`
+          }}
+        />
         
-        {/* Soft Cyan Pulse */}
+        {/* Soft Brand-Tinted Pulse */}
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -210,7 +242,10 @@ export default function CinematicLandingPage() {
             repeat: -1,
             ease: 'easeInOut',
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl"
+          style={{
+            backgroundColor: `hsl(${hue}, 70%, 60%, 0.2)`
+          }}
         />
 
         <motion.div
@@ -219,14 +254,18 @@ export default function CinematicLandingPage() {
         >
           {/* Left: Headline + Mission */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 1, x: 0 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-            style={{ opacity: 1 }} // Fallback to ensure visibility
           >
             <h1 className="text-5xl md:text-7xl font-light mb-6 leading-tight">
-              <span className="font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                dealershipAI provides clarity, in a world of digital noise.
+              <span
+                className="font-semibold bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                }}
+              >
+                DealershipAI is the first system in your store that hates wasted time as much as you do.
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
@@ -236,21 +275,29 @@ export default function CinematicLandingPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <ClerkConditional>
                 <SignedOut>
-                  <SignUpButton mode="modal">
-                    <button className="px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-semibold hover:from-cyan-400 hover:to-emerald-400 transition-all flex items-center gap-2">
-                      Launch the Cognitive Interface
-                      <ArrowRight className="w-5 h-5" />
-                    </button>
-                  </SignUpButton>
+                    <SignUpButton mode="modal">
+                      <button
+                        className="px-8 py-4 rounded-full text-black font-semibold hover:opacity-90 transition-all flex items-center gap-2"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                        }}
+                      >
+                        Launch the Cognitive Interface
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                    </SignUpButton>
                 </SignedOut>
                 <SignedIn>
-                  <Link
-                    href="/dashboard"
-                    className="px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-semibold hover:from-cyan-400 hover:to-emerald-400 transition-all flex items-center gap-2"
-                  >
-                    Launch the Cognitive Interface
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
+                      <Link
+                        href="/dashboard"
+                        className="px-8 py-4 rounded-full text-black font-semibold hover:opacity-90 transition-all flex items-center gap-2"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                        }}
+                      >
+                        Launch the Cognitive Interface
+                        <ArrowRight className="w-5 h-5" />
+                      </Link>
                 </SignedIn>
               </ClerkConditional>
             </div>
@@ -258,11 +305,10 @@ export default function CinematicLandingPage() {
 
           {/* Right: AI Chat Demo Orb */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 1, x: 0 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="relative"
-            style={{ opacity: 1 }} // Fallback to ensure visibility
           >
             <div className="relative w-full aspect-square max-w-md mx-auto">
               {/* Orb Container */}
@@ -275,7 +321,10 @@ export default function CinematicLandingPage() {
                   repeat: -1,
                   ease: 'linear',
                 }}
-                className="absolute inset-0 rounded-full border-2 border-cyan-500/30"
+                className="absolute inset-0 rounded-full border-2"
+                style={{
+                  borderColor: `hsl(${hue}, 70%, 60%, 0.3)`
+                }}
               />
               <motion.div
                 animate={{
@@ -286,7 +335,10 @@ export default function CinematicLandingPage() {
                   repeat: -1,
                   ease: 'linear',
                 }}
-                className="absolute inset-4 rounded-full border border-emerald-500/20"
+                className="absolute inset-4 rounded-full border"
+                style={{
+                  borderColor: `hsl(${hue + 30}, 70%, 50%, 0.2)`
+                }}
               />
 
               {/* Central Orb */}
@@ -304,7 +356,10 @@ export default function CinematicLandingPage() {
                   repeat: -1,
                   ease: 'easeInOut',
                 }}
-                className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center"
+                className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full flex items-center justify-center"
+                style={{
+                  backgroundImage: `linear-gradient(to bottom right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                }}
               >
                 <Activity className="w-16 h-16 text-black" />
               </motion.div>
