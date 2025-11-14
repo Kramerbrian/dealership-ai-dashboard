@@ -40,22 +40,38 @@ export default function HeroSection_CupertinoNolan() {
   // Geo detection
   useEffect(() => {
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      let cancelled = false;
+      
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
+          if (cancelled) return;
           try {
             const res = await fetch(
               `/api/nearby-dealer?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
             );
+            if (!res.ok) throw new Error('API error');
             const data = await res.json();
-            setCompetitor(data.competitor);
-            setCity(data.city);
-          } catch {
+            if (!cancelled) {
+              setCompetitor(data.competitor || "a local competitor");
+              setCity(data.city || "");
+            }
+          } catch (error) {
+            if (!cancelled) {
+              setCompetitor("a local competitor");
+            }
+          }
+        },
+        () => {
+          if (!cancelled) {
             setCompetitor("a local competitor");
           }
         },
-        () => setCompetitor("a local competitor"),
         { enableHighAccuracy: false, timeout: 4000 }
       );
+      
+      return () => {
+        cancelled = true;
+      };
     }
   }, []);
 
@@ -80,6 +96,12 @@ export default function HeroSection_CupertinoNolan() {
       audio.volume = 0;
       audio.play().catch(() => {}); // browser block until user gesture
       setAudioRef(audio);
+      
+      // Cleanup on unmount
+      return () => {
+        audio.pause();
+        audio.src = '';
+      };
     }
   }, []);
 
@@ -154,27 +176,38 @@ export default function HeroSection_CupertinoNolan() {
       clearTimeout(timeoutId); // Ensure timeout is cleared on error
       console.error('API error:', err);
       
-      // Provide more specific error messages
-      let errorMessage = 'Failed to analyze dealership. Redirecting anyway...';
-      if (err.name === 'AbortError' || err.name === 'TimeoutError') {
-        errorMessage = 'Request timed out. Please try again.';
-      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
-        errorMessage = 'Network error. Please check your connection and try again.';
-      } else if (err.message?.includes('400')) {
-        errorMessage = 'Invalid dealership URL. Please check the format and try again.';
-      } else if (err.message?.includes('500')) {
-        errorMessage = 'Server error. Please try again in a moment.';
+      // Determine error type and whether to allow retry
+      const isTimeout = err.name === 'AbortError' || err.name === 'TimeoutError';
+      const isNetworkError = err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError');
+      const isClientError = err.message?.includes('400');
+      const isServerError = err.message?.includes('500');
+      
+      // For retryable errors (timeout, network, server errors), allow user to retry
+      if (isTimeout || isNetworkError || isServerError) {
+        setLoading(false); // Allow retry
+        if (isTimeout) {
+          setError('Request timed out. Please try again.');
+        } else if (isNetworkError) {
+          setError('Network error. Please check your connection and try again.');
+        } else if (isServerError) {
+          setError('Server error. Please try again in a moment.');
+        }
+        return; // Don't redirect - allow user to retry
       }
       
-      setError(errorMessage);
+      // For client errors (400 - invalid URL), show error and allow fix
+      if (isClientError) {
+        setLoading(false); // Allow user to fix the URL
+        setError('Invalid dealership URL. Please check the format and try again.');
+        return; // Don't redirect with invalid URL
+      }
       
-      // Still redirect to onboarding even on error (graceful degradation)
-      // Keep loading true until redirect to prevent duplicate clicks
+      // For unknown errors, use graceful degradation with redirect
+      setError('Failed to analyze dealership. Redirecting to onboarding...');
       setTimeout(() => {
         // Loading will remain true until redirect (component unmounts)
         window.location.href = `/onboarding?dealer=${encodeURIComponent(normalizedURL)}`;
       }, 2000);
-      // Note: setLoading(false) removed - loading stays true until redirect prevents duplicate clicks
     }
   }
 

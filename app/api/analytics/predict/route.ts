@@ -15,7 +15,16 @@ export const maxDuration = 60;
  */
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    let userId: string | null = null;
+    try {
+      const authResult = await auth();
+      userId = authResult.userId;
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     if (!userId) {
       return NextResponse.json(

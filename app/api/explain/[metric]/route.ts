@@ -154,6 +154,32 @@ const METRIC_DEFINITIONS: Record<string, {
       'Ensure address matches exactly across all platforms',
       'Claim and update all directory listings'
     ]
+  },
+
+  'trust-score': {
+    name: 'Algorithmic Trust Score',
+    description: 'How much the AI ecosystem believes what your dealership publishes, based on E-E-A-T principles (Experience, Expertise, Authoritativeness, Trustworthiness)',
+    formula: 'Weighted average of schema accuracy, citation consistency, review authenticity, content quality, and backlink authority',
+    interpretation: [
+      'Scores 90-100: Excellent - AI platforms highly trust your information',
+      'Scores 75-89: Good - Strong trust signals with minor improvement areas',
+      'Scores 60-74: Moderate - Trust issues affecting AI recommendations',
+      'Scores below 60: Poor - Critical trust deficits hurting visibility'
+    ],
+    recommendations: [
+      'Implement accurate AutoDealer schema markup on all pages',
+      'Ensure NAP consistency across 100+ citation sources',
+      'Maintain authentic, non-incentivized customer reviews',
+      'Create expert content demonstrating automotive knowledge',
+      'Build authoritative backlinks from industry publications',
+      'Keep business information updated in real-time',
+      'Respond professionally to all customer feedback'
+    ],
+    benchmarks: {
+      poor: '< 60',
+      average: '60-89',
+      excellent: '90-100'
+    }
   }
 };
 

@@ -1,0 +1,696 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "DealershipAI API",
+    "version": "1.0.0",
+    "description": "Comprehensive dealership AI visibility and intelligence platform API",
+    "contact": {
+      "name": "DealershipAI Support",
+      "url": "https://dealershipai.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://dealershipai.com",
+      "description": "Production server"
+    },
+    {
+      "url": "https://dash.dealershipai.com",
+      "description": "Dashboard server (requires authentication)"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "System health check",
+        "description": "Returns system health status, service availability, and performance metrics",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "System healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analyze": {
+      "post": {
+        "summary": "Analyze dealership domain",
+        "description": "Performs comprehensive analysis of dealership website and online presence",
+        "tags": ["Analysis"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["domain"],
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "example": "naplesautogroup.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/marketpulse/compute": {
+      "get": {
+        "summary": "Compute market pulse metrics",
+        "description": "Calculates AIV (AI Visibility Index) and ATI (Algorithmic Trust Index) for a dealership",
+        "tags": ["Analysis"],
+        "parameters": [
+          {
+            "name": "dealer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Dealership domain (e.g., naplesautogroup.com)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metrics computed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketPulseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/explain/{metric}": {
+      "get": {
+        "summary": "Get metric explanation",
+        "description": "Returns detailed explanation of a specific metric including formula, interpretation, and recommendations",
+        "tags": ["Documentation"],
+        "parameters": [
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ai-visibility-score",
+                "trust-score",
+                "chatgpt-ranking",
+                "revenue-at-risk",
+                "review-sentiment",
+                "response-rate",
+                "avg-response-time",
+                "citation-consistency"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metric explanation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricExplanation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metric not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assistant": {
+      "post": {
+        "summary": "AI assistant chat",
+        "description": "Provides conversational AI assistance for dealership analytics and insights using Claude",
+        "tags": ["AI"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI response generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI service not configured"
+          }
+        }
+      }
+    },
+    "/api/pulse": {
+      "get": {
+        "summary": "Get pulse inbox",
+        "description": "Fetch pulse decision inbox with filtering (requires authentication)",
+        "tags": ["Pulse"],
+        "security": [
+          {
+            "ClerkAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dealerId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "critical", "warning", "info"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pulse cards retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication required"
+          }
+        }
+      },
+      "post": {
+        "summary": "Ingest pulse cards",
+        "description": "Ingest pulse cards with deduplication and auto-promotion (requires authentication)",
+        "tags": ["Pulse"],
+        "security": [
+          {
+            "ClerkAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/PulseCard"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/PulseCard"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cards ingested successfully"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication required"
+          }
+        }
+      }
+    },
+    "/api/orchestrator/train": {
+      "post": {
+        "summary": "Orchestrator training webhook",
+        "description": "Receives pulse.signal events with HMAC verification for model training",
+        "tags": ["Orchestrator"],
+        "parameters": [
+          {
+            "name": "x-signature",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC SHA-256 signature"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["event_id", "event_type", "tenant_id", "payload"],
+                "properties": {
+                  "event_id": {
+                    "type": "string"
+                  },
+                  "event_type": {
+                    "type": "string",
+                    "enum": ["pulse.signal"]
+                  },
+                  "tenant_id": {
+                    "type": "string"
+                  },
+                  "payload": {
+                    "type": "object"
+                  },
+                  "sent_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Event accepted for processing"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid signature"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ClerkAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Clerk JWT authentication token"
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unhealthy"]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "string"
+          },
+          "services": {
+            "type": "object",
+            "properties": {
+              "database": {
+                "type": "string",
+                "enum": ["connected", "disconnected", "error"]
+              },
+              "redis": {
+                "type": "string",
+                "enum": ["connected", "disconnected", "error"]
+              },
+              "ai_providers": {
+                "type": "object",
+                "properties": {
+                  "openai": {
+                    "type": "string",
+                    "enum": ["available", "unavailable"]
+                  },
+                  "anthropic": {
+                    "type": "string",
+                    "enum": ["available", "unavailable"]
+                  },
+                  "perplexity": {
+                    "type": "string",
+                    "enum": ["available", "unavailable"]
+                  },
+                  "gemini": {
+                    "type": "string",
+                    "enum": ["available", "unavailable"]
+                  }
+                }
+              }
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "uptime": {
+                "type": "number"
+              },
+              "memory_usage": {
+                "type": "object"
+              },
+              "response_time_ms": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "AnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scores": {
+            "type": "object"
+          },
+          "recommendations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "MarketPulseResponse": {
+        "type": "object",
+        "properties": {
+          "dealer": {
+            "type": "string"
+          },
+          "aiv": {
+            "type": "number",
+            "description": "AI Visibility Index (0-1)"
+          },
+          "ati": {
+            "type": "number",
+            "description": "Algorithmic Trust Index (0-1)"
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "schemaCoverage": {
+                "type": "number"
+              },
+              "trustScore": {
+                "type": "number"
+              },
+              "cwv": {
+                "type": "number"
+              },
+              "ugcHealth": {
+                "type": "number"
+              },
+              "geoIntegrity": {
+                "type": "number"
+              },
+              "zeroClick": {
+                "type": "number"
+              }
+            }
+          },
+          "summary": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number"
+          }
+        }
+      },
+      "MetricExplanation": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "formula": {
+            "type": "string"
+          },
+          "interpretation": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recommendations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "benchmarks": {
+            "type": "object",
+            "properties": {
+              "poor": {
+                "type": "string"
+              },
+              "average": {
+                "type": "string"
+              },
+              "excellent": {
+                "type": "string"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AssistantRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "context": {
+            "type": "object"
+          },
+          "conversationHistory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": ["user", "assistant"]
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "personalityLevel": {
+            "type": "string",
+            "enum": ["formal", "dry-wit", "full-dai"]
+          },
+          "enableTruthBombs": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AssistantResponse": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "string"
+          },
+          "usage": {
+            "type": "object",
+            "properties": {
+              "input_tokens": {
+                "type": "integer"
+              },
+              "output_tokens": {
+                "type": "integer"
+              }
+            }
+          },
+          "conversationId": {
+            "type": "string"
+          }
+        }
+      },
+      "PulseCard": {
+        "type": "object",
+        "required": ["level", "kind", "title"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "level": {
+            "type": "string",
+            "enum": ["critical", "warning", "info"]
+          },
+          "kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "delta": {
+            "type": "number"
+          },
+          "thread": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              }
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "dedupe_key": {
+            "type": "string"
+          },
+          "ttl_sec": {
+            "type": "integer"
+          },
+          "context": {
+            "type": "object"
+          },
+          "receipts": {
+            "type": "array"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health and status endpoints"
+    },
+    {
+      "name": "Analysis",
+      "description": "Dealership analysis and metrics"
+    },
+    {
+      "name": "Documentation",
+      "description": "Metric explanations and help"
+    },
+    {
+      "name": "AI",
+      "description": "AI-powered features"
+    },
+    {
+      "name": "Pulse",
+      "description": "Pulse decision inbox (requires authentication)"
+    },
+    {
+      "name": "Orchestrator",
+      "description": "Model training and orchestration"
+    }
+  ]
+}

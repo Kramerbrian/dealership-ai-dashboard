@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { NextMiddleware } from 'next/server';
 
+// Edge runtime for optimal performance
+export const runtime = 'edge';
+
 // Check if Clerk is configured
 const isClerkConfigured = !!(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
@@ -113,9 +116,20 @@ async function publicMiddleware(req: NextRequest) {
       const dashboardUrl = new URL(req.url);
       dashboardUrl.hostname = 'dash.dealershipai.com';
       return NextResponse.redirect(dashboardUrl, 308); // Permanent redirect
-    } catch (error: any) {
-      // If URL construction fails, log and allow through
-      console.error('[Middleware] Failed to construct redirect URL:', error);
+    } catch (error: unknown) {
+      // If URL construction fails, log and handle appropriately
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[Middleware] Failed to construct redirect URL:', errorMessage);
+      console.error('[Middleware] Original URL:', req.url);
+      
+      // For API routes, return error response
+      if (req.nextUrl.pathname.startsWith('/api/')) {
+        return NextResponse.json(
+          { error: 'Redirect failed', message: errorMessage },
+          { status: 500 }
+        );
+      }
+      // For pages, allow through to prevent complete failure
       return NextResponse.next();
     }
   }
@@ -125,16 +139,25 @@ async function publicMiddleware(req: NextRequest) {
 }
 
 // Dynamically import Clerk only when needed (dashboard domain)
-let clerkMiddleware: any = null;
-let createRouteMatcher: any = null;
+type ClerkMiddleware = ReturnType<typeof import('@clerk/nextjs/server').clerkMiddleware>;
+type RouteMatcher = ReturnType<typeof import('@clerk/nextjs/server').createRouteMatcher>;
 
-async function getClerkMiddleware() {
-  if (!clerkMiddleware) {
+let clerkMiddleware: ClerkMiddleware | null = null;
+let createRouteMatcher: typeof import('@clerk/nextjs/server').createRouteMatcher | null = null;
+
+async function getClerkMiddleware(): Promise<{
+  clerkMiddleware: ClerkMiddleware;
+  createRouteMatcher: typeof import('@clerk/nextjs/server').createRouteMatcher;
+}> {
+  if (!clerkMiddleware || !createRouteMatcher) {
     const clerk = await import('@clerk/nextjs/server');
     clerkMiddleware = clerk.clerkMiddleware;
     createRouteMatcher = clerk.createRouteMatcher;
   }
-  return { clerkMiddleware, createRouteMatcher };
+  return { 
+    clerkMiddleware: clerkMiddleware!, 
+    createRouteMatcher: createRouteMatcher! 
+  };
 }
 
 // Clerk middleware (only for dashboard domain) - lazy loaded
@@ -154,15 +177,30 @@ async function dashboardMiddleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // If Clerk is not configured, allow all routes (demo mode)
+  // If Clerk is not configured, handle based on environment
   if (!isClerkConfigured) {
-    console.warn('[Middleware] Clerk not configured - running in demo mode');
-    return NextResponse.next();
+    // Only allow demo mode in development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Middleware] Clerk not configured - running in demo mode (development only)');
+      return NextResponse.next();
+    }
+    // In production, fail securely
+    console.error('[Middleware] Clerk not configured in production!');
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'Authentication service unavailable' },
+        { status: 503 }
+      );
+    }
+    // For pages, redirect to sign-in with error
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('error', 'auth_unavailable');
+    return NextResponse.redirect(signInUrl);
   }
 
   // Lazy load Clerk middleware only when needed
-  let clerkMw: any;
-  let protectedRouteMatcher: any;
+  let clerkMw: ClerkMiddleware;
+  let protectedRouteMatcher: RouteMatcher;
   
   try {
     const { clerkMiddleware, createRouteMatcher } = await getClerkMiddleware();
@@ -184,7 +222,7 @@ async function dashboardMiddleware(req: NextRequest) {
       '/api/pulse(.*)',
       '/api/save-metrics',
     ]);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Middleware] Failed to load Clerk middleware:', error);
     // If Clerk fails to load, allow public routes, block protected routes
     if (isPublicRoute(pathname)) {
@@ -200,8 +238,11 @@ async function dashboardMiddleware(req: NextRequest) {
   const hostname = req.headers.get('host') || '';
   const isProductionDashboard = hostname === 'dash.dealershipai.com';
 
-    // Clerk middleware options
-  const clerkOptions: any = {
+  // Clerk middleware options
+  const clerkOptions: {
+    publicRoutes?: string[];
+    domain?: string;
+  } = {
     // CRITICAL: Tell Clerk these routes should skip auth entirely
     // IMPORTANT: /onboarding must be public to allow Clerk handshake to complete
     publicRoutes: [
@@ -237,7 +278,7 @@ async function dashboardMiddleware(req: NextRequest) {
   // Call Clerk middleware with proper error handling
   try {
     // Use Clerk middleware with auth callback
-    const result = await clerkMw(async (auth: any) => {
+    const result = await clerkMw(async (auth: () => Promise<{ userId: string | null }>) => {
       // We're on dashboard domain - apply Clerk authentication to protected routes
       // Only protect routes that are explicitly marked as protected
       if (protectedRouteMatcher(req)) {
@@ -249,7 +290,7 @@ async function dashboardMiddleware(req: NextRequest) {
             signInUrl.searchParams.set('redirect_url', req.url);
             return NextResponse.redirect(signInUrl);
           }
-        } catch (authError: any) {
+        } catch (authError: unknown) {
           console.error('[Middleware] Auth check failed:', authError);
           // If auth check fails, allow through for public routes
           if (isPublicRoute(pathname)) {
@@ -268,16 +309,21 @@ async function dashboardMiddleware(req: NextRequest) {
     }, clerkOptions)(req);
     
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorName = error instanceof Error ? error.name : 'Unknown';
+    const errorCode = (error as { code?: string })?.code;
+    
     console.error('[Middleware] Clerk middleware invocation error:', error);
     console.error('[Middleware] Error details:', {
-      message: error.message,
-      stack: error.stack,
+      message: errorMessage,
+      stack: errorStack,
       pathname,
       hostname,
       isClerkConfigured,
-      errorName: error.name,
-      errorCode: error.code,
+      errorName,
+      errorCode,
     });
     
     // If Clerk middleware fails, allow through for public routes (including onboarding)
@@ -307,11 +353,14 @@ export default async function middleware(req: NextRequest) {
     
     // If on dashboard domain, use Clerk middleware (lazy loaded)
     return await dashboardMiddleware(req);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Catch any unexpected errors in middleware to prevent 500s
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     console.error('[Middleware] Unexpected error:', {
-      message: error.message,
-      stack: error.stack,
+      message: errorMessage,
+      stack: errorStack,
       pathname: req.nextUrl.pathname,
       hostname: req.headers.get('host'),
     });
@@ -319,7 +368,7 @@ export default async function middleware(req: NextRequest) {
     // For API routes, return error response instead of crashing
     if (req.nextUrl.pathname.startsWith('/api/')) {
       return NextResponse.json(
-        { error: 'Middleware error', message: error.message },
+        { error: 'Middleware error', message: errorMessage },
         { status: 500 }
       );
     }
