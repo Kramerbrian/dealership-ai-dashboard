@@ -182,13 +182,13 @@ export class MetricsCollector {
       });
 
       const totalRequests = performanceData.length;
-      const averageResponseTime = performanceData.reduce((sum, p) => sum + p.responseTime, 0) / totalRequests;
-      const errorCount = performanceData.filter(p => p.statusCode >= 400).length;
+      const averageResponseTime = performanceData.reduce((sum: number, p: any) => sum + p.responseTime, 0) / totalRequests;
+      const errorCount = performanceData.filter((p: any) => p.statusCode >= 400).length;
       const errorRate = (errorCount / totalRequests) * 100;
 
       // Group by endpoint
       const endpointStats = new Map<string, { requests: number; totalTime: number }>();
-      performanceData.forEach(p => {
+      performanceData.forEach((p: any) => {
         const key = `${p.method} ${p.endpoint}`;
         if (!endpointStats.has(key)) {
           endpointStats.set(key, { requests: 0, totalTime: 0 });
@@ -317,7 +317,7 @@ export class MetricsCollector {
       });
 
       const totalErrors = errors.length;
-      const criticalErrors = errors.filter(e => e.level === 'error').length;
+      const criticalErrors = errors.filter((e: any) => e.level === 'error').length;
       const errorRate = totalErrors > 0 ? (criticalErrors / totalErrors) * 100 : 0;
 
       return {
@@ -359,7 +359,7 @@ export class MetricsCollector {
         }
       });
 
-      return metrics.map(m => ({
+      return metrics.map((m: any) => ({
         timestamp: m.timestamp,
         value: m.value,
         breakdown: m.breakdown
@@ -400,7 +400,7 @@ export class MetricsCollector {
         errors: number;
       }>();
 
-      performanceData.forEach(p => {
+      performanceData.forEach((p: any) => {
         const hour = p.timestamp.toISOString().slice(0, 13);
         if (!hourlyData.has(hour)) {
           hourlyData.set(hour, {
@@ -409,7 +409,7 @@ export class MetricsCollector {
             errors: 0
           });
         }
-        
+
         const data = hourlyData.get(hour)!;
         data.responseTime.push(p.responseTime);
         data.requests++;
@@ -476,14 +476,14 @@ export class MetricsCollector {
         await this.prisma.$queryRaw`SELECT 1`;
         checks.push({
           name: 'database',
-          status: 'pass',
+          status: 'pass' as 'pass' | 'fail',
           message: 'Database connection healthy',
           responseTime: Date.now() - dbStart
         });
       } catch (error) {
         checks.push({
           name: 'database',
-          status: 'fail',
+          status: 'fail' as 'pass' | 'fail',
           message: 'Database connection failed'
         });
       }
@@ -494,14 +494,14 @@ export class MetricsCollector {
         await this.redis.ping();
         checks.push({
           name: 'redis',
-          status: 'pass',
+          status: 'pass' as 'pass' | 'fail',
           message: 'Redis connection healthy',
           responseTime: Date.now() - redisStart
         });
       } catch (error) {
         checks.push({
           name: 'redis',
-          status: 'fail',
+          status: 'fail' as 'pass' | 'fail',
           message: 'Redis connection failed'
         });
       }
@@ -510,7 +510,7 @@ export class MetricsCollector {
       const apiChecks = await this.checkExternalAPIs();
       checks.push(...apiChecks);
 
-      const failedChecks = checks.filter(c => c.status === 'fail').length;
+      const failedChecks = checks.filter((c: any) => c.status === 'fail').length;
       const status = failedChecks === 0 ? 'healthy' : failedChecks < 2 ? 'degraded' : 'unhealthy';
 
       return {
@@ -551,14 +551,14 @@ export class MetricsCollector {
       await new Promise(resolve => setTimeout(resolve, 100));
       checks.push({
         name: 'stripe',
-        status: 'pass',
+        status: 'pass' as 'pass' | 'fail',
         message: 'Stripe API healthy',
         responseTime: Date.now() - stripeStart
       });
     } catch (error) {
       checks.push({
         name: 'stripe',
-        status: 'fail',
+        status: 'fail' as 'pass' | 'fail',
         message: 'Stripe API failed'
       });
     }
