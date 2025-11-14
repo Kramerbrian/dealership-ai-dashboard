@@ -1,0 +1,228 @@
+{
+  "manifestVersion": "2025-11-04",
+  "project": "DealershipAI",
+  "author": "DealershipAI Orchestrator 3.0",
+  "description": "Unified configuration for Landing Page (Cupertino × Nolan), Clerk Authentication, Onboarding Workflow, and Pulse Dashboard ecosystem.",
+  "domains": {
+    "marketing": "https://dealershipai.com",
+    "dashboard": "https://dash.dealershipai.com"
+  },
+
+  "structure": {
+    "apps": {
+      "landing": "/app/marketing/",
+      "dashboard": "/app",
+      "api": "/app/api",
+      "components": "/components",
+      "data": "/data",
+      "hooks": "/hooks",
+      "lib": "/lib"
+    },
+    "primaryEntry": "/app/page.tsx",
+    "middleware": "/middleware.ts",
+    "authProvider": "Clerk"
+  },
+
+  "authentication": {
+    "provider": "Clerk",
+    "enabledOn": ["dash.dealershipai.com"],
+    "excludedOn": ["dealershipai.com"],
+    "middlewareFile": "/middleware.ts",
+    "sessionInjection": {
+      "headers": ["x-dealer-id", "x-user-role", "x-session-id"],
+      "contextPass": "DealerSessionContext"
+    },
+    "roles": ["admin", "dealer", "analyst"],
+    "redirects": {
+      "firstLogin": "/onboarding",
+      "returningUser": "/pulse/dashboard",
+      "signOut": "/sign-in"
+    }
+  },
+
+  "onboarding": {
+    "path": "/onboarding",
+    "component": "/app/onboarding/page.tsx",
+    "steps": [
+      "Connect Google Business Profile",
+      "Run AI Visibility Scan",
+      "Review Pulse Metrics",
+      "Enable Auto-Fix",
+      "Finish Setup"
+    ],
+    "copilot": {
+      "component": "/app/onboarding/components/DAICopilot.tsx",
+      "personality": "subtle, confident, dry humor",
+      "tones": ["professional", "witty", "cinematic"],
+      "popCultureAgent": "/lib/agent/quoteEngine.ts",
+      "voiceOrb": "/components/VoiceOrb.tsx"
+    },
+    "telemetry": {
+      "eventsEndpoint": "/api/copilot-events",
+      "feedback": "/components/CopilotFeedback.tsx"
+    }
+  },
+
+  "dashboard": {
+    "base": "/pulse",
+    "description": "Pulse Dashboard (AI Visibility, Forecast, Reviews, Traffic, Forecast Accuracy)",
+    "components": {
+      "PulseDashboard": "/components/PulseDashboard.tsx",
+      "PulseCard": "/components/PulseCard.tsx",
+      "ForecastCard": "/components/ForecastCard.tsx",
+      "UGCCard": "/components/UGCCard.tsx"
+    },
+    "apiSources": {
+      "aiScores": "/api/ai-scores",
+      "forecast": "/data/lighthouse-history.json",
+      "ugc": "/api/ugc-health",
+      "traffic": "/api/traffic-metrics"
+    },
+    "copilotIntegration": {
+      "useDAICopilotHook": "/hooks/useDAICopilot.ts",
+      "themeController": "/lib/theme-controller.ts",
+      "moodEngine": "/lib/copilot-context.ts",
+      "telemetryHook": "/hooks/useCopilotTelemetry.ts"
+    },
+    "analytics": {
+      "nightlyLighthouse": "/app/api/nightly-lighthouse/route.ts",
+      "forecastTrend": "/data/lighthouse-history.json",
+      "copilotEvents": "/data/copilot-events.json"
+    }
+  },
+
+  "landingPage": {
+    "path": "/app/marketing/",
+    "entryFile": "/components/HeroSection_CupertinoNolan.tsx",
+    "description": "Christopher Nolan × Cupertino cinematic landing page",
+    "features": [
+      "AI search-engine rotator",
+      "geo-personalization",
+      "parallax glass depth",
+      "ambient hum (muted by default)",
+      "hero CTA with URL input and MarketPulse integration"
+    ],
+    "deployment": {
+      "framework": "Next.js 15.5.6 App Router",
+      "audio": "/public/audio/ai-hum.mp3",
+      "vercelProject": "dealershipai-marketing"
+    }
+  },
+
+  "themeSystem": {
+    "controller": "/lib/theme-controller.ts",
+    "css": "/styles/theme.css",
+    "moodBindings": {
+      "positive": {
+        "accent": "rgb(34,197,94)",
+        "brightness": 0.9
+      },
+      "neutral": {
+        "accent": "rgb(59,130,246)",
+        "brightness": 0.75
+      },
+      "reflective": {
+        "accent": "rgb(139,92,246)",
+        "brightness": 0.6
+      }
+    }
+  },
+
+  "deployment": {
+    "vercel": {
+      "token": "@VERCEL_TOKEN",
+      "projectId": "@VERCEL_PROJECT_ID",
+      "orgId": "@VERCEL_ORG_ID",
+      "domains": ["dealershipai.com", "dash.dealershipai.com"],
+      "buildCommand": "npm run build",
+      "startCommand": "npm start",
+      "env": {
+        "GMAPS_KEY": "@GMAPS_KEY",
+        "SLACK_WEBHOOK_URL": "@SLACK_WEBHOOK_URL",
+        "DEPLOY_URL": "https://dealershipai.com",
+        "NEXT_PUBLIC_APP_URL": "https://dealershipai.com"
+      },
+      "crons": [
+        {
+          "path": "/api/schedule-quarterly",
+          "schedule": "0 9 1 */3 *"
+        },
+        {
+          "path": "/api/nightly-lighthouse",
+          "schedule": "0 3 * * *"
+        },
+        {
+          "path": "/api/zero-click/recompute",
+          "schedule": "0 */4 * * *"
+        },
+        {
+          "path": "/api/cron/fleet-refresh",
+          "schedule": "0 8,12,16 * * *"
+        },
+        {
+          "path": "/api/cron/nurture",
+          "schedule": "0 * * * *"
+        },
+        {
+          "path": "/api/cron/lead-nurture",
+          "schedule": "0 10 * * *"
+        }
+      ]
+    },
+    "github": {
+      "repo": "github.com/Kramerbrian/dealership-ai-dashboard",
+      "branch": "main",
+      "actions": {
+        "buildDeploy": ".github/workflows/deploy-cinematic-hero.yml",
+        "nightlyAudit": ".github/workflows/nightly-lighthouse.yml",
+        "healthcheck": ".github/workflows/healthcheck.yml"
+      }
+    }
+  },
+
+  "integrationInstructions": {
+    "toGithub": [
+      "git add .",
+      "git commit -m 'feat: integrate onboarding + pulse dashboard + cinematic landing'",
+      "git push origin main"
+    ],
+    "toVercel": [
+      "Ensure VERCEL_TOKEN, PROJECT_ID, and ORG_ID are set in .env.local or project settings.",
+      "Run 'vercel --prod --confirm' to trigger production build.",
+      "Vercel auto-detects Next.js (App Router) and applies vercel.json configuration."
+    ],
+    "postDeployChecks": [
+      "Visit https://dealershipai.com → verify hero rotator and ambient hum muted by default.",
+      "Visit https://dash.dealershipai.com → login via Clerk → onboarding flow → pulse dashboard.",
+      "Check Slack for '✅ DealershipAI Cinematic Hero deployed' notification.",
+      "Run verification script: node scripts/verify-landing-deployment.js https://dealershipai.com"
+    ]
+  },
+
+  "securityAndPrivacy": {
+    "clerkSession": "rotating tokens, HttpOnly cookies, role-based access",
+    "telemetry": "aggregated + anonymized by dealerId hash",
+    "audio": "muted by default, opt-in unmute",
+    "memory": "localStorage only, auto-truncated to last 10 lines",
+    "csp": "strict Content-Security-Policy with Mapbox, Clerk, Stripe, and Analytics whitelisted"
+  },
+
+  "governance": {
+    "versionControl": "semantic",
+    "autoIncrement": true,
+    "lastUpdated": "2025-11-13T00:00:00Z",
+    "currentVersion": "v2025.11.13",
+    "backups": {
+      "page": "/app/page.legacy.backup.tsx",
+      "config": "/pulse/master-pulse-config.backup.json",
+      "deprecatedComponents": "/.disabled-pages/"
+    }
+  },
+
+  "documentation": {
+    "infrastructure": "/docs/deployment-infrastructure.md",
+    "completionReport": "/docs/deployment-completion-report.md",
+    "pulseArchitecture": "/docs/aim_vindex_pulse_suite.md",
+    "audioSpecs": "/public/audio/README.md"
+  }
+}
