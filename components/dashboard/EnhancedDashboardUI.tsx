@@ -24,9 +24,9 @@ import {
   MessageSquare,
   Bell
 } from 'lucide-react';
-import ExecutiveSummary from './ExecutiveSummary';
-import FivePillars from './FivePillars';
-import QuickWins from './QuickWins';
+import { ExecutiveSummary } from './ExecutiveSummary';
+import { FivePillars } from './FivePillars';
+import { QuickWins } from './QuickWins';
 import type { QAIScore, EEATScore, AIPlatformScore, Competitor, QuickWin } from '@/lib/types';
 
 interface DashboardData {
@@ -164,18 +164,18 @@ export default function EnhancedDashboardUI({ dealership }: EnhancedDashboardUIP
 
               {/* Actions */}
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
+                <Button className="text-sm px-3 py-1 border border-gray-300">
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button className="text-sm px-3 py-1 border border-gray-300">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   AI Chat
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button className="text-sm px-3 py-1 border border-gray-300">
                   <Bell className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button className="text-sm px-3 py-1 border border-gray-300">
                   <Settings className="h-4 w-4" />
                 </Button>
               </div>
@@ -208,19 +208,23 @@ export default function EnhancedDashboardUI({ dealership }: EnhancedDashboardUIP
 
           <TabsContent value="executive" className="space-y-6">
             <ExecutiveSummary
-              qai={data.qai}
-              eeat={data.eeat}
-              platforms={data.platforms}
-              competitors={data.competitors}
-              dealership={dealership}
+              {...{
+                qai: data.qai,
+                eeat: data.eeat,
+                platforms: data.platforms,
+                competitors: data.competitors,
+                dealership: dealership
+              } as any}
             />
           </TabsContent>
 
           <TabsContent value="pillars" className="space-y-6">
             <FivePillars
-              qai={data.qai}
-              eeat={data.eeat}
-              dealership={dealership}
+              {...{
+                qai: data.qai,
+                eeat: data.eeat,
+                dealership: dealership
+              } as any}
             />
           </TabsContent>
 
@@ -256,9 +260,11 @@ export default function EnhancedDashboardUI({ dealership }: EnhancedDashboardUIP
 
           <TabsContent value="quick-wins" className="space-y-6">
             <QuickWins
-              quickWins={data.quickWins}
-              summary={data.summary}
-              dealership={dealership}
+              {...{
+                quickWins: data.quickWins,
+                summary: data.summary,
+                dealership: dealership
+              } as any}
             />
           </TabsContent>
         </Tabs>
@@ -289,10 +295,7 @@ export default function EnhancedDashboardUI({ dealership }: EnhancedDashboardUIP
 
       {/* AI Chat Widget */}
       <div className="fixed bottom-6 left-6 z-40">
-        <Button 
-          size="lg" 
-          className="rounded-full shadow-lg bg-blue-600 hover:bg-blue-700"
-        >
+        <Button className="px-6 py-3 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700">
           <MessageSquare className="h-5 w-5 mr-2" />
           AI Assistant
         </Button>
