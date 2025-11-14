@@ -42,6 +42,8 @@
     "manifests:validate:verbose": "node scripts/manifests-validate.js --verbose",
     "manifests:version-bump": "node scripts/manifest-version-bump.js",
     "manifests:version-bump:dry-run": "node scripts/manifest-version-bump.js --dry-run",
+    "graph:sync": "tsx scripts/graph-sync.ts",
+    "graph:sync:dry-run": "tsx scripts/graph-sync.ts --dry-run",
     "test:production": "tsx scripts/production-testing.ts",
     "test:lightweight": "tsx scripts/lightweight-testing.ts",
     "optimize:performance": "tsx scripts/performance-optimizer.ts",

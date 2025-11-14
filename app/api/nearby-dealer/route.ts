@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+// Run on Vercel Edge Runtime for global low-latency
+export const runtime = 'edge';
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const lat = searchParams.get("lat");
