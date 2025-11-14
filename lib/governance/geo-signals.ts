@@ -92,15 +92,16 @@ export async function checkDuplicateSource(
   url: string,
   contentHash: string
 ): Promise<{ isDuplicate: boolean; existingSource?: any }> {
-  const existingSource = await db
+  const existingSourceRows = await db
     .select()
     .from(external_sources)
     .where(and(
       eq(external_sources.tenantId, tenantId),
       eq(external_sources.url, url)
     ))
-    .limit(1)
-    .then(rows => rows[0]);
+    .limit(1);
+
+  const existingSource = existingSourceRows[0];
 
   if (existingSource) {
     return {
@@ -110,15 +111,16 @@ export async function checkDuplicateSource(
   }
 
   // Also check by content hash for deduplication
-  const hashMatch = await db
+  const hashMatchRows = await db
     .select()
     .from(external_sources)
     .where(and(
       eq(external_sources.tenantId, tenantId),
       eq(external_sources.contentHash, contentHash)
     ))
-    .limit(1)
-    .then(rows => rows[0]);
+    .limit(1);
+
+  const hashMatch = hashMatchRows[0];
 
   return {
     isDuplicate: !!hashMatch,
@@ -343,15 +345,16 @@ export async function auditDataIntegrity(
   }
 
   // Check for missing composite scores
-  const hasCompositeScores = await db
+  const compositeScoreRows = await db
     .select()
     .from(composite_scores)
     .where(and(
       eq(composite_scores.tenantId, tenantId),
       eq(composite_scores.scoreType, 'aiv_geo')
     ))
-    .limit(1)
-    .then(rows => rows[0]);
+    .limit(1);
+
+  const hasCompositeScores = compositeScoreRows[0];
 
   if (!hasCompositeScores) {
     issues.push('Missing composite AIV GEO scores');
