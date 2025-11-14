@@ -291,12 +291,12 @@ const GamificationSystem = () => {
       <div className="experience-bar">
         <div className="exp-label">
           <span>Experience</span>
-          <span>{userProfile?.experience} / {userProfile?.experience + userProfile?.experienceToNext}</span>
+          <span>{userProfile?.experience ?? 0} / {(userProfile?.experience ?? 0) + (userProfile?.experienceToNext ?? 0)}</span>
         </div>
         <div className="exp-bar">
-          <div 
+          <div
             className="exp-fill"
-            style={{ width: `${(userProfile?.experience / (userProfile?.experience + userProfile?.experienceToNext)) * 100}%` }}
+            style={{ width: `${((userProfile?.experience ?? 0) / ((userProfile?.experience ?? 0) + (userProfile?.experienceToNext ?? 1))) * 100}%` }}
           ></div>
         </div>
         <div className="exp-next">
