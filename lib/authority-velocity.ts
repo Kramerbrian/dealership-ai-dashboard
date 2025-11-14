@@ -93,13 +93,13 @@ export class AuthorityVelocityCalculator {
     // Calculate current composite score
     const currentAIV = this.getLatestScore(aiVisibilityData);
     const currentATI = this.getLatestScore(atiData);
-    const currentCitation = this.getLatestScore(citationData);
+    const currentCitation = this.getLatestScore(citationData.map(c => ({ timestamp: c.timestamp, score: c.share })));
     const currentVelocity = currentAIV * currentATI * currentCitation;
 
     // Calculate previous period score
     const previousAIV = this.getPreviousScore(aiVisibilityData);
     const previousATI = this.getPreviousScore(atiData);
-    const previousCitation = this.getPreviousScore(citationData);
+    const previousCitation = this.getPreviousScore(citationData.map(c => ({ timestamp: c.timestamp, score: c.share })));
     const previousVelocity = previousAIV * previousATI * previousCitation;
 
     // Calculate trend
@@ -113,7 +113,7 @@ export class AuthorityVelocityCalculator {
 
     // Generate recommendations
     const recommendations = this.generateRecommendations(
-      currentAIV, currentATI, currentCitation, trend
+      currentAIV, currentATI, currentCitation, trend, direction
     );
 
     return {
@@ -314,7 +314,8 @@ export class AuthorityVelocityCalculator {
     aiVisibility: number,
     ati: number,
     citationShare: number,
-    trend: VelocityTrend
+    trend: VelocityTrend,
+    direction: 'improving' | 'stable' | 'declining'
   ): VelocityRecommendation[] {
     const recommendations: VelocityRecommendation[] = [];
 
@@ -355,7 +356,7 @@ export class AuthorityVelocityCalculator {
     }
 
     // Technical recommendations
-    if (trend.direction === 'declining') {
+    if (direction === 'declining') {
       recommendations.push({
         category: 'technical',
         action: 'Audit technical signals and fix issues',
@@ -377,10 +378,10 @@ export class AuthorityVelocityCalculator {
    */
   private getLatestTimestamp(data: Array<{ timestamp: Date }>): Date {
     if (data.length === 0) return new Date(0);
-    
-    return data.reduce((latest, current) => 
-      current.timestamp > latest.timestamp ? current.timestamp : latest.timestamp
-    );
+
+    return data.reduce((latest, current) =>
+      current.timestamp > latest ? current.timestamp : latest
+    , new Date(0));
   }
 
   /**
