@@ -8,16 +8,8 @@ import {
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 
-// SendGrid is optional - only used if API key is available
-let sgMail: any = null;
-if (process.env.SENDGRID_API_KEY) {
-  try {
-    sgMail = require('@sendgrid/mail');
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  } catch (e) {
-    console.warn('SendGrid not available:', e);
-  }
-}
+// SendGrid removed - email functionality disabled
+// Email sending can be re-enabled via Resend or another service if needed
 
 const scanRequestSchema = z.object({
   businessName: z.string().min(2).max(100),
@@ -129,26 +121,8 @@ async function handler(req: NextRequest) {
       // Continue even if database save fails - don't block user experience
     }
 
-    // Send email with results
-    if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) {
-      try {
-        await sgMail.send({
-          to: email,
-          from: process.env.SENDGRID_FROM_EMAIL,
-          subject: `Your Trust Score Results: ${Math.round(metrics.trust_score * 100)}/100`,
-          html: generateEmailHTML(businessName, metrics, recommendations),
-        });
-
-        // Update lead with email sent timestamp
-        await prisma.trustScanLead.updateMany({
-          where: { email, businessName },
-          data: { emailSentAt: new Date() },
-        });
-      } catch (emailError) {
-        console.error('Failed to send email:', emailError);
-        // Continue even if email fails
-      }
-    }
+    // Email sending disabled - can be re-enabled with Resend or another service
+    // The lead is still persisted to the database above
 
     return NextResponse.json(result, { status: 200 });
 

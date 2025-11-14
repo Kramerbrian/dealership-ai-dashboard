@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-11-14T18:14:21.710Z",
+  "orchestrator": {
+    "success": false,
+    "duration": 1,
+    "jobsExecuted": 2,
+    "jobsFailed": 2,
+    "governancePassed": true,
+    "safeModeTriggered": false,
+    "timestamp": "2025-11-14T18:14:21.710Z"
+  },
+  "lastRun": "2025-11-14T18:14:21.710Z"
+}
