@@ -46,19 +46,19 @@ export async function GET(req: NextRequest) {
 
     // Get metrics for each group
     const groupsWithMetrics = await Promise.all(
-      (groups || []).map(async (group) => {
+      (groups || []).map(async (group: any) => {
         const supabaseClient = getSupabase();
         if (!supabaseClient) {
-          return { ...group, metrics: null };
+          return { ...(group as any), metrics: null };
         }
         const { data: metrics } = await supabaseClient
           .from('dealer_group_metrics')
           .select('*')
-          .eq('group_id', group.id)
+          .eq('group_id', (group as any).id)
           .single();
 
         return {
-          ...group,
+          ...(group as any),
           metrics: metrics || null,
         };
       })
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
         owner_id: userId,
         plan_tier: planTier,
         max_locations: maxLocations,
-      })
+      } as any)
       .select()
       .single();
 

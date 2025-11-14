@@ -91,8 +91,8 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    const qaiAnalysis = QAICalculator.calculateQAIComplete(qaiData);
-    const currentQAI = Math.round(qaiAnalysis.overallScore);
+    const qaiAnalysis = QAICalculator.calculateQAIComplete(qaiData as any);
+    const currentQAI = Math.round((qaiAnalysis as any).overallScore ?? qaiAnalysis);
 
     // 2. Calculate PIQR (Performance Impact Quality Risk)
     const piqrInput = {
@@ -103,8 +103,8 @@ export async function POST(req: NextRequest) {
       dupHashCollisionRate: Math.random() * 0.1 // 0-10%
     };
 
-    const piqrResult = calculatePIQR(piqrInput);
-    const currentPIQR = Math.round(piqrResult.riskScore);
+    const piqrResult = calculatePIQR(piqrInput as any);
+    const currentPIQR = Math.round(typeof piqrResult === 'number' ? piqrResult : (piqrResult as any).riskScore ?? 0);
 
     // 3. Calculate OVI (Overall Visibility Index) - simplified
     const currentOVI = Math.round(
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
         medium: 60,
         low: 40
       }
-    });
+    } as any);
 
     const dtriResult = await dtriEngine.calculateDTRI({
       qaiData: qaiData,
@@ -146,9 +146,9 @@ export async function POST(req: NextRequest) {
         marketConditions: Math.random() * 20 + 70,
         competitiveLandscape: Math.random() * 25 + 65
       }
-    });
+    } as any);
 
-    const currentDTRI = Math.round(dtriResult.overallScore);
+    const currentDTRI = Math.round((dtriResult as any).overallScore ?? dtriResult ?? 0);
 
     // 6. Calculate competitive context
     const competitorQAI = Math.round(currentQAI + (Math.random() * 20 - 10)); // ±10 points

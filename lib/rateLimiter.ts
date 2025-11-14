@@ -26,6 +26,11 @@ export class RedisRateLimiter {
     this.config = config
   }
 
+  // Public getter for config
+  getConfig() {
+    return this.config;
+  }
+
   /**
    * Check if request is within rate limit
    * Returns { allowed: boolean, remaining: number, resetTime: number }
@@ -73,7 +78,7 @@ export class RedisRateLimiter {
         end
       `
 
-      if (!redisClient) {
+      if (!redis) {
         // Redis not available - allow request
         return {
           allowed: true,
@@ -82,7 +87,7 @@ export class RedisRateLimiter {
         };
       }
 
-      const result = await redisClient.eval(
+      const result = await redis.eval(
         script,
         [key],
         [windowStart, this.config.windowMs, this.config.maxRequests, now]
@@ -180,7 +185,7 @@ export function withRateLimit(
           status: 429,
           headers: {
             'Content-Type': 'application/json',
-            'X-RateLimit-Limit': limiter.config.maxRequests.toString(),
+            'X-RateLimit-Limit': limiter.getConfig().maxRequests.toString(),
             'X-RateLimit-Remaining': limit.remaining.toString(),
             'X-RateLimit-Reset': new Date(limit.resetTime).toISOString(),
             ...(limit.retryAfter && { 'Retry-After': limit.retryAfter.toString() })
@@ -189,11 +194,11 @@ export function withRateLimit(
       )
       return response
     }
-    
+
     const response = await handler(req)
-    
+
     // Add rate limit headers to successful responses
-    response.headers.set('X-RateLimit-Limit', limiter.config.maxRequests.toString())
+    response.headers.set('X-RateLimit-Limit', limiter.getConfig().maxRequests.toString())
     response.headers.set('X-RateLimit-Remaining', limit.remaining.toString())
     response.headers.set('X-RateLimit-Reset', new Date(limit.resetTime).toISOString())
     
