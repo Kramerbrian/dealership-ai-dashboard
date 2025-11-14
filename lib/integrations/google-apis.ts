@@ -17,6 +17,13 @@ interface GoogleBusinessProfile {
     media: string[];
     publishedAt: Date;
   }>;
+  metrics?: {
+    views?: number;
+    calls?: number;
+    directions?: number;
+    messages?: number;
+    bookings?: number;
+  };
 }
 
 interface GooglePlacesData {
