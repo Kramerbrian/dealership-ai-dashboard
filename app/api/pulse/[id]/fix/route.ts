@@ -46,13 +46,16 @@ export async function POST(
       );
     }
 
+    // Type the card as any to access properties
+    const typedCard = card as any;
+
     // Determine fix type based on card kind
     let fixType = 'generic';
-    if (card.kind === 'kpi_delta' && card.context?.kpi) {
-      fixType = `fix_${card.context.kpi.toLowerCase()}`;
-    } else if (card.kind === 'sla_breach') {
+    if (typedCard.kind === 'kpi_delta' && typedCard.context?.kpi) {
+      fixType = `fix_${typedCard.context.kpi.toLowerCase()}`;
+    } else if (typedCard.kind === 'sla_breach') {
       fixType = 'fix_sla';
-    } else if (card.kind === 'auto_fix') {
+    } else if (typedCard.kind === 'auto_fix') {
       // Already auto-fixed, just acknowledge
       return NextResponse.json({
         success: true,
@@ -66,21 +69,22 @@ export async function POST(
       pulseId,
       dealerId,
       fixType,
-      card,
+      card: typedCard,
       userId,
     });
 
     // Update card status
-    await supabase
+    const updateData: any = {
+      context: {
+        ...typedCard.context,
+        fix_triggered: true,
+        fix_triggered_at: new Date().toISOString(),
+        fix_result: fixResult,
+      },
+    };
+    await (supabase
       .from('pulse_cards')
-      .update({
-        context: {
-          ...card.context,
-          fix_triggered: true,
-          fix_triggered_at: new Date().toISOString(),
-          fix_result: fixResult,
-        },
-      })
+      .update as any)(updateData)
       .eq('id', pulseId);
 
     // Create a new pulse card for the fix result
@@ -91,20 +95,20 @@ export async function POST(
           ts: new Date().toISOString(),
           level: 'info',
           kind: 'auto_fix',
-          title: `Auto-fix applied: ${card.title}`,
+          title: `Auto-fix applied: ${typedCard.title}`,
           detail: fixResult.message || 'Fix executed successfully',
           delta: fixResult.delta || null,
-          thread_type: card.thread_type,
-          thread_id: card.thread_id,
+          thread_type: typedCard.thread_type,
+          thread_id: typedCard.thread_id,
           actions: ['open'],
           dedupe_key: `auto_fix:${pulseId}`,
           context: {
-            ...card.context,
+            ...typedCard.context,
             original_pulse_id: pulseId,
             fix_type: fixType,
           },
         },
-      });
+      } as any);
     }
 
     return NextResponse.json({
