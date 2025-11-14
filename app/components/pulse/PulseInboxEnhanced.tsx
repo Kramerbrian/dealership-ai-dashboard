@@ -375,7 +375,7 @@ export default function PulseInboxEnhanced() {
     return (
       <div
         key={card.id}
-        ref={el => cardRefs.current[index] = el}
+        ref={el => { cardRefs.current[index] = el; }}
         className={`bg-white dark:bg-gray-800 rounded-lg border-l-4 p-4 shadow-sm hover:shadow-md transition-all mb-3 ${
           card.level === 'critical' ? 'border-red-500 bg-red-50/50 dark:bg-red-900/20' :
           card.level === 'high' ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-900/20' :
@@ -430,8 +430,8 @@ export default function PulseInboxEnhanced() {
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{card.detail}</p>
             )}
             {card.delta !== undefined && (
-              <div className={`text-sm font-medium ${card.delta < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                {card.delta > 0 ? '+' : ''}{card.delta.toFixed(1)}%
+              <div className={`text-sm font-medium ${(card.delta as number) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                {(card.delta as number) > 0 ? '+' : ''}{(card.delta as number).toFixed(1)}%
               </div>
             )}
             {prioritizedCard.suggestedActions && prioritizedCard.suggestedActions.length > 0 && (
@@ -715,8 +715,8 @@ function ThreadDrawerEnhanced({
                 <div className="font-medium text-gray-900 dark:text-gray-100">{card.title}</div>
                 {card.detail && <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{card.detail}</div>}
                 {card.delta !== undefined && (
-                  <div className={`text-sm font-medium mt-1 ${card.delta < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                    {card.delta > 0 ? '+' : ''}{card.delta.toFixed(1)}%
+                  <div className={`text-sm font-medium mt-1 ${(card.delta as number) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                    {(card.delta as number) > 0 ? '+' : ''}{(card.delta as number).toFixed(1)}%
                   </div>
                 )}
               </div>
