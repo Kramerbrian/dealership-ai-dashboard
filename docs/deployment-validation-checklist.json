@@ -1,0 +1,509 @@
+{
+  "checklistVersion": "2025-11-14",
+  "project": "DealershipAI",
+  "description": "Comprehensive deployment validation checklist for verifying all manifests, workflows, and systems are active and healthy",
+
+  "phases": {
+    "phase1_infrastructure": {
+      "name": "Infrastructure Foundation",
+      "status": "in_progress",
+      "checks": [
+        {
+          "id": "inf-001",
+          "category": "Manifests",
+          "item": "All manifests organized in /manifests/ directory",
+          "command": "ls -la manifests/",
+          "expectedOutput": "3 JSON files: master, roadmap, meta-intelligence",
+          "status": "pending",
+          "priority": "critical"
+        },
+        {
+          "id": "inf-002",
+          "category": "Manifests",
+          "item": "Manifest validation script is executable",
+          "command": "npm run manifests:validate",
+          "expectedOutput": "✅ All manifests validated successfully",
+          "status": "pending",
+          "priority": "critical"
+        },
+        {
+          "id": "inf-003",
+          "category": "Manifests",
+          "item": "Version numbers are consistent",
+          "command": "npm run manifests:validate --verbose",
+          "expectedOutput": "Displays versions for all 3 manifests",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "inf-004",
+          "category": "GitHub Workflows",
+          "item": "meta-manifest-sync.yml workflow exists",
+          "command": "ls -la .github/workflows/meta-manifest-sync.yml",
+          "expectedOutput": "File exists with proper permissions",
+          "status": "pending",
+          "priority": "critical"
+        },
+        {
+          "id": "inf-005",
+          "category": "GitHub Workflows",
+          "item": "Workflow is enabled in GitHub Actions",
+          "command": "gh workflow list | grep 'Meta-Manifest Sync'",
+          "expectedOutput": "Workflow appears in list",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "inf-006",
+          "category": "NPM Scripts",
+          "item": "Manifest validation scripts in package.json",
+          "command": "npm run | grep manifests",
+          "expectedOutput": "Shows manifests:validate and manifests:version-bump",
+          "status": "pending",
+          "priority": "high"
+        }
+      ]
+    },
+
+    "phase2_edge_data": {
+      "name": "Edge + Data Intelligence",
+      "status": "not_started",
+      "checks": [
+        {
+          "id": "edge-001",
+          "category": "Edge Functions",
+          "item": "/api/ai-scores migrated to Edge",
+          "command": "curl -I https://dealershipai.com/api/ai-scores",
+          "expectedOutput": "x-vercel-edge: 1 header present",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "edge-002",
+          "category": "Edge Functions",
+          "item": "/api/nearby-dealer migrated to Edge",
+          "command": "curl -I https://dealershipai.com/api/nearby-dealer",
+          "expectedOutput": "x-vercel-edge: 1 header present",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "edge-003",
+          "category": "Edge Functions",
+          "item": "/api/pulse-stream migrated to Edge",
+          "command": "curl -I https://dealershipai.com/api/pulse-stream",
+          "expectedOutput": "x-vercel-edge: 1 header present",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "edge-004",
+          "category": "Knowledge Graph",
+          "item": "Neo4j Aura instance provisioned",
+          "command": "Check Neo4j Aura dashboard",
+          "expectedOutput": "Instance running with <50ms query latency",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "edge-005",
+          "category": "Knowledge Graph",
+          "item": "/api/dealer-twin endpoint active",
+          "command": "curl https://dealershipai.com/api/dealer-twin",
+          "expectedOutput": "HTTP 200 with dealer twin data",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "edge-006",
+          "category": "Performance",
+          "item": "Edge functions p95 latency < 200ms",
+          "command": "Check Vercel Analytics",
+          "expectedOutput": "All edge routes showing <200ms p95",
+          "status": "pending",
+          "priority": "critical"
+        }
+      ]
+    },
+
+    "phase3_context_copilot": {
+      "name": "Context + Copilot Evolution",
+      "status": "not_started",
+      "checks": [
+        {
+          "id": "ctx-001",
+          "category": "Contextual Feeds",
+          "item": "/api/context/weather endpoint active",
+          "command": "curl https://dealershipai.com/api/context/weather",
+          "expectedOutput": "HTTP 200 with weather data",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "ctx-002",
+          "category": "Contextual Feeds",
+          "item": "/api/context/oem endpoint active",
+          "command": "curl https://dealershipai.com/api/context/oem",
+          "expectedOutput": "HTTP 200 with OEM campaign data",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "ctx-003",
+          "category": "Contextual Feeds",
+          "item": "/api/context/events endpoint active",
+          "command": "curl https://dealershipai.com/api/context/events",
+          "expectedOutput": "HTTP 200 with local events data",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "ctx-004",
+          "category": "Contextual Feeds",
+          "item": "Weather feed refreshes hourly",
+          "command": "Check vercel.json crons",
+          "expectedOutput": "Weather cron schedule: @hourly",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "ctx-005",
+          "category": "Copilot",
+          "item": "useDAICopilot accepts context parameter",
+          "command": "grep -r 'useDAICopilot(context)' hooks/",
+          "expectedOutput": "Hook signature includes context parameter",
+          "status": "pending",
+          "priority": "critical"
+        },
+        {
+          "id": "ctx-006",
+          "category": "Copilot",
+          "item": "Reinforcement learner updates tone weights nightly",
+          "command": "Check GitHub Actions for tone-update job",
+          "expectedOutput": "Workflow runs at 0 3 * * *",
+          "status": "pending",
+          "priority": "medium"
+        }
+      ]
+    },
+
+    "phase4_design_fidelity": {
+      "name": "Design & Emotional Fidelity",
+      "status": "not_started",
+      "checks": [
+        {
+          "id": "des-001",
+          "category": "Theme System",
+          "item": "Single theme-controller.ts for all surfaces",
+          "command": "find lib -name 'theme-controller.ts' | wc -l",
+          "expectedOutput": "1 file only",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "des-002",
+          "category": "Theme System",
+          "item": "Temporal Palette Engine adjusts hue by time",
+          "command": "grep -r 'temporal.*palette' lib/theme-controller.ts",
+          "expectedOutput": "Temporal palette logic present",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "des-003",
+          "category": "Theme System",
+          "item": "Micro-textures (SVG noise) implemented",
+          "command": "grep -r 'noise.*svg' styles/",
+          "expectedOutput": "SVG noise pattern definitions found",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "des-004",
+          "category": "Visual Testing",
+          "item": "Playwright visual tests configured",
+          "command": "grep -r 'toMatchSnapshot' tests/",
+          "expectedOutput": "Visual regression tests exist",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "des-005",
+          "category": "Design Consistency",
+          "item": "Figma reference frames exported",
+          "command": "ls -la design/reference-frames/",
+          "expectedOutput": "PNG files for each major component",
+          "status": "pending",
+          "priority": "low"
+        }
+      ]
+    },
+
+    "phase5_meta_learning": {
+      "name": "Meta-Learning Loop Activation",
+      "status": "not_started",
+      "checks": [
+        {
+          "id": "meta-001",
+          "category": "GitHub Workflows",
+          "item": "meta-experiments.yml workflow enabled",
+          "command": "gh workflow list | grep 'meta-experiments'",
+          "expectedOutput": "Workflow appears in list",
+          "status": "pending",
+          "priority": "critical"
+        },
+        {
+          "id": "meta-002",
+          "category": "GitHub Workflows",
+          "item": "meta-executive-reports.yml workflow enabled",
+          "command": "gh workflow list | grep 'meta-executive-reports'",
+          "expectedOutput": "Workflow appears in list",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "meta-003",
+          "category": "GitHub Workflows",
+          "item": "meta-context-feeds.yml workflow enabled",
+          "command": "gh workflow list | grep 'meta-context-feeds'",
+          "expectedOutput": "Workflow appears in list",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "meta-004",
+          "category": "Data Ingestion",
+          "item": "Supabase/BigQuery ingestion configured",
+          "command": "Check data ingestion logs",
+          "expectedOutput": "Experiment results flowing into database",
+          "status": "pending",
+          "priority": "critical"
+        },
+        {
+          "id": "meta-005",
+          "category": "Reporting",
+          "item": "Executive Slack digest arrives daily",
+          "command": "Check Slack #executive-intel at 7am UTC",
+          "expectedOutput": "Daily summary message posted",
+          "status": "pending",
+          "priority": "high"
+        },
+        {
+          "id": "meta-006",
+          "category": "Reporting",
+          "item": "Executive PDF summary generated",
+          "command": "Check /reports/ directory",
+          "expectedOutput": "daily-summary.pdf exists and is recent",
+          "status": "pending",
+          "priority": "medium"
+        }
+      ]
+    },
+
+    "phase6_creative_growth": {
+      "name": "Continuous Creative Growth",
+      "status": "not_started",
+      "checks": [
+        {
+          "id": "cre-001",
+          "category": "Studio Mode",
+          "item": "Internal Studio Mode accessible",
+          "command": "curl https://dealershipai.com/studio",
+          "expectedOutput": "HTTP 200 (requires admin auth)",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "cre-002",
+          "category": "Tone Packs",
+          "item": "Quarterly tone pack refresh scheduled",
+          "command": "Check calendar for Q1 tone refresh",
+          "expectedOutput": "Calendar event exists",
+          "status": "pending",
+          "priority": "low"
+        },
+        {
+          "id": "cre-003",
+          "category": "Feedback Loop",
+          "item": "Copilot feedback flows to creative layer",
+          "command": "Check /data/copilot-feedback.json",
+          "expectedOutput": "Feedback entries with tone ratings",
+          "status": "pending",
+          "priority": "medium"
+        },
+        {
+          "id": "cre-004",
+          "category": "Guardrails",
+          "item": "PG guardrails active in brand-voice model",
+          "command": "grep -r 'pgSafe.*true' manifests/",
+          "expectedOutput": "pgSafe: true in meta-intelligence manifest",
+          "status": "pending",
+          "priority": "critical"
+        }
+      ]
+    }
+  },
+
+  "postDeploymentVerification": {
+    "immediate": [
+      {
+        "id": "post-001",
+        "item": "Verify Vercel deployment succeeded",
+        "command": "vercel ls --prod | head -1",
+        "expectedOutput": "Most recent deployment in production",
+        "priority": "critical"
+      },
+      {
+        "id": "post-002",
+        "item": "Check production site responds",
+        "command": "curl -I https://dealershipai.com",
+        "expectedOutput": "HTTP 200",
+        "priority": "critical"
+      },
+      {
+        "id": "post-003",
+        "item": "Verify hero component renders",
+        "command": "curl -s https://dealershipai.com | grep 'While You're Reading This'",
+        "expectedOutput": "Hero headline found",
+        "priority": "critical"
+      },
+      {
+        "id": "post-004",
+        "item": "Check Slack deployment notification",
+        "command": "Check Slack #deployments channel",
+        "expectedOutput": "Success message posted",
+        "priority": "high"
+      }
+    ],
+
+    "firstWeek": [
+      {
+        "id": "week-001",
+        "item": "Meta-manifest-sync ran successfully",
+        "command": "gh run list --workflow=meta-manifest-sync.yml",
+        "expectedOutput": "At least one successful run",
+        "priority": "high"
+      },
+      {
+        "id": "week-002",
+        "item": "Self-optimization summary appears in Slack",
+        "command": "Check Slack #meta-intel-alerts",
+        "expectedOutput": "Nightly summary messages",
+        "priority": "high"
+      },
+      {
+        "id": "week-003",
+        "item": "Executive console dashboard loads",
+        "command": "curl https://dealershipai.com/pulse/meta/executive-console",
+        "expectedOutput": "HTTP 200 with dashboard data",
+        "priority": "medium"
+      },
+      {
+        "id": "week-004",
+        "item": "Lighthouse scores remain >= 90",
+        "command": "Check /data/lighthouse-history.json",
+        "expectedOutput": "All scores >= 90 for past 7 days",
+        "priority": "high"
+      },
+      {
+        "id": "week-005",
+        "item": "No critical errors in production logs",
+        "command": "vercel logs https://dealershipai.com --since=7d | grep 'ERROR'",
+        "expectedOutput": "No critical errors",
+        "priority": "critical"
+      }
+    ]
+  },
+
+  "healthMetrics": {
+    "system": [
+      {
+        "metric": "Manifest Validation",
+        "target": "100% pass rate",
+        "measurement": "npm run manifests:validate",
+        "frequency": "daily"
+      },
+      {
+        "metric": "Cron Job Success Rate",
+        "target": ">= 99%",
+        "measurement": "Check Vercel cron logs",
+        "frequency": "weekly"
+      },
+      {
+        "metric": "Edge Function Latency",
+        "target": "p95 < 200ms",
+        "measurement": "Vercel Analytics",
+        "frequency": "daily"
+      },
+      {
+        "metric": "Knowledge Graph Query Time",
+        "target": "< 50ms",
+        "measurement": "Neo4j Aura metrics",
+        "frequency": "daily"
+      }
+    ],
+
+    "business": [
+      {
+        "metric": "Lighthouse Performance Score",
+        "target": ">= 90",
+        "measurement": "/data/lighthouse-history.json",
+        "frequency": "daily"
+      },
+      {
+        "metric": "Copilot Engagement Rate",
+        "target": ">= 50%",
+        "measurement": "/data/copilot-events.json",
+        "frequency": "weekly"
+      },
+      {
+        "metric": "Tone Consistency Score",
+        "target": ">= 95%",
+        "measurement": "Brand voice AI metrics",
+        "frequency": "weekly"
+      },
+      {
+        "metric": "Context Freshness",
+        "target": "< 2 hours",
+        "measurement": "Check last update timestamps",
+        "frequency": "daily"
+      }
+    ]
+  },
+
+  "rollbackProcedure": {
+    "triggers": [
+      "Manifest validation fails",
+      "Production HTTP 500 errors",
+      "Lighthouse score drops below 85",
+      "Error rate > 1% in first hour"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "action": "Identify failing commit",
+        "command": "git log --oneline -n 5"
+      },
+      {
+        "step": 2,
+        "action": "Revert to last known good state",
+        "command": "git revert HEAD && git push origin main"
+      },
+      {
+        "step": 3,
+        "action": "Notify team in Slack",
+        "command": "Post to #incidents channel"
+      },
+      {
+        "step": 4,
+        "action": "Verify rollback succeeded",
+        "command": "curl -I https://dealershipai.com"
+      },
+      {
+        "step": 5,
+        "action": "Create incident report",
+        "command": "Document in /docs/incidents/"
+      }
+    ]
+  }
+}

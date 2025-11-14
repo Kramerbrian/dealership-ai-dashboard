@@ -1,0 +1,213 @@
+name: Meta-Manifest Sync
+
+on:
+  schedule:
+    # Run nightly at 2am UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force sync even if no changes'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-manifests:
+    name: Sync and Validate Manifests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Validate manifests
+        id: validate
+        run: |
+          echo "Running manifest validation..."
+          npm run manifests:validate --verbose || exit 1
+          echo "validation_passed=true" >> $GITHUB_OUTPUT
+
+      - name: Check manifest versions
+        id: check_versions
+        run: |
+          echo "Checking manifest versions..."
+
+          MASTER_VERSION=$(cat manifests/dealershipai-master-manifest.json | jq -r '.manifestVersion')
+          ROADMAP_VERSION=$(cat manifests/dealershipai-roadmap-manifest.json | jq -r '.manifestVersion')
+          META_VERSION=$(cat manifests/dealershipai-meta-intelligence-manifest.json | jq -r '.manifestVersion')
+
+          echo "master_version=$MASTER_VERSION" >> $GITHUB_OUTPUT
+          echo "roadmap_version=$ROADMAP_VERSION" >> $GITHUB_OUTPUT
+          echo "meta_version=$META_VERSION" >> $GITHUB_OUTPUT
+
+          echo "📦 Current Versions:"
+          echo "   Master: $MASTER_VERSION"
+          echo "   Roadmap: $ROADMAP_VERSION"
+          echo "   Meta-Intelligence: $META_VERSION"
+
+      - name: Update manifest metadata
+        id: update
+        run: |
+          echo "Updating manifest metadata..."
+
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          CHANGES_MADE=false
+
+          # Update master manifest lastExecuted if self-optimization exists
+          if cat manifests/dealershipai-master-manifest.json | jq -e '.selfOptimization' > /dev/null; then
+            jq --arg timestamp "$TIMESTAMP" \
+              '.selfOptimization.governance.lastExecuted = $timestamp' \
+              manifests/dealershipai-master-manifest.json > tmp.json
+            mv tmp.json manifests/dealershipai-master-manifest.json
+            CHANGES_MADE=true
+            echo "✅ Updated master manifest lastExecuted"
+          fi
+
+          # Update meta-intelligence manifest lastExecuted
+          if cat manifests/dealershipai-meta-intelligence-manifest.json | jq -e '.governance' > /dev/null; then
+            jq --arg timestamp "$TIMESTAMP" \
+              '.governance.lastExecuted = $timestamp' \
+              manifests/dealershipai-meta-intelligence-manifest.json > tmp.json
+            mv tmp.json manifests/dealershipai-meta-intelligence-manifest.json
+            CHANGES_MADE=true
+            echo "✅ Updated meta-intelligence manifest lastExecuted"
+          fi
+
+          echo "changes_made=$CHANGES_MADE" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.update.outputs.changes_made == 'true' || github.event.inputs.force == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add manifests/
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: automated manifest metadata sync
+
+Updated lastExecuted timestamps:
+- Master manifest
+- Meta-intelligence manifest
+
+🤖 Automated by meta-manifest-sync workflow"
+
+            git push
+            echo "✅ Changes committed and pushed"
+          fi
+
+      - name: Generate sync report
+        if: always()
+        run: |
+          echo "## 📋 Manifest Sync Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Validation Status" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.validate.outputs.validation_passed }}" == "true" ]; then
+            echo "✅ All manifests validated successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Validation failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Current Versions" >> $GITHUB_STEP_SUMMARY
+          echo "- **Master**: ${{ steps.check_versions.outputs.master_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Roadmap**: ${{ steps.check_versions.outputs.roadmap_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Meta-Intelligence**: ${{ steps.check_versions.outputs.meta_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Changes" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.update.outputs.changes_made }}" == "true" ]; then
+            echo "✅ Metadata updated and committed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No changes required" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Notify Slack on failure
+        if: failure() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "❌ Manifest Sync Failed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ Manifest Sync Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Workflow*: Meta-Manifest Sync\n*Status*: Failed\n*Repository*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Notify Slack on success
+        if: success() && steps.update.outputs.changes_made == 'true'
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "✅ Manifests Synced Successfully",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "✅ Manifests Synced"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Versions*:\n• Master: ${{ steps.check_versions.outputs.master_version }}\n• Roadmap: ${{ steps.check_versions.outputs.roadmap_version }}\n• Meta-Intelligence: ${{ steps.check_versions.outputs.meta_version }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Metadata updated and committed automatically."
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
