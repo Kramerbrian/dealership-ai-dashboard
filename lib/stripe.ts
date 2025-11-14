@@ -9,7 +9,7 @@ import Stripe from 'stripe';
 // Create Stripe client only if key is available (for local builds)
 export const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-10-29.clover',
       typescript: true,
     })
   : null;
@@ -75,6 +75,7 @@ export type PricingTier = keyof typeof PRICING_TIERS;
  * Create a Stripe customer
  */
 export async function createCustomer(email: string, name?: string) {
+  if (!stripe) throw new Error('Stripe not initialized');
   return await stripe.customers.create({
     email,
     name,
@@ -94,6 +95,7 @@ export async function createCheckoutSession(
   cancelUrl: string,
   metadata?: Record<string, string>
 ) {
+  if (!stripe) throw new Error('Stripe not initialized');
   return await stripe.checkout.sessions.create({
     customer: customerId,
     payment_method_types: ['card'],
@@ -125,6 +127,7 @@ export async function createCheckoutSession(
  * Create a billing portal session
  */
 export async function createBillingPortalSession(customerId: string, returnUrl: string) {
+  if (!stripe) throw new Error('Stripe not initialized');
   return await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -135,6 +138,7 @@ export async function createBillingPortalSession(customerId: string, returnUrl: 
  * Get subscription details
  */
 export async function getSubscription(subscriptionId: string) {
+  if (!stripe) throw new Error('Stripe not initialized');
   return await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ['latest_invoice', 'customer', 'items.data.price']
   });
@@ -144,6 +148,7 @@ export async function getSubscription(subscriptionId: string) {
  * Cancel a subscription
  */
 export async function cancelSubscription(subscriptionId: string, immediately = false) {
+  if (!stripe) throw new Error('Stripe not initialized');
   if (immediately) {
     return await stripe.subscriptions.cancel(subscriptionId);
   } else {
