@@ -14,6 +14,13 @@ interface PerformanceMetrics {
   cacheHitRate: number;
 }
 
+interface PerformanceAlert {
+  id: number;
+  type: 'warning' | 'error';
+  message: string;
+  value: string;
+}
+
 interface PerformanceMonitorProps {
   tenantId: string;
 }
@@ -30,7 +37,7 @@ export default function PerformanceMonitor({ tenantId }: PerformanceMonitorProps
     cacheHitRate: 0
   });
   const [isMonitoring, setIsMonitoring] = useState(true);
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
 
   useEffect(() => {
     if (!isMonitoring) return;
@@ -56,7 +63,7 @@ export default function PerformanceMonitor({ tenantId }: PerformanceMonitorProps
   }, [isMonitoring]);
 
   const checkPerformanceAlerts = () => {
-    const newAlerts = [];
+    const newAlerts: PerformanceAlert[] = [];
     
     if (metrics.responseTime > 500) {
       newAlerts.push({
