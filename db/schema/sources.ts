@@ -6,7 +6,7 @@ import { relations } from "drizzle-orm";
 
 export const external_sources = pgTable("external_sources", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull().index(),
+  tenantId: uuid("tenant_id").notNull(),
   provider: varchar("provider", { length: 64 }).notNull(), // "seopowersuite:blog", "ahrefs:blog", etc.
   url: text("url").notNull(),
   title: text("title"),
@@ -28,7 +28,7 @@ export const external_sources = pgTable("external_sources", {
 
 export const geo_signals = pgTable("geo_signals", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull().index(),
+  tenantId: uuid("tenant_id").notNull(),
   sourceId: uuid("source_id").references(() => external_sources.id).notNull(),
   // normalized 0–100 scores
   geoChecklistScore: integer("geo_checklist_score").notNull(), // 0–100
@@ -44,7 +44,7 @@ export const geo_signals = pgTable("geo_signals", {
   // metadata
   computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   dataPoints: integer("data_points").notNull().default(1), // number of sources used
-  confidence: numeric("confidence").notNull().default(0.8), // 0–1
+  confidence: numeric("confidence").notNull().default("0.8"), // 0–1
   notes: text("notes"), // for instability flags, etc.
 }, (table) => ({
   tenantComputedIdx: index("idx_geo_signals_tenant_computed").on(table.tenantId, table.computedAt),
@@ -54,13 +54,13 @@ export const geo_signals = pgTable("geo_signals", {
 // Composite scores table for AIV integration
 export const composite_scores = pgTable("composite_scores", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull().index(),
+  tenantId: uuid("tenant_id").notNull(),
   scoreType: varchar("score_type", { length: 32 }).notNull(), // "aiv_geo", "rar_geo", "elasticity_geo"
   scoreValue: numeric("score_value").notNull(),
   components: text("components").notNull(), // JSON of component scores
   computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   windowWeeks: integer("window_weeks").notNull().default(1),
-  confidence: numeric("confidence").notNull().default(0.8),
+  confidence: numeric("confidence").notNull().default("0.8"),
   status: varchar("status", { length: 16 }).notNull().default("stable"), // stable, unstable, paused
 }, (table) => ({
   tenantTypeIdx: index("idx_composite_scores_tenant_type").on(table.tenantId, table.scoreType),
