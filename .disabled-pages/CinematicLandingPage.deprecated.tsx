@@ -265,7 +265,7 @@ export default function CinematicLandingPage() {
                   backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
                 }}
               >
-                DealershipAI is the first system in your store that hates wasted time as much as you do.
+                dealershipAI provides clarity in a world of digital noise.
               </span>
             </h1>
             <p className="text-xl text-white/70 mb-8 leading-relaxed">

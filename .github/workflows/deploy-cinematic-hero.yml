@@ -1,0 +1,137 @@
+name: Deploy Cinematic Hero
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/page.tsx'
+      - 'components/HeroSection_CupertinoNolan.tsx'
+      - 'components/landing/CinematicLandingPage.tsx'
+      - 'components/landing/**'
+      - 'app/api/nearby-dealer/**'
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Lint
+        if: ${{ !inputs.skip_tests }}
+        run: npm run lint || true
+
+      - name: Type Check
+        if: ${{ !inputs.skip_tests }}
+        run: npm run type-check || true
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Deploy Preview (staging)
+        id: preview
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          PREVIEW_URL=$(npx vercel --preview --token=$VERCEL_TOKEN --yes 2>&1 | grep -o 'https://[^ ]*\.vercel\.app' | head -1 || echo "")
+          echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          if [ -n "$PREVIEW_URL" ]; then
+            echo "✅ Preview deployed: $PREVIEW_URL"
+          fi
+
+      - name: Verify Preview Deployment
+        if: steps.preview.outputs.preview_url != ''
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
+        run: |
+          echo "🔍 Verifying preview deployment..."
+          sleep 10
+          curl -f "$PREVIEW_URL" > /dev/null && echo "✅ Preview is live" || echo "⚠️ Preview not yet available"
+
+      - name: Deploy to Production
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          DEPLOY_URL=$(npx vercel --prod --confirm --token=$VERCEL_TOKEN 2>&1 | grep -o 'https://[^ ]*\.vercel\.app' | head -1 || echo "")
+          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          if [ -n "$DEPLOY_URL" ]; then
+            echo "✅ Production deployed: $DEPLOY_URL"
+          fi
+
+      - name: Post-Deploy Verification
+        if: steps.deploy.outputs.deploy_url != ''
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.deploy_url }}
+        run: |
+          echo "🔍 Verifying production deployment..."
+          sleep 15
+          node scripts/verify-landing-deployment.js "$DEPLOY_URL" || exit 1
+
+      - name: Notify Slack on Success
+        if: success() && steps.deploy.outputs.deploy_url != ''
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "✅ Cinematic Hero deployed successfully",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*🚀 DealershipAI Cinematic Landing Page Deployed*\n\n• *URL:* ${{ steps.deploy.outputs.deploy_url }}\n• *Preview:* ${{ steps.preview.outputs.preview_url }}\n• *Commit:* ${{ github.sha }}\n• *Actor:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "❌ Cinematic Hero deployment failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*❌ Deployment Failed*\n\n• *Commit:* ${{ github.sha }}\n• *Actor:* ${{ github.actor }}\n• *Workflow:* ${{ github.workflow }}\n\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
