@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { Check, Download, AlertTriangle } from "lucide-react";
 
+import { RedditUGCFeed } from '@/components/ugc/RedditUGCFeed';
+
 export default function UgcTab({ dealer }: { dealer: string }) {
   const [data, setData] = useState<any>(null);
   
@@ -89,6 +91,15 @@ export default function UgcTab({ dealer }: { dealer: string }) {
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* Reddit UGC Feed */}
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-4">Reddit Mentions</h3>
+        <RedditUGCFeed 
+          dealershipName={dealer}
+          limit={10}
+        />
       </div>
     </div>
   );

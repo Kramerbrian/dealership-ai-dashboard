@@ -1,0 +1,60 @@
+{
+  "version": 2,
+  "name": "dealershipai-dashboard",
+  "buildCommand": "npm install --legacy-peer-deps && prisma generate && NEXT_TELEMETRY_DISABLED=1 next build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "nextjs",
+  "rootDirectory": ".",
+  "domains": [
+    "dash.dealershipai.com"
+  ],
+  "env": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@clerk_publishable_key",
+    "CLERK_SECRET_KEY": "@clerk_secret_key",
+    "DATABASE_URL": "@database_url",
+    "UPSTASH_REDIS_REST_URL": "@upstash_redis_url",
+    "UPSTASH_REDIS_REST_TOKEN": "@upstash_redis_token",
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key"
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/dashboard",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "dash.dealershipai.com"
+        }
+      ]
+    }
+  ]
+}
+

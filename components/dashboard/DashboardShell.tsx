@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -32,7 +32,9 @@ export function DashboardShell({ children }: Props) {
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const active = pathname === item.href;
-            const href = domain ? `${item.href}?domain=${encodeURIComponent(domain)}` : item.href;
+            const href = domain
+              ? `${item.href}?domain=${encodeURIComponent(domain)}`
+              : item.href;
             return (
               <Link
                 key={item.href}
@@ -65,4 +67,3 @@ export function DashboardShell({ children }: Props) {
     </div>
   );
 }
-

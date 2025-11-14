@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "name": "dealershipai-landing",
+  "buildCommand": "npm install --legacy-peer-deps && NEXT_TELEMETRY_DISABLED=1 next build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "nextjs",
+  "rootDirectory": ".",
+  "domains": [
+    "dealershipai.com",
+    "www.dealershipai.com"
+  ],
+  "env": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@clerk_publishable_key",
+    "CLERK_SECRET_KEY": "@clerk_secret_key"
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
+      ]
+    }
+  ]
+}
+
