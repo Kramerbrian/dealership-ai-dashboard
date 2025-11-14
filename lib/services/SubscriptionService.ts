@@ -160,7 +160,7 @@ export class SubscriptionService {
    */
   async createCustomer(email: string, name: string, metadata?: Record<string, string>): Promise<string> {
     if (!this.isInitialized) {
-      logger.warn('Stripe not initialized, returning mock customer ID', 'SubscriptionService', undefined, { email });
+      logger.warn('Stripe not initialized, returning mock customer ID', 'SubscriptionService', { email });
       return 'cus_mock_' + Date.now();
     }
 
@@ -174,7 +174,7 @@ export class SubscriptionService {
         }
       });
 
-      logger.info('Stripe customer created', 'SubscriptionService', undefined, { customerId: customer.id, email });
+      logger.info('Stripe customer created', 'SubscriptionService', { customerId: customer.id, email });
       return customer.id;
     } catch (error) {
       logger.error('Failed to create Stripe customer', 'SubscriptionService', error as Error, { email });
@@ -294,7 +294,7 @@ export class SubscriptionService {
         return null;
       }
 
-      const upcomingInvoice = await this.stripe.invoices.upcoming({
+      const upcomingInvoice = await this.stripe.invoices.createPreview({
         customer: customerId
       });
 
@@ -303,6 +303,9 @@ export class SubscriptionService {
         type: 'card'
       });
 
+      const firstPaymentMethod = paymentMethods.data[0];
+      const cardDetails = firstPaymentMethod?.type === 'card' ? firstPaymentMethod.card : null;
+
       return {
         subscription: this.mapStripeSubscription(subscription, tier),
         nextInvoice: {
@@ -310,10 +313,10 @@ export class SubscriptionService {
           date: new Date(upcomingInvoice.period_end * 1000),
           status: upcomingInvoice.status || 'draft'
         },
-        paymentMethod: paymentMethods.data[0] ? {
-          type: paymentMethods.data[0].type,
-          last4: (paymentMethods.data[0] as Stripe.PaymentMethod.Card).card?.last4 || '',
-          brand: (paymentMethods.data[0] as Stripe.PaymentMethod.Card).card?.brand || ''
+        paymentMethod: cardDetails ? {
+          type: 'card',
+          last4: cardDetails.last4 || '',
+          brand: cardDetails.brand || ''
         } : {
           type: 'card',
           last4: '0000',
@@ -366,15 +369,16 @@ export class SubscriptionService {
    * Map Stripe subscription to our Subscription interface
    */
   private mapStripeSubscription(stripeSub: Stripe.Subscription, tier: SubscriptionTier): Subscription {
+    const stripeSubTyped = stripeSub as any; // Cast to any to access Stripe properties
     return {
-      id: stripeSub.id,
-      customerId: stripeSub.customer as string,
+      id: stripeSubTyped.id,
+      customerId: stripeSubTyped.customer as string,
       tier,
-      status: stripeSub.status as Subscription['status'],
-      currentPeriodStart: new Date(stripeSub.current_period_start * 1000),
-      currentPeriodEnd: new Date(stripeSub.current_period_end * 1000),
-      cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
-      trialEnd: stripeSub.trial_end ? new Date(stripeSub.trial_end * 1000) : undefined
+      status: stripeSubTyped.status as Subscription['status'],
+      currentPeriodStart: new Date(stripeSubTyped.current_period_start * 1000),
+      currentPeriodEnd: new Date(stripeSubTyped.current_period_end * 1000),
+      cancelAtPeriodEnd: stripeSubTyped.cancel_at_period_end,
+      trialEnd: stripeSubTyped.trial_end ? new Date(stripeSubTyped.trial_end * 1000) : undefined
     };
   }
 
