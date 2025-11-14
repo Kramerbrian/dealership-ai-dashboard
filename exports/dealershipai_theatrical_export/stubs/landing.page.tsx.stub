@@ -1,0 +1,297 @@
+'use client';
+
+/**
+ * Cinematic Landing Page - Christopher Nolan Inspired
+ * Neural glass aesthetic with conversation-first design
+ *
+ * Features:
+ * - Framer Motion animations (Tron × Nolan aesthetic)
+ * - Brand hue tinting via useBrandHue
+ * - Clerk authentication CTA
+ * - Responsive mobile-first design
+ */
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import {
+  Eye,
+  Shield,
+  Infinity,
+  ArrowRight,
+  Menu,
+  X,
+  Activity
+} from 'lucide-react';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { useBrandHue } from '@/lib/hooks/useBrandHue';
+
+export default function CinematicLandingPage() {
+  const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const showcaseRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: showcaseRef,
+    offset: ['start start', 'end end']
+  });
+
+  // Parallax transforms
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const showcaseX = useTransform(scrollYProgress, [0, 0.5, 1], [0, -50, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [1, 1, 0.8, 0.6]);
+
+  // Brand hue tinting
+  const hue = useBrandHue();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-500 mx-auto mb-4 animate-pulse" />
+            <span className="font-semibold text-lg">DealershipAI</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      {/* Fixed Translucent Nav */}
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div
+              className="h-8 w-8 rounded-full bg-gradient-to-br"
+              style={{
+                backgroundImage: `linear-gradient(to bottom right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+              }}
+            />
+            <span className="font-semibold text-lg">DealershipAI</span>
+          </Link>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/#product" className="text-white/80 hover:text-white transition-colors">
+              Product
+            </Link>
+            <Link href="/#doctrine" className="text-white/80 hover:text-white transition-colors">
+              Doctrine
+            </Link>
+            <SignedIn>
+              <Link href="/dash" className="text-white/80 hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="px-4 py-2 text-white/80 hover:text-white transition-colors">
+                  Login
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button
+                  className="px-6 py-2 rounded-full text-black font-semibold hover:opacity-90 transition-all"
+                  style={{
+                    backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                  }}
+                >
+                  Get Started
+                </button>
+              </SignUpButton>
+            </SignedOut>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </motion.nav>
+
+      {/* Hero Zone */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        {/* Neural Glass Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-slate-900 to-black" />
+        <div
+          className="absolute inset-0 opacity-15"
+          style={{
+            backgroundImage: `radial-gradient(circle at 50% 50%, hsl(${hue}, 70%, 60%), transparent 70%)`
+          }}
+        />
+
+        {/* Soft Brand-Tinted Pulse */}
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 4,
+            repeat: -1,
+            ease: 'easeInOut',
+          }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl"
+          style={{
+            backgroundColor: `hsl(${hue}, 70%, 60%, 0.2)`
+          }}
+        />
+
+        <motion.div
+          style={{ y: heroY }}
+          className="relative z-10 max-w-7xl mx-auto px-6 py-20 text-center"
+        >
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+            className="text-5xl md:text-7xl font-light mb-6 leading-tight"
+          >
+            <span
+              className="font-semibold bg-clip-text text-transparent"
+              style={{
+                backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+              }}
+            >
+              DealershipAI is the first system in your store that hates wasted time as much as you do.
+            </span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            className="text-xl text-white/70 mb-8 leading-relaxed max-w-3xl mx-auto"
+          >
+            DealershipAI isn't software you use; it's cognition you borrow.
+            An embedded AI Chief Strategy Officer that continuously audits, predicts, fixes, and explains.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
+            <SignedOut>
+              <SignUpButton mode="modal">
+                <button
+                  className="px-8 py-4 rounded-full text-black font-semibold hover:opacity-90 transition-all flex items-center gap-2 justify-center"
+                  style={{
+                    backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                  }}
+                >
+                  Launch the Cognitive Interface
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="/dash"
+                className="px-8 py-4 rounded-full text-black font-semibold hover:opacity-90 transition-all flex items-center gap-2 justify-center"
+                style={{
+                  backgroundImage: `linear-gradient(to right, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`
+                }}
+              >
+                Launch the Cognitive Interface
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </SignedIn>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Three Pillars */}
+      <section id="product" className="relative py-20 px-6 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl font-light text-center mb-12"
+          >
+            The Three Pillars of Cognitive Trust
+          </motion.h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Clarity',
+                subtitle: 'How well you\'re seen',
+                icon: Eye,
+                description: 'Real-time visibility across all AI platforms. Know exactly where you stand.',
+              },
+              {
+                title: 'Trust',
+                subtitle: 'How much the system believes you',
+                icon: Shield,
+                description: 'Algorithmic trust scoring. Build credibility that AI systems recognize.',
+              },
+              {
+                title: 'Inevitable Loop',
+                subtitle: 'How it learns while you sleep',
+                icon: Infinity,
+                description: 'Continuous optimization. The system improves itself autonomously.',
+              },
+            ].map((card, idx) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                whileHover={{
+                  scale: 1.05,
+                  y: -10,
+                  transition: { type: 'spring', stiffness: 300, damping: 30 },
+                }}
+                className="relative group"
+              >
+                <div className="relative bg-gray-900/50 backdrop-blur-xl rounded-2xl p-8 border border-white/10 h-full">
+                  <card.icon
+                    className="w-12 h-12 mb-4"
+                    style={{ color: `hsl(${hue + idx * 30}, 70%, 60%)` }}
+                  />
+                  <h3 className="text-2xl font-semibold mb-2">{card.title}</h3>
+                  <p className="text-sm text-white/60 mb-4">{card.subtitle}</p>
+                  <p className="text-white/80">{card.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer id="doctrine" className="py-16 px-6 bg-black border-t border-white/10">
+        <div className="max-w-7xl mx-auto text-center">
+          <motion.blockquote
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-2xl font-light text-white/80 mb-8 italic"
+          >
+            "DealershipAI isn't software you use;
+            <br />
+            it's cognition you borrow."
+          </motion.blockquote>
+          <p className="mt-8 text-xs text-white/30">
+            © {new Date().getFullYear()} DealershipAI. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}

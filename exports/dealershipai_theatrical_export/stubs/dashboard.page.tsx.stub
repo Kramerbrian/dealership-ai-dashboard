@@ -1,0 +1,25 @@
+'use client';
+
+/**
+ * Dashboard Page - Pulse Decision Inbox
+ * Entry point after onboarding completion
+ */
+
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import PulseInboxEnhanced from '@/app/components/pulse/PulseInboxEnhanced';
+
+export default function DashboardPage() {
+  const searchParams = useSearchParams();
+  const onboardingComplete = searchParams?.get('onboarding') === 'complete';
+
+  useEffect(() => {
+    if (onboardingComplete) {
+      // Show cinematic transition sequence
+      // TronAcknowledgment → OrchestratorReadyState → PulseAssimilation
+      console.log('Onboarding complete - show cinematic sequence');
+    }
+  }, [onboardingComplete]);
+
+  return <PulseInboxEnhanced />;
+}

@@ -222,6 +222,7 @@ export default function CinematicLandingPage() {
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+            style={{ opacity: 1 }} // Fallback to ensure visibility
           >
             <h1 className="text-5xl md:text-7xl font-light mb-6 leading-tight">
               <span className="font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
@@ -261,6 +262,7 @@ export default function CinematicLandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="relative"
+            style={{ opacity: 1 }} // Fallback to ensure visibility
           >
             <div className="relative w-full aspect-square max-w-md mx-auto">
               {/* Orb Container */}
@@ -309,7 +311,7 @@ export default function CinematicLandingPage() {
 
               {/* Prompt Example */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.6 }}
                 className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-xl rounded-xl p-4 border border-white/10"
@@ -330,7 +332,7 @@ export default function CinematicLandingPage() {
       <section id="product" className="relative py-20 px-6 bg-black">
         <div className="max-w-7xl mx-auto">
           <motion.h2
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 1, y: 0 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-4xl font-light text-center mb-12"
@@ -364,7 +366,7 @@ export default function CinematicLandingPage() {
             ].map((card, idx) => (
               <motion.div
                 key={card.title}
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 1, y: 0 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}

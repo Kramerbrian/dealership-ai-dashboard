@@ -1,0 +1,31 @@
+DealershipAI Theatrical PLG Export
+===================================
+
+File Listing:
+-------------
+./exports/theatrical_manifest.json
+./stubs/landing.page.tsx.stub
+./stubs/onboarding.page.tsx.stub
+./stubs/dashboard.page.tsx.stub
+./stubs/layout.middleware.stub.tsx
+./stubs/hooks.useBrandHue.stub.ts
+./README_DEPLOY.md
+./index.txt
+
+Quick Start:
+------------
+1. Extract this zip file
+2. Read README_DEPLOY.md for deployment instructions
+3. Use Cursor import or manual setup
+
+Cursor Import Command:
+---------------------
+@import Create DealershipAI Theatrical PLG Experience from https://dealershipai.com/exports/dealershipai_theatrical_export.zip
+
+Repository:
+-----------
+https://github.com/Kramerbrian/dealership-ai-dashboard
+
+Documentation:
+--------------
+https://github.com/Kramerbrian/dealership-ai-dashboard/tree/main/docs
