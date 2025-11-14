@@ -85,7 +85,7 @@ export default function EnhancedLandingPage({
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {schema.hero.cta_buttons.map((button, index) => (
+            {schema.hero.cta_buttons.map((button: any, index: number) => (
               <button
                 key={index}
                 onClick={() => {
