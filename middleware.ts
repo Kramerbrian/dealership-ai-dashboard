@@ -139,23 +139,24 @@ async function publicMiddleware(req: NextRequest) {
 }
 
 // Dynamically import Clerk only when needed (dashboard domain)
-type ClerkMiddleware = ReturnType<typeof import('@clerk/nextjs/server').clerkMiddleware>;
+// Clerk middleware is a function that returns a NextMiddleware
+type ClerkMiddlewareFn = typeof import('@clerk/nextjs/server').clerkMiddleware;
 type RouteMatcher = ReturnType<typeof import('@clerk/nextjs/server').createRouteMatcher>;
 
-let clerkMiddleware: ClerkMiddleware | null = null;
+let clerkMiddlewareFn: ClerkMiddlewareFn | null = null;
 let createRouteMatcher: typeof import('@clerk/nextjs/server').createRouteMatcher | null = null;
 
 async function getClerkMiddleware(): Promise<{
-  clerkMiddleware: ClerkMiddleware;
+  clerkMiddlewareFn: ClerkMiddlewareFn;
   createRouteMatcher: typeof import('@clerk/nextjs/server').createRouteMatcher;
 }> {
-  if (!clerkMiddleware || !createRouteMatcher) {
+  if (!clerkMiddlewareFn || !createRouteMatcher) {
     const clerk = await import('@clerk/nextjs/server');
-    clerkMiddleware = clerk.clerkMiddleware;
+    clerkMiddlewareFn = clerk.clerkMiddleware;
     createRouteMatcher = clerk.createRouteMatcher;
   }
   return { 
-    clerkMiddleware: clerkMiddleware!, 
+    clerkMiddlewareFn: clerkMiddlewareFn!, 
     createRouteMatcher: createRouteMatcher! 
   };
 }
@@ -164,15 +165,19 @@ async function getClerkMiddleware(): Promise<{
 async function dashboardMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Redirect /dash to root on dashboard subdomain to avoid conflicts
-  if (pathname === '/dash' || pathname.startsWith('/dash/')) {
-    const rootUrl = new URL(req.url);
-    rootUrl.pathname = pathname.replace(/^\/dash/, '') || '/';
-    return NextResponse.redirect(rootUrl, 308);
+  // CRITICAL: On dashboard domain, root path (/) should redirect to /dash (the dashboard)
+  // This prevents the landing page from showing on the dashboard domain
+  if (pathname === '/') {
+    const dashUrl = new URL(req.url);
+    dashUrl.pathname = '/dash';
+    // Preserve query parameters (e.g., ?dealer=germainhonda.com)
+    dashUrl.search = req.nextUrl.search;
+    return NextResponse.redirect(dashUrl, 308);
   }
 
   // IMPORTANT: Check public routes FIRST, before any auth logic
   // This ensures public endpoints always bypass auth
+  // BUT: Root path (/) is NOT public on dashboard domain - it redirects to /dash above
   if (isPublicRoute(pathname)) {
     return NextResponse.next();
   }
@@ -199,12 +204,10 @@ async function dashboardMiddleware(req: NextRequest) {
   }
 
   // Lazy load Clerk middleware only when needed
-  let clerkMw: ClerkMiddleware;
   let protectedRouteMatcher: RouteMatcher;
   
   try {
-    const { clerkMiddleware, createRouteMatcher } = await getClerkMiddleware();
-    clerkMw = clerkMiddleware;
+    const { clerkMiddlewareFn, createRouteMatcher } = await getClerkMiddleware();
     
     // Create protected route matcher
     // NOTE: /onboarding is NOT in protected routes - it's public to allow Clerk handshake
@@ -277,13 +280,21 @@ async function dashboardMiddleware(req: NextRequest) {
 
   // Call Clerk middleware with proper error handling
   try {
-    // Use Clerk middleware with auth callback
-    const result = await clerkMw(async (auth: () => Promise<{ userId: string | null }>) => {
+    // Create Clerk middleware instance with options
+    // The handler receives auth object directly (not a function)
+    // clerkMiddlewareFn is guaranteed to be non-null from getClerkMiddleware() above
+    if (!clerkMiddlewareFn) {
+      throw new Error('Clerk middleware function not available');
+    }
+    
+    const clerkMw = clerkMiddlewareFn(async (auth) => {
       // We're on dashboard domain - apply Clerk authentication to protected routes
       // Only protect routes that are explicitly marked as protected
       if (protectedRouteMatcher(req)) {
         try {
-          const { userId } = await auth();
+          // auth() is called directly to get the auth object
+          const authResult = await auth();
+          const userId = authResult.userId;
           if (!userId) {
             // Redirect to sign-in for protected routes
             const signInUrl = new URL('/sign-in', req.url);
@@ -306,8 +317,16 @@ async function dashboardMiddleware(req: NextRequest) {
 
       // Default: allow through (for routes that are neither explicitly public nor protected)
       return NextResponse.next();
-    }, clerkOptions)(req);
+    }, clerkOptions);
     
+    // Invoke the middleware with request
+    // NextFetchEvent is required by the type signature but not used in edge runtime
+    // Create a minimal event object to satisfy the type system
+    const event = {
+      waitUntil: async () => {},
+      passThroughOnException: () => {},
+    } as any;
+    const result = await clerkMw(req, event);
     return result;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
