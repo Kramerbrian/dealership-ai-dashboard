@@ -179,8 +179,8 @@ async function dashboardMiddleware(req: NextRequest) {
     domain?: string;
   } = {
     // CRITICAL: Tell Clerk these routes should skip auth entirely
-    // IMPORTANT: Routes with __clerk_handshake are handled above (early return)
-    // IMPORTANT: /dash is NOT in publicRoutes - it's protected, but handshake bypasses protection
+    // IMPORTANT: /dash is NOT in publicRoutes - it's protected, but handshake is handled in callback
+    // IMPORTANT: During handshake, our callback allows it through without auth check
     publicRoutes: [
       '/',
       '/onboarding(/*)', // Allow onboarding during Clerk handshake
@@ -225,6 +225,7 @@ async function dashboardMiddleware(req: NextRequest) {
       // After handshake completes, Clerk will redirect to the same URL without the parameter
       if (hasClerkHandshake) {
         // Let Clerk process the handshake - don't block it
+        // Clerk middleware will handle the handshake processing automatically
         return NextResponse.next();
       }
       
@@ -253,7 +254,7 @@ async function dashboardMiddleware(req: NextRequest) {
         }
       }
 
-      // Default: allow through
+      // Default: allow through (for public routes or routes not in protectedRouteMatcher)
       return NextResponse.next();
     }, clerkOptions);
     

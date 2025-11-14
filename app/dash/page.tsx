@@ -1,7 +1,7 @@
-import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { PulseOverview } from '@/components/dashboard/PulseOverview';
+import { getAuthUser } from '@/lib/auth-wrapper';
 
 async function fetchClarity(domain?: string) {
   const qs = new URLSearchParams();
@@ -18,10 +18,21 @@ async function fetchClarity(domain?: string) {
   return res.json();
 }
 
-export default async function DashPage({ searchParams }: { searchParams?: { domain?: string } }) {
-  const { userId } = auth();
-
-  if (!userId) {
+export default async function DashPage({ searchParams }: { searchParams?: { domain?: string; __clerk_handshake?: string } }) {
+  // Check if this is a Clerk handshake - allow it to complete
+  const isClerkHandshake = searchParams && '__clerk_handshake' in searchParams;
+  
+  // Use universal auth wrapper (works with or without Clerk)
+  const auth = await getAuthUser();
+  
+  // Only redirect to sign-in if Clerk is configured and user is not authenticated
+  // BUT: Don't redirect during Clerk handshake - let it complete
+  const isClerkConfigured = !!(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+    process.env.CLERK_SECRET_KEY
+  );
+  
+  if (isClerkConfigured && !auth.isAuthenticated && !isClerkHandshake) {
     const qs = new URLSearchParams();
     if (searchParams?.domain) qs.set('redirect_domain', searchParams.domain);
     const redirectUrl = qs.toString() ? `/sign-in?${qs.toString()}` : '/sign-in';
