@@ -1,0 +1,125 @@
+{
+  "project": "dealershipAI end‑to‑end deployment",
+  "description": "This JSON outlines all the steps needed to prepare, commit, and deploy the updated landing page, dashboard, APIs, and supporting assets for dealershipAI.",
+  "prerequisites": [
+    "Node.js and npm installed on your local machine",
+    "Git installed and configured with access to your GitHub repository",
+    "Access to your Vercel project where the app is deployed",
+    "Your Mapbox API key and Clerk publishable/secret keys",
+    "The `agent_package.zip` archive containing the new landing, API routes, dashboard, onboarding, AI story and autopilot code"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Clone the repository and prepare a working branch",
+      "description": "Ensure you are working off the latest code and in the correct branch.",
+      "commands": [
+        "git clone https://github.com/Kramerbrian/dealership-ai-dashboard.git",
+        "cd dealership-ai-dashboard",
+        "git checkout main",
+        "git pull origin main"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Integrate new application code",
+      "description": "Bring in the changes contained in commit 443cfa3… (or extract the prepared agent package). You can cherry‑pick the commit or unzip the provided archive.",
+      "options": {
+        "cherryPick": {
+          "description": "If the commit exists in the remote repository, cherry‑pick it into your working branch.",
+          "commands": [
+            "git fetch origin",
+            "git cherry-pick 443cfa3e1893d1173a1f7d568d417e51f3161d0f"
+          ]
+        },
+        "archiveExtraction": {
+          "description": "Extract the contents of agent_package.zip directly into the project root, overwriting existing files. This includes the updated landing page, API stubs, dashboard shell, onboarding, AI story and autopilot components.",
+          "commands": [
+            "unzip /path/to/agent_package.zip -d ."
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Disable legacy routes that require unavailable dependencies",
+      "description": "Move any API routes importing @sendgrid/mail or cheerio into a disabled directory so they are not built by Vercel.",
+      "commands": [
+        "mkdir -p app/api_disabled/capture-email",
+        "mkdir -p app/api_disabled/analyze",
+        "git mv app/api/capture-email/route.ts app/api_disabled/capture-email/route.ts",
+        "git mv app/api/analyze/route.ts app/api_disabled/analyze/route.ts"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Remove unused SendGrid/Cheerio imports",
+      "description": "Search for any remaining imports of @sendgrid/mail or cheerio in your active routes or services and remove/comment them out so the build will not fail.",
+      "commands": [
+        "grep -R \"@sendgrid/mail\" -n app",
+        "grep -R \"cheerio\" -n app"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Update the landing page CTA and remove Clerk from the landing page",
+      "description": "Ensure the landing page no longer imports Clerk hooks or components. Replace the conditional sign‑in button with a static CTA that navigates to /sign-in using the router. The dashboard pages continue to use Clerk for authentication.",
+      "notes": "This change is included in the agent package. You should verify that `app/page.tsx` (the landing page) only renders the CTA button."
+    },
+    {
+      "id": 6,
+      "title": "Configure Mapbox and choose a custom style",
+      "description": "Publish the uploaded Mapbox styles and copy their style URLs. Update your map component to use your chosen style (e.g., Inception Night or Daydream Light).",
+      "notes": "In `components/landing/DealerFlyInMap.tsx`, set the `style` property of the Mapbox map to your published style URL. Ensure `NEXT_PUBLIC_MAPBOX_KEY` is set in your environment variables."
+    },
+    {
+      "id": 7,
+      "title": "Install dependencies and test the build locally",
+      "description": "Install any new packages and run a local build to confirm there are no syntax or type errors.",
+      "commands": [
+        "npm install",
+        "npm run build"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Configure environment variables in Vercel",
+      "description": "Make sure the following environment variables are defined in your Vercel project:",
+      "variables": {
+        "NEXT_PUBLIC_MAPBOX_KEY": "Your Mapbox public access token",
+        "NEXT_PUBLIC_BASE_URL": "(Optional) The base URL for API calls; leave blank to use relative paths",
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "Your Clerk publishable key",
+        "CLERK_SECRET_KEY": "Your Clerk secret key"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Commit and push your changes",
+      "description": "After verifying the build, stage all modifications, commit them with a descriptive message, and push to the branch that Vercel watches (usually main).",
+      "commands": [
+        "git add .",
+        "git commit -m \"Deploy new landing page, disable legacy routes, update dashboard and API stubs\"",
+        "git push origin main"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Redeploy on Vercel and verify",
+      "description": "Watch the Vercel dashboard for your project while it rebuilds. After deployment, test the following URLs to ensure everything works:",
+      "urls": {
+        "landing": "https://dealershipai.com",
+        "dashboard": "https://dash.dealershipai.com",
+        "onboarding": "https://dash.dealershipai.com/dash/onboarding",
+        "ai_story": "https://dash.dealershipai.com/dash/insights/ai-story",
+        "autopilot": "https://dash.dealershipai.com/dash/autopilot"
+      },
+      "notes": "If Vercel indicates that `dash.dealershipai.com` needs verification, remove that domain from other Vercel projects or add the TXT record as instructed."
+    }
+  ],
+  "final_checks": [
+    "Confirm the landing page displays the analyzer, clarity scores, and AI intro with your chosen Mapbox style.",
+    "Click the CTA and ensure it routes to `/sign-in` instead of invoking Clerk on the landing page.",
+    "Sign in on the dashboard and verify the pulse overview, onboarding, AI story, and autopilot pages load properly.",
+    "Check the Vercel build logs for any runtime errors and address them as needed."
+  ]
+}
