@@ -16,6 +16,7 @@ export function deployMockFix(params?: { kpi?: string; delta?: string }): void {
 
   addPulse({
     level: 'high',
+    kind: 'system_health',
     title: 'Auto-Fix deployed',
     detail: `Patching ${params?.kpi ?? 'Schema Coverage'}…`,
     delta: params?.delta ?? '+12',
@@ -25,11 +26,12 @@ export function deployMockFix(params?: { kpi?: string; delta?: string }): void {
 
   // Simulate async resolution (700ms)
   setTimeout(() => {
-    playSonic('resolved');
+    playSonic('success');
     doubleTap();
 
     addPulse({
       level: 'medium',
+      kind: 'system_health',
       title: 'Resolution achieved',
       detail: `Re-indexed successfully. KPI recalculated.`,
       delta: params?.delta ?? '+12',
@@ -45,11 +47,12 @@ export function deployMockFix(params?: { kpi?: string; delta?: string }): void {
 export function openTriage(): void {
   const { addPulse, addToast } = useHudStore.getState();
 
-  playSonic('open');
+  playSonic('click');
   tap();
 
   addPulse({
     level: 'medium',
+    kind: 'system_health',
     title: 'Triage opened',
     detail: 'Ranking incidents by impact × urgency ÷ time',
   });
@@ -68,6 +71,7 @@ export function openInsightsAIV(): void {
 
   addPulse({
     level: 'low',
+    kind: 'kpi_delta',
     title: 'Insights: AIV',
     detail: 'Surface visibility drivers and citations',
     delta: '+8',
@@ -87,6 +91,7 @@ export function compareCompetitors(): void {
 
   addPulse({
     level: 'high',
+    kind: 'market_signal',
     title: 'Competitive gap identified',
     detail: 'Fort Myers −6 GEO; opportunity to overtake',
     delta: '+6',
