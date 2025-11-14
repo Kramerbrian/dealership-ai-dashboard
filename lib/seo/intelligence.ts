@@ -53,7 +53,7 @@ export function analyzeSemanticIntent(
   category: string
 ): SemanticIntent[] {
   // Mock implementation - in production, use transformer embeddings
-  const intentMap: Record<string, SemanticIntent> = {
+  const intentMap: Record<string, Omit<SemanticIntent, 'keyword'>> = {
     'buy': { intent: 'transactional', confidence: 0.9, relatedKeywords: ['purchase', 'order'], buyerPersona: 'ready_to_buy' },
     'best': { intent: 'commercial', confidence: 0.8, relatedKeywords: ['top', 'quality'], buyerPersona: 'researching' },
     'how': { intent: 'informational', confidence: 0.9, relatedKeywords: ['guide', 'tutorial'], buyerPersona: 'learning' },
