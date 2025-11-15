@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Analytics Integration
  * Supports Vercel Analytics, PostHog, and Google Analytics

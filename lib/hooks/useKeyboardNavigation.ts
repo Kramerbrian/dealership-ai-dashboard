@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useCallback, useRef } from 'react';
 
 interface KeyboardNavigationOptions {

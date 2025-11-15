@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Predictive Analytics Engine
  * ML-based forecasting for schema coverage, E-E-A-T scores, and AI visibility

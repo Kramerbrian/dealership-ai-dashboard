@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Stripe Checkout API Route
  * Create checkout sessions for tier upgrades

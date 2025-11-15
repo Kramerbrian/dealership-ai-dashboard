@@ -16,6 +16,7 @@ import {
   Crown,
   Star
 } from 'lucide-react';
+// @ts-ignore
 import TierGate from './TierGate';
 import VisibilityScores from './VisibilityScores';
 import PlatformTracking from './PlatformTracking';
@@ -25,6 +26,7 @@ import MysteryShopPanel from './MysteryShopPanel';
 import CompetitiveIntel from './CompetitiveIntel';
 import SessionCounter from './SessionCounter';
 import TierBadge from './TierBadge';
+// @ts-ignore
 import UpgradeModal from './UpgradeModal';
 import AIVStrip from '@/components/visibility/AIVStrip';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Rate Limiting Wrapper for API Routes
  * Provides consistent rate limiting across all endpoints

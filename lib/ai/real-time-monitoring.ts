@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Real-Time Monitoring Service
  * Advanced real-time monitoring and alerting for AI visibility

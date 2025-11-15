@@ -3,9 +3,9 @@
 import React from 'react';
 import { Check, Lock, TrendingUp, ArrowRight, Zap } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
-import type { InstantScore } from './page';
+import InstantScore from './page';
 
-export function InstantResults({ score, onUnlock }: { score: InstantScore; onUnlock: (feature: string) => void }) {
+export function InstantResults({ score, onUnlock }: { score: any; onUnlock: (feature: string) => void }) {
   // Track pricing view
   const handlePricingClick = () => {
     trackEvent('pricing_viewed', {

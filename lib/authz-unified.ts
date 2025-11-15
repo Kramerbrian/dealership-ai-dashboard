@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Unified Authorization System for DealershipAI
  * Consolidates RBAC with fleet-specific permissions

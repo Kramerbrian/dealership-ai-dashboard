@@ -292,4 +292,4 @@ export class ComprehensiveScoringEngine {
 export const comprehensiveScoringEngine = new ComprehensiveScoringEngine();
 
 // Export types for use in other modules
-export type { ComprehensiveScoreInputs, ComprehensiveScoreResult };
+// Types already exported above

@@ -139,14 +139,14 @@ export default function MysteryShopPanel({ dealerId }: MysteryShopPanelProps) {
           <div className="grid grid-cols-3 gap-3">
             {Object.entries((result as any).scores)
               .filter(([key]) => key !== 'overall')
-              .map(([stage, score]) => (
+              .map(([stage, score]: [string, any]) => (
                 <div key={stage} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                   <div className="text-xs text-slate-400 mb-1 capitalize">{stage}</div>
                   <div className={`text-xl font-bold ${
-                    score >= 80 ? 'text-green-400' :
-                    score >= 60 ? 'text-yellow-400' : 'text-red-400'
+                    (score as number) >= 80 ? 'text-green-400' :
+                    (score as number) >= 60 ? 'text-yellow-400' : 'text-red-400'
                   }`}>
-                    {score}
+                    {score as any}
                   </div>
                 </div>
               ))}
@@ -160,7 +160,7 @@ export default function MysteryShopPanel({ dealerId }: MysteryShopPanelProps) {
                 <h4 className="font-medium text-amber-300">Priority Issues</h4>
               </div>
               <div className="space-y-2">
-                {(result as any).varianceAnalysis.priorityIssues.map((issue, idx) => (
+                {(result as any).varianceAnalysis.priorityIssues.map((issue: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
                     <span className="text-slate-300 capitalize">{issue.stage}</span>
                     <div className="flex items-center gap-2">
@@ -185,7 +185,7 @@ export default function MysteryShopPanel({ dealerId }: MysteryShopPanelProps) {
                 <h4 className="font-medium text-blue-300">Coaching Recommendations</h4>
               </div>
               <div className="space-y-3">
-                {(result as any).coachingRecommendations.map((rec, idx) => (
+                {(result as any).coachingRecommendations.map((rec: any, idx: number) => (
                   <div key={idx} className="text-sm">
                     <div className="flex items-start justify-between mb-1">
                       <span className="font-medium text-white capitalize">{rec.stage}</span>

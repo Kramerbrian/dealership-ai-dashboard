@@ -141,9 +141,9 @@ const ErrorEdge = ({ data }: { data: any }) => (
   </div>
 );
 
-const edgeTypes: EdgeTypes = {
-  success: SuccessEdge,
-  error: ErrorEdge,
+const edgeTypes: any = {
+  success: SuccessEdge as any,
+  error: ErrorEdge as any,
 };
 
 const WorkflowBuilder = () => {
@@ -542,7 +542,7 @@ const WorkflowBuilder = () => {
                 >
                   <Controls />
                   <MiniMap />
-                  <Background variant="dots" gap={12} size={1} />
+                  <Background variant={"dots" as any} gap={12} size={1} />
                 </ReactFlow>
               </ReactFlowProvider>
             </div>

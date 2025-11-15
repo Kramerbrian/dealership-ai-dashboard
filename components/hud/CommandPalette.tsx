@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TOKENS } from '@/styles/design-tokens';

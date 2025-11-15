@@ -30,9 +30,9 @@ export default function OrchestratorPreview() {
   const domain =
     (user?.publicMetadata?.website_url as string) ||
     (user?.publicMetadata?.dealershipUrl as string) ||
-    (typeof window !== 'undefined' ? sessionStorage.getItem('dai:domain') : null)
+    (typeof window !== 'undefined' ? sessionStorage.getItem('dai:domain') : null) || undefined
 
-  const hue = useBrandHue(domain)
+  const hue = useBrandHue(domain as string | undefined)
 
   // Enable skip after 2 seconds
   useEffect(() => {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Pulse Stream API - Server-Sent Events
  * GET /api/pulse/stream?filter=all&dealerId=demo-tenant

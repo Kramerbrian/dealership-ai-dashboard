@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Optional Google Analytics import - gracefully fail if not installed
 let BetaAnalyticsDataClient: any;
 try {

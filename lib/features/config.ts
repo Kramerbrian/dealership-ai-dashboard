@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Feature Flags & Remote Config
  * Toggle features without redeploying

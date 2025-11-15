@@ -220,4 +220,4 @@ function generateScenarioId(dealerId: string): string {
 }
 
 // Export types
-export type { ScenarioAction, ScenarioInput };
+// Types already exported above

@@ -9,9 +9,9 @@ try {
 
 // Initialize ElevenLabs client
 // API key defaults to process.env.ELEVENLABS_API_KEY
-let _client: ElevenLabsClient | null = null;
+let _client: typeof ElevenLabsClient | null = null;
 
-export function getElevenLabsClient(): ElevenLabsClient {
+export function getElevenLabsClient(): typeof ElevenLabsClient {
   if (!ElevenLabsClient) {
     throw new Error('ElevenLabs SDK not installed. Install @elevenlabs/elevenlabs-js to use this feature.');
   }

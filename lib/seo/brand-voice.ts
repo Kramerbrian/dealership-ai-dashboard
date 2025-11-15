@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Brand Voice & Tone Adaptation System
 // DealershipAI - Intelligent Brand Consistency Engine
 

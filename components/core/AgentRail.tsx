@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Search, Schema, MapPin, MessageSquare, 
-  Gauge, Building2, Award, TrendingUp 
+import {
+  Search, FileCode, MapPin, MessageSquare,
+  Gauge, Building2, Award, TrendingUp
 } from 'lucide-react';
 
 interface AgentNode {
@@ -25,7 +25,7 @@ const agentNodes: AgentNode[] = [
   {
     id: 'schema',
     label: 'Schema',
-    icon: <Schema className="w-5 h-5" />,
+    icon: <FileCode className="w-5 h-5" />,
     status: 'warning',
     description: 'JSON-LD markup coverage and validation'
   },

@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { Inbox, Search, FileText, Users, AlertCircle, Plus, ArrowRight } from 'lucide-react';

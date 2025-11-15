@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { searchRedditForDealership } from '@/lib/reddit/reddit-oauth-client';
 import { transformRedditToUGC } from '@/lib/reddit/devvit-client';

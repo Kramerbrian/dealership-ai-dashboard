@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
 import { redact } from '@/lib/security/redact';

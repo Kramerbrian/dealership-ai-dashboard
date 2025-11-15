@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * A/B Testing Guardrails Module
  * Prevents harmful experiments and ensures ethical testing

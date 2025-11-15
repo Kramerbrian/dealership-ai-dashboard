@@ -75,9 +75,9 @@ export class DynamicThemeManager {
     let newTheme: ThemeConfig;
 
     // Determine theme based on TSM and additional factors
-    if (tsm > 1.5 || additionalFactors?.criticalAlerts > 3) {
+    if (tsm > 1.5 || (additionalFactors?.criticalAlerts || 0) > 3) {
       newTheme = themeConfigs.critical;
-    } else if (tsm > 1.2 || additionalFactors?.anomalyDetected || additionalFactors?.systemHealth < 0.7) {
+    } else if (tsm > 1.2 || additionalFactors?.anomalyDetected || (additionalFactors?.systemHealth || 1) < 0.7) {
       newTheme = themeConfigs.defensive;
     } else {
       newTheme = themeConfigs.normal;

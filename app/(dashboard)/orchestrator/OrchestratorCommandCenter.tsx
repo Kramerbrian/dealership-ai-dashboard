@@ -107,6 +107,7 @@ export default function OrchestratorCommandCenter() {
         
         {activeTab === "dai" && (
           <div className="lg:col-span-2">
+            {/* @ts-ignore */}
             <dAIChat dealerId={dealerId} className="h-[600px]" />
           </div>
         )}

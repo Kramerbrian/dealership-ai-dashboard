@@ -1,10 +1,18 @@
 "use client";
 
+import type { AlertBand } from '@/lib/scoring';
+
 type Scores = { seo: number; aeo: number; geo: number; avi: number };
 type Gbp = { health_score: number; rating?: number; review_count?: number };
 type Ugc = { score: number; recent_reviews_90d: number };
 type Schema = { score: number };
 type Competitive = { rank: number; total: number };
+type AlertBands = {
+  seo?: AlertBand;
+  aeo?: AlertBand;
+  geo?: AlertBand;
+  avi?: AlertBand;
+};
 
 type Props = {
   domain: string;
@@ -14,18 +22,58 @@ type Props = {
   schema: Schema;
   competitive: Competitive;
   revenueMonthly: number;
+  alertBands?: AlertBands; // Optional alert bands from API
 };
 
-function statusColor(score: number) {
+/**
+ * Get status color based on alert band (preferred) or score (fallback)
+ */
+function statusColor(score: number, alertBand?: AlertBand) {
+  if (alertBand) {
+    if (alertBand === 'green') return 'text-emerald-400';
+    if (alertBand === 'yellow') return 'text-amber-400';
+    return 'text-red-400';
+  }
+  // Fallback to score-based logic
   if (score >= 80) return 'text-emerald-400';
   if (score >= 60) return 'text-amber-400';
   return 'text-red-400';
 }
 
-function pillBg(score: number) {
+/**
+ * Get pill background based on alert band (preferred) or score (fallback)
+ */
+function pillBg(score: number, alertBand?: AlertBand) {
+  if (alertBand) {
+    if (alertBand === 'green') return 'bg-emerald-500/15 border-emerald-500/40';
+    if (alertBand === 'yellow') return 'bg-amber-500/15 border-amber-500/40';
+    return 'bg-red-500/15 border-red-500/40';
+  }
+  // Fallback to score-based logic
   if (score >= 80) return 'bg-emerald-500/15 border-emerald-500/40';
   if (score >= 60) return 'bg-amber-500/15 border-amber-500/40';
   return 'bg-red-500/15 border-red-500/40';
+}
+
+/**
+ * Get alert band indicator (dot/badge)
+ */
+function AlertIndicator({ alertBand }: { alertBand?: AlertBand }) {
+  if (!alertBand) return null;
+  
+  const colors = {
+    green: 'bg-emerald-500',
+    yellow: 'bg-amber-500',
+    red: 'bg-red-500',
+  };
+  
+  return (
+    <span
+      className={`inline-block w-2 h-2 rounded-full ${colors[alertBand]} ml-1.5`}
+      title={`Alert: ${alertBand}`}
+      aria-label={`Alert level: ${alertBand}`}
+    />
+  );
 }
 
 type PriorityItem = {
@@ -93,7 +141,8 @@ export function PulseOverview({
   ugc,
   schema,
   competitive,
-  revenueMonthly
+  revenueMonthly,
+  alertBands
 }: Props) {
   const priorities = buildPriorityStack(scores, schema, ugc, gbp);
 
@@ -127,18 +176,21 @@ export function PulseOverview({
         </div>
         <div className="grid gap-3 md:grid-cols-4">
           {[
-            { key: 'SEO', value: scores.seo, desc: 'How easy your site is to read.' },
-            { key: 'AEO', value: scores.aeo, desc: 'How well you answer shopper questions.' },
-            { key: 'GEO', value: scores.geo, desc: 'How visible you are in AI answers.' },
-            { key: 'AVI', value: scores.avi, desc: 'Your overall AI visibility score.' }
+            { key: 'SEO', value: scores.seo, desc: 'How easy your site is to read.', alertBand: alertBands?.seo },
+            { key: 'AEO', value: scores.aeo, desc: 'How well you answer shopper questions.', alertBand: alertBands?.aeo },
+            { key: 'GEO', value: scores.geo, desc: 'How visible you are in AI answers.', alertBand: alertBands?.geo },
+            { key: 'AVI', value: scores.avi, desc: 'Your overall AI visibility score.', alertBand: alertBands?.avi }
           ].map((tile) => (
             <div
               key={tile.key}
-              className={`rounded-2xl border px-4 py-3 ${pillBg(tile.value)}`}
+              className={`rounded-2xl border px-4 py-3 ${pillBg(tile.value, tile.alertBand)}`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/60">{tile.key}</span>
-                <span className={`text-sm font-semibold ${statusColor(tile.value)}`}>
+                <span className="text-xs text-white/60 flex items-center">
+                  {tile.key}
+                  <AlertIndicator alertBand={tile.alertBand} />
+                </span>
+                <span className={`text-sm font-semibold ${statusColor(tile.value, tile.alertBand)}`}>
                   {tile.value}/100
                 </span>
               </div>

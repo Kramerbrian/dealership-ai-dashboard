@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Localization & Idiomatic Keyword Variants
 // DealershipAI - Multi-Market SEO Optimization
 

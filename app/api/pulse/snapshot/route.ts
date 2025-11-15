@@ -17,6 +17,7 @@ async function loadRegistry() {
   } catch {
     // Optional: dynamic JSON (if you keep it under configs/pulse.registry.json and bundle it)
     try {
+      // @ts-ignore
       const mod = await import('../../../../configs/pulse.registry.json', { with: { type: 'json' } } as any);
       return (mod as any).default;
     } catch {

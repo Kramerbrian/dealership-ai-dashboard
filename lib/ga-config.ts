@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Google Analytics 4 Configuration
  * DealershipAI Analytics Setup

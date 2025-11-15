@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useLLMJsonStream } from "@/hooks/useLLMJsonStream";

@@ -7,15 +7,14 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { 
+import {
   BoltIcon,
   ClockIcon,
   ChartBarIcon,
   EyeIcon,
   ShieldCheckIcon,
   RocketLaunchIcon,
-  SparklesIcon,
-  LightningBoltIcon
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 
 interface QuickAction {
@@ -88,7 +87,7 @@ const quickActions: QuickAction[] = [
     id: 'lightning-mode',
     name: 'Lightning Mode',
     description: 'Bend time and space like Inception',
-    icon: LightningBoltIcon,
+    icon: BoltIcon,
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-50'
   }

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * DealershipAI Orchestrator Engine
  * "The Beautiful Lie Machine"

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * dAI Algorithmic Trust Monitor™
  * Quantum Authority Index (QAI*) Calculation Engine

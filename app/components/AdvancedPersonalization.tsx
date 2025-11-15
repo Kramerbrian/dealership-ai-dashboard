@@ -164,8 +164,8 @@ const AdvancedPersonalization: React.FC = () => {
           ...prev.behavior,
           clickPatterns: [...prev.behavior.clickPatterns.slice(-99), event],
           usageFrequency: {
-            ...prev.usageFrequency,
-            [event]: (prev.behavior.usageFrequency[event] || 0) + 1
+            ...(prev.behavior as any).usageFrequency,
+            [event]: ((prev.behavior.usageFrequency as any)[event] || 0) + 1
           }
         }
       }));
@@ -242,7 +242,7 @@ const AdvancedPersonalization: React.FC = () => {
       preferences: {
         ...prev.preferences,
         [category]: {
-          ...prev.preferences[category as keyof typeof prev.preferences],
+          ...(prev.preferences[category as keyof typeof prev.preferences] as any),
           [key]: value
         }
       }

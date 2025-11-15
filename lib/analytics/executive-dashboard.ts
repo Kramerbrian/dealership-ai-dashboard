@@ -163,6 +163,7 @@ ${data.competitor} made a move:
         },
         {
           title: 'This Week\'s Priorities',
+          content: '',
           tasks: data.priorityTasks
         }
       ],
@@ -281,7 +282,7 @@ ${data.competitor} made a move:
   /**
    * ROI projections and impact analysis
    */
-  async calculateROI(dealershipId: string): Promise<{
+  async calculateROIPublic(dealershipId: string): Promise<{
     currentROI: number;
     projectedROI: number;
     paybackPeriod: number;

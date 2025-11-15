@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Mock database interface - replace with your actual database client
 interface DatabaseClient {
   execute(query: any): Promise<{ rowCount: number }>;

@@ -60,6 +60,7 @@ export default async function DashPage({ searchParams }: { searchParams?: { doma
           total: data.competitive.total
         }}
         revenueMonthly={data.revenue_at_risk.monthly}
+        alertBands={data.alert_bands} // Pass alert bands from API response
       />
     </DashboardShell>
   );

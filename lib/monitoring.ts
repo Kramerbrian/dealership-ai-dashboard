@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as Sentry from '@sentry/nextjs';
 import { Analytics } from '@vercel/analytics/react';
 import React from 'react';

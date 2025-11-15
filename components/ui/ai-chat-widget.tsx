@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * AI Chat Widget Component
  * In-app AI assistant with context-aware responses

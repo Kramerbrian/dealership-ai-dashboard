@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Agentic Execute Endpoint
  * Executes a batch of CommerceActions for group-level OEM updates

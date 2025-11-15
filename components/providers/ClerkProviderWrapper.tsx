@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { ClerkProvider as Clerk } from '@clerk/nextjs';

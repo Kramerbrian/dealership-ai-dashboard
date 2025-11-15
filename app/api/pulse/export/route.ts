@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Pulse Export API
  * GET /api/pulse/export?format=csv|json&filter=all

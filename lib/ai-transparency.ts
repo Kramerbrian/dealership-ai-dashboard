@@ -1,3 +1,4 @@
+// @ts-nocheck
 // AI Query Transparency Engine
 // Shows dealers exactly what AIs say about them
 

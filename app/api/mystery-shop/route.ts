@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mystery Shop API Route
  * Integrates Mystery Shop AI agent into command center

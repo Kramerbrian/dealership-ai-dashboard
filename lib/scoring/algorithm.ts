@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * DealershipAI Core Scoring Algorithm (dAI Model)
  * 

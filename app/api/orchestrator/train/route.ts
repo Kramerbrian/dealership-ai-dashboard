@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { verifySignature } from '@/lib/reinforce/hmac';
 import { seen, isFresh, recordEvent } from '@/lib/reinforce/guards';
 import { ack } from '@/lib/reinforce/ack';

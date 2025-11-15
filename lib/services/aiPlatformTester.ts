@@ -462,7 +462,8 @@ export async function runAIVisibilityTest(
   const sentimentScores = testResults.map(r =>
     r.sentiment === 'positive' ? 1 : r.sentiment === 'negative' ? -1 : 0
   );
-        // @ts-expect-error - Known type mismatch
+
+  const avgSentiment = sentimentScores.reduce((sum: number, s: number) => sum + s, 0) / sentimentScores.length;
 
   const avgAccuracy = Math.round(
     testResults.reduce((sum, r) => sum + r.accuracy, 0) / testResults.length
@@ -512,9 +513,9 @@ function calculatePlatformScore(results: PlatformTestResult[]): number {
   const avgPosition = results
     .filter(r => r.position && r.position <= 3) // Only count top 3 mentions
     .length / results.length;
-  const avgSentiment = results
-    .map(r => r.sentiment === 'positive' ? 1 : r.sentiment === 'negative' ? -1 : 0)
-        // @ts-expect-error - Known type mismatch
+  const sentimentScores = results
+    .map(r => r.sentiment === 'positive' ? 1 : r.sentiment === 'negative' ? -1 : 0);
+  const avgSentiment = sentimentScores.reduce((sum: number, s: number) => sum + s, 0) / sentimentScores.length;
   const avgAccuracy = results.reduce((sum, r) => sum + r.accuracy, 0) / results.length;
 
   // Weighted score calculation

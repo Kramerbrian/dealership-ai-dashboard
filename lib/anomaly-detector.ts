@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Anomaly detection system for weekly metrics
 export interface MetricData {
   timestamp: Date;

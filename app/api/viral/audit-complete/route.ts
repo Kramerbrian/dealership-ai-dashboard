@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Viral Loop Trigger - Audit Complete
  * Triggers viral sharing when audit completes

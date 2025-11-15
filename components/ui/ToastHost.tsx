@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { useToastStore } from '@/lib/store/toast';

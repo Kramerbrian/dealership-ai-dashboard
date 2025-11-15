@@ -32,13 +32,13 @@ export function throttle<T extends (...args: any[]) => any>(
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
   
-  return function executedFunction(...args: Parameters<T>) {
+  return function executedFunction(this: any, ...args: Parameters<T>) {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
       setTimeout(() => inThrottle = false, limit);
     }
-  };
+  } as any;
 }
 
 // Memoization for expensive calculations
@@ -60,8 +60,8 @@ export function memoize<T extends (...args: any[]) => any>(
     
     // Limit cache size to prevent memory leaks
     if (cache.size > 100) {
-      const firstKey = cache.keys().next().value;
-      cache.delete(firstKey);
+      const firstKey = cache.keys().next().value as string;
+      if (firstKey) cache.delete(firstKey);
     }
     
     return result;

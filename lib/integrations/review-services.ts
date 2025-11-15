@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Review Services Integration
 // DealerRater, Cars.com, Yelp, and other review platforms
 

@@ -197,7 +197,7 @@ export default function InevitabilityDeck() {
   const [mode, setMode] = useState<'design'|'code'>('design');
 
   return (
-    <div className="min-h-screen" style={{ background: TOKENS.color.surface.graphite }}>
+    <div className="min-h-screen" style={{ background: (TOKENS.color.surface as any).graphite || 'rgba(18, 18, 18, 0.6)' }}>
       <div className="mx-auto max-w-7xl p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

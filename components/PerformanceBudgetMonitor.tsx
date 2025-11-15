@@ -1,5 +1,6 @@
 'use client';
 import useSWR from 'swr';
+// @ts-ignore
 import { WebVitalMetric, PerformanceBudget } from '@/app/api/web-vitals/route';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());

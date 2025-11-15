@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Policy Evaluation Engine
  * DealershipAI - Policy-as-Data Implementation

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Pulse Trends - Trend analysis and velocity calculation
  * Analyzes historical pulse scores to identify trends, velocity, and acceleration

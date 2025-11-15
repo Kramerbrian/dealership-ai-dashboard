@@ -31,15 +31,15 @@ export default function AdvancedCharts({ tenantId }: AdvancedChartsProps) {
           {
             label: 'AI Visibility Index',
             data: [65, 72, 78, 82, 87, 89],
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderColor: 'rgb(59, 130, 246)' as any,
+            backgroundColor: 'rgba(59, 130, 246, 0.1)' as any,
             fill: true
           },
           {
             label: 'Industry Average',
             data: [58, 61, 64, 67, 69, 71],
-            borderColor: 'rgb(156, 163, 175)',
-            backgroundColor: 'rgba(156, 163, 175, 0.1)',
+            borderColor: 'rgb(156, 163, 175)' as any,
+            backgroundColor: 'rgba(156, 163, 175, 0.1)' as any,
             fill: true
           }
         ]

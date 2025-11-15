@@ -7,9 +7,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  TargetIcon, 
-  ChartBarIcon, 
+import {
+  TagIcon as TargetIcon,
+  ChartBarIcon,
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
   ArrowTrendingUpIcon,
