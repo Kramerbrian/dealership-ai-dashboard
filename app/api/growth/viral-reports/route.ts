@@ -7,7 +7,7 @@ const viralEngine = new ViralGrowthEngine();
 
 export async function POST() {
   try {
-    const { dealershipId } = await req.json();
+    const { dealershipId } = await request.json();
     
     if (!dealershipId) {
       return NextResponse.json(
@@ -34,7 +34,7 @@ export async function POST() {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const shareToken = searchParams.get('token');
     
     if (!shareToken) {

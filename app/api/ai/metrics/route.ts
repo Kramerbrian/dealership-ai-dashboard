@@ -190,7 +190,7 @@ export async function GET(req: NextRequest) {
   try {
     // Rate limiting
     const rateLimit = await checkRateLimit(req, {
-      limit: 100,
+      requests: 100,
       window: '1h',
       identifier: req.headers.get('x-forwarded-for') || 'unknown',
     });
@@ -198,7 +198,7 @@ export async function GET(req: NextRequest) {
     if (!rateLimit.success) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
-        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } }
+        { status: 429, headers: { 'Retry-After': String(rateLimit.reset) } }
       );
     }
 

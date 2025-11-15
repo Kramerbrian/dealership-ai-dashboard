@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('[agentic/execute] Error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid request', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request', details: error.issues }, { status: 400 });
     }
     return NextResponse.json({ error: 'Failed to execute actions', message: error.message }, { status: 500 });
   }

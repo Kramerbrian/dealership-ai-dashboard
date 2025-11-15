@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = supabase;
     if (!supabase) {
       return NextResponse.json(
         { error: 'Database not configured' },

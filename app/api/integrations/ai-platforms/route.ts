@@ -12,7 +12,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { action, query, dealershipName, keywords } = await req.json();
+    const { action, query, dealershipName, keywords } = await request.json();
 
     if (!action) {
       return NextResponse.json({ error: 'Action is required' }, { status: 400 });

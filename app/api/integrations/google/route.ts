@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Get query parameters
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
     const accountId = searchParams.get('accountId');
 
@@ -101,7 +101,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { action, accountId, data } = await req.json();
+    const { action, accountId, data } = await request.json();
 
     if (!action || !accountId) {
       return NextResponse.json({ error: 'Action and account ID are required' }, { status: 400 });
