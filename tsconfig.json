@@ -37,6 +37,11 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "app/api_disabled",
+    "backup",
+    "disabled",
+    "**/*.disabled.ts",
+    "**/*.disabled.tsx"
   ]
 }
