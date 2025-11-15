@@ -219,7 +219,7 @@ const AutoPilotMode = () => {
 
   const stopMonitoring = () => {
     setIsMonitoring(false);
-    toast.info('Auto-pilot monitoring stopped');
+    toast('Auto-pilot monitoring stopped');
   };
 
   const checkForOpportunities = () => {
@@ -251,9 +251,9 @@ const AutoPilotMode = () => {
       };
 
       setActions(prev => [newAction, ...prev]);
-      
+
       if (config.constraints.requireApproval) {
-        toast.info('New action requires approval');
+        toast('New action requires approval');
       } else {
         executeAction(newAction);
       }
@@ -306,14 +306,14 @@ const AutoPilotMode = () => {
   };
 
   const rejectAction = (actionId: string) => {
-    setActions(prev => 
-      prev.map(a => 
-        a.id === actionId 
+    setActions(prev =>
+      prev.map(a =>
+        a.id === actionId
           ? { ...a, status: 'rejected' as any }
           : a
       )
     );
-    toast.info('Action rejected');
+    toast('Action rejected');
   };
 
   const updateConfig = (updates: Partial<AutoPilotConfig>) => {

@@ -26,7 +26,7 @@ const VoiceCommands: React.FC = () => {
   const [arMarkers, setArMarkers] = useState<ARMarker[]>([]);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any | null>(null);
 
   // Voice commands configuration
   const voiceCommands: VoiceCommand[] = [
@@ -92,21 +92,21 @@ const VoiceCommands: React.FC = () => {
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
-      recognitionRef.current.onresult = (event) => {
+      recognitionRef.current.onresult = (event: any) => {
         let finalTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
           }
         }
-        
+
         if (finalTranscript) {
           setTranscript(finalTranscript);
           processVoiceCommand(finalTranscript.toLowerCase().trim());
         }
       };
 
-      recognitionRef.current.onerror = (event) => {
+      recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         toast.error(`Voice recognition error: ${event.error}`);
         setIsListening(false);

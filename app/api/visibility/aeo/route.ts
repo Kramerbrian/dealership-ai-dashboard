@@ -68,10 +68,9 @@ export async function GET(req: NextRequest) {
     const timeRange = searchParams.get('timeRange') || '30d';
     
     // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.AEO_DATA(domain, timeRange);
-    
-    const cachedData = await cache.get(cacheKey);
+    const cacheKey = `aeo:${domain}:${timeRange}`;
+
+    const cachedData = await CacheManager.get(cacheKey);
     if (cachedData) {
       const duration = Date.now() - startTime;
       
@@ -101,7 +100,7 @@ export async function GET(req: NextRequest) {
     );
     
     // Cache the result
-    await cache.set(cacheKey, aeoData, CACHE_TTL.AEO_DATA);
+    await CacheManager.set(cacheKey, aeoData, 300);
     
     const duration = Date.now() - startTime;
     

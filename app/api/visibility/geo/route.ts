@@ -66,10 +66,9 @@ export async function GET(req: NextRequest) {
     const timeRange = searchParams.get('timeRange') || '30d';
     
     // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.GEO_DATA(domain, timeRange);
-    
-    const cachedData = await cache.get(cacheKey);
+    const cacheKey = `geo:${domain}:${timeRange}`;
+
+    const cachedData = await CacheManager.get(cacheKey);
     if (cachedData) {
       const duration = Date.now() - startTime;
       
@@ -99,7 +98,7 @@ export async function GET(req: NextRequest) {
     );
     
     // Cache the result
-    await cache.set(cacheKey, geoData, CACHE_TTL.GEO_DATA);
+    await CacheManager.set(cacheKey, geoData, 300);
     
     const duration = Date.now() - startTime;
     
