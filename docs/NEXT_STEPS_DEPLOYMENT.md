@@ -1,214 +1,206 @@
-# 🚀 Next Steps for 100% Deployment
+# Next Steps - Deployment & Integration
 
-## ✅ **What's Complete**
+## ✅ Completed
 
-1. ✅ **Landing Page** - Production-ready with all features
-2. ✅ **Onboarding Page** - Pulse microcards implemented
-3. ✅ **Drive Dashboard** - Updated with all components
-4. ✅ **Components** - All required components exist
-5. ✅ **Middleware** - Route protection configured
-6. ✅ **API Routes** - All endpoints functional
+1. **OEM Router System** - Complete end-to-end implementation
+   - Exec OEM Pulse tile component
+   - Group commerce actions helper
+   - CommerceAction types
+   - OEM Router GPT configuration
+   - Routing function
+   - Agentic execute endpoint
 
----
+2. **Vercel Tools** - Updated and verified
+   - Configuration checker
+   - Deployment verifier (includes OEM Router endpoints)
+   - Troubleshooting guide updated
 
-## 🔧 **Immediate Actions (30 minutes)**
+3. **API Endpoints** - Tested and fixed
+   - Health check: ✅ Working
+   - Market pulse: ✅ Working
+   - OEM GPT parse: ✅ Working
+   - Agentic execute: ✅ Fixed import issue
 
-### **1. Fix Build Issues**
-
-#### **A. Install Optional Dependencies**
-```bash
-npm install sonner @langchain/anthropic @langchain/openai @langchain/core @elevenlabs/elevenlabs-js posthog-js
-```
-
-**OR** make imports conditional (already have fallbacks):
-- Files already handle missing dependencies gracefully
-- Build fails on import, not runtime
-- Option: Move optional imports to dynamic imports
-
-#### **B. Fix Supabase Import**
-The `getSbAdmin` function may not exist. Update `app/api/admin/seed/route.ts`:
-- Already fixed with fallback to direct `createClient`
-- Ensure `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set
-
-#### **C. Fix Case Sensitivity**
-- ✅ Fixed: Updated imports to use `@/lib/ratelimit` consistently
-
-### **2. Test Build Locally**
-
-```bash
-# Set required environment variables in .env.local
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=eyJ...
-UPSTASH_REDIS_REST_URL=https://stable-whippet-17537.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AUSBAAIncDJmMjViZTZkMGUwMzA0ODBjOGI5YjBmYjU0ZTg1N2U3OHAyMTc1Mzc
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
-CLERK_SECRET_KEY=sk_live_...
-
-# Test build
-npm run build
-```
-
-### **3. Commit and Push**
-
-```bash
-git add .
-git commit -m "Production ready: All pages complete, build fixes applied"
-git push origin main
-```
+4. **Documentation** - Updated
+   - Root Directory guidance corrected
+   - Vercel troubleshooting guide updated
 
 ---
 
-## 📋 **Vercel Deployment Steps**
+## 🚀 Immediate Next Steps
 
-### **Step 1: Add Environment Variables**
-
-Go to: **Vercel Dashboard** → **Your Project** → **Settings** → **Environment Variables**
-
-**Add these (set for Production, Preview, AND Development):**
-
-```env
-# Clerk (REQUIRED)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
-CLERK_SECRET_KEY=sk_live_...
-
-# Database (REQUIRED)
-DATABASE_URL=postgresql://...
-DIRECT_URL=postgresql://...
-
-# Redis (REQUIRED)
-UPSTASH_REDIS_REST_URL=https://stable-whippet-17537.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AUSBAAIncDJmMjViZTZkMGUwMzA0ODBjOGI5YjBmYjU0ZTg1N2U3OHAyMTc1Mzc
-
-# Supabase (REQUIRED)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Same as SERVICE_KEY
-
-# Optional (for full functionality)
-NEXT_PUBLIC_GA=G-...
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### **Step 2: Trigger Deployment**
+### 1. Deploy to Production
 
 ```bash
-# Option A: Push to main (auto-deploys)
+# Option A: Push to main (triggers auto-deployment)
 git push origin main
 
-# Option B: Manual deploy
-npx vercel --prod
+# Option B: Manual deployment with verification
+npm run vercel:deploy
 ```
 
-### **Step 3: Verify Deployment**
+**After deployment:**
+- Verify all endpoints are accessible
+- Check Vercel build logs for any errors
+- Test OEM Router endpoints in production
+
+### 2. Verify Production Deployment
 
 ```bash
-# Check status
-npx vercel ls
+# Run verification script
+npm run vercel:verify
 
-# View logs
-npx vercel logs <deployment-url>
-
-# Test endpoints
-curl https://your-app.vercel.app/
-curl https://your-app.vercel.app/api/health
+# Or manually test endpoints
+curl https://dash.dealershipai.com/api/health
+curl https://dash.dealershipai.com/api/oem/gpt-parse -X POST -H "Content-Type: application/json" -d '{"url":"https://pressroom.toyota.com/test"}'
 ```
 
----
+### 3. Complete OEM Router Integration
 
-## ✅ **Post-Deployment Checklist**
+**Wire OEM Router GPT to actual OpenAI API:**
+- Update `app/api/oem/gpt-parse/route.ts` with real OpenAI API calls
+- Replace placeholder response with actual GPT-4 structured output
+- Test with real OEM pressroom URLs
 
-### **Functional Tests**
-- [ ] Landing page loads (`/`)
-- [ ] FreeAuditWidget works
-- [ ] Sign up/Sign in works
-- [ ] Onboarding flow works (`/onboarding`)
-- [ ] Drive dashboard loads (`/drive`)
-- [ ] All API endpoints respond
+**Connect to Pulse System:**
+- Push `group_rollups` to Pulse tiles
+- Display `ExecOemRollupCard` in exec dashboard
+- Test end-to-end flow: OEM update → Pulse tile → Exec action
 
-### **Performance Tests**
-- [ ] Page load < 3s
-- [ ] No console errors
-- [ ] Mobile responsive
-- [ ] Images load correctly
+### 4. Implement Tool Execution
 
-### **Security Tests**
-- [ ] Protected routes require auth
-- [ ] Environment variables not exposed
-- [ ] API routes validate inputs
-- [ ] Rate limiting works
+**Wire actual tool implementations:**
+- `site_inject` → Connect to site injection API
+- `auto_fix` → Connect to auto-fix engine
+- `queue_refresh` → Connect to refresh queue system
 
----
+**Add approval workflow:**
+- Create approval queue table (database)
+- Build approval UI for marketing_director+
+- Send notifications on approval requests
 
-## 🎯 **Priority Order**
+### 5. Test End-to-End OEM Flow
 
-### **High Priority (Do First)**
-1. ✅ Fix build issues (case sensitivity, imports)
-2. ⏳ Add environment variables to Vercel
-3. ⏳ Test build locally
-4. ⏳ Deploy to Vercel
-5. ⏳ Verify all pages work
+1. **Detect OEM Update:**
+   ```bash
+   curl -X POST https://dash.dealershipai.com/api/oem/monitor \
+     -H "Content-Type: application/json" \
+     -d '{"oem":"Toyota","urls":["https://pressroom.toyota.com/2026-tacoma"]}'
+   ```
 
-### **Medium Priority**
-6. Set up custom domain
-7. Enable analytics
-8. Configure monitoring
-9. Set up error tracking
+2. **Parse via OEM Router GPT:**
+   ```bash
+   curl -X POST https://dash.dealershipai.com/api/oem/gpt-parse \
+     -H "Content-Type: application/json" \
+     -d '{"url":"https://pressroom.toyota.com/2026-tacoma"}'
+   ```
 
-### **Low Priority**
-10. A/B test landing page
-11. Optimize conversion funnel
-12. Add more integrations
+3. **Route to Dealers:**
+   - Verify `routeOemUpdate()` function works with real dealer data
+   - Check group rollups are calculated correctly
 
----
+4. **Generate Actions:**
+   - Test `buildGroupCommerceActions()` with real routing results
+   - Verify actions are properly formatted
 
-## 📊 **Current Status**
-
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Landing Page | ✅ 100% | Production-ready |
-| Onboarding | ✅ 100% | Pulse microcards complete |
-| Drive Dashboard | ✅ 100% | All components integrated |
-| Build | ⚠️ 95% | Needs optional deps or conditional imports |
-| Environment | ⏳ 0% | Need to add to Vercel |
-| Deployment | ⏳ 0% | Waiting on build fix |
-
-**Overall**: 90% Complete - Ready after build fixes
+5. **Execute Actions:**
+   - Test `/api/agentic/execute` with proper authentication
+   - Verify actions are queued/executed correctly
 
 ---
 
-## 🚨 **Critical Path to 100%**
+## 📋 Integration Checklist
 
-1. **Fix build** (15 min)
-   - Install optional deps OR make imports conditional
-   - Verify build passes
+### OEM Router GPT
+- [ ] Wire to actual OpenAI API (replace placeholder)
+- [ ] Test with real OEM pressroom URLs
+- [ ] Validate JSON schema output
+- [ ] Add error handling for API failures
 
-2. **Add env vars** (10 min)
-   - Add all required variables to Vercel
-   - Set for all environments
+### Pulse Integration
+- [ ] Push group rollups to Pulse tiles
+- [ ] Display ExecOemRollupCard in exec dashboard
+- [ ] Test tile rendering and interactions
+- [ ] Verify "Apply across group" button works
 
-3. **Deploy** (5 min)
-   - Push to main or manual deploy
-   - Monitor build logs
+### Tool Execution
+- [ ] Implement site_inject API connection
+- [ ] Implement auto_fix API connection
+- [ ] Implement queue_refresh job system
+- [ ] Add error handling and retries
 
-4. **Verify** (10 min)
-   - Test all pages
-   - Check API endpoints
-   - Verify authentication
+### Approval Workflow
+- [ ] Create approval queue database table
+- [ ] Build approval UI component
+- [ ] Add notification system
+- [ ] Test approval flow end-to-end
 
-**Total Time**: ~40 minutes to 100% deployment
+### Testing
+- [ ] Unit tests for scoring formulas
+- [ ] Integration tests for OEM Router
+- [ ] E2E tests for exec dashboard
+- [ ] Load testing for batch actions
 
 ---
 
-## 📞 **Support Resources**
+## 🔧 Configuration Updates Needed
 
-- **Build Issues**: Check `docs/100_PERCENT_DEPLOYMENT_CHECKLIST.md`
-- **Environment Setup**: Check `docs/PRODUCTION_VERIFICATION.md`
-- **Component Docs**: Check individual component files
-- **Vercel Docs**: https://vercel.com/docs
+### Environment Variables
+Verify these are set in Vercel:
+- `OPENAI_API_KEY` - For OEM Router GPT
+- `CLERK_SECRET_KEY` - For RBAC
+- `DATABASE_URL` - For dealer/group data
+- `REDIS_URL` - For caching and queues
+
+### Vercel Dashboard
+- [ ] Verify Root Directory is **empty** (not set to `.`)
+- [ ] Check build settings match `vercel.json`
+- [ ] Verify all cron jobs are scheduled correctly
 
 ---
 
-**Last Updated**: 2025-01-08  
-**Next Action**: Fix build issues → Add env vars → Deploy
+## 📊 Monitoring & Observability
 
+### Set Up Monitoring
+- [ ] Add error tracking (Sentry)
+- [ ] Set up API endpoint monitoring
+- [ ] Create alerts for failed OEM Router calls
+- [ ] Monitor batch action execution times
+
+### Logging
+- [ ] Add structured logging to OEM Router
+- [ ] Log all CommerceAction executions
+- [ ] Track approval workflow events
+- [ ] Monitor Pulse tile generation
+
+---
+
+## 🎯 Success Criteria
+
+### OEM Router System
+- ✅ OEM content parsed correctly
+- ✅ Routing to dealers/groups works
+- ✅ Group rollups calculated accurately
+- ✅ CommerceActions generated properly
+- ✅ Exec dashboard displays tiles
+- ✅ Batch execution works end-to-end
+
+### Production Readiness
+- ✅ All endpoints tested and working
+- ✅ Error handling in place
+- ✅ RBAC properly enforced
+- ✅ Documentation complete
+- ✅ Monitoring configured
+
+---
+
+## 📚 Documentation Updates
+
+- [ ] Update API documentation with OEM Router endpoints
+- [ ] Create user guide for exec dashboard
+- [ ] Document approval workflow
+- [ ] Add troubleshooting guide for common issues
+
+---
+
+**Ready to deploy?** Run `npm run vercel:deploy` or push to main branch.
