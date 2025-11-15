@@ -39,6 +39,22 @@ const executeBatchSchema = z.object({
  */
 export async function POST(req: NextRequest) {
   try {
+    // Check if we're on the dashboard domain (where Clerk is configured)
+    const hostname = req.headers.get('host') || '';
+    const isDashboardDomain = 
+      hostname === 'dash.dealershipai.com' ||
+      hostname.includes('vercel.app') ||
+      hostname === 'localhost' ||
+      hostname.startsWith('localhost:');
+
+    // This endpoint should only work on dashboard domain where Clerk is active
+    if (!isDashboardDomain) {
+      return NextResponse.json(
+        { error: 'This endpoint is only available on the dashboard domain' },
+        { status: 403 }
+      );
+    }
+
     // Check RBAC - requires marketing_director or higher
     // Note: This endpoint requires authentication, so 401/403 responses are expected for unauthenticated requests
     const rbac = await requireRBAC(req, ['marketing_director', 'admin', 'superadmin']);
@@ -81,8 +97,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       batch_id: validated.batch_id,
-      executed: results.length,
-      queued_for_approval: approvalQueue.length,
+      executed: (results as any).length,
+      queued_for_approval: (approvalQueue as any).length,
       results,
       approval_queue: approvalQueue,
     });

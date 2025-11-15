@@ -1,7 +1,7 @@
-import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 // This file must only be imported in server components/API routes
+// Clerk imports are done dynamically to avoid client-side bundling issues
 
 export type Role = 'viewer' | 'dealer_user' | 'ops' | 'manager' | 'marketing_director' | 'admin' | 'superadmin'
 export type RBAC = { userId:string; role:Role; tenant:string }
@@ -22,23 +22,47 @@ export function hasRoleAccess(userRole: Role, requiredRole: Role): boolean {
 }
 
 export async function requireRBAC(req: NextRequest, roles: Role[] = ['admin']): Promise<RBAC|NextResponse> {
+  // Check if Clerk is configured
+  const isClerkConfigured = !!(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+    process.env.CLERK_SECRET_KEY
+  );
+
+  if (!isClerkConfigured) {
+    console.warn('[requireRBAC] Clerk not configured - returning 401');
+    return NextResponse.json({ ok:false, error:'unauthorized', message: 'Authentication not configured' }, { status:401 });
+  }
+
   try {
-    const { userId, orgId } = await auth()
-    if (!userId) return NextResponse.json({ ok:false, error:'unauthorized' }, { status:401 })
+    // Import auth dynamically to ensure it's only called in server context
+    const { auth: clerkAuth } = await import('@clerk/nextjs/server');
+    const { userId, orgId } = await clerkAuth();
+    
+    if (!userId) {
+      return NextResponse.json({ ok:false, error:'unauthorized' }, { status:401 });
+    }
 
     // Role + tenant from org membership or public metadata
-    const user = await clerkClient.users.getUser(userId)
-    const role = ((user.publicMetadata?.role as string) || 'viewer') as Role
-    const tenant = (orgId || (user.publicMetadata?.tenant as string) || 'default-tenant')
+    const { clerkClient: client } = await import('@clerk/nextjs/server');
+    const user = await client.users.getUser(userId);
+    const role = ((user.publicMetadata?.role as string) || 'viewer') as Role;
+    const tenant = (orgId || (user.publicMetadata?.tenant as string) || 'default-tenant');
 
-    if (!roles.includes(role)) return NextResponse.json({ ok:false, error:'forbidden' }, { status:403 })
+    if (!roles.includes(role)) {
+      return NextResponse.json({ ok:false, error:'forbidden' }, { status:403 });
+    }
 
-    return { userId, role, tenant }
+    return { userId, role, tenant };
   } catch (error: any) {
     // Handle cases where Clerk auth() fails (e.g., wrong domain, not configured)
-    console.error('[requireRBAC] Auth error:', error)
+    console.error('[requireRBAC] Auth error:', error);
     // Return 401 instead of letting error propagate to 500
-    return NextResponse.json({ ok:false, error:'unauthorized', message: 'Authentication failed' }, { status:401 })
+    return NextResponse.json({ 
+      ok: false, 
+      error: 'unauthorized', 
+      message: 'Authentication failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 401 });
   }
 }
 
