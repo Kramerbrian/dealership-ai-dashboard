@@ -35,6 +35,10 @@ export interface PulseCard {
     kpi?: string;
     segment?: string;
     source?: string;
+    // Consensus data for auto-fix
+    issueHits?: Array<{ id: string; engine: 'perplexity' | 'chatgpt' | 'gemini' }>;
+    consensus?: 'unanimous' | 'majority' | 'weak';
+    issueId?: string; // ID of the issue this card represents
   };
   receipts?: Array<{
     label: string;

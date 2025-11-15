@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { PulseCard } from '@/lib/types/pulse';
 import { usePulseStore } from '@/lib/store/pulse-store';
+import { ConsensusBadge, getConsensusStatusFromHits } from './ConsensusBadge';
 
 interface PulseCardProps {
   card: PulseCard;
@@ -122,6 +123,37 @@ export default function PulseCardComponent({ card, isSelected, onAction }: Pulse
           {/* Context chips */}
           {card.context && (
             <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {/* Consensus badge - show if consensus data is available */}
+              {(() => {
+                // Try to get consensus from explicit status first
+                if (card.context.consensus) {
+                  const engines = card.context.issueHits?.map(hit => hit.engine) || [];
+                  return (
+                    <ConsensusBadge
+                      status={card.context.consensus}
+                      engines={engines}
+                    />
+                  );
+                }
+                // Otherwise, try to derive from issueHits
+                if (card.context.issueHits && card.context.issueHits.length > 0) {
+                  const status = getConsensusStatusFromHits(
+                    card.context.issueHits,
+                    card.context.issueId || card.id
+                  );
+                  if (status) {
+                    const engines = card.context.issueHits.map(hit => hit.engine);
+                    return (
+                      <ConsensusBadge
+                        status={status}
+                        engines={engines}
+                      />
+                    );
+                  }
+                }
+                return null;
+              })()}
+              
               {card.context.kpi && (
                 <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300">
                   KPI: {card.context.kpi}
