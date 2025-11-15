@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CacheManager, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 import { PerformanceMonitor } from '@/lib/monitoring';
 
+// Add missing cache keys and TTL values
+const CACHE_KEYS_EXT = {
+  ...CACHE_KEYS,
+  WEBSITE_DATA: (domain: string, timeRange: string) => `website:${domain}:${timeRange}`,
+  AI_HEALTH_DATA: (timeRange: string) => `ai-health:${timeRange}`
+} as const;
+
+const CACHE_TTL_EXT = {
+  ...CACHE_TTL,
+  WEBSITE_DATA: 300,
+  AI_HEALTH_DATA: 60
+} as const;
+
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
@@ -42,10 +55,10 @@ function generateAIHealthData(): AIHealthData {
   const platformData = platforms.map(platform => {
     const variation = Math.random() * 0.1 - 0.05; // ±5% variation
     const score = Math.max(0, Math.min(100, platform.baseScore + variation * 100));
-    
+
     return {
       name: platform.name,
-      status: score > 90 ? 'operational' : score > 70 ? 'degraded' : 'down',
+      status: (score > 90 ? 'operational' : score > 70 ? 'degraded' : 'down') as 'operational' | 'degraded' | 'down',
       score: Math.round(score),
       responseTime: platform.baseResponseTime + Math.random() * 0.5 - 0.25,
       uptime: Math.max(95, 100 - Math.random() * 5)
@@ -95,10 +108,9 @@ export async function GET(req: NextRequest) {
     const timeRange = searchParams.get('timeRange') || '30d';
 
     // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.AI_HEALTH_DATA(timeRange);
+    const cacheKey = CACHE_KEYS_EXT.AI_HEALTH_DATA(timeRange);
 
-    const cachedData = await cache.get(cacheKey);
+    const cachedData = await CacheManager.get(cacheKey);
     if (cachedData) {
       const duration = Date.now() - startTime;
 
@@ -122,12 +134,12 @@ export async function GET(req: NextRequest) {
     // Generate AI Health data with performance tracking
     const aiHealthData = await monitor.trackApiCall(
       'ai_health_analysis',
-      () => generateAIHealthData(),
+      async () => generateAIHealthData(),
       { timeRange }
     );
 
     // Cache the result
-    await cache.set(cacheKey, aiHealthData, CACHE_TTL.AI_HEALTH_DATA);
+    await CacheManager.set(cacheKey, aiHealthData, CACHE_TTL_EXT.AI_HEALTH_DATA);
 
     const duration = Date.now() - startTime;
 

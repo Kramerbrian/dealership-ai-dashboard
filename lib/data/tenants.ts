@@ -12,7 +12,7 @@ export interface Tenant {
  */
 export async function listTenantIds(): Promise<{id: string, slug: string}[]> {
   const r = await db.execute(sql`SELECT id::text, slug FROM tenants ORDER BY created_at ASC`);
-  return (r.rows || []) as {id: string, slug: string}[];
+  return (r as any).rows || [];
 }
 
 /**
@@ -20,11 +20,11 @@ export async function listTenantIds(): Promise<{id: string, slug: string}[]> {
  */
 export async function getTenantById(tenantId: string): Promise<Tenant | null> {
   const r = await db.execute(sql`
-    SELECT id::text, slug, name 
-    FROM tenants 
+    SELECT id::text, slug, name
+    FROM tenants
     WHERE id = ${tenantId}::uuid
   `);
-  const row = r.rows?.[0];
+  const row = (r as any).rows?.[0];
   return row ? {
     id: row.id as string,
     slug: row.slug as string,
@@ -37,11 +37,11 @@ export async function getTenantById(tenantId: string): Promise<Tenant | null> {
  */
 export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
   const r = await db.execute(sql`
-    SELECT id::text, slug, name 
-    FROM tenants 
+    SELECT id::text, slug, name
+    FROM tenants
     WHERE slug = ${slug}
   `);
-  const row = r.rows?.[0];
+  const row = (r as any).rows?.[0];
   return row ? {
     id: row.id as string,
     slug: row.slug as string,

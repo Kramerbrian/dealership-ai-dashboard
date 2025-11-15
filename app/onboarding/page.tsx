@@ -71,7 +71,8 @@ function OnboardingContent() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/marketpulse/compute?dealer=${encodeURIComponent(dealer)}`);
+      // Use 'domain' param for consistency (API supports both 'domain' and 'dealer')
+      const res = await fetch(`/api/marketpulse/compute?domain=${encodeURIComponent(dealer)}`);
       if (!res.ok) {
         throw new Error(`API returned ${res.status}`);
       }

@@ -9,7 +9,7 @@ export function trackEvent(event: string, properties?: Record<string, any>) {
 
   // Vercel Analytics
   if (window.va) {
-    window.va('track', event, properties);
+    window.va('event', { name: event, data: properties });
   }
 
   // PostHog
@@ -38,7 +38,7 @@ export function identifyUser(userId: string, traits?: Record<string, any>) {
 
   // Google Analytics
   if (window.gtag) {
-    window.gtag('set', { user_id: userId });
+    window.gtag('set', 'user_properties', traits || {});
   }
 }
 
@@ -75,12 +75,12 @@ export function trackPageView(pathname: string) {
 // Type declarations
 declare global {
   interface Window {
-    va?: (command: string, event: string, properties?: Record<string, any>) => void;
+    va?: (command: 'event', properties: { name: string; data?: Record<string, any> }) => void;
     posthog?: {
       capture: (event: string, properties?: Record<string, any>) => void;
       identify: (userId: string, traits?: Record<string, any>) => void;
       setPersonProperties: (properties: Record<string, any>) => void;
     };
-    gtag?: (command: string, event: string, properties?: Record<string, any>) => void;
+    gtag?: (command: string, targetOrConfig: string, config?: Record<string, any>) => void;
   }
 }

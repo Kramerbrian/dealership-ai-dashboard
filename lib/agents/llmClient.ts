@@ -54,10 +54,11 @@ export async function runLLM(
       } else {
         const response = await anthropic.messages.create({
           model,
-          max_tokens: options.maxTokens || 1024,
+          max_tokens: options?.maxTokens || 1024,
           messages: anthropicMessages,
         });
-        const raw = response.content?.[0]?.text ?? "";
+        const firstBlock = response.content?.[0];
+        const raw = firstBlock && 'text' in firstBlock ? firstBlock.text : "";
         return raw.replace(/^.*?(\{)/s, "$1"); // strip leading chatter before JSON
       }
     }
@@ -83,7 +84,7 @@ export async function runLLM(
         const completion = await openai.chat.completions.create({
           model,
           messages: messages as any,
-          max_tokens: options.maxTokens || 1024,
+          max_tokens: options?.maxTokens || 1024,
         });
         return completion.choices?.[0]?.message?.content ?? "";
       }

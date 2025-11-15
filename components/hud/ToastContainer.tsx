@@ -34,7 +34,7 @@ export function ToastContainer() {
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
       <AnimatePresence>
-        {toasts.map((toast) => (
+        {toasts.map((toast: { id: string; message: string; type: 'success' | 'error' | 'info' }) => (
           <motion.div
             key={toast.id}
             initial={{ opacity: 0, y: -20, scale: 0.9 }}

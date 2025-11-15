@@ -9,6 +9,9 @@ interface ThreadDrawerProps {
 export function ThreadDrawer({ thread, onClose }: ThreadDrawerProps) {
   if (!thread) return null;
 
+  // Extract title from thread
+  const threadTitle = thread.events?.[0]?.title || `Thread ${thread.id}`;
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose}>
       <div
@@ -16,7 +19,7 @@ export function ThreadDrawer({ thread, onClose }: ThreadDrawerProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold">{thread.title}</h3>
+          <h3 className="text-lg font-bold">{threadTitle}</h3>
           <button
             onClick={onClose}
             className="px-3 py-1 rounded hover:bg-gray-100"
@@ -26,12 +29,13 @@ export function ThreadDrawer({ thread, onClose }: ThreadDrawerProps) {
         </div>
         <div className="p-6">
           <div className="space-y-4">
-            {thread.messages?.map((msg, i) => (
+            {thread.events?.map((event: any, i: number) => (
               <div key={i} className="border-l-2 border-gray-300 pl-4">
-                <div className="text-sm text-gray-500">{msg.author}</div>
-                <div className="text-gray-800">{msg.text}</div>
+                <div className="text-sm text-gray-500">{event.kind}</div>
+                <div className="text-gray-800">{event.title}</div>
+                {event.detail && <div className="text-sm text-gray-600 mt-1">{event.detail}</div>}
                 <div className="text-xs text-gray-400 mt-1">
-                  {new Date(msg.ts).toLocaleString()}
+                  {new Date(event.ts).toLocaleString()}
                 </div>
               </div>
             ))}

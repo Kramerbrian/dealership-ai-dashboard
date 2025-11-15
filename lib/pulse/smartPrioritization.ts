@@ -131,7 +131,8 @@ function calculateBusinessImpact(card: PulseCard): number {
 
   // Adjust based on delta (if KPI-related)
   if (card.delta !== undefined) {
-    const deltaMagnitude = Math.abs(card.delta);
+    const deltaValue = typeof card.delta === 'number' ? card.delta : parseFloat(card.delta as string) || 0;
+    const deltaMagnitude = Math.abs(deltaValue);
     impact += Math.min(20, deltaMagnitude * 2); // Up to +20 for large deltas
   }
 
@@ -191,9 +192,12 @@ function generateSuggestedActions(
   const suggestions: string[] = [];
 
   // Based on card type
-  if (card.kind === 'kpi_delta' && card.delta && card.delta < 0) {
-    suggestions.push('Investigate root cause');
-    suggestions.push('Check recent changes');
+  if (card.kind === 'kpi_delta' && card.delta) {
+    const deltaValue = typeof card.delta === 'number' ? card.delta : parseFloat(card.delta as string) || 0;
+    if (deltaValue < 0) {
+      suggestions.push('Investigate root cause');
+      suggestions.push('Check recent changes');
+    }
   }
 
   if (card.kind === 'incident_opened') {
@@ -201,9 +205,10 @@ function generateSuggestedActions(
     suggestions.push('Assign to team member');
   }
 
-  if (card.kind === 'schema_validation_failed') {
-    suggestions.push('Fix JSON-LD schema');
-    suggestions.push('Validate with Google Rich Results');
+  // Remove schema_validation_failed check as it's not in PulseKind type
+  if (card.kind === 'system_health') {
+    suggestions.push('Check system status');
+    suggestions.push('Review health metrics');
   }
 
   // Based on user history

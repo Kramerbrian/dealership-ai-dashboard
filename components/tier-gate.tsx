@@ -4,8 +4,9 @@
  */
 
 import React from 'react';
-import { DealershipTier } from '@prisma/client';
 import { UpgradeModal } from './upgrade-modal';
+
+type DealershipTier = 'FREE' | 'PRO' | 'ENTERPRISE';
 
 interface TierGateProps {
   requiredTier: DealershipTier;
@@ -42,12 +43,12 @@ function checkTierAccess(
   userTier: DealershipTier,
   requiredTier: DealershipTier
 ): boolean {
-  const tierHierarchy = {
+  const tierHierarchy: Record<DealershipTier, number> = {
     FREE: 0,
     PRO: 1,
     ENTERPRISE: 2
   };
-  
+
   return tierHierarchy[userTier] >= tierHierarchy[requiredTier];
 }
 

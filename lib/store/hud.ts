@@ -13,12 +13,19 @@ export interface PulseEvent {
   delta?: string|number;
 }
 
+interface Toast {
+  id: string;
+  message: string;
+  type: 'info' | 'success' | 'error';
+}
+
 interface HudStore {
   pulse: PulseCard[];
   pulseOpen: boolean;
   paletteOpen: boolean;
   pulseDockOpen: boolean;
   filter: string;
+  toasts: Toast[];
   addPulse: (e: Omit<PulseCard,'id'|'ts'>) => void;
   addManyPulse: (events: PulseCard[]) => void;
   clearPulse: () => void;
@@ -28,6 +35,7 @@ interface HudStore {
   mute: (dedupe_key: string) => void;
   threadFor: (ref: { type: string; id: string }) => PulseThread | null;
   addToast: (message: string, type: 'info' | 'success' | 'error', duration?: number) => void;
+  removeToast: (id: string) => void;
 }
 
 export const useHudStore = create<HudStore>((set, get) => ({
@@ -36,6 +44,7 @@ export const useHudStore = create<HudStore>((set, get) => ({
   paletteOpen: false,
   pulseDockOpen: false,
   filter: '',
+  toasts: [],
   addPulse: (e) => set(({ pulse }) => ({
     pulse: [{ id: crypto.randomUUID(), ts: new Date().toISOString(), ...e }, ...pulse].slice(0, 50)
   })),
@@ -61,15 +70,15 @@ export const useHudStore = create<HudStore>((set, get) => ({
       updatedAt: events[0].ts,
     };
   },
-  addToast: (message, type, duration) => {
-    // Simple toast implementation - just log for now
-    // This can be enhanced with a proper toast system later
-    console.log(`[Toast ${type}]:`, message);
-    if (duration) {
-      setTimeout(() => {
-        console.log(`[Toast dismissed]:`, message);
-      }, duration);
+  addToast: (message, type, duration = 3000) => {
+    const id = crypto.randomUUID();
+    set(({ toasts }) => ({ toasts: [...toasts, { id, message, type }] }));
+    if (duration > 0) {
+      setTimeout(() => get().removeToast(id), duration);
     }
   },
+  removeToast: (id) => set(({ toasts }) => ({
+    toasts: toasts.filter(t => t.id !== id)
+  })),
 }));
 

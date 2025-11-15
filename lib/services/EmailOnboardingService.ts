@@ -193,12 +193,11 @@ export class EmailOnboardingService {
     try {
       const sendTime = scheduledFor || this.calculateSendTime(template.delay || 0);
       
-      logger.info('Email scheduled', {
-        component: 'EmailOnboardingService',
+      logger.info('Email scheduled', 'EmailOnboardingService', {
         recipient: recipient.email,
         template: template.id,
         scheduledFor: sendTime.toISOString()
-      });
+      } as any);
 
       // In a real implementation, this would:
       // 1. Store the email in a queue (Redis, database, etc.)
@@ -222,7 +221,7 @@ export class EmailOnboardingService {
     try {
       const sequence = this.getSequence(sequenceId);
       if (!sequence || !sequence.isActive) {
-        logger.warn('Sequence not found or inactive', { sequenceId, recipient: recipient.email });
+        logger.warn('Sequence not found or inactive', 'EmailOnboardingService', { sequenceId, recipient: recipient.email } as any);
         return false;
       }
 
@@ -232,13 +231,12 @@ export class EmailOnboardingService {
         if (scheduled) successCount++;
       }
 
-      logger.info('Sequence triggered', {
-        component: 'EmailOnboardingService',
+      logger.info('Sequence triggered', 'EmailOnboardingService', {
         sequenceId,
         recipient: recipient.email,
         templatesScheduled: successCount,
         totalTemplates: sequence.templates.length
-      });
+      } as any);
 
       return successCount > 0;
     } catch (error) {

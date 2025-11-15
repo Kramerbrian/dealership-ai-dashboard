@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CacheManager, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 import { PerformanceMonitor } from '@/lib/monitoring';
 
+// Add missing cache keys and TTL values
+const CACHE_KEYS_EXT = {
+  ...CACHE_KEYS,
+  WEBSITE_DATA: (domain: string, timeRange: string) => `website:${domain}:${timeRange}`,
+  AI_HEALTH_DATA: (timeRange: string) => `ai-health:${timeRange}`
+} as const;
+
+const CACHE_TTL_EXT = {
+  ...CACHE_TTL,
+  WEBSITE_DATA: 300,
+  AI_HEALTH_DATA: 60
+} as const;
+
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
@@ -69,21 +82,22 @@ function generateWebsiteData(): WebsiteData {
   };
 
   // Generate Core Web Vitals with realistic values
+  const fidValue = Math.random() * 100;
   const coreWebVitals = {
     lcp: {
       value: pageSpeed.desktop.largestContentfulPaint,
-      status: pageSpeed.desktop.largestContentfulPaint <= 2.5 ? 'good' : 
-              pageSpeed.desktop.largestContentfulPaint <= 4.0 ? 'needs-improvement' : 'poor'
+      status: (pageSpeed.desktop.largestContentfulPaint <= 2.5 ? 'good' :
+              pageSpeed.desktop.largestContentfulPaint <= 4.0 ? 'needs-improvement' : 'poor') as 'good' | 'needs-improvement' | 'poor'
     },
     fid: {
-      value: Math.random() * 100, // 0-100ms
-      status: Math.random() * 100 <= 100 ? 'good' : 
-              Math.random() * 100 <= 300 ? 'needs-improvement' : 'poor'
+      value: fidValue, // 0-100ms
+      status: (fidValue <= 100 ? 'good' :
+              fidValue <= 300 ? 'needs-improvement' : 'poor') as 'good' | 'needs-improvement' | 'poor'
     },
     cls: {
       value: pageSpeed.desktop.cumulativeLayoutShift,
-      status: pageSpeed.desktop.cumulativeLayoutShift <= 0.1 ? 'good' : 
-              pageSpeed.desktop.cumulativeLayoutShift <= 0.25 ? 'needs-improvement' : 'poor'
+      status: (pageSpeed.desktop.cumulativeLayoutShift <= 0.1 ? 'good' :
+              pageSpeed.desktop.cumulativeLayoutShift <= 0.25 ? 'needs-improvement' : 'poor') as 'good' | 'needs-improvement' | 'poor'
     }
   };
 
@@ -149,10 +163,9 @@ export async function GET(req: NextRequest) {
     const timeRange = searchParams.get('timeRange') || '30d';
 
     // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.WEBSITE_DATA(domain, timeRange);
+    const cacheKey = CACHE_KEYS_EXT.WEBSITE_DATA(domain, timeRange);
 
-    const cachedData = await cache.get(cacheKey);
+    const cachedData = await CacheManager.get(cacheKey);
     if (cachedData) {
       const duration = Date.now() - startTime;
 
@@ -177,12 +190,12 @@ export async function GET(req: NextRequest) {
     // Generate Website data with performance tracking
     const websiteData = await monitor.trackApiCall(
       'website_analysis',
-      () => generateWebsiteData(),
+      async () => generateWebsiteData(),
       { domain, timeRange }
     );
 
     // Cache the result
-    await cache.set(cacheKey, websiteData, CACHE_TTL.WEBSITE_DATA);
+    await CacheManager.set(cacheKey, websiteData, CACHE_TTL_EXT.WEBSITE_DATA);
 
     const duration = Date.now() - startTime;
 

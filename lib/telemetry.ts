@@ -1,9 +1,9 @@
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { Resource } from '@opentelemetry/resources';
+import { Resource as OTelResource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-http';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-otlp-http';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { config } from './config';
 
@@ -26,7 +26,7 @@ export function initializeTelemetry(): void {
     });
 
     // Create resource
-    const resource = new Resource({
+    const resource = new OTelResource({
       [SemanticResourceAttributes.SERVICE_NAME]: config.otel.serviceName,
       [SemanticResourceAttributes.SERVICE_VERSION]: config.otel.serviceVersion,
       [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: config.env.isProduction ? 'production' : 'development',

@@ -1,7 +1,7 @@
 // Session Role Extraction
 // DealershipAI - Edge-Safe Role Extraction from Request Headers
 
-import { Role, isValidRole } from "../rbac";
+import { Role } from "../rbac";
 
 /**
  * Extract role from request headers (edge-safe)
@@ -9,11 +9,12 @@ import { Role, isValidRole } from "../rbac";
  */
 export function getRole(req: Request): Role {
   const roleHeader = req.headers.get("x-role") || "viewer";
-  
-  if (isValidRole(roleHeader)) {
-    return roleHeader;
+  const validRoles: Role[] = ["admin", "manager", "viewer"];
+
+  if (validRoles.includes(roleHeader as Role)) {
+    return roleHeader as Role;
   }
-  
+
   // Fallback to viewer for invalid roles
   console.warn(`Invalid role in x-role header: ${roleHeader}, defaulting to viewer`);
   return "viewer";

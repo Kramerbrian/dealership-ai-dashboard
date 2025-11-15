@@ -56,6 +56,7 @@ export interface UserProgress {
   level: number;
   achievements: Achievement[];
   completedQuests: string[];
+  completedSteps: string[];
   currentQuests: Quest[];
   streak: number; // Days in a row
   lastActive: Date;

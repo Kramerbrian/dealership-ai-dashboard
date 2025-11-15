@@ -10,7 +10,8 @@ import { NextRequest, NextResponse } from 'next/server';
  *   • Dashboard auto-refresh / Pulse
  *
  * Query params:
- *   ?dealer=naplesautogroup.com
+ *   ?domain=naplesautogroup.com (preferred)
+ *   ?dealer=naplesautogroup.com (deprecated, but still supported for backward compatibility)
  * Optional:
  *   ?mock=true (forces randomized sample)
  */
@@ -20,7 +21,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const dealer = url.searchParams.get('dealer')?.toLowerCase() || 'unknown-dealer';
+  // Support both 'domain' and 'dealer' params for backward compatibility
+  const dealer = url.searchParams.get('domain')?.toLowerCase() || 
+                 url.searchParams.get('dealer')?.toLowerCase() || 
+                 'unknown-dealer';
   const mock = url.searchParams.get('mock') === 'true';
 
   // Simulated base metrics (tweak ranges for realism)

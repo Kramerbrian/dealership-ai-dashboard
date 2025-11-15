@@ -7,6 +7,9 @@ import { z } from 'zod';
  * Ultra-lean quick scan endpoint
  * Returns preview data without requiring auth
  * Enhanced with URL validation and rate limiting
+ * 
+ * ⚠️ DEPRECATED: This endpoint may be unused. Consider using /api/clarity/stack instead.
+ * Will be removed in a future version if no active usage is found.
  */
 export async function POST(req: NextRequest) {
   try {

@@ -6,7 +6,10 @@ export const runtime = 'edge';
  * AI Visibility Analyzer Endpoint
  * POST /api/analyze
  * 
- * Proxies to backend AI scoring APIs and normalizes response for landing page
+ * Proxies to backend AI scoring APIs and normalizes response for landing page.
+ * Used by PLG (Product-Led Growth) landing variants.
+ * 
+ * Note: Consider consolidating with /api/clarity/stack in future refactor.
  */
 export async function POST(req: NextRequest) {
   try {
