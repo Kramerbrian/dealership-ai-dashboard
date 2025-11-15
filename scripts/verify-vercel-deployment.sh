@@ -82,21 +82,40 @@ fi
 # Test API endpoints
 echo ""
 echo -e "${BLUE}📋 Step 6: Testing API endpoints${NC}"
-ENDPOINTS=(
+
+# GET endpoints
+GET_ENDPOINTS=(
     "/api/health"
     "/api/pulse"
-    "/api/marketpulse/compute"
+    "/api/marketpulse/compute?domain=test.com"
+)
+
+for endpoint in "${GET_ENDPOINTS[@]}"; do
+    URL="https://${DOMAIN}${endpoint}"
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}" 2>/dev/null || echo "000")
+    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "307" ]; then
+        echo -e "${GREEN}✓ ${endpoint} (HTTP ${HTTP_CODE})${NC}"
+    else
+        echo -e "${YELLOW}⚠ ${endpoint} (HTTP ${HTTP_CODE})${NC}"
+    fi
+done
+
+# POST endpoints (test with minimal payload)
+POST_ENDPOINTS=(
     "/api/oem/gpt-parse"
     "/api/agentic/execute"
 )
 
-for endpoint in "${ENDPOINTS[@]}"; do
+for endpoint in "${POST_ENDPOINTS[@]}"; do
     URL="https://${DOMAIN}${endpoint}"
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}" 2>/dev/null || echo "000")
-    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "401" ]; then
-        echo -e "${GREEN}✓ ${endpoint} (HTTP ${HTTP_CODE})${NC}"
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{}' "${URL}" 2>/dev/null || echo "000")
+    # 405 = Method Not Allowed (expected for GET), 400/401/403 = Endpoint exists but needs proper payload/auth
+    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "403" ]; then
+        echo -e "${GREEN}✓ ${endpoint} (POST HTTP ${HTTP_CODE})${NC}"
+    elif [ "$HTTP_CODE" = "405" ]; then
+        echo -e "${YELLOW}⚠ ${endpoint} (HTTP ${HTTP_CODE} - requires POST, endpoint exists)${NC}"
     else
-        echo -e "${RED}✗ ${endpoint} (HTTP ${HTTP_CODE})${NC}"
+        echo -e "${RED}✗ ${endpoint} (POST HTTP ${HTTP_CODE})${NC}"
     fi
 done
 
