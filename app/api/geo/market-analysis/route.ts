@@ -184,29 +184,29 @@ async function simulateReverseGeocoding(lat: number, lng: number) {
 }
 
 async function simulateMarketAnalysis(location: any) {
-  const marketTypes = ['urban', 'suburban', 'rural'];
-  const competitionLevels = ['low', 'medium', 'high'];
-  const marketSizes = ['small', 'medium', 'large'];
-  
+  const marketTypes = ['urban', 'suburban', 'rural'] as const;
+  const competitionLevels = ['low', 'medium', 'high'] as const;
+  const marketSizes = ['small', 'medium', 'large'] as const;
+
   const marketType = marketTypes[Math.floor(Math.random() * marketTypes.length)];
   const competitionLevel = competitionLevels[Math.floor(Math.random() * competitionLevels.length)];
   const marketSize = marketSizes[Math.floor(Math.random() * marketSizes.length)];
-  
+
   const populationRanges = {
     urban: { min: 500000, max: 2000000 },
     suburban: { min: 50000, max: 500000 },
     rural: { min: 5000, max: 50000 }
   };
-  
+
   const incomeRanges = {
     urban: { min: 45000, max: 85000 },
     suburban: { min: 55000, max: 95000 },
     rural: { min: 35000, max: 65000 }
   };
-  
+
   const range = populationRanges[marketType];
   const incomeRange = incomeRanges[marketType];
-  
+
   return {
     name: `${location.city} ${location.state} Market`,
     type: marketType,
