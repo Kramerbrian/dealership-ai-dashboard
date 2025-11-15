@@ -1,10 +1,23 @@
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-export type Role = 'admin'|'ops'|'viewer'
+export type Role = 'dealer_user' | 'manager' | 'marketing_director' | 'admin' | 'superadmin'
 export type RBAC = { userId:string; role:Role; tenant:string }
 
-export async function requireRBAC(req: NextRequest, roles: Role[] = ['admin','ops']): Promise<RBAC|NextResponse> {
+// Role hierarchy for access control
+export const ROLE_HIERARCHY: Record<Role, number> = {
+  dealer_user: 1,
+  manager: 2,
+  marketing_director: 3,
+  admin: 4,
+  superadmin: 5,
+}
+
+export function hasRoleAccess(userRole: Role, requiredRole: Role): boolean {
+  return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole]
+}
+
+export async function requireRBAC(req: NextRequest, roles: Role[] = ['admin']): Promise<RBAC|NextResponse> {
   const { userId, orgId } = await auth()
   if (!userId) return NextResponse.json({ ok:false, error:'unauthorized' }, { status:401 })
 
@@ -21,4 +34,12 @@ export async function requireRBAC(req: NextRequest, roles: Role[] = ['admin','op
 // Attach to outbound fleet calls
 export function rbacHeaders(rbac: RBAC) {
   return { 'x-role': rbac.role, 'x-tenant': rbac.tenant }
+}
+
+/**
+ * Check if role has access to APIs & Exports or dAI Agents
+ * Requires marketing_director or higher
+ */
+export function canAccessAPIsAndAgents(role: Role): boolean {
+  return hasRoleAccess(role, 'marketing_director');
 }
