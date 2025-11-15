@@ -14,8 +14,27 @@ const nextConfig = {
   // Fix workspace root warning
   outputFileTracingRoot: __dirname,
   
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      '@radix-ui/react-*',
+      'recharts',
+      '@tanstack/react-query',
+    ],
+    serverComponentsExternalPackages: ['@clerk/nextjs', '@elevenlabs/elevenlabs-js'],
+  },
+  
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
+  
   // Optimize webpack for better module resolution and prevent circular dependencies
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer, webpack, dev }) => {
     if (isServer) {
       // Ignore Supabase initialization errors in certain routes
       config.resolve.fallback = {
@@ -34,11 +53,57 @@ const nextConfig = {
         resourceRegExp: /^\.\/server\/routers\/_app$/,
       })
     );
-    // Prevent circular dependencies
-    config.optimization = {
-      ...config.optimization,
-      moduleIds: 'deterministic',
-    };
+    
+    // Production bundle optimization
+    if (!dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk for node_modules
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/]/,
+              priority: 20,
+              maxSize: 244000, // 244KB chunks
+            },
+            // Clerk chunk (large library)
+            clerk: {
+              name: 'clerk',
+              test: /[\\/]node_modules[\\/]@clerk[\\/]/,
+              chunks: 'all',
+              priority: 30,
+            },
+            // Framer Motion chunk
+            framer: {
+              name: 'framer',
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              chunks: 'all',
+              priority: 25,
+            },
+            // Common chunk for shared code
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    } else {
+      // Development: simpler optimization
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+      };
+    }
     return config;
   },
   
@@ -89,7 +154,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com",
+              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://*.ingest.us.sentry.io https://*.ingest.sentry.io https://o4510049793605632.ingest.us.sentry.io",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com",
               "object-src 'none'",
               "base-uri 'self'",
@@ -139,11 +204,31 @@ const nextConfig = {
   
   // Image optimization
   images: {
-    domains: [
-      'images.unsplash.com',
-      'via.placeholder.com',
-      'clerk.accounts.dev',
-      'img.clerk.com',
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'clerk.accounts.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
     ],
   },
   // Bundle analyzer - configured via separate config when ANALYZE=true
