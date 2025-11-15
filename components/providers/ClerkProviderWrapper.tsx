@@ -1,19 +1,25 @@
 'use client';
 
 import { ClerkProvider as Clerk } from '@clerk/nextjs';
+import { usePathname } from 'next/navigation';
 
 export function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
   // Get publishable key - Next.js makes NEXT_PUBLIC_ vars available on client
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const pathname = usePathname();
 
   // Get domain to check if we're on the dashboard subdomain
+  // During SSR, window is undefined, so we default to assuming dashboard domain
+  // to avoid hydration mismatches and useContext errors
   const domain = typeof window !== 'undefined' ? window.location.hostname : '';
 
   // Clerk should be enabled on:
   // 1. dash.dealershipai.com (production dashboard)
   // 2. Vercel preview URLs (for testing)
   // 3. localhost (for development)
-  const isDashboardDomain = 
+  // 4. During SSR (window undefined) - assume dashboard to prevent errors
+  const isDashboardDomain =
+    domain === '' ||  // SSR - always enable Clerk to prevent useContext errors
     domain === 'dash.dealershipai.com' ||
     domain.includes('vercel.app') ||
     domain === 'localhost' ||
