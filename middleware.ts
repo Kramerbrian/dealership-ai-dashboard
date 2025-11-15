@@ -52,6 +52,18 @@ async function publicMiddleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // CRITICAL: Redirect dashboard routes to dashboard domain
+  // /pulse, /dashboard, /intelligence, etc. should redirect to dash.dealershipai.com
+  if (pathname.startsWith('/pulse') ||
+      pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/intelligence') ||
+      pathname.startsWith('/cognitive') ||
+      pathname.startsWith('/settings')) {
+    const dashUrl = new URL(req.url);
+    dashUrl.hostname = 'dash.dealershipai.com';
+    return NextResponse.redirect(dashUrl, 307);
+  }
+
   // Allow all routes on main domain - no auth required
   // Explicitly allow /onboarding on main domain
   if (pathname === '/onboarding' || isPublicRoute(pathname)) {
