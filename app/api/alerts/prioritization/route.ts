@@ -278,8 +278,8 @@ function generateActionPlan(alerts: Alert[]): any {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-dealer';
-    const severity = searchParams.get('severity') || 'all';
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-dealer';
+    const severity = searchParams.get('severity') || undefined || 'all';
     
     // Generate demo context
     const context: AlertContext = {

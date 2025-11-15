@@ -37,7 +37,7 @@ interface RichSnippetPreview {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain') || 'dealershipai.com';
+    const domain = searchParams.get('domain') || undefined || 'dealershipai.com';
     
     // Simulate real schema analysis
     const [validation, opportunities, richSnippets] = await Promise.all([

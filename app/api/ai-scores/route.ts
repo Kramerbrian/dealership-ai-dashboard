@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Get and validate origin parameter (required per spec)
-  const originInput = req.nextUrl.searchParams.get('origin') || '';
+  const originInput = req.nextUrl.searchParams.get('origin') || undefined || '';
   
   if (!originInput) {
     return NextResponse.json(
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
   }
 
   const origin = urlValidation.url;
-  const dealerId = req.nextUrl.searchParams.get('dealerId') || '';
+  const dealerId = req.nextUrl.searchParams.get('dealerId') || undefined || '';
   const cacheKey = `ai-scores:${dealerId || origin}`;
 
   // Check cache first (3-minute TTL)

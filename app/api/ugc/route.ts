@@ -12,7 +12,7 @@ export const GET = createEnhancedApiRoute(
   },
   async (req) => {
     const { searchParams } = new URL(req.url);
-    const dealer = searchParams.get('dealer') || 'demo';
+    const dealer = searchParams.get('dealer') || undefined || 'demo';
 
     // TODO: Integrate with review platform APIs
     return {

@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const shareToken = searchParams.get('token');
+    const shareToken = searchParams.get('token') || undefined;
     
     if (!shareToken) {
       return NextResponse.json(

@@ -16,8 +16,8 @@ export const maxDuration = 60; // Allow up to 60 seconds for scanning
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const dealer = url.searchParams.get('dealer') || 'dealershipai.com';
-    const domain = url.searchParams.get('domain') || dealer;
+    const dealer = url.searchParams.get('dealer') || undefined || 'dealershipai.com';
+    const domain = url.searchParams.get('domain') || undefined || dealer;
 
     // Use real schema scanner for actual domain
     let scanResult;

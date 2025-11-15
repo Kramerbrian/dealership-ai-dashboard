@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       trackEvent('mystery_shop_executed', {
         dealerId,
         scenario: config.scenario,
-        overallScore: result.scores.overall
+        overallScore: (result as any).scores.overall
       });
     }
 
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     });
     
     response.headers.set('X-Orchestrator-Role', 'AI_CSO');
-    response.headers.set('X-Trace-Id', `mystery-shop-${result.shopId}`);
+    response.headers.set('X-Trace-Id', `mystery-shop-${(result as any).shopId}`);
 
     return response;
   } catch (error) {
@@ -86,8 +86,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
-    const scenario = searchParams.get('scenario') as MysteryShopConfig['scenario'];
+    const dealerId = searchParams.get('dealerId') || undefined;
+    const scenario = searchParams.get('scenario') || undefined as MysteryShopConfig['scenario'];
 
     if (!dealerId) {
       return NextResponse.json(

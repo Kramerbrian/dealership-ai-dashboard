@@ -58,7 +58,7 @@ export default function QuickAudit({ onAuditComplete }: QuickAuditProps) {
       {result && (
         <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
           <h3 className="font-semibold text-green-800">Audit Complete</h3>
-          <p className="text-green-600">Score: {result.score}</p>
+          <p className="text-green-600">Score: {(result as any).score}</p>
         </div>
       )}
     </div>

@@ -84,10 +84,10 @@ export default function SEODashboard() {
       });
       
       const result = await response.json();
-      if (result.ok) {
-        setVariants(result.variants);
-        setAnalysis(result.analysis);
-        setSelectedVariant(result.recommendations.bestVariant);
+      if ((result as any).ok) {
+        setVariants((result as any).variants);
+        setAnalysis((result as any).analysis);
+        setSelectedVariant((result as any).recommendations.bestVariant);
       }
     } catch (error) {
       console.error('Error generating variants:', error);

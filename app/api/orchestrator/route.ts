@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
     // Add orchestrator identity header
     const response = NextResponse.json(result);
     response.headers.set('X-Orchestrator-Role', 'AI_CSO');
-    if (result.traceId) {
-      response.headers.set('X-Trace-Id', result.traceId);
+    if ((result as any).traceId) {
+      response.headers.set('X-Trace-Id', (result as any).traceId);
     }
 
     return response;
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
 
     // Status endpoint
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
+    const dealerId = searchParams.get('dealerId') || undefined;
 
     if (!dealerId) {
       return NextResponse.json(

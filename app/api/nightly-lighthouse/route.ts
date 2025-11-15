@@ -21,7 +21,7 @@ export async function GET() {
       `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${DEPLOY_URL}&category=performance&category=accessibility&category=best-practices&category=seo`
     ).then((r) => r.json());
 
-    const lhr = result.lighthouseResult?.categories || {};
+    const lhr = (result as any).lighthouseResult?.categories || {};
     const perf = Math.round((lhr.performance?.score || 0) * 100);
     const acc = Math.round((lhr.accessibility?.score || 0) * 100);
     const bp = Math.round((lhr['best-practices']?.score || 0) * 100);

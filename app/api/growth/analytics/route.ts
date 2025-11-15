@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealershipId = searchParams.get('dealershipId');
-    const type = searchParams.get('type') || 'executive';
+    const dealershipId = searchParams.get('dealershipId') || undefined;
+    const type = searchParams.get('type') || undefined || 'executive';
     
     if (!dealershipId) {
       return NextResponse.json(

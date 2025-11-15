@@ -19,9 +19,9 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain');
-    const dealerId = searchParams.get('dealerId');
-    const days = parseInt(searchParams.get('days') || '30');
+    const domain = searchParams.get('domain') || undefined;
+    const dealerId = searchParams.get('dealerId') || undefined;
+    const days = parseInt(searchParams.get('days') || undefined || '30');
 
     if (!domain && !dealerId) {
       return NextResponse.json(

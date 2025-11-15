@@ -17,8 +17,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const timeRange = searchParams.get('timeRange') || '30d';
-    const dealerId = searchParams.get('dealerId') || 'lou-grubbs-motors';
+    const timeRange = searchParams.get('timeRange') || undefined || '30d';
+    const dealerId = searchParams.get('dealerId') || undefined || 'lou-grubbs-motors';
 
     // Fetch dealer settings to pull real data from their integrations
     const { createClient } = await import('@supabase/supabase-js');

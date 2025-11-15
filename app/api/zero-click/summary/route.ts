@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get('tenantId');
+    const tenantId = searchParams.get('tenantId') || undefined;
 
     if (!tenantId) {
       return NextResponse.json(
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const days = Number(searchParams.get('days') || 30);
+    const days = Number(searchParams.get('days') || undefined || 30);
     const since = new Date(Date.now() - days * 86400000);
 
     const series = await prisma.zeroClickDaily.findMany({

@@ -4,7 +4,7 @@ export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const tenant = url.searchParams.get('tenant') || 'dlr_example';
+  const tenant = url.searchParams.get('tenant') || undefined || 'dlr_example';
 
   const data = {
     tenant,

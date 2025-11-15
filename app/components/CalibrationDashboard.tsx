@@ -76,7 +76,7 @@ export default function CalibrationDashboard() {
       })
       
       const result = await response.json()
-      if (result.success) {
+      if ((result as any).success) {
         setNewJob({
           city: 'Naples',
           state: 'FL',

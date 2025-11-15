@@ -808,17 +808,17 @@ export default function TabbedDashboard() {
               { metric: 'Information Accuracy', score: 88, target: 90 },
               { metric: 'Customer Service', score: 94, target: 85 }
             ].map((result) => (
-              <div key={result.metric} className="p-3 bg-white/5 rounded-lg">
+              <div key={(result as any).metric} className="p-3 bg-white/5 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-white/80">{result.metric}</span>
-                  <span className={`text-sm font-medium ${result.score >= result.target ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {result.score}%
+                  <span className="text-white/80">{(result as any).metric}</span>
+                  <span className={`text-sm font-medium ${(result as any).score >= (result as any).target ? 'text-green-400' : 'text-yellow-400'}`}>
+                    {(result as any).score}%
                   </span>
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <div 
-                    className={`h-2 rounded-full ${result.score >= result.target ? 'bg-green-500' : 'bg-yellow-500'}`}
-                    style={{ width: `${result.score}%` }}
+                    className={`h-2 rounded-full ${(result as any).score >= (result as any).target ? 'bg-green-500' : 'bg-yellow-500'}`}
+                    style={{ width: `${(result as any).score}%` }}
                   ></div>
                 </div>
               </div>

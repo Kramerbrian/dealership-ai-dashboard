@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * TODO: Wire to Google Search Console / Pulse analyzer for real data
  */
 export async function GET(req: NextRequest) {
-  const dealerId = req.nextUrl.searchParams.get('dealerId') || 'demo';
+  const dealerId = req.nextUrl.searchParams.get('dealerId') || undefined || 'demo';
 
   return NextResponse.json({
     dealerId,

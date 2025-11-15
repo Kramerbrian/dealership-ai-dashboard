@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const domain = url.searchParams.get("domain") || "exampledealer.com";
+  const domain = url.searchParams.get("domain") || undefined || "exampledealer.com";
 
   // Stubbed data:
   const value = 87;

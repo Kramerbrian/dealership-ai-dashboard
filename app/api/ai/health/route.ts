@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(req: NextRequest) {
   // Extract dealerId from query params if provided
-  const dealerId = req.nextUrl.searchParams.get('dealerId') || 'default';
+  const dealerId = req.nextUrl.searchParams.get('dealerId') || undefined || 'default';
 
   return NextResponse.json({
     aiHealth: [

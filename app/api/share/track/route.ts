@@ -85,9 +85,9 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const featureName = searchParams.get('featureName');
-    const domain = searchParams.get('domain');
-    const sessionId = searchParams.get('sessionId');
+    const featureName = searchParams.get('featureName') || undefined;
+    const domain = searchParams.get('domain') || undefined;
+    const sessionId = searchParams.get('sessionId') || undefined;
 
     if (!featureName) {
       return NextResponse.json(

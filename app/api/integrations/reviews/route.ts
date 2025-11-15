@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
 
     // 2. Get query parameters
     const { searchParams } = new URL(req.url);
-    const action = searchParams.get('action');
-    const dealershipId = searchParams.get('dealershipId');
+    const action = searchParams.get('action') || undefined;
+    const dealershipId = searchParams.get('dealershipId') || undefined;
 
     if (!action || !dealershipId) {
       return NextResponse.json({ error: 'Action and dealership ID are required' }, { status: 400 });
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         break;
 
       case 'trends':
-        const months = parseInt(searchParams.get('months') || '6');
+        const months = parseInt(searchParams.get('months') || undefined || '6');
         result = await reviewServices.getReviewTrends(dealershipId, months);
         break;
 
@@ -46,8 +46,8 @@ export async function GET(req: NextRequest) {
         break;
 
       case 'monitor_mentions':
-        const dealershipName = searchParams.get('dealershipName');
-        const keywords = searchParams.get('keywords')?.split(',') || [];
+        const dealershipName = searchParams.get('dealershipName') || undefined;
+        const keywords = searchParams.get('keywords') || undefined?.split(',') || [];
         
         if (!dealershipName) {
           return NextResponse.json({ error: 'Dealership name is required' }, { status: 400 });

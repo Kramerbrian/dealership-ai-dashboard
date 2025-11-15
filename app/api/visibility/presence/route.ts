@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
     const url = new URL(req.url);
-    const domain = url.searchParams.get("domain");
+    const domain = url.searchParams.get("domain") || undefined;
 
     if (!domain) {
       return NextResponse.json(

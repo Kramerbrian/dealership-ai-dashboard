@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     // In production, you'd have a dedicated pulse_mutes table
     
     // Check if table exists, if not, we'll use a fallback
-    const { error: muteError } = await supabase
+    const { error: muteError } = await (supabase as any)
       .from('pulse_cards')
       .update({
         context: {
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
           muted_until: expiresAt.toISOString(),
           muted_by: userId,
         },
-      })
+      } as any)
       .eq('dedupe_key', dedupeKey)
       .eq('dealer_id', finalDealerId);
 
@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-tenant';
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-tenant';
 
     // Fetch muted cards
     const { data: mutedCards, error } = await supabase
@@ -113,12 +113,12 @@ export async function GET(req: NextRequest) {
     // Extract active mutes
     const now = new Date();
     const activeMutes = (mutedCards || [])
-      .filter((card) => {
-        const mutedUntil = card.context?.muted_until;
+      .filter((card: any) => {
+        const mutedUntil = (card as any).context?.muted_until;
         if (!mutedUntil) return false;
         return new Date(mutedUntil) > now;
       })
-      .map((card) => card.dedupe_key)
+      .map((card: any) => (card as any).dedupe_key)
       .filter(Boolean);
 
     return NextResponse.json({

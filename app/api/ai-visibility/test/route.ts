@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       ? await quickAIVisibilityTest(dealerName, city, state)
       : await runAIVisibilityTest(dealerName, city, state);
 
-    console.log(`[ai-visibility/test] Test complete. Overall score: ${result.overall}`);
+    console.log(`[ai-visibility/test] Test complete. Overall score: ${(result as any).overall}`);
 
     return NextResponse.json(result, {
       status: 200,
@@ -57,10 +57,10 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const dealerName = url.searchParams.get('dealerName') || 'Demo Dealership';
-    const city = url.searchParams.get('city') || 'Naples';
-    const state = url.searchParams.get('state') || 'FL';
-    const quick = url.searchParams.get('quick') === 'true';
+    const dealerName = url.searchParams.get('dealerName') || undefined || 'Demo Dealership';
+    const city = url.searchParams.get('city') || undefined || 'Naples';
+    const state = url.searchParams.get('state') || undefined || 'FL';
+    const quick = url.searchParams.get('quick') || undefined === 'true';
 
     console.log(`[ai-visibility/test GET] Starting ${quick ? 'quick' : 'comprehensive'} test for:`, {
       dealerName,
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
       ? await quickAIVisibilityTest(dealerName, city, state)
       : await runAIVisibilityTest(dealerName, city, state);
 
-    console.log(`[ai-visibility/test GET] Test complete. Overall score: ${result.overall}`);
+    console.log(`[ai-visibility/test GET] Test complete. Overall score: ${(result as any).overall}`);
 
     return NextResponse.json(result, {
       status: 200,

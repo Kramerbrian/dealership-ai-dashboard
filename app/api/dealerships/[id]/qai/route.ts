@@ -32,7 +32,7 @@ export async function GET(
 
     // Check if refresh is requested
     const url = new URL(request.url);
-    const forceRefresh = url.searchParams.get('force_refresh') === 'true';
+    const forceRefresh = url.searchParams.get('force_refresh') || undefined === 'true';
 
     // Check session limits for refresh
     if (forceRefresh) {
@@ -84,7 +84,7 @@ export async function GET(
     // Return existing scores
     const response: QAIResponse = {
       dealership_id: dealershipId,
-      calculated_at: qaiScore.calculated_at,
+      calculated_at: qaiScore["calculated_at"],
       qai: qaiScore,
       eeat: eeatScore || generateDefaultEEATScore(),
       platforms: platformScores.length > 0 ? platformScores : generateDefaultPlatformScores(),

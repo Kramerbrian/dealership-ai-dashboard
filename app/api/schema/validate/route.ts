@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
  */
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const targetUrl = url.searchParams.get('url');
+  const targetUrl = url.searchParams.get('url') || undefined;
   const base = process.env.SCHEMA_ENGINE_URL;
 
   if (!base) {

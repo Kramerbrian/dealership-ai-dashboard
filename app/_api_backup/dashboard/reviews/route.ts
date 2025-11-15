@@ -182,8 +182,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain') || 'dealershipai.com';
-    const timeRange = searchParams.get('timeRange') || '30d';
+    const domain = searchParams.get('domain') || undefined || 'dealershipai.com';
+    const timeRange = searchParams.get('timeRange') || undefined || '30d';
 
     // Check cache first
     const cache = (CacheManager as any).getInstance();
@@ -253,8 +253,8 @@ export async function GET(req: NextRequest) {
       error: error.message || 'Failed to fetch reviews data',
       data: fallbackData,
       meta: {
-        domain: req.nextUrl.searchParams.get('domain') || 'dealershipai.com',
-        timeRange: req.nextUrl.searchParams.get('timeRange') || '30d',
+        domain: req.nextUrl.searchParams.get('domain') || undefined || 'dealershipai.com',
+        timeRange: req.nextUrl.searchParams.get('timeRange') || undefined || '30d',
         timestamp: new Date().toISOString(),
         responseTime: `${duration}ms`,
         source: 'fallback_mock_data'

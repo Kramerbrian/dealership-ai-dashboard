@@ -26,9 +26,9 @@ export async function GET() {
           jobs = Object.entries(stateData.results).reduce((acc, [id, result]: [string, any]) => {
             acc[id] = {
               id,
-              success: result.success || false,
-              duration: result.duration || '0s',
-              lastRun: result.lastRun || new Date().toISOString(),
+              success: (result as any).success || false,
+              duration: (result as any).duration || '0s',
+              lastRun: (result as any).lastRun || new Date().toISOString(),
             };
             return acc;
           }, {} as Record<string, any>);

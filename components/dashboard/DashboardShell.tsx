@@ -17,7 +17,7 @@ export function DashboardShell({ children }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // Support both 'domain' and 'dealer' params for compatibility
-  const domain = searchParams.get('domain') || searchParams.get('dealer') || '';
+  const domain = searchParams.get('domain') || undefined || searchParams.get('dealer') || undefined || '';
 
   return (
     <div className="min-h-dvh bg-neutral-950 text-white flex">
@@ -34,7 +34,7 @@ export function DashboardShell({ children }: Props) {
           {navItems.map((item) => {
             const active = pathname === item.href;
             // Preserve domain parameter in navigation
-            const currentDomain = searchParams.get('domain') || searchParams.get('dealer') || '';
+            const currentDomain = searchParams.get('domain') || undefined || searchParams.get('dealer') || undefined || '';
             const href = currentDomain
               ? `${item.href}?domain=${encodeURIComponent(currentDomain)}`
               : item.href;

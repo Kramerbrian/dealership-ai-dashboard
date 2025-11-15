@@ -125,8 +125,8 @@ export async function GET(req: NextRequest) {
   
   try {
     const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain') || 'dealershipai.com';
-    const timeRange = searchParams.get('timeRange') || '30d';
+    const domain = searchParams.get('domain') || undefined || 'dealershipai.com';
+    const timeRange = searchParams.get('timeRange') || undefined || '30d';
     
     // Check cache first
     const cacheKey = `seo:${domain}:${timeRange}`;

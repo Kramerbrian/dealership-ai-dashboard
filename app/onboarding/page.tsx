@@ -27,7 +27,7 @@ function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // Get dealer from URL params, ignoring Clerk handshake params
-  const dealer = searchParams.get('dealer') || '';
+  const dealer = searchParams.get('dealer') || undefined || '';
   const [data, setData] = useState<MarketPulseData | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanStep, setScanStep] = useState(0);

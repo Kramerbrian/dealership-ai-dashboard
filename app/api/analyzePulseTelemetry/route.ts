@@ -104,9 +104,9 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const domain = url.searchParams.get('domain');
-    const tenant = url.searchParams.get('tenant') || 'default';
-    const role = url.searchParams.get('role') || 'default';
+    const domain = url.searchParams.get('domain') || undefined;
+    const tenant = url.searchParams.get('tenant') || undefined || 'default';
+    const role = url.searchParams.get('role') || undefined || 'default';
 
     if (!domain) {
       return NextResponse.json(

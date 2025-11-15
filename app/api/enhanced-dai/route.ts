@@ -187,9 +187,9 @@ export interface EnhancedDAIResponse {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-dealer';
-    const domain = searchParams.get('domain') || 'demo-dealership.com';
-    const includeSimulation = searchParams.get('simulate') === 'true';
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-dealer';
+    const domain = searchParams.get('domain') || undefined || 'demo-dealership.com';
+    const includeSimulation = searchParams.get('simulate') || undefined === 'true';
     
     // Initialize enhanced dAI engine
     const daiEngine = new EnhancedDAIEngine();

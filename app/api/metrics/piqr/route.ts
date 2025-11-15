@@ -178,8 +178,8 @@ export async function GET(req: NextRequest) {
     }
 
     const searchParams = req.nextUrl.searchParams
-    const dealerId = searchParams.get('dealerId')
-    const domain = searchParams.get('domain')
+    const dealerId = searchParams.get('dealerId') || undefined
+    const domain = searchParams.get('domain') || undefined
 
     if (!dealerId) {
       return NextResponse.json(

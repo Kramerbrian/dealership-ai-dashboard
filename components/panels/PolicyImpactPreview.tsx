@@ -161,10 +161,10 @@ export default function PolicyImpactPreview({ tenantId }: PolicyImpactPreviewPro
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="rounded-lg border p-4">
                 <div className="text-gray-500 text-xs mb-1">Would Block</div>
-                <div className="text-2xl font-bold text-red-600">{result.summary.wouldBlock}</div>
-                {result.changesFromCurrent && (
+                <div className="text-2xl font-bold text-red-600">{(result as any).summary.wouldBlock}</div>
+                {(result as any).changesFromCurrent && (
                   <div className="text-xs mt-1">
-                    {formatChange(result.changesFromCurrent.blockChange)}
+                    {formatChange((result as any).changesFromCurrent.blockChange)}
                   </div>
                 )}
               </div>
@@ -172,13 +172,13 @@ export default function PolicyImpactPreview({ tenantId }: PolicyImpactPreviewPro
               <div className="rounded-lg border p-4">
                 <div className="text-gray-500 text-xs mb-1">Severity 3/2/1</div>
                 <div className="text-lg font-semibold">
-                  {result.summary.sev.s3}/{result.summary.sev.s2}/{result.summary.sev.s1}
+                  {(result as any).summary.sev.s3}/{(result as any).summary.sev.s2}/{(result as any).summary.sev.s1}
                 </div>
-                {result.changesFromCurrent && (
+                {(result as any).changesFromCurrent && (
                   <div className="text-xs mt-1 space-x-1">
-                    {formatChange(result.changesFromCurrent.severityChange.s3)}/
-                    {formatChange(result.changesFromCurrent.severityChange.s2)}/
-                    {formatChange(result.changesFromCurrent.severityChange.s1)}
+                    {formatChange((result as any).changesFromCurrent.severityChange.s3)}/
+                    {formatChange((result as any).changesFromCurrent.severityChange.s2)}/
+                    {formatChange((result as any).changesFromCurrent.severityChange.s1)}
                   </div>
                 )}
               </div>
@@ -186,18 +186,18 @@ export default function PolicyImpactPreview({ tenantId }: PolicyImpactPreviewPro
               <div className="rounded-lg border p-4">
                 <div className="text-gray-500 text-xs mb-1">Elasticity $/pt</div>
                 <div className="text-xl font-semibold">
-                  ${result.summary.elasticity_usd_per_point}
+                  ${(result as any).summary.elasticity_usd_per_point}
                 </div>
               </div>
               
               <div className="rounded-lg border p-4">
                 <div className="text-gray-500 text-xs mb-1">OCI Forecast (28d)</div>
                 <div className="text-xl font-semibold">
-                  ${result.summary.ociForecast_usd.toLocaleString()}
+                  ${(result as any).summary.ociForecast_usd.toLocaleString()}
                 </div>
-                {result.changesFromCurrent && (
+                {(result as any).changesFromCurrent && (
                   <div className="text-xs mt-1">
-                    {formatChange(result.changesFromCurrent.ociChange, true)}
+                    {formatChange((result as any).changesFromCurrent.ociChange, true)}
                   </div>
                 )}
               </div>
@@ -207,34 +207,34 @@ export default function PolicyImpactPreview({ tenantId }: PolicyImpactPreviewPro
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">
-                  {result.context.total_violations_28d}
+                  {(result as any).context.total_violations_28d}
                 </div>
                 <div className="text-xs text-gray-600">Total Violations (28d)</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">
-                  {result.context.affected_vins}
+                  {(result as any).context.affected_vins}
                 </div>
                 <div className="text-xs text-gray-600">Affected VINs</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">
-                  ${Math.round(result.context.avg_delta_price).toLocaleString()}
+                  ${Math.round((result as any).context.avg_delta_price).toLocaleString()}
                 </div>
                 <div className="text-xs text-gray-600">Avg Price Delta</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">
-                  {result.context.current_severity_breakdown.s3 + 
-                   result.context.current_severity_breakdown.s2 + 
-                   result.context.current_severity_breakdown.s1}
+                  {(result as any).context.current_severity_breakdown.s3 + 
+                   (result as any).context.current_severity_breakdown.s2 + 
+                   (result as any).context.current_severity_breakdown.s1}
                 </div>
                 <div className="text-xs text-gray-600">Current Blocked</div>
               </div>
             </div>
 
             {/* Sample Violations */}
-            {result.sample.length > 0 && (
+            {(result as any).sample.length > 0 && (
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-3">
                   Sample Violations (showing first 10)
@@ -252,7 +252,7 @@ export default function PolicyImpactPreview({ tenantId }: PolicyImpactPreviewPro
                       </tr>
                     </thead>
                     <tbody>
-                      {result.sample.slice(0, 10).map((item) => (
+                      {(result as any).sample.slice(0, 10).map((item) => (
                         <tr key={item.id} className="border-b hover:bg-gray-50">
                           <td className="py-2 font-mono text-xs">
                             {item.vin ? item.vin.slice(-8) : '—'}
@@ -291,7 +291,7 @@ export default function PolicyImpactPreview({ tenantId }: PolicyImpactPreviewPro
 
             {/* Generated At */}
             <div className="text-xs text-gray-500 text-center">
-              Generated at: {new Date(result.generated_at).toLocaleString()}
+              Generated at: {new Date((result as any).generated_at).toLocaleString()}
             </div>
           </div>
         )}

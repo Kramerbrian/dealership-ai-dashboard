@@ -16,10 +16,10 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
-    const format = searchParams.get('format') || 'json'; // 'json' | 'csv'
-    const type = searchParams.get('type') || 'all'; // 'scenarios' | 'trends' | 'all'
-    const days = parseInt(searchParams.get('days') || '30');
+    const dealerId = searchParams.get('dealerId') || undefined;
+    const format = searchParams.get('format') || undefined || 'json'; // 'json' | 'csv'
+    const type = searchParams.get('type') || undefined || 'all'; // 'scenarios' | 'trends' | 'all'
+    const days = parseInt(searchParams.get('days') || undefined || '30');
 
     if (!dealerId) {
       return NextResponse.json(

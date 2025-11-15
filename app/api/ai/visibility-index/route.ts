@@ -11,8 +11,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const domain = searchParams.get('domain');
-    const dealerId = searchParams.get('dealerId');
+    const domain = searchParams.get('domain') || undefined;
+    const dealerId = searchParams.get('dealerId') || undefined;
 
     if (!domain && !dealerId) {
       return NextResponse.json(

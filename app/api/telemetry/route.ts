@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (error: any) {
-    await logger.error('Telemetry error', { error: error.message });
+    await logger.error('Telemetry error', (error as any));
     return NextResponse.json(
       { error: 'Failed to record telemetry' },
       { status: 500 }
@@ -43,11 +43,11 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const event = searchParams.get('event');
-    const limit = parseInt(searchParams.get('limit') || '100');
+    const event = searchParams.get('event') || undefined;
+    const limit = parseInt(searchParams.get('limit') || undefined || '100');
 
-    const redis = getRedis();
-    const events = await redis.lrange('telemetry:events', 0, limit - 1);
+    const redisClient = (redis as any)();
+    const events = await redisClient.lrange('telemetry:events', 0, limit - 1);
 
     const parsed = events
       .map((e: string) => {

@@ -12,7 +12,7 @@ const KEY = process.env.X_API_KEY || '';
 
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const origin = searchParams.get('origin');
+  const origin = searchParams.get('origin') || undefined;
 
   if (!origin) {
     return NextResponse.json({ ok: false, error: 'origin parameter required' }, { status: 400 });

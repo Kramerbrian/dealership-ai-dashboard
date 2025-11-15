@@ -7,10 +7,10 @@ import { traced } from '@/lib/api-wrap';
  * Returns GA4 summary data for pulse adapter
  */
 export const GET = withAuth(
-  traced(async ({ req, tenantId }) => {
+  traced(async ({ req, tenantId }: any) => {
     try {
       const url = new URL(req.url);
-      const domain = url.searchParams.get('domain');
+      const domain = url.searchParams.get('domain') || undefined;
 
       // TODO: Fetch real GA4 data from Google Analytics API
       // For now, return synthetic data

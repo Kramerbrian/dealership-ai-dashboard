@@ -26,8 +26,8 @@ const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SE
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenant_id');
-    const days = parseInt(searchParams.get('days') || '30');
+    const tenantId = searchParams.get('tenant_id') || undefined;
+    const days = parseInt(searchParams.get('days') || undefined || '30');
     
     // Build query
     let query = supabase

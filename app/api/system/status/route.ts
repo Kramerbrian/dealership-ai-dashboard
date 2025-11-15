@@ -4,7 +4,7 @@ import { db as prisma } from '@/lib/db';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const includeMetrics = searchParams.get('metrics') === 'true';
+    const includeMetrics = searchParams.get('metrics') || undefined === 'true';
 
     // System status overview
     const systemStatus = {

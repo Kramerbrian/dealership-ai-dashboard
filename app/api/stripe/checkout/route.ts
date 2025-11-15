@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get current user tier
-    const currentTier = await TierManager.getUserTier(userId);
+    const currentTier = await (TierManager as any).getUserTier(userId);
     
     // Check if user is already on a higher tier
     const tierHierarchy = { FREE: 0, PRO: 1, ENTERPRISE: 2 };

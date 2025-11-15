@@ -17,7 +17,7 @@ interface ROIMetric {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get('tenantId');
+    const tenantId = searchParams.get('tenantId') || undefined;
     
     if (!tenantId) {
       return NextResponse.json({ error: 'tenantId required' }, { status: 400 });

@@ -157,18 +157,18 @@ export default function ConversationalAssistant({
 
       const result = await response.json()
       
-      if (result.success) {
+      if ((result as any).success) {
         setSession(prev => prev ? {
           ...prev,
-          messages: [...prev.messages, result.assistantMessage],
-          tokenUsage: result.tokenUsage || prev.tokenUsage
+          messages: [...prev.messages, (result as any).assistantMessage],
+          tokenUsage: (result as any).tokenUsage || prev.tokenUsage
         } : null)
       } else {
         // Add error message
         const errorMessage: Message = {
           id: Date.now().toString(),
           type: 'system',
-          content: result.error || 'Sorry, I encountered an error. Please try again.',
+          content: (result as any).error || 'Sorry, I encountered an error. Please try again.',
           timestamp: new Date()
         }
         setSession(prev => prev ? {

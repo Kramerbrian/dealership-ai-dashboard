@@ -41,7 +41,7 @@ class SecureScoringEngine {
   static initializeAlgorithms(): void {
     // VAI (Visibility AI) Algorithm
     const vaiAlgorithm = `
-      function calculateVAI(data) {
+      function calculateVAI(data: any) {
         const baseScore = 50;
         const seoWeight = 0.3;
         const socialWeight = 0.25;
@@ -64,7 +64,7 @@ class SecureScoringEngine {
 
     // DTRI (Digital Trust & Reputation Index) Algorithm
     const dtriAlgorithm = `
-      function calculateDTRI(data) {
+      function calculateDTRI(data: any) {
         const trustFactors = {
           schema: data.schemaMarkup ? 25 : 0,
           reviews: Math.min(25, data.reviewCount * 0.5),
@@ -79,7 +79,7 @@ class SecureScoringEngine {
 
     // QAI (Query Answer Intelligence) Algorithm
     const qaiAlgorithm = `
-      function calculateQAI(data) {
+      function calculateQAI(data: any) {
         const answerQuality = data.answerRelevance * 0.4;
         const responseTime = Math.max(0, 1 - data.responseTime / 1000) * 0.3;
         const accuracy = data.accuracyScore * 0.3;
@@ -90,7 +90,7 @@ class SecureScoringEngine {
 
     // PIQR (Personalized Intelligence Query Response) Algorithm
     const piqrAlgorithm = `
-      function calculatePIQR(data) {
+      function calculatePIQR(data: any) {
         const personalization = data.personalizationScore * 0.5;
         const intelligence = data.aiCapability * 0.3;
         const queryMatch = data.queryRelevance * 0.2;
@@ -101,7 +101,7 @@ class SecureScoringEngine {
 
     // HRP (High-Value Revenue Potential) Algorithm
     const hrpAlgorithm = `
-      function calculateHRP(data) {
+      function calculateHRP(data: any) {
         const revenueFactors = {
           conversion: data.conversionRate * 1000,
           average: data.averageDealValue,
@@ -118,7 +118,7 @@ class SecureScoringEngine {
 
     // E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) Algorithm
     const eeatAlgorithm = `
-      function calculateEEAT(data) {
+      function calculateEEAT(data: any) {
         const experience = data.experienceScore * 0.25;
         const expertise = data.expertiseScore * 0.25;
         const authoritativeness = data.authorityScore * 0.25;

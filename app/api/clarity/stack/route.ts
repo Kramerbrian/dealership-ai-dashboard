@@ -81,8 +81,8 @@ function computeRevenueAtRisk(scores: Scores): RevenueAtRisk {
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const domainParam = (url.searchParams.get('domain') || '').trim().toLowerCase();
-  const tenant = url.searchParams.get('tenant') || undefined;
+  const domainParam = (url.searchParams.get('domain') || undefined || '').trim().toLowerCase();
+  const tenant = url.searchParams.get('tenant') || undefined || undefined;
   const domain = domainParam || 'exampledealer.com';
 
   // Stubbed scores for now. Replace with real analysis later.

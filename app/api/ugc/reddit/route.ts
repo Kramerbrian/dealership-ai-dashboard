@@ -26,9 +26,9 @@ const redditQuerySchema = z.object({
 async function handler(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const dealershipName = url.searchParams.get('dealershipName');
-    const location = url.searchParams.get('location') || undefined;
-    const limit = parseInt(url.searchParams.get('limit') || '25', 10);
+    const dealershipName = url.searchParams.get('dealershipName') || undefined;
+    const location = url.searchParams.get('location') || undefined || undefined;
+    const limit = parseInt(url.searchParams.get('limit') || undefined || '25', 10);
 
     if (!dealershipName) {
       return NextResponse.json(

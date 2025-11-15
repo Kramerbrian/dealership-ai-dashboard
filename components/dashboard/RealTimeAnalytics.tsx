@@ -47,12 +47,12 @@ export function RealTimeAnalytics({ propertyId, className = '' }: RealTimeAnalyt
       const response = await fetch(`/api/analytics/ga4?propertyId=${propertyId}&metric=realtime`);
       const result = await response.json();
       
-      if (result.success) {
-        setData(result.data);
+      if ((result as any).success) {
+        setData((result as any).data);
         setLastUpdated(new Date());
         setIsConnected(true);
       } else {
-        setError(result.error || 'Failed to fetch data');
+        setError((result as any).error || 'Failed to fetch data');
         setIsConnected(false);
       }
     } catch (err) {

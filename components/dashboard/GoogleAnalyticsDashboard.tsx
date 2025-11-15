@@ -52,12 +52,12 @@ export function GoogleAnalyticsDashboard({
       
       const result = await response.json();
       
-      if (result.success) {
+      if ((result as any).success) {
         setIsConnected(true);
         setConnectionError(null);
       } else {
         setIsConnected(false);
-        setConnectionError(result.message || 'Connection failed');
+        setConnectionError((result as any).message || 'Connection failed');
       }
     } catch (error) {
       setIsConnected(false);

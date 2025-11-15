@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const groupId = url.searchParams.get('groupId');
+    const groupId = url.searchParams.get('groupId') || undefined;
 
     // Get user's dealer groups
     const { data: groups, error: groupsError } = await supabase

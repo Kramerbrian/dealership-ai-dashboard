@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const timeRange = searchParams.get('timeRange') || '30d';
+    const timeRange = searchParams.get('timeRange') || undefined || '30d';
 
     // Check cache first
     const cacheKey = CACHE_KEYS_EXT.AI_HEALTH_DATA(timeRange);
@@ -172,7 +172,7 @@ export async function GET(req: NextRequest) {
       error: error.message || 'Failed to fetch AI health data',
       data: fallbackData,
       meta: {
-        timeRange: req.nextUrl.searchParams.get('timeRange') || '30d',
+        timeRange: req.nextUrl.searchParams.get('timeRange') || undefined || '30d',
         timestamp: new Date().toISOString(),
         responseTime: `${duration}ms`,
         source: 'fallback_mock_data'

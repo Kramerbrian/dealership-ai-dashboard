@@ -118,26 +118,26 @@ export default function MysteryShopPanel({ dealerId }: MysteryShopPanelProps) {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-slate-400">Overall Score</span>
               <span className={`text-2xl font-bold ${
-                result.scores.overall >= 80 ? 'text-green-400' :
-                result.scores.overall >= 60 ? 'text-yellow-400' : 'text-red-400'
+                (result as any).scores.overall >= 80 ? 'text-green-400' :
+                (result as any).scores.overall >= 60 ? 'text-yellow-400' : 'text-red-400'
               }`}>
-                {result.scores.overall}
+                {(result as any).scores.overall}
               </span>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all ${
-                  result.scores.overall >= 80 ? 'bg-green-500' :
-                  result.scores.overall >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                  (result as any).scores.overall >= 80 ? 'bg-green-500' :
+                  (result as any).scores.overall >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                 }`}
-                style={{ width: `${result.scores.overall}%` }}
+                style={{ width: `${(result as any).scores.overall}%` }}
               />
             </div>
           </div>
 
           {/* Stage Scores */}
           <div className="grid grid-cols-3 gap-3">
-            {Object.entries(result.scores)
+            {Object.entries((result as any).scores)
               .filter(([key]) => key !== 'overall')
               .map(([stage, score]) => (
                 <div key={stage} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
@@ -153,14 +153,14 @@ export default function MysteryShopPanel({ dealerId }: MysteryShopPanelProps) {
           </div>
 
           {/* Priority Issues */}
-          {result.varianceAnalysis.priorityIssues.length > 0 && (
+          {(result as any).varianceAnalysis.priorityIssues.length > 0 && (
             <div className="p-4 bg-amber-900/20 border border-amber-700 rounded-lg">
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-5 h-5 text-amber-400" />
                 <h4 className="font-medium text-amber-300">Priority Issues</h4>
               </div>
               <div className="space-y-2">
-                {result.varianceAnalysis.priorityIssues.map((issue, idx) => (
+                {(result as any).varianceAnalysis.priorityIssues.map((issue, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
                     <span className="text-slate-300 capitalize">{issue.stage}</span>
                     <div className="flex items-center gap-2">
@@ -178,14 +178,14 @@ export default function MysteryShopPanel({ dealerId }: MysteryShopPanelProps) {
           )}
 
           {/* Coaching Recommendations */}
-          {result.coachingRecommendations.length > 0 && (
+          {(result as any).coachingRecommendations.length > 0 && (
             <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
                 <h4 className="font-medium text-blue-300">Coaching Recommendations</h4>
               </div>
               <div className="space-y-3">
-                {result.coachingRecommendations.map((rec, idx) => (
+                {(result as any).coachingRecommendations.map((rec, idx) => (
                   <div key={idx} className="text-sm">
                     <div className="flex items-start justify-between mb-1">
                       <span className="font-medium text-white capitalize">{rec.stage}</span>
@@ -206,9 +206,9 @@ export default function MysteryShopPanel({ dealerId }: MysteryShopPanelProps) {
               <span className="text-sm font-medium text-slate-300">Evidence</span>
             </div>
             <div className="text-xs text-slate-400 space-y-1">
-              <div>Shop ID: <code className="text-slate-300">{result.shopId}</code></div>
-              <div>Timestamp: {new Date(result.timestamp).toLocaleString()}</div>
-              <div>Scenario: {result.scenario}</div>
+              <div>Shop ID: <code className="text-slate-300">{(result as any).shopId}</code></div>
+              <div>Timestamp: {new Date((result as any).timestamp).toLocaleString()}</div>
+              <div>Scenario: {(result as any).scenario}</div>
             </div>
           </div>
         </div>

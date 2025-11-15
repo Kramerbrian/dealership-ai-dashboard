@@ -86,10 +86,10 @@ export default function SEOModal({ isOpen, onClose, domain = 'dealershipai.com' 
       const response = await fetch(`/api/visibility/seo?domain=${encodeURIComponent(domain)}&timeRange=30d`);
       const result = await response.json();
       
-      if (result.success) {
-        setData(result.data);
+      if ((result as any).success) {
+        setData((result as any).data);
       } else {
-        throw new Error(result.error || 'Failed to fetch SEO data');
+        throw new Error((result as any).error || 'Failed to fetch SEO data');
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');

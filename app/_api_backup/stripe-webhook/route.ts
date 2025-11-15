@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
     // Handle the event
     const result = await billingManager.handleWebhookEvent(event);
 
-    if (!result.success) {
-      console.error('Error handling webhook event:', result.error);
-      return NextResponse.json({ error: result.error }, { status: 500 });
+    if (!(result as any).success) {
+      console.error('Error handling webhook event:', (result as any).error);
+      return NextResponse.json({ error: (result as any).error }, { status: 500 });
     }
 
     return NextResponse.json({ received: true });

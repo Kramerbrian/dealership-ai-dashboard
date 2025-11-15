@@ -44,9 +44,9 @@ interface KnowledgeGraphResponse {
  * - GET /api/knowledge-graph?query=causal&context=weather
  */
 export async function GET(req: NextRequest) {
-  const dealerId = req.nextUrl.searchParams.get('dealerId');
-  const queryType = req.nextUrl.searchParams.get('type') || 'metrics';
-  const context = req.nextUrl.searchParams.get('context');
+  const dealerId = req.nextUrl.searchParams.get('dealerId') || undefined;
+  const queryType = req.nextUrl.searchParams.get('type') || undefined || 'metrics';
+  const context = req.nextUrl.searchParams.get('context') || undefined;
 
   // Check if Neo4j is configured
   if (!NEO4J_URI || !NEO4J_PASSWORD) {

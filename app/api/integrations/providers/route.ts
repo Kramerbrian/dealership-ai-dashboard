@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const category = url.searchParams.get('category');
+    const category = url.searchParams.get('category') || undefined;
 
     let query = supabase
       .from('integration_providers')

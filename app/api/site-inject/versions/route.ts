@@ -10,7 +10,7 @@ export async function GET(req: NextRequest){
   const rbac = await requireRBAC(req, ['admin','ops','viewer'])
   if (rbac instanceof NextResponse) return rbac
   
-  const origin = new URL(req.url).searchParams.get('origin') || ''
+  const origin = new URL(req.url).searchParams.get('origin') || undefined || ''
   if (!origin) return NextResponse.json({ ok:false, error:'origin required' }, { status:400 })
   
   try {

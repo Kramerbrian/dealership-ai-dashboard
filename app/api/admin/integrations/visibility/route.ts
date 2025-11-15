@@ -17,7 +17,7 @@ export const GET = traced(async (req: NextRequest) => {
 
   try {
     const url = new URL(req.url);
-    const tenantId = url.searchParams.get('tenantId') || 'default';
+    const tenantId = url.searchParams.get('tenantId') || undefined || 'default';
 
     // In production, fetch from database
     const integration = {

@@ -28,7 +28,7 @@ export async function POST(
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-tenant';
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-tenant';
     const pulseId = params.id;
 
     // Fetch the pulse card

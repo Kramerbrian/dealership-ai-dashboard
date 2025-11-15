@@ -11,8 +11,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
-    const agent = searchParams.get('agent'); // 'aim_gpt' | 'pulse_engine' | 'schema_engine'
+    const dealerId = searchParams.get('dealerId') || undefined;
+    const agent = searchParams.get('agent') || undefined; // 'aim_gpt' | 'pulse_engine' | 'schema_engine'
 
     if (!dealerId) {
       return NextResponse.json({ error: 'dealerId required' }, { status: 400 });

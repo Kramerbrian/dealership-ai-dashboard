@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealership = searchParams.get('dealership');
+    const dealership = searchParams.get('dealership') || undefined;
 
     if (!dealership) {
       return NextResponse.json({ error: 'Dealership parameter is required' }, { status: 400 });

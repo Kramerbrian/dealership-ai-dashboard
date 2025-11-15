@@ -51,10 +51,10 @@ export default function DishonestPricingCard({
       const response = await fetch(`/api/policy/offer-audit?${params}`)
       const result = await response.json()
       
-      if (result.ok) {
-        setAudits(result.audits || [])
+      if ((result as any).ok) {
+        setAudits((result as any).audits || [])
       } else {
-        setError(result.error || 'Failed to fetch audit data')
+        setError((result as any).error || 'Failed to fetch audit data')
       }
     } catch (err) {
       setError('Network error while fetching audit data')

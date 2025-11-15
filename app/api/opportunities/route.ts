@@ -58,9 +58,9 @@ function encodeCursor(impact_score: number, id: string): string {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10), 50); // Max 50 per spec
-    const cursorParam = searchParams.get('cursor');
+    const domain = searchParams.get('domain') || undefined;
+    const limit = Math.min(parseInt(searchParams.get('limit') || undefined || '10', 10), 50); // Max 50 per spec
+    const cursorParam = searchParams.get('cursor') || undefined;
 
     // Validate domain parameter
     if (!domain) {

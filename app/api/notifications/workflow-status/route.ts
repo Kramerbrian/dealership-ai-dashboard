@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
+    const dealerId = searchParams.get('dealerId') || undefined;
 
     // In production, fetch from user preferences table
     // For now, return defaults

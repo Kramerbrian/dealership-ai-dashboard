@@ -11,9 +11,9 @@ export const maxDuration = 60;
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const dealerName = url.searchParams.get('dealerName') || 'Demo Dealership';
-    const city = url.searchParams.get('city') || 'Naples';
-    const state = url.searchParams.get('state') || 'FL';
+    const dealerName = url.searchParams.get('dealerName') || undefined || 'Demo Dealership';
+    const city = url.searchParams.get('city') || undefined || 'Naples';
+    const state = url.searchParams.get('state') || undefined || 'FL';
 
     console.log(`[ai-visibility/score] Quick test for: ${dealerName}, ${city}, ${state}`);
 
@@ -21,13 +21,13 @@ export async function GET(req: NextRequest) {
 
     // Return simplified response for dashboard
     const response = {
-      score: result.overall,
-      breakdown: result.breakdown,
-      mentionRate: result.mentionRate,
-      zeroClickRate: result.zeroClickRate,
-      sentiment: result.avgSentiment > 0.3 ? 'positive' : result.avgSentiment < -0.3 ? 'negative' : 'neutral',
-      status: result.overall >= 80 ? 'excellent' : result.overall >= 60 ? 'good' : result.overall >= 40 ? 'fair' : 'poor',
-      testedAt: result.testedAt,
+      score: (result as any).overall,
+      breakdown: (result as any).breakdown,
+      mentionRate: (result as any).mentionRate,
+      zeroClickRate: (result as any).zeroClickRate,
+      sentiment: (result as any).avgSentiment > 0.3 ? 'positive' : (result as any).avgSentiment < -0.3 ? 'negative' : 'neutral',
+      status: (result as any).overall >= 80 ? 'excellent' : (result as any).overall >= 60 ? 'good' : (result as any).overall >= 40 ? 'fair' : 'poor',
+      testedAt: (result as any).testedAt,
     };
 
     console.log(`[ai-visibility/score] Score: ${response.score}, Status: ${response.status}`);

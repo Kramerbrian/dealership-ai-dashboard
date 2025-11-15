@@ -35,11 +35,11 @@ export default function OCILiveMeter({ tenantId, refreshInterval = 300000 }: OCI
       const response = await fetch(`/api/oci/live?tenantId=${tenantId}`)
       const result = await response.json()
       
-      if (result.ok) {
-        setData(result.data)
+      if ((result as any).ok) {
+        setData((result as any).data)
         setLastRefresh(new Date())
       } else {
-        setError(result.error || 'Failed to fetch OCI data')
+        setError((result as any).error || 'Failed to fetch OCI data')
       }
     } catch (err) {
       setError('Network error while fetching OCI data')

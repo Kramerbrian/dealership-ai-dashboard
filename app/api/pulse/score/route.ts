@@ -9,7 +9,7 @@ import { PulseEngine } from '@/lib/pulse/engine';
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const dealerId = searchParams.get('dealerId');
+    const dealerId = searchParams.get('dealerId') || undefined;
 
     if (!dealerId) {
       return NextResponse.json(

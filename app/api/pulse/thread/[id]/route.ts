@@ -31,7 +31,7 @@ export async function GET(
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-tenant';
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-tenant';
     const threadId = params.id;
 
     // Fetch thread events

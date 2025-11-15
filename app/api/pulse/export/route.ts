@@ -36,10 +36,10 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-tenant';
-    const filter = searchParams.get('filter') || 'all';
-    const format = searchParams.get('format') || 'json';
-    const limit = parseInt(searchParams.get('limit') || '1000');
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-tenant';
+    const filter = searchParams.get('filter') || undefined || 'all';
+    const format = searchParams.get('format') || undefined || 'json';
+    const limit = parseInt(searchParams.get('limit') || undefined || '1000');
 
     // Fetch cards
     const { data: cards, error } = await supabase

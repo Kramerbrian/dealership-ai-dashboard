@@ -220,8 +220,8 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const oem = url.searchParams.get('oem');
-  const testUrl = url.searchParams.get('url');
+  const oem = url.searchParams.get('oem') || undefined;
+  const testUrl = url.searchParams.get('url') || undefined;
 
   if (!oem || !testUrl) {
     return NextResponse.json(

@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
   }
 
   const u = new URL(req.url);
-  const marketId = u.searchParams.get('marketId') || 'us_default';
-  const window = u.searchParams.get('window') || '7d';
+  const marketId = u.searchParams.get('marketId') || undefined || 'us_default';
+  const window = u.searchParams.get('window') || undefined || '7d';
 
   const alerts = [
     {

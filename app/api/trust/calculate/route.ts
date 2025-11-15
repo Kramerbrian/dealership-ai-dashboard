@@ -115,33 +115,33 @@ export async function GET(req: NextRequest) {
 
     // Extract SEO metrics
     const seo: AgentTrustMetrics = {
-      mentions: Number(searchParams.get('seo_mentions')) || 67,
-      citations: Number(searchParams.get('seo_citations')) || 23,
-      sentiment: Number(searchParams.get('seo_sentiment')) || 82,
-      contentReadiness: Number(searchParams.get('seo_content')) || 78,
-      shareOfVoice: Number(searchParams.get('seo_voice')) || 15.2
+      mentions: Number(searchParams.get('seo_mentions') || undefined) || 67,
+      citations: Number(searchParams.get('seo_citations') || undefined) || 23,
+      sentiment: Number(searchParams.get('seo_sentiment') || undefined) || 82,
+      contentReadiness: Number(searchParams.get('seo_content') || undefined) || 78,
+      shareOfVoice: Number(searchParams.get('seo_voice') || undefined) || 15.2
     };
 
     // Extract AEO metrics
     const aeo: AgentTrustMetrics = {
-      mentions: Number(searchParams.get('aeo_mentions')) || 99,
-      citations: Number(searchParams.get('aeo_citations')) || 76,
-      sentiment: Number(searchParams.get('aeo_sentiment')) || 76,
-      contentReadiness: Number(searchParams.get('aeo_content')) || 65,
-      shareOfVoice: Number(searchParams.get('aeo_voice')) || 8.7
+      mentions: Number(searchParams.get('aeo_mentions') || undefined) || 99,
+      citations: Number(searchParams.get('aeo_citations') || undefined) || 76,
+      sentiment: Number(searchParams.get('aeo_sentiment') || undefined) || 76,
+      contentReadiness: Number(searchParams.get('aeo_content') || undefined) || 65,
+      shareOfVoice: Number(searchParams.get('aeo_voice') || undefined) || 8.7
     };
 
     // Extract GEO metrics
     const geo: AgentTrustMetrics = {
-      mentions: Number(searchParams.get('geo_mentions')) || 45,
-      citations: Number(searchParams.get('geo_citations')) || 31,
-      sentiment: Number(searchParams.get('geo_sentiment')) || 84,
-      contentReadiness: Number(searchParams.get('geo_content')) || 72,
-      shareOfVoice: Number(searchParams.get('geo_voice')) || 12.4
+      mentions: Number(searchParams.get('geo_mentions') || undefined) || 45,
+      citations: Number(searchParams.get('geo_citations') || undefined) || 31,
+      sentiment: Number(searchParams.get('geo_sentiment') || undefined) || 84,
+      contentReadiness: Number(searchParams.get('geo_content') || undefined) || 72,
+      shareOfVoice: Number(searchParams.get('geo_voice') || undefined) || 12.4
     };
 
     const agentData: MultiAgentTrustData = { seo, aeo, geo };
-    const vertical = (searchParams.get('vertical') || 'acquisition') as Vertical;
+    const vertical = (searchParams.get('vertical') || undefined || 'acquisition') as Vertical;
 
     // Calculate trust
     const result = calculateTrust(agentData, vertical);

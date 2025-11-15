@@ -229,7 +229,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const domain = searchParams.get('domain');
+  const domain = searchParams.get('domain') || undefined;
 
   if (!domain) {
     return NextResponse.json(

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const cards: PulseCard[] = Array.isArray(body) ? body : [body];
-    const dealerId = req.nextUrl.searchParams.get('dealerId') || 'demo-tenant';
+    const dealerId = req.nextUrl.searchParams.get('dealerId') || undefined || 'demo-tenant';
 
     if (cards.length === 0) {
       return NextResponse.json({ error: 'Invalid payload: expected array of PulseCard' }, { status: 400 });
@@ -140,9 +140,9 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-tenant';
-    const filter = searchParams.get('filter') || 'all';
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-tenant';
+    const filter = searchParams.get('filter') || undefined || 'all';
+    const limit = parseInt(searchParams.get('limit') || undefined || '50');
 
     // Fetch cards using stored function
     const { data: cards, error } = await (supabase as any)

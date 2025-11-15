@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const brand = url.searchParams.get('brand') || 'Toyota';
+    const brand = url.searchParams.get('brand') || undefined || 'Toyota';
     
     // Synthetic competitor data - replace with real API call
     const competitors = [

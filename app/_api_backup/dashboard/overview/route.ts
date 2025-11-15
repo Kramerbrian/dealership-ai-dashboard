@@ -9,8 +9,8 @@ export async function GET(req: NextRequest) {
   
   try {
     const { searchParams } = new URL(req.url);
-    const timeRange = searchParams.get('timeRange') || '30d';
-    const dealerId = searchParams.get('dealerId') || 'default';
+    const timeRange = searchParams.get('timeRange') || undefined || '30d';
+    const dealerId = searchParams.get('dealerId') || undefined || 'default';
 
     // Simulate database query time
     await new Promise(resolve => setTimeout(resolve, 100));

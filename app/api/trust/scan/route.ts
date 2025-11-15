@@ -104,9 +104,9 @@ async function handler(req: NextRequest) {
           status: 'NEW',
           isQualified: metrics.trust_score < 0.7, // Auto-qualify if score is low (needs improvement)
           // UTM tracking would be extracted from query params in production
-          utmSource: req.nextUrl.searchParams.get('utm_source') || undefined,
-          utmMedium: req.nextUrl.searchParams.get('utm_medium') || undefined,
-          utmCampaign: req.nextUrl.searchParams.get('utm_campaign') || undefined,
+          utmSource: req.nextUrl.searchParams.get('utm_source') || undefined || undefined,
+          utmMedium: req.nextUrl.searchParams.get('utm_medium') || undefined || undefined,
+          utmCampaign: req.nextUrl.searchParams.get('utm_campaign') || undefined || undefined,
           referrer: req.headers.get('referer') || undefined,
         },
       });
@@ -129,7 +129,7 @@ async function handler(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: error.issues },
         { status: 400 }
       );
     }

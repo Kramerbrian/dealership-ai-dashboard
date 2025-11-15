@@ -127,26 +127,26 @@ export default function HALChat({ dealerId, domain, className = '' }: HALChatPro
     const { result, confidence, rationale } = response;
     
     // Format based on action type
-    if (result.aiv !== undefined) {
-      return `**AI Visibility Analysis**\n\n- AI Visibility Index (AIV): ${result.aiv}\n- Algorithmic Trust Index (ATI): ${result.ati || 'N/A'}\n\nPlatform Breakdown:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).aiv !== undefined) {
+      return `**AI Visibility Analysis**\n\n- AI Visibility Index (AIV): ${(result as any).aiv}\n- Algorithmic Trust Index (ATI): ${(result as any).ati || 'N/A'}\n\nPlatform Breakdown:\n${(result as any).platforms ? Object.entries((result as any).platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
-    if (result.qai !== undefined) {
-      return `**Quality Authority Index**\n\n- Overall QAI: ${result.qai}\n\nComponents:\n${result.components ? Object.entries(result.components).map(([c, v]: [string, any]) => `  • ${c}: ${v}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).qai !== undefined) {
+      return `**Quality Authority Index**\n\n- Overall QAI: ${(result as any).qai}\n\nComponents:\n${(result as any).components ? Object.entries((result as any).components).map(([c, v]: [string, any]) => `  • ${c}: ${v}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
-    if (result.ociValue !== undefined) {
-      return `**Opportunity Cost of Inaction**\n\n- Monthly OCI Value: $${result.ociValue.toLocaleString()}\n- Monthly Risk: $${result.monthlyRisk?.toLocaleString() || 'N/A'}\n- Recoverable: $${result.recoverable?.toLocaleString() || 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).ociValue !== undefined) {
+      return `**Opportunity Cost of Inaction**\n\n- Monthly OCI Value: $${(result as any).ociValue.toLocaleString()}\n- Monthly Risk: $${(result as any).monthlyRisk?.toLocaleString() || 'N/A'}\n- Recoverable: $${(result as any).recoverable?.toLocaleString() || 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
-    if (result.recommendations) {
-      return `**Autonomous Strategy Recommendations**\n\n${result.recommendations.map((rec: any, idx: number) => 
+    if ((result as any).recommendations) {
+      return `**Autonomous Strategy Recommendations**\n\n${(result as any).recommendations.map((rec: any, idx: number) => 
         `${idx + 1}. **${rec.action}**\n   - Impact: $${rec.impact?.toLocaleString() || 'N/A'}/mo\n   - Effort: ${rec.effort || 'N/A'}\n   - Confidence: ${(rec.confidence * 100).toFixed(1)}%`
-      ).join('\n\n')}\n\nOverall Confidence: ${(result.overallConfidence * 100).toFixed(1)}%`;
+      ).join('\n\n')}\n\nOverall Confidence: ${((result as any).overallConfidence * 100).toFixed(1)}%`;
     }
     
-    if (result.sentiment !== undefined) {
-      return `**UGC Sentiment Analysis**\n\n- Overall Sentiment: ${result.sentiment}\n\nPlatform Breakdown:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nRecommendations:\n${result.recommendations ? result.recommendations.map((r: string) => `  • ${r}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).sentiment !== undefined) {
+      return `**UGC Sentiment Analysis**\n\n- Overall Sentiment: ${(result as any).sentiment}\n\nPlatform Breakdown:\n${(result as any).platforms ? Object.entries((result as any).platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nRecommendations:\n${(result as any).recommendations ? (result as any).recommendations.map((r: string) => `  • ${r}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
 
     // Fallback

@@ -40,10 +40,10 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
 
       const result = await response.json();
 
-      if (result.success && result.checkoutUrl) {
-        window.location.href = result.checkoutUrl;
+      if ((result as any).success && (result as any).checkoutUrl) {
+        window.location.href = (result as any).checkoutUrl;
       } else {
-        console.error('Failed to create checkout session:', result.error);
+        console.error('Failed to create checkout session:', (result as any).error);
         alert('Failed to start checkout. Please try again.');
       }
     } catch (error) {

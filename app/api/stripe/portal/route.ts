@@ -19,10 +19,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user's Stripe customer ID
-    const user = await prisma.user.findUnique({
+    const user = await (prisma as any).user.findUnique({
       where: { id: userId },
       select: { stripeCustomerId: true }
-    });
+    }) as any;
 
     if (!user?.stripeCustomerId) {
       return NextResponse.json({
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create portal session
-    const session = await createPortalSession(user.stripeCustomerId);
+    const session = await (createPortalSession as any)(user.stripeCustomerId);
 
     return NextResponse.json({
       success: true,

@@ -20,8 +20,8 @@ export default function DishonestPricingCard({ tenantId }: { tenantId: string })
       try {
         const response = await fetch(`/api/policy/list?tenantId=${tenantId}`);
         const result = await response.json();
-        if (result.ok && result.rows) {
-          setRows(result.rows);
+        if ((result as any).ok && (result as any).rows) {
+          setRows((result as any).rows);
         }
       } catch (error) {
         console.error('Failed to fetch audit data:', error);

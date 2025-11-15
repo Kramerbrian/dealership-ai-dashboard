@@ -8,7 +8,7 @@ export const runtime = "edge";
  * Event format: data: {"type":"progress","agent":"aeo","status":"done","message":"AEO scan complete","pct":17}
  */
 export async function GET(req: NextRequest) {
-  const domain = req.nextUrl.searchParams.get("domain") || "exampledealer.com";
+  const domain = req.nextUrl.searchParams.get("domain") || undefined || "exampledealer.com";
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({

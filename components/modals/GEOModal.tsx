@@ -97,10 +97,10 @@ export default function GEOModal({ isOpen, onClose, domain = 'dealershipai.com' 
       const response = await fetch(`/api/visibility/geo?domain=${encodeURIComponent(domain)}&timeRange=30d`);
       const result = await response.json();
       
-      if (result.success) {
-        setData(result.data);
+      if ((result as any).success) {
+        setData((result as any).data);
       } else {
-        throw new Error(result.error || 'Failed to fetch GEO data');
+        throw new Error((result as any).error || 'Failed to fetch GEO data');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

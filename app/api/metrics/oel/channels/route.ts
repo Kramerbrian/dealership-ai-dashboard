@@ -56,8 +56,8 @@ function synthesizeChannel(name: string, base: number): ChannelRow {
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url)
-    const domain = url.searchParams.get('domain') || 'example.com'
-    const channelsParam = url.searchParams.get('channels') || 'Google Ads,Meta,Display,Organic'
+    const domain = url.searchParams.get('domain') || undefined || 'example.com'
+    const channelsParam = url.searchParams.get('channels') || undefined || 'Google Ads,Meta,Display,Organic'
     const channels = channelsParam
       .split(',')
       .map((s) => s.trim())

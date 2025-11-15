@@ -127,26 +127,26 @@ export default function dAIChat({ dealerId, domain, className = '' }: dAIChatPro
     const { result, confidence, rationale } = response;
     
     // Format based on action type - using simple language
-    if (result.aiv !== undefined) {
-      return `**How Visible You Are to AI Search Tools**\n\n- Visibility Score: ${result.aiv}% (how often AI tools find you)\n- Trust Score: ${result.ati || 'N/A'}% (how much AI tools trust your content)\n\nWhere You Show Up:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).aiv !== undefined) {
+      return `**How Visible You Are to AI Search Tools**\n\n- Visibility Score: ${(result as any).aiv}% (how often AI tools find you)\n- Trust Score: ${(result as any).ati || 'N/A'}% (how much AI tools trust your content)\n\nWhere You Show Up:\n${(result as any).platforms ? Object.entries((result as any).platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
-    if (result.qai !== undefined) {
-      return `**Your Quality and Trust Score**\n\n- Overall Quality Score: ${result.qai}\n\nWhat Makes Up Your Score:\n${result.components ? Object.entries(result.components).map(([c, v]: [string, any]) => `  • ${c}: ${v}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).qai !== undefined) {
+      return `**Your Quality and Trust Score**\n\n- Overall Quality Score: ${(result as any).qai}\n\nWhat Makes Up Your Score:\n${(result as any).components ? Object.entries((result as any).components).map(([c, v]: [string, any]) => `  • ${c}: ${v}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
-    if (result.ociValue !== undefined) {
-      return `**Money You Might Be Losing**\n\n- Monthly Loss: $${result.ociValue.toLocaleString()}\n- Monthly Risk: $${result.monthlyRisk?.toLocaleString() || 'N/A'}\n- Money You Could Get Back: $${result.recoverable?.toLocaleString() || 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).ociValue !== undefined) {
+      return `**Money You Might Be Losing**\n\n- Monthly Loss: $${(result as any).ociValue.toLocaleString()}\n- Monthly Risk: $${(result as any).monthlyRisk?.toLocaleString() || 'N/A'}\n- Money You Could Get Back: $${(result as any).recoverable?.toLocaleString() || 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
     
-    if (result.recommendations) {
-      return `**Recommended Actions**\n\n${result.recommendations.map((rec: any, idx: number) => 
+    if ((result as any).recommendations) {
+      return `**Recommended Actions**\n\n${(result as any).recommendations.map((rec: any, idx: number) => 
         `${idx + 1}. **${rec.action}**\n   - Money Impact: $${rec.impact?.toLocaleString() || 'N/A'}/month\n   - How Hard: ${rec.effort || 'N/A'}\n   - Confidence: ${(rec.confidence * 100).toFixed(1)}%`
-      ).join('\n\n')}\n\nOverall Confidence: ${(result.overallConfidence * 100).toFixed(1)}%`;
+      ).join('\n\n')}\n\nOverall Confidence: ${((result as any).overallConfidence * 100).toFixed(1)}%`;
     }
     
-    if (result.sentiment !== undefined) {
-      return `**What Customers Are Saying**\n\n- Overall Feeling: ${result.sentiment}\n\nBy Platform:\n${result.platforms ? Object.entries(result.platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nWhat You Should Do:\n${result.recommendations ? result.recommendations.map((r: string) => `  • ${r}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
+    if ((result as any).sentiment !== undefined) {
+      return `**What Customers Are Saying**\n\n- Overall Feeling: ${(result as any).sentiment}\n\nBy Platform:\n${(result as any).platforms ? Object.entries((result as any).platforms).map(([p, s]: [string, any]) => `  • ${p}: ${s}`).join('\n') : 'N/A'}\n\nWhat You Should Do:\n${(result as any).recommendations ? (result as any).recommendations.map((r: string) => `  • ${r}`).join('\n') : 'N/A'}\n\nConfidence: ${(confidence! * 100).toFixed(1)}%`;
     }
 
     // Fallback - use content directly if available

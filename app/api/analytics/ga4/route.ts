@@ -7,9 +7,9 @@ export async function GET(req: NextRequest) {
   
   try {
     const { searchParams } = new URL(req.url);
-    const propertyId = searchParams.get('propertyId');
-    const metric = searchParams.get('metric') || 'overview';
-    const dateRange = searchParams.get('dateRange') || '30d';
+    const propertyId = searchParams.get('propertyId') || undefined;
+    const metric = searchParams.get('metric') || undefined || 'overview';
+    const dateRange = searchParams.get('dateRange') || undefined || '30d';
     
     if (!propertyId) {
       return NextResponse.json(
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    const propertyId = new URL((req as any).url || '').searchParams.get('propertyId');
+    const propertyId = new URL((req as any).url || '').searchParams.get('propertyId') || undefined;
     logger.googleAnalytics.apiError('GET', propertyId || 'unknown', error as Error);
     
     return NextResponse.json(

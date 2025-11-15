@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const dealer = searchParams.get('dealer') || 'demo';
+  const dealer = searchParams.get('dealer') || undefined || 'demo';
 
   return NextResponse.json({
     dealer,

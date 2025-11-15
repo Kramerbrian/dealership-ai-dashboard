@@ -138,10 +138,10 @@ export function useGeoPersonalization(options: UseGeoPersonalizationOptions = {}
 
       const result = await response.json();
 
-      if (result.success) {
-        setMarketAnalysis(result.data);
+      if ((result as any).success) {
+        setMarketAnalysis((result as any).data);
       } else {
-        throw new Error(result.error || 'Failed to analyze market');
+        throw new Error((result as any).error || 'Failed to analyze market');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to analyze market';
@@ -255,10 +255,10 @@ export function useDomainLocation(domain?: string) {
 
         const result = await response.json();
 
-        if (result.success && result.data.coordinates) {
+        if ((result as any).success && (result as any).data.coordinates) {
           setLocation({
-            latitude: result.data.coordinates.lat,
-            longitude: result.data.coordinates.lng,
+            latitude: (result as any).data.coordinates.lat,
+            longitude: (result as any).data.coordinates.lng,
             accuracy: 100 // Domain-based location is more accurate than IP
           });
         } else {

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     // Log each result
     for (const result of auditResults.integrations) {
-      await logAuditResult(dealerId, result.integration, result);
+      await logAuditResult(dealerId, (result as any).integration, result);
     }
 
     return NextResponse.json(auditResults);
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
+    const dealerId = searchParams.get('dealerId') || undefined;
 
     if (!dealerId) {
       return NextResponse.json(

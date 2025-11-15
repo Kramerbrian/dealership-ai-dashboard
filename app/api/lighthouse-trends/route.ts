@@ -18,8 +18,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
-    const days = parseInt(url.searchParams.get('days') || '7');
-    const metric = url.searchParams.get('metric') || 'avg';
+    const days = parseInt(url.searchParams.get('days') || undefined || '7');
+    const metric = url.searchParams.get('metric') || undefined || 'avg';
 
     // Read lighthouse history
     let logData: Array<{

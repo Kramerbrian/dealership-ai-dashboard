@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const dealerId = url.searchParams.get('dealerId') || 'demo-tenant';
+    const dealerId = url.searchParams.get('dealerId') || undefined || 'demo-tenant';
 
     const supabase = getSupabase();
     if (!supabase) {

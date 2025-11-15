@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ export async function GET() {
   });
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const body = await req.json();
   return NextResponse.json({
     success: true,

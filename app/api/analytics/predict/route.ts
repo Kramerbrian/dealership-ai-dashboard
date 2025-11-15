@@ -34,8 +34,8 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const dealerId = url.searchParams.get('dealerId') || 'demo-tenant';
-    const daysAhead = parseInt(url.searchParams.get('days') || '7', 10);
+    const dealerId = url.searchParams.get('dealerId') || undefined || 'demo-tenant';
+    const daysAhead = parseInt(url.searchParams.get('days') || undefined || '7', 10);
 
     // Run predictions in parallel
     const [

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     );
   }
   try {
-    const sessionId = req.nextUrl.searchParams.get('session_id');
+    const sessionId = req.nextUrl.searchParams.get('session_id') || undefined;
 
     if (!sessionId) {
       return NextResponse.json(

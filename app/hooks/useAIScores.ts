@@ -87,10 +87,10 @@ export function useAIScores(options: UseAIScoresOptions = {}): UseAIScoresReturn
 
       const result = await response.json();
 
-      if (result.success) {
-        setData(result.data);
+      if ((result as any).success) {
+        setData((result as any).data);
       } else {
-        throw new Error(result.error || 'Failed to fetch AI scores');
+        throw new Error((result as any).error || 'Failed to fetch AI scores');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -143,10 +143,10 @@ export function useCachedAIScores(domain?: string) {
         return response.json();
       })
       .then(result => {
-        if (result.success) {
-          setData(result.data);
+        if ((result as any).success) {
+          setData((result as any).data);
         } else {
-          throw new Error(result.error || 'Failed to fetch cached AI scores');
+          throw new Error((result as any).error || 'Failed to fetch cached AI scores');
         }
       })
       .catch(err => {

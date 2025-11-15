@@ -35,8 +35,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId') || 'demo-tenant';
-    const filter = searchParams.get('filter') || 'all';
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-tenant';
+    const filter = searchParams.get('filter') || undefined || 'all';
 
     // Create SSE stream
     const stream = new ReadableStream({

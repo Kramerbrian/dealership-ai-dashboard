@@ -21,7 +21,7 @@ export default function GroupReportPage() {
   useEffect(() => {
     if (user) {
       // Get groupId from URL params or fetch user's first group
-      const urlGroupId = searchParams.get('groupId');
+      const urlGroupId = searchParams.get('groupId') || undefined;
       if (urlGroupId) {
         setGroupId(urlGroupId);
         setLoading(false);

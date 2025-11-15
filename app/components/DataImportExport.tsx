@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import toast from 'react-hot-toast';
+// @ts-ignore
 import { unparse } from 'papaparse';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';

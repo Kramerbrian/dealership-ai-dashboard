@@ -57,14 +57,14 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const filters: TargetingFilters = {
-      qaiScoreMax: searchParams.get('qaiScoreMax') ? parseInt(searchParams.get('qaiScoreMax')!) : 60,
-      marketRankMin: searchParams.get('marketRankMin') ? parseInt(searchParams.get('marketRankMin')!) : 8,
-      revenueAtRiskMin: searchParams.get('revenueAtRiskMin') ? parseInt(searchParams.get('revenueAtRiskMin')!) : 10000,
-      priority: searchParams.get('priority') as any || 'all',
-      city: searchParams.get('city') || undefined,
-      state: searchParams.get('state') || undefined,
-      brand: searchParams.get('brand') || undefined,
-      marketSize: searchParams.get('marketSize') as any || undefined
+      qaiScoreMax: searchParams.get('qaiScoreMax') || undefined ? parseInt(searchParams.get('qaiScoreMax') || undefined!) : 60,
+      marketRankMin: searchParams.get('marketRankMin') || undefined ? parseInt(searchParams.get('marketRankMin') || undefined!) : 8,
+      revenueAtRiskMin: searchParams.get('revenueAtRiskMin') || undefined ? parseInt(searchParams.get('revenueAtRiskMin') || undefined!) : 10000,
+      priority: searchParams.get('priority') || undefined as any || 'all',
+      city: searchParams.get('city') || undefined || undefined,
+      state: searchParams.get('state') || undefined || undefined,
+      brand: searchParams.get('brand') || undefined || undefined,
+      marketSize: searchParams.get('marketSize') || undefined as any || undefined
     };
 
     // Mock data - in production this would come from the database

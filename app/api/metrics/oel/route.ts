@@ -4,17 +4,17 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const domain = url.searchParams.get("domain") || "example.com";
+  const domain = url.searchParams.get("domain") || undefined || "example.com";
 
   // Inputs (defaults are safe placeholders; replace with orchestrator data as you wire it)
-  const adSpend = Number(url.searchParams.get("adSpend") || 12000);         // USD/month
-  const adWastePct = Number(url.searchParams.get("adWastePct") || 0.45);    // 0..1
-  const visitors = Number(url.searchParams.get("visitors") || 2500);
-  const visibilityLossPct = Number(url.searchParams.get("visibilityLossPct") || 0.25); // ((100 - AIV)/100)
-  const leadConvRatePct = Number(url.searchParams.get("leadConvPct") || 0.05);           // 0..1
-  const avgLeadValue = Number(url.searchParams.get("leadValue") || 450);    // USD per closed deal
-  const recovered = Number(url.searchParams.get("recovered") || 3800);      // Recovered $
-  const months = Number(url.searchParams.get("months") || 6);
+  const adSpend = Number(url.searchParams.get("adSpend") || undefined || 12000);         // USD/month
+  const adWastePct = Number(url.searchParams.get("adWastePct") || undefined || 0.45);    // 0..1
+  const visitors = Number(url.searchParams.get("visitors") || undefined || 2500);
+  const visibilityLossPct = Number(url.searchParams.get("visibilityLossPct") || undefined || 0.25); // ((100 - AIV)/100)
+  const leadConvRatePct = Number(url.searchParams.get("leadConvPct") || undefined || 0.05);           // 0..1
+  const avgLeadValue = Number(url.searchParams.get("leadValue") || undefined || 450);    // USD per closed deal
+  const recovered = Number(url.searchParams.get("recovered") || undefined || 3800);      // Recovered $
+  const months = Number(url.searchParams.get("months") || undefined || 6);
 
   const wastedSpend = adSpend * adWastePct;
   const lostLeadsValue = visitors * visibilityLossPct * (leadConvRatePct) * avgLeadValue;

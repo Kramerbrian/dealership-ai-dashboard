@@ -198,17 +198,17 @@ export default function AdvancedAnalyticsDashboard() {
                   <div key={index} className="p-4 bg-slate-700/50 rounded-lg">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <div className="font-medium">{result.dealer_id}</div>
+                        <div className="font-medium">{(result as any).dealer_id}</div>
                         <div className="text-sm text-slate-400">
-                          {result.vertical} • {result.region}
+                          {(result as any).vertical} • {(result as any).region}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold text-blue-400">
-                          {result.posterior_mean.toFixed(1)}
+                          {(result as any).posterior_mean.toFixed(1)}
                         </div>
                         <div className="text-xs text-slate-500">
-                          ±{result.posterior_std.toFixed(1)}
+                          ±{(result as any).posterior_std.toFixed(1)}
                         </div>
                       </div>
                     </div>
@@ -216,16 +216,16 @@ export default function AdvancedAnalyticsDashboard() {
                       <div>
                         <span className="text-slate-400">Credible Interval: </span>
                         <span className="text-white">
-                          [{result.credible_interval[0].toFixed(1)}, {result.credible_interval[1].toFixed(1)}]
+                          [{(result as any).credible_interval[0].toFixed(1)}, {(result as any).credible_interval[1].toFixed(1)}]
                         </span>
                       </div>
                       <div>
                         <span className="text-slate-400">Shrinkage: </span>
-                        <span className="text-white">{(result.shrinkage_factor * 100).toFixed(0)}%</span>
+                        <span className="text-white">{((result as any).shrinkage_factor * 100).toFixed(0)}%</span>
                       </div>
                       <div>
                         <span className="text-slate-400">ESS: </span>
-                        <span className="text-white">{result.effective_sample_size.toFixed(0)}</span>
+                        <span className="text-white">{(result as any).effective_sample_size.toFixed(0)}</span>
                       </div>
                     </div>
                   </div>
@@ -271,34 +271,34 @@ export default function AdvancedAnalyticsDashboard() {
                   <div key={index} className="p-4 bg-slate-700/50 rounded-lg">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <div className="font-medium">{result.method.replace('_', ' ').toUpperCase()}</div>
+                        <div className="font-medium">{(result as any).method.replace('_', ' ').toUpperCase()}</div>
                         <div className="text-sm text-slate-400">
-                          P-value: {result.p_value.toFixed(4)}
+                          P-value: {(result as any).p_value.toFixed(4)}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold text-green-400">
-                          {result.treatment_effect.toFixed(1)}
+                          {(result as any).treatment_effect.toFixed(1)}
                         </div>
                         <div className="text-xs text-slate-500">
-                          [{result.confidence_interval[0].toFixed(1)}, {result.confidence_interval[1].toFixed(1)}]
+                          [{(result as any).confidence_interval[0].toFixed(1)}, {(result as any).confidence_interval[1].toFixed(1)}]
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-sm">
                       <div className={`px-2 py-1 rounded text-xs ${
-                        result.assumptions_satisfied 
+                        (result as any).assumptions_satisfied 
                           ? 'bg-green-900 text-green-300' 
                           : 'bg-red-900 text-red-300'
                       }`}>
-                        {result.assumptions_satisfied ? 'Assumptions ✓' : 'Assumptions ✗'}
+                        {(result as any).assumptions_satisfied ? 'Assumptions ✓' : 'Assumptions ✗'}
                       </div>
                       <div className={`px-2 py-1 rounded text-xs ${
-                        result.p_value < 0.05 
+                        (result as any).p_value < 0.05 
                           ? 'bg-green-900 text-green-300' 
                           : 'bg-gray-900 text-gray-300'
                       }`}>
-                        {result.p_value < 0.05 ? 'Significant' : 'Not Significant'}
+                        {(result as any).p_value < 0.05 ? 'Significant' : 'Not Significant'}
                       </div>
                     </div>
                   </div>

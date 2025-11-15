@@ -55,7 +55,7 @@ interface DealerTwinResponse {
  * Returns the complete digital twin for a dealer
  */
 export async function GET(req: NextRequest) {
-  const dealerId = req.nextUrl.searchParams.get('dealerId');
+  const dealerId = req.nextUrl.searchParams.get('dealerId') || undefined;
 
   if (!dealerId) {
     return NextResponse.json(

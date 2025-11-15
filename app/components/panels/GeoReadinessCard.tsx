@@ -71,10 +71,10 @@ export default function GeoReadinessCard({ tenantId, className = '' }: GeoReadin
         const response = await fetch(`/api/tenants/${tenantId}/geo-signals/latest?includeHistory=true&windowWeeks=8`);
         const result = await response.json();
         
-        if (result.error) {
-          setError(result.error);
+        if ((result as any).error) {
+          setError((result as any).error);
         } else {
-          setData(result.data);
+          setData((result as any).data);
         }
       } catch (err) {
         setError('Failed to fetch GEO readiness data');

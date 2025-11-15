@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
 
     // 2. Get query parameters
     const { searchParams } = new URL(req.url);
-    const action = searchParams.get('action');
-    const accountId = searchParams.get('accountId');
+    const action = searchParams.get('action') || undefined;
+    const accountId = searchParams.get('accountId') || undefined;
 
     if (!action) {
       return NextResponse.json({ error: 'Action is required' }, { status: 400 });
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         break;
 
       case 'places':
-        const placeId = searchParams.get('placeId');
+        const placeId = searchParams.get('placeId') || undefined;
         if (!placeId) {
           return NextResponse.json({ error: 'Place ID is required' }, { status: 400 });
         }
@@ -43,9 +43,9 @@ export async function GET(req: NextRequest) {
         break;
 
       case 'search_console':
-        const siteUrl = searchParams.get('siteUrl');
-        const startDate = searchParams.get('startDate');
-        const endDate = searchParams.get('endDate');
+        const siteUrl = searchParams.get('siteUrl') || undefined;
+        const startDate = searchParams.get('startDate') || undefined;
+        const endDate = searchParams.get('endDate') || undefined;
         
         if (!siteUrl || !startDate || !endDate) {
           return NextResponse.json({ error: 'Site URL, start date, and end date are required' }, { status: 400 });
@@ -59,9 +59,9 @@ export async function GET(req: NextRequest) {
         break;
 
       case 'analytics':
-        const propertyId = searchParams.get('propertyId');
-        const analyticsStartDate = searchParams.get('startDate');
-        const analyticsEndDate = searchParams.get('endDate');
+        const propertyId = searchParams.get('propertyId') || undefined;
+        const analyticsStartDate = searchParams.get('startDate') || undefined;
+        const analyticsEndDate = searchParams.get('endDate') || undefined;
         
         if (!propertyId || !analyticsStartDate || !analyticsEndDate) {
           return NextResponse.json({ error: 'Property ID, start date, and end date are required' }, { status: 400 });

@@ -16,7 +16,7 @@ export default function OnboardingPage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const domain = searchParams.get('domain') || '';
+  const domain = searchParams.get('domain') || undefined || '';
 
   function next() {
     if (step < steps.length - 1) setStep(step + 1);

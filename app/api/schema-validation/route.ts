@@ -1,14 +1,14 @@
 /**
  * Schema Validation API Endpoint
- * 
+ *
  * Validates the enhanced dAI algorithm implementation against the provided JSON schema
  * specifications, ensuring 100% compliance with dealership AI dashboard algorithms.
- * 
+ *
  * @version 1.0.0
  * @author DealershipAI Team
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 import SchemaValidator from '@/lib/validation/schema-validator';
@@ -46,8 +46,8 @@ export interface SchemaValidationResponse {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const includeReport = searchParams.get('report') === 'true';
-    const includeSchema = searchParams.get('schema') === 'true';
+    const includeReport = searchParams.get('report') || undefined === 'true';
+    const includeSchema = searchParams.get('schema') || undefined === 'true';
     
     // Initialize validators
     const schemaValidator = new SchemaValidator();

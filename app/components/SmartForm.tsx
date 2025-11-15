@@ -41,14 +41,14 @@ export default function SmartForm({ onSubmit, className = '' }: SmartFormProps) 
 
       const result = await response.json();
 
-      if (result.success) {
+      if ((result as any).success) {
         setFormData(prev => ({
           ...prev,
-          dealershipName: result.data.name || result.data.dealershipName,
+          dealershipName: (result as any).data.name || (result as any).data.dealershipName,
         }));
         setStep(2);
       } else {
-        throw new Error(result.error || 'Failed to lookup dealership');
+        throw new Error((result as any).error || 'Failed to lookup dealership');
       }
     } catch (err) {
       console.error('Lookup error:', err);
@@ -86,13 +86,13 @@ export default function SmartForm({ onSubmit, className = '' }: SmartFormProps) 
 
       const result = await response.json();
 
-      if (result.success) {
+      if ((result as any).success) {
         if (onSubmit) {
           onSubmit(formData as FormData);
         }
         setStep(4); // Success screen
       } else {
-        throw new Error(result.error || 'Failed to submit form');
+        throw new Error((result as any).error || 'Failed to submit form');
       }
     } catch (err) {
       console.error('Submit error:', err);

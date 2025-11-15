@@ -12,8 +12,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
-    const agent = searchParams.get('agent');
+    const dealerId = searchParams.get('dealerId') || undefined;
+    const agent = searchParams.get('agent') || undefined;
 
     if (!dealerId) {
       return new Response(

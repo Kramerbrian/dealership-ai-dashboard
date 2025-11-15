@@ -249,9 +249,9 @@ export function FreeScanWidget({ className = '', onComplete }: FreeScanWidgetPro
             </div>
 
             {/* Overall Trust Score */}
-            <div className={`text-center p-6 rounded-xl border-2 mb-6 ${getScoreBgColor(result.trust_score)}`}>
-              <div className={`text-6xl font-bold mb-2 ${getScoreColor(result.trust_score)}`}>
-                {formatScore(result.trust_score)}
+            <div className={`text-center p-6 rounded-xl border-2 mb-6 ${getScoreBgColor((result as any).trust_score)}`}>
+              <div className={`text-6xl font-bold mb-2 ${getScoreColor((result as any).trust_score)}`}>
+                {formatScore((result as any).trust_score)}
               </div>
               <div className="text-gray-600 font-medium">Overall Trust Score</div>
             </div>
@@ -260,44 +260,44 @@ export function FreeScanWidget({ className = '', onComplete }: FreeScanWidgetPro
             <div className="grid grid-cols-2 gap-4 mb-6">
               <ScoreCard
                 label="Freshness"
-                score={result.freshness_score}
-                icon={result.freshness_score >= 0.7 ? TrendingUp : TrendingDown}
+                score={(result as any).freshness_score}
+                icon={(result as any).freshness_score >= 0.7 ? TrendingUp : TrendingDown}
               />
               <ScoreCard
                 label="Identity Match"
-                score={result.business_identity_match_score}
-                icon={result.business_identity_match_score >= 0.7 ? TrendingUp : TrendingDown}
+                score={(result as any).business_identity_match_score}
+                icon={(result as any).business_identity_match_score >= 0.7 ? TrendingUp : TrendingDown}
               />
               <ScoreCard
                 label="Review Trust"
-                score={result.review_trust_score}
-                icon={result.review_trust_score >= 0.7 ? TrendingUp : TrendingDown}
+                score={(result as any).review_trust_score}
+                icon={(result as any).review_trust_score >= 0.7 ? TrendingUp : TrendingDown}
               />
               <ScoreCard
                 label="Schema Coverage"
-                score={result.schema_coverage}
-                icon={result.schema_coverage >= 0.7 ? TrendingUp : TrendingDown}
+                score={(result as any).schema_coverage}
+                icon={(result as any).schema_coverage >= 0.7 ? TrendingUp : TrendingDown}
               />
               <ScoreCard
                 label="AI Mentions"
-                score={result.ai_mention_rate}
-                icon={result.ai_mention_rate >= 0.7 ? TrendingUp : TrendingDown}
+                score={(result as any).ai_mention_rate}
+                icon={(result as any).ai_mention_rate >= 0.7 ? TrendingUp : TrendingDown}
               />
               <ScoreCard
                 label="Zero-Click"
-                score={result.zero_click_coverage}
-                icon={result.zero_click_coverage >= 0.7 ? TrendingUp : TrendingDown}
+                score={(result as any).zero_click_coverage}
+                icon={(result as any).zero_click_coverage >= 0.7 ? TrendingUp : TrendingDown}
               />
             </div>
 
             {/* Recommendations */}
-            {result.recommendations && result.recommendations.length > 0 && (
+            {(result as any).recommendations && (result as any).recommendations.length > 0 && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                 <h4 className="font-semibold text-gray-900 mb-3">
                   Top Recommendations
                 </h4>
                 <ul className="space-y-2">
-                  {result.recommendations.slice(0, 3).map((rec, idx) => (
+                  {(result as any).recommendations.slice(0, 3).map((rec, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
                       <span className="text-blue-600 font-bold">•</span>
                       {rec}

@@ -107,11 +107,11 @@ export default function InstantAnalyzer({
       // Extract UTM parameters from URL if available
       const searchParams = new URLSearchParams(window.location.search);
       const utm = {
-        source: searchParams.get("utm_source") || undefined,
-        medium: searchParams.get("utm_medium") || undefined,
-        campaign: searchParams.get("utm_campaign") || undefined,
-        term: searchParams.get("utm_term") || undefined,
-        content: searchParams.get("utm_content") || undefined,
+        source: searchParams.get("utm_source") || undefined || undefined,
+        medium: searchParams.get("utm_medium") || undefined || undefined,
+        campaign: searchParams.get("utm_campaign") || undefined || undefined,
+        term: searchParams.get("utm_term") || undefined || undefined,
+        content: searchParams.get("utm_content") || undefined || undefined,
       };
 
       // Use active email capture endpoint

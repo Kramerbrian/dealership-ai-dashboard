@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const domain = url.searchParams.get("domain") || "example.com";
+    const domain = url.searchParams.get("domain") || undefined || "example.com";
 
     // Try to get from Supabase first
     const sbAdmin = getSbAdmin();

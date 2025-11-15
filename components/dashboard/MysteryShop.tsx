@@ -94,7 +94,7 @@ export function MysteryShop({ dealership, userTier }: MysteryShopProps) {
     }
   ]
 
-  const averageScore = mockResults.reduce((sum, result) => sum + result.overallScore, 0) / mockResults.length
+  const averageScore = mockResults.reduce((sum, result) => sum + (result as any).overallScore, 0) / mockResults.length
   const totalTests = mockResults.length
   const completedTests = mockResults.filter(r => r.status === 'completed').length
 
@@ -243,18 +243,18 @@ export function MysteryShop({ dealership, userTier }: MysteryShopProps) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Tests</h3>
                   <div className="space-y-3">
                     {mockResults.slice(0, 3).map((result) => (
-                      <div key={result.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                      <div key={(result as any).id} className="flex items-center justify-between p-3 bg-white rounded-lg">
                         <div className="flex items-center gap-3">
-                          {result.type === 'email' && <EnvelopeIcon className="w-5 h-5 text-blue-600" />}
-                          {result.type === 'chat' && <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-600" />}
-                          {result.type === 'phone' && <PhoneIcon className="w-5 h-5 text-purple-600" />}
+                          {(result as any).type === 'email' && <EnvelopeIcon className="w-5 h-5 text-blue-600" />}
+                          {(result as any).type === 'chat' && <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-600" />}
+                          {(result as any).type === 'phone' && <PhoneIcon className="w-5 h-5 text-purple-600" />}
                           <div>
-                            <p className="font-medium text-gray-900 capitalize">{result.type} Test</p>
-                            <p className="text-sm text-gray-600">{result.conductedAt.toLocaleDateString()}</p>
+                            <p className="font-medium text-gray-900 capitalize">{(result as any).type} Test</p>
+                            <p className="text-sm text-gray-600">{(result as any).conductedAt.toLocaleDateString()}</p>
                           </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(result.overallScore)}`}>
-                          {result.overallScore.toFixed(1)}
+                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor((result as any).overallScore)}`}>
+                          {(result as any).overallScore.toFixed(1)}
                         </div>
                       </div>
                     ))}
@@ -300,53 +300,53 @@ export function MysteryShop({ dealership, userTier }: MysteryShopProps) {
               <div className="grid grid-cols-1 gap-6">
                 {mockResults.map((result) => (
                   <motion.div
-                    key={result.id}
+                    key={(result as any).id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-white border border-gray-200 rounded-lg p-6"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        {result.type === 'email' && <EnvelopeIcon className="w-6 h-6 text-blue-600" />}
-                        {result.type === 'chat' && <ChatBubbleLeftRightIcon className="w-6 h-6 text-green-600" />}
-                        {result.type === 'phone' && <PhoneIcon className="w-6 h-6 text-purple-600" />}
+                        {(result as any).type === 'email' && <EnvelopeIcon className="w-6 h-6 text-blue-600" />}
+                        {(result as any).type === 'chat' && <ChatBubbleLeftRightIcon className="w-6 h-6 text-green-600" />}
+                        {(result as any).type === 'phone' && <PhoneIcon className="w-6 h-6 text-purple-600" />}
                         <div>
-                          <h3 className="font-semibold text-gray-900 capitalize">{result.type} Test</h3>
-                          <p className="text-sm text-gray-600">{result.conductedAt.toLocaleString()}</p>
+                          <h3 className="font-semibold text-gray-900 capitalize">{(result as any).type} Test</h3>
+                          <p className="text-sm text-gray-600">{(result as any).conductedAt.toLocaleString()}</p>
                         </div>
                       </div>
-                      <div className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(result.overallScore)}`}>
-                        {result.overallScore.toFixed(1)} Overall
+                      <div className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor((result as any).overallScore)}`}>
+                        {(result as any).overallScore.toFixed(1)} Overall
                       </div>
                     </div>
 
                     <div className="space-y-4">
                       <div>
                         <h4 className="font-medium text-gray-900 mb-2">Query</h4>
-                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{result.query}</p>
+                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{(result as any).query}</p>
                       </div>
 
                       <div>
                         <h4 className="font-medium text-gray-900 mb-2">Response</h4>
-                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{result.response}</p>
+                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{(result as any).response}</p>
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center">
                           <p className="text-sm text-gray-600">Response Time</p>
-                          <p className="font-semibold text-gray-900">{result.responseTime}s</p>
+                          <p className="font-semibold text-gray-900">{(result as any).responseTime}s</p>
                         </div>
                         <div className="text-center">
                           <p className="text-sm text-gray-600">Personalization</p>
-                          <p className="font-semibold text-gray-900">{result.personalizationScore}%</p>
+                          <p className="font-semibold text-gray-900">{(result as any).personalizationScore}%</p>
                         </div>
                         <div className="text-center">
                           <p className="text-sm text-gray-600">Transparency</p>
-                          <p className="font-semibold text-gray-900">{result.transparencyScore}%</p>
+                          <p className="font-semibold text-gray-900">{(result as any).transparencyScore}%</p>
                         </div>
                         <div className="text-center">
                           <p className="text-sm text-gray-600">Follow-up</p>
-                          <p className="font-semibold text-gray-900">{result.followupScore}%</p>
+                          <p className="font-semibold text-gray-900">{(result as any).followupScore}%</p>
                         </div>
                       </div>
                     </div>

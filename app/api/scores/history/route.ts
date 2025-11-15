@@ -5,7 +5,7 @@ import { cacheJSON } from "@/lib/cache";
 // Synthetic last-7 checks for AIV/ATI; swap with DB later
 export const GET = withAuth(async ({ req, tenantId }) => {
   const url = new URL(req.url);
-  const domain = url.searchParams.get("domain") || "example.com";
+  const domain = url.searchParams.get("domain") || undefined || "example.com";
   const key = `scores_hist:${tenantId}:${domain}`;
 
   const data = await cacheJSON(key, 120, async () => {

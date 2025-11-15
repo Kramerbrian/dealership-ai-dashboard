@@ -21,8 +21,8 @@ export default function OCILiveMeter({ tenantId }: { tenantId: string }) {
       try {
         const response = await fetch(`/api/oci/live?tenantId=${tenantId}`);
         const result = await response.json();
-        if (result.ok && result.data?.[0]) {
-          setData(result.data[0]);
+        if ((result as any).ok && (result as any).data?.[0]) {
+          setData((result as any).data[0]);
         }
       } catch (error) {
         console.error('Failed to fetch OCI data:', error);

@@ -21,8 +21,8 @@ export async function GET(req: NextRequest) {
     const { db } = await import('@/lib/db');
     
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get('tenantId');
-    const days = Number(searchParams.get('days') || 30);
+    const tenantId = searchParams.get('tenantId') || undefined;
+    const days = Number(searchParams.get('days') || undefined || 30);
     
     if (!tenantId) {
       return NextResponse.json({ error: 'tenantId required' }, { status: 400 });

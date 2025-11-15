@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealer_id');
+    const dealerId = searchParams.get('dealer_id') || undefined;
 
     // Get current alert status and recent alerts
     const alertStatus = {

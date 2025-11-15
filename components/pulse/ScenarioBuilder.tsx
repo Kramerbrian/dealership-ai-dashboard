@@ -264,17 +264,17 @@ export function ScenarioBuilder({ dealerId, onScenarioRun }: ScenarioBuilderProp
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
               <div className="text-xs text-blue-700 mb-1">Current Score</div>
-              <div className="text-2xl font-bold text-blue-900">{result.currentScore.toFixed(1)}</div>
+              <div className="text-2xl font-bold text-blue-900">{(result as any).currentScore.toFixed(1)}</div>
             </div>
             <div className="p-4 rounded-lg bg-green-50 border border-green-200">
               <div className="text-xs text-green-700 mb-1">Expected Score</div>
-              <div className="text-2xl font-bold text-green-900">{result.expectedScore.toFixed(1)}</div>
+              <div className="text-2xl font-bold text-green-900">{(result as any).expectedScore.toFixed(1)}</div>
             </div>
           </div>
 
           <div className="mb-4">
-            <div className="text-xs text-gray-600 mb-2">Improvement: <span className="font-semibold text-green-600">+{result.improvement.toFixed(1)} points</span></div>
-            <div className="text-xs text-gray-600">Confidence: <span className="font-semibold">{(result.confidence * 100).toFixed(0)}%</span></div>
+            <div className="text-xs text-gray-600 mb-2">Improvement: <span className="font-semibold text-green-600">+{(result as any).improvement.toFixed(1)} points</span></div>
+            <div className="text-xs text-gray-600">Confidence: <span className="font-semibold">{((result as any).confidence * 100).toFixed(0)}%</span></div>
           </div>
 
           {/* Distribution */}
@@ -283,54 +283,54 @@ export function ScenarioBuilder({ dealerId, onScenarioRun }: ScenarioBuilderProp
             <div className="grid grid-cols-5 gap-2 text-xs">
               <div>
                 <div className="text-gray-500">Min</div>
-                <div className="font-semibold">{result.distribution.min.toFixed(1)}</div>
+                <div className="font-semibold">{(result as any).distribution.min.toFixed(1)}</div>
               </div>
               <div>
                 <div className="text-gray-500">P25</div>
-                <div className="font-semibold">{result.distribution.p25.toFixed(1)}</div>
+                <div className="font-semibold">{(result as any).distribution.p25.toFixed(1)}</div>
               </div>
               <div>
                 <div className="text-gray-500">Median</div>
-                <div className="font-semibold">{result.distribution.median.toFixed(1)}</div>
+                <div className="font-semibold">{(result as any).distribution.median.toFixed(1)}</div>
               </div>
               <div>
                 <div className="text-gray-500">P75</div>
-                <div className="font-semibold">{result.distribution.p75.toFixed(1)}</div>
+                <div className="font-semibold">{(result as any).distribution.p75.toFixed(1)}</div>
               </div>
               <div>
                 <div className="text-gray-500">Max</div>
-                <div className="font-semibold">{result.distribution.max.toFixed(1)}</div>
+                <div className="font-semibold">{(result as any).distribution.max.toFixed(1)}</div>
               </div>
             </div>
           </div>
 
           {/* ROI */}
-          {result.roi && (
+          {(result as any).roi && (
             <div className="mb-4 p-3 rounded-lg bg-purple-50 border border-purple-200">
               <div className="text-xs font-semibold text-purple-900 mb-2">ROI Analysis</div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <div className="text-purple-700">Cost</div>
-                  <div className="font-semibold">${(result.roi.totalCost / 1000).toFixed(1)}k</div>
+                  <div className="font-semibold">${((result as any).roi.totalCost / 1000).toFixed(1)}k</div>
                 </div>
                 <div>
                   <div className="text-purple-700">Value</div>
-                  <div className="font-semibold">${(result.roi.expectedValue / 1000).toFixed(1)}k</div>
+                  <div className="font-semibold">${((result as any).roi.expectedValue / 1000).toFixed(1)}k</div>
                 </div>
                 <div>
                   <div className="text-purple-700">ROI</div>
-                  <div className="font-semibold">{result.roi.roiPercent.toFixed(0)}%</div>
+                  <div className="font-semibold">{(result as any).roi.roiPercent.toFixed(0)}%</div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Recommendations */}
-          {result.recommendations.length > 0 && (
+          {(result as any).recommendations.length > 0 && (
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
               <div className="text-xs font-semibold text-amber-900 mb-2">Recommendations</div>
               <ul className="space-y-1">
-                {result.recommendations.map((rec, i) => (
+                {(result as any).recommendations.map((rec, i) => (
                   <li key={i} className="text-xs text-amber-800">• {rec}</li>
                 ))}
               </ul>

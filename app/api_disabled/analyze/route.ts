@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     // 2. Extract domain from query params
     const { searchParams } = new URL(req.url);
-    const domain = searchParams.get('domain');
+    const domain = searchParams.get('domain') || undefined;
 
     if (!domain) {
       return NextResponse.json(

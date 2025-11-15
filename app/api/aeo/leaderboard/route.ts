@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   
   try {
     const url = new URL(req.url)
-    const days = parseInt(url.searchParams.get('days') || '30')
+    const days = parseInt(url.searchParams.get('days') || undefined || '30')
 
     // Return mock data for demo (no database connection)
     const duration = Date.now() - startTime;

@@ -94,17 +94,17 @@ export async function GET(req: NextRequest) {
     console.log('📋 Executing meta-orchestrator...');
     const orchestratorResults = runOrchestrator();
     
-    result.jobsExecuted = Object.keys(orchestratorResults).length;
-    result.jobsFailed = Object.values(orchestratorResults).filter(
+    (result as any).jobsExecuted = Object.keys(orchestratorResults).length;
+    (result as any).jobsFailed = Object.values(orchestratorResults).filter(
       (r: any) => !r.success
     ).length;
     
-    result.success = result.jobsFailed === 0;
+    (result as any).success = (result as any).jobsFailed === 0;
 
     // --- Governance Validation ---
     console.log('🛡️ Validating governance policies...');
     const lighthouseScore = await getLighthouseScore();
-    result.lighthouseScore = lighthouseScore || undefined;
+    (result as any).lighthouseScore = lighthouseScore || undefined;
 
     const metrics = {
       lighthouse: lighthouseScore || 95,
@@ -113,12 +113,12 @@ export async function GET(req: NextRequest) {
     };
 
     const governanceResult = validateGovernance(metrics);
-    result.governancePassed = governanceResult.passed;
+    (result as any).governancePassed = governanceResult.passed;
 
     if (!governanceResult.passed) {
       console.warn('⚠️ Governance validation failed:', governanceResult.reasons);
       triggerSafeMode(governanceResult.reasons.join('; '));
-      result.safeModeTriggered = true;
+      (result as any).safeModeTriggered = true;
     } else if (isSafeMode()) {
       console.log('✅ Governance passed, clearing safe mode');
       clearSafeMode();
@@ -126,8 +126,8 @@ export async function GET(req: NextRequest) {
 
     // --- Auto-Rollback if Critical Failure ---
     const shouldRollback =
-      !result.success ||
-      !result.governancePassed ||
+      !(result as any).success ||
+      !(result as any).governancePassed ||
       (lighthouseScore !== null && lighthouseScore < 90);
 
     if (shouldRollback) {
@@ -154,8 +154,8 @@ export async function GET(req: NextRequest) {
               
               await postSlack(
                 `⚠️ *DealershipAI Auto-Rollback Executed*\n` +
-                `• Orchestrator: ${result.success ? '✅' : '❌'}\n` +
-                `• Governance: ${result.governancePassed ? '✅' : '❌'}\n` +
+                `• Orchestrator: ${(result as any).success ? '✅' : '❌'}\n` +
+                `• Governance: ${(result as any).governancePassed ? '✅' : '❌'}\n` +
                 `• Lighthouse: ${lighthouseScore || 'N/A'}\n` +
                 `• Rolled back to: ${previousDeployment.uid}`
               );
@@ -167,16 +167,16 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    result.duration = Math.round((Date.now() - start) / 1000);
+    (result as any).duration = Math.round((Date.now() - start) / 1000);
 
     // --- Success Notification ---
-    if (result.success && result.governancePassed) {
+    if ((result as any).success && (result as any).governancePassed) {
       await postSlack(
-        `✅ *DealershipAI Nightly Orchestration Complete* (${result.duration}s)\n` +
-        `• Jobs executed: ${result.jobsExecuted}\n` +
+        `✅ *DealershipAI Nightly Orchestration Complete* (${(result as any).duration}s)\n` +
+        `• Jobs executed: ${(result as any).jobsExecuted}\n` +
         `• Governance: ✅\n` +
         `• Lighthouse: ${lighthouseScore || 'N/A'}\n` +
-        `• Safe mode: ${result.safeModeTriggered ? '⚠️ Active' : '✅ Clear'}`
+        `• Safe mode: ${(result as any).safeModeTriggered ? '⚠️ Active' : '✅ Clear'}`
       );
     }
 
@@ -188,9 +188,9 @@ export async function GET(req: NextRequest) {
     }
 
     const systemState = {
-      timestamp: result.timestamp,
+      timestamp: (result as any).timestamp,
       orchestrator: result,
-      lastRun: result.timestamp,
+      lastRun: (result as any).timestamp,
     };
 
     fs.writeFileSync(statePath, JSON.stringify(systemState, null, 2));
@@ -200,13 +200,13 @@ export async function GET(req: NextRequest) {
       result,
     });
   } catch (error: any) {
-    result.duration = Math.round((Date.now() - start) / 1000);
+    (result as any).duration = Math.round((Date.now() - start) / 1000);
     console.error('❌ Orchestrator background failed:', error);
 
     await postSlack(
       `❌ *DealershipAI Orchestrator Background Failed*\n` +
       `Error: ${error.message}\n` +
-      `Duration: ${result.duration}s`
+      `Duration: ${(result as any).duration}s`
     );
 
     return NextResponse.json(

@@ -9,9 +9,9 @@ import { calculateTrends, type TrendDataPoint } from '@/lib/pulse/trends';
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const dealerId = searchParams.get('dealerId');
-    const metric = searchParams.get('metric') || 'pulse_score';
-    const days = parseInt(searchParams.get('days') || '30', 10);
+    const dealerId = searchParams.get('dealerId') || undefined;
+    const metric = searchParams.get('metric') || undefined || 'pulse_score';
+    const days = parseInt(searchParams.get('days') || undefined || '30', 10);
 
     if (!dealerId) {
       return NextResponse.json(

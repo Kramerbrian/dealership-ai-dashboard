@@ -1,3 +1,4 @@
+// @ts-ignore
 import { NextRequest, NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
 
@@ -128,8 +129,8 @@ async function readInboxTiles(tenant: string) {
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const tenant = url.searchParams.get('tenant') || 'default';
-  const role = url.searchParams.get('role') || 'default';
+  const tenant = url.searchParams.get('tenant') || undefined || 'default';
+  const role = url.searchParams.get('role') || undefined || 'default';
 
   const registry = await loadRegistry();
 

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
+    const dealerId = searchParams.get('dealerId') || undefined;
 
     if (!dealerId) {
       return NextResponse.json(

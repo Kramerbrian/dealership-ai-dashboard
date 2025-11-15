@@ -4,8 +4,8 @@ import { db as prisma } from '@/lib/db';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealer_id');
-    const metricType = searchParams.get('metric_type') || 'all';
+    const dealerId = searchParams.get('dealer_id') || undefined;
+    const metricType = searchParams.get('metric_type') || undefined || 'all';
 
     // Real-time monitoring for various intelligence metrics
     const monitoringData = {

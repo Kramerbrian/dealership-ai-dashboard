@@ -115,9 +115,9 @@ export default function WhatIfPresets({ tenantId }: { tenantId: string }) {
       
       {result && (
         <div className="border-t pt-3">
-          {result.error ? (
+          {(result as any).error ? (
             <div className="text-sm text-red-600">
-              ❌ {result.error}
+              ❌ {(result as any).error}
             </div>
           ) : (
             <div className="space-y-2">
@@ -128,22 +128,22 @@ export default function WhatIfPresets({ tenantId }: { tenantId: string }) {
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
                   <div className="text-gray-600">Expected AIV Lift:</div>
-                  <div className="font-medium">+{result.expectedLift?.toFixed(1) || 0}%</div>
+                  <div className="font-medium">+{(result as any).expectedLift?.toFixed(1) || 0}%</div>
                 </div>
                 
                 <div>
                   <div className="text-gray-600">Confidence:</div>
-                  <div className="font-medium">{result.confidence || 'High'}</div>
+                  <div className="font-medium">{(result as any).confidence || 'High'}</div>
                 </div>
                 
                 <div>
                   <div className="text-gray-600">Implementation:</div>
-                  <div className="font-medium">{result.estimatedDays || '3-5'} days</div>
+                  <div className="font-medium">{(result as any).estimatedDays || '3-5'} days</div>
                 </div>
                 
                 <div>
                   <div className="text-gray-600">ROI:</div>
-                  <div className="font-medium">${result.estimatedROI || '2,400'}/month</div>
+                  <div className="font-medium">${(result as any).estimatedROI || '2,400'}/month</div>
                 </div>
               </div>
               

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url)
-    const days = parseInt(url.searchParams.get('days') || '30')
+    const days = parseInt(url.searchParams.get('days') || undefined || '30')
 
     // Return mock data for demo (no database connection)
     const mockData = generateMockBreakdownData(days)
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     
     // Get days from URL in catch block
     const url = new URL(req.url)
-    const errorDays = parseInt(url.searchParams.get('days') || '30')
+    const errorDays = parseInt(url.searchParams.get('days') || undefined || '30')
     
     // Return mock data on error
     const mockData = generateMockBreakdownData(errorDays)

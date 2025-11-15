@@ -35,7 +35,7 @@ const googleBusinessProfileSchema = z.object({
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dealerId = searchParams.get('dealerId');
+    const dealerId = searchParams.get('dealerId') || undefined;
 
     if (!dealerId) {
       return NextResponse.json(
@@ -255,8 +255,8 @@ export async function POST(req: NextRequest) {
         .single();
     }
 
-    if (result.error) {
-      throw result.error;
+    if ((result as any).error) {
+      throw (result as any).error;
     }
 
     // Log the update
@@ -271,7 +271,7 @@ export async function POST(req: NextRequest) {
       message: 'Settings updated successfully',
       dealerId,
       section,
-      updatedAt: result.data.updated_at,
+      updatedAt: (result as any).data.updated_at,
     });
   } catch (error) {
     console.error('Error updating dealer settings:', error);

@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
     }
 
     const searchParams = req.nextUrl.searchParams
-    const dealerId = searchParams.get('dealerId')
-    const fixPackId = searchParams.get('fixPackId')
+    const dealerId = searchParams.get('dealerId') || undefined
+    const fixPackId = searchParams.get('fixPackId') || undefined
 
     if (!dealerId) {
       return NextResponse.json(

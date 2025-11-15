@@ -1,269 +1,132 @@
-# Next Steps: Deployment & Verification
+# Next Steps - Deployment Monitoring
 
-## 🚨 Immediate Actions Required
+## ✅ What We Just Fixed
 
-### 1. Resolve Git Merge Conflicts
+1. **Removed `rootDirectory` from vercel.json**
+   - For root-level Next.js apps, `rootDirectory` should NOT be set
+   - Vercel defaults to repository root when field is empty/omitted
+   - This is the correct configuration
 
-**Status:** Merge conflicts detected in:
-- `supabase/config.toml`
-- `supabase/migrations/20241220000000_idempotency_keys.sql`
-- `supabase/migrations/20251107_integrations.sql`
-- `tailwind.config.js`
-- `tsconfig.json`
-- `tsconfig.tsbuildinfo`
-- `vercel.json`
+2. **Pushed the fix**
+   - Commit: `c08d13b7f` - "Fix: Remove rootDirectory from vercel.json"
+   - New deployment triggered automatically
 
-**Resolution Options:**
+## 🔍 Current Status
 
-#### Option A: Accept Remote Changes (Recommended for config files)
-```bash
-# Accept remote version for config files
-git checkout --theirs supabase/config.toml
-git checkout --theirs tailwind.config.js
-git checkout --theirs tsconfig.json
-git checkout --theirs vercel.json
+**Latest Action**: Removed `rootDirectory` from `vercel.json`  
+**New Deployment**: Should be building now  
+**Expected Result**: Build should succeed (root directory now defaults to repo root)
 
-# Add resolved files
-git add supabase/config.toml tailwind.config.js tsconfig.json vercel.json
+## 📋 Immediate Next Steps
 
-# For migrations, review manually
-git checkout --theirs supabase/migrations/20241220000000_idempotency_keys.sql
-git checkout --theirs supabase/migrations/20251107_integrations.sql
-git add supabase/migrations/
+### Step 1: Monitor New Deployment (2-5 minutes)
 
-# Remove build artifacts
-rm tsconfig.tsbuildinfo
-git add tsconfig.tsbuildinfo
+**Check Vercel Dashboard**:
+- Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/deployments
+- Look for the latest deployment (should be building or ready)
+- Click on it to view details
 
-# Complete merge
-git commit -m "Resolve merge conflicts: accept remote configs"
-git push origin main
-```
+**What to Look For**:
+- ✅ **State**: Should be "READY" (not "ERROR")
+- ✅ **Build Logs**: Should complete without errors
+- ✅ **URL**: Should be accessible
 
-#### Option B: Manual Resolution
-```bash
-# Open each conflicted file and resolve manually
-code supabase/config.toml
-code tailwind.config.js
-code tsconfig.json
-code vercel.json
+### Step 2: Check Build Logs
 
-# After resolving each file:
-git add <resolved-file>
-git commit -m "Resolve merge conflicts"
-git push origin main
-```
+If deployment shows ERROR:
+1. Click on the deployment
+2. Click "View Build Logs"
+3. Look for specific error messages
+4. Common issues:
+   - Module not found errors
+   - TypeScript errors
+   - Missing dependencies
+   - Build timeout
 
-### 2. Deploy via Vercel Dashboard (Alternative)
+### Step 3: Verify Deployment
 
-If Git conflicts are complex, deploy directly via Vercel:
-
-1. **Go to:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
-2. **Click:** "Deployments" → "Create Deployment"
-3. **Select:** Latest commit or upload files
-4. **Monitor:** Build logs for completion
-
----
-
-## ✅ Post-Deployment Verification
-
-### Step 1: Health Check
-```bash
-curl https://dash.dealershipai.com/api/health
-```
-
-**Expected Response:**
-```json
-{
-  "status": "healthy",
-  "services": {
-    "database": "connected",
-    "redis": "connected",
-    "ai_providers": "available"
-  }
-}
-```
-
-### Step 2: Test Diagnostic Dashboard API
-
-**Note:** The `/api/diagnostics` endpoint requires authentication.
+After build completes:
 
 ```bash
-# Test with authentication (requires Clerk session)
-# Use browser DevTools → Network tab after logging in
-# Or use Postman/Insomnia with Clerk session token
+npm run vercel:verify
 ```
 
-**Manual Testing:**
-1. Visit: https://dash.dealershipai.com/dashboard
-2. Open DevTools (F12) → Network tab
-3. Look for `/api/diagnostics` request
-4. Verify response status: 200 OK
+**Expected Results**:
+- ✅ Domain accessible
+- ✅ API endpoints working
+- ✅ Environment variables set
 
-### Step 3: Verify All Features
+### Step 4: Test Domain
 
-#### ✅ Core Features Checklist
-- [ ] **Health Endpoint:** `/api/health` responds
-- [ ] **Dashboard Loads:** `/dashboard` accessible
-- [ ] **Diagnostic Dashboard:** Visible and functional
-- [ ] **Relevance Overlay:** Opens and displays data
-- [ ] **RI Simulator:** Scenarios load and run
-- [ ] **Trends Chart:** Historical data displays
-- [ ] **Fix Actions:** "Fix Now" buttons work
-- [ ] **Export:** Export button generates files
-- [ ] **Custom Scenarios:** Can create and save
-- [ ] **Templates:** Pre-built scenarios load
+Visit: https://dash.dealershipai.com
 
-#### ✅ API Endpoints Checklist
-- [ ] `/api/diagnostics` - Returns issues and scores
-- [ ] `/api/relevance/overlay` - Query relevance analysis
-- [ ] `/api/fix/action` - Triggers automation workflows
-- [ ] `/api/analytics/trends` - Historical trends and predictions
-- [ ] `/api/relevance/scenarios` - Custom scenarios CRUD
-- [ ] `/api/scenarios/templates` - Pre-built templates
-- [ ] `/api/export/data` - Data export (JSON/CSV)
+**Should see**:
+- Dashboard loads correctly
+- Routes work (`/dashboard`, `/pulse`, `/onboarding`)
+- Authentication works (Clerk)
 
-### Step 4: Test Automation Workflows
+## 🎯 If Deployment Succeeds
 
-1. **Schema Fix:**
-   - Click "Fix Now" on a schema issue
-   - Verify workflow starts
-   - Check for notification (if configured)
+✅ **Success Indicators**:
+- Deployment state: "READY"
+- Build logs: No errors
+- Domain: Loads correctly
+- Routes: All accessible
 
-2. **Review Fix:**
-   - Click "Fix Now" on a review issue
-   - Verify automation triggers
+**Then you're done!** The dashboard is deployed and working.
 
-3. **Content Fix:**
-   - Click "Fix Now" on a content issue
-   - Verify workflow completion
+## 🚨 If Deployment Still Fails
 
----
+### Check Build Logs
 
-## 🔍 Troubleshooting
+1. **Go to**: Vercel dashboard → Deployments → Latest
+2. **Click**: "View Build Logs"
+3. **Look for**: Specific error messages
 
-### Issue: API Returns 404
+### Common Issues & Fixes
 
-**Cause:** Route not deployed or requires authentication
+| Error | Fix |
+|-------|-----|
+| "Module not found" | Check imports, verify paths |
+| "TypeScript errors" | Check `next.config.js` (has `ignoreBuildErrors: true`) |
+| "Build timeout" | Increase timeout in Vercel settings |
+| "Missing env vars" | Add in Vercel dashboard |
 
-**Solution:**
-1. Verify route exists: `app/api/diagnostics/route.ts`
-2. Check authentication: Endpoint requires Clerk session
-3. Test with authenticated request
+### Alternative: Check Dashboard Settings
 
-### Issue: Database Connection Fails
+If build still fails:
+1. Go to: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
+2. Check: "Build & Development Settings"
+3. Verify: Root Directory is **empty** (not set to any value)
+4. If it has a value: Try to clear it (may require Vercel support if locked)
 
-**Solution:**
-1. Verify environment variables in Vercel:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_KEY`
-   - `DATABASE_URL`
-2. Check Supabase dashboard for connection status
-3. Verify IP allowlist includes Vercel IPs
+## 📊 Deployment Monitoring
 
-### Issue: Redis Connection Fails
-
-**Solution:**
-1. Verify environment variables:
-   - `UPSTASH_REDIS_REST_URL` (no whitespace)
-   - `UPSTASH_REDIS_REST_TOKEN` (no whitespace)
-2. Check Upstash dashboard
-3. Test connection: `curl $UPSTASH_REDIS_REST_URL/ping`
-
-### Issue: Build Fails
-
-**Solution:**
-1. Check Vercel build logs
-2. Verify all dependencies in `package.json`
-3. Check for TypeScript errors: `npm run type-check`
-4. Verify Prisma schema: `npx prisma generate`
-
----
-
-## 📊 Monitoring Setup
-
-### 1. Vercel Analytics
-- **Status:** Enabled
-- **Dashboard:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard/analytics
-
-### 2. Error Tracking
-- **Recommended:** Set up Sentry
-- **Steps:**
-  1. Create Sentry project
-  2. Add `SENTRY_DSN` to Vercel env vars
-  3. Install: `npm install @sentry/nextjs`
-  4. Configure: `sentry.client.config.ts`
-
-### 3. Performance Monitoring
-- **Vercel Speed Insights:** Already enabled
-- **Core Web Vitals:** Track in Vercel dashboard
-
----
-
-## 🎯 Production Readiness Checklist
-
-### Pre-Launch
-- [x] All features implemented
-- [x] Database connections verified
-- [x] API endpoints tested
-- [x] Error handling in place
-- [ ] Merge conflicts resolved
-- [ ] Git push successful
-- [ ] Deployment completed
-
-### Post-Launch
-- [ ] Health endpoint verified
-- [ ] Dashboard accessible
-- [ ] All features functional
-- [ ] No console errors
-- [ ] Performance metrics acceptable
-- [ ] Error tracking configured
-
----
-
-## 📝 Quick Reference
-
-### Deployment URLs
-- **Production:** https://dash.dealershipai.com
-- **Health:** https://dash.dealershipai.com/api/health
-- **Dashboard:** https://dash.dealershipai.com/dashboard
-- **Vercel:** https://vercel.com/brian-kramer-dealershipai/dealership-ai-dashboard
-
-### Key Commands
+**Check Status**:
 ```bash
-# Resolve conflicts and deploy
-git checkout --theirs <file>
-git add <file>
-git commit -m "Resolve conflicts"
-git push origin main
+# Using Vercel CLI
+vercel ls
 
-# Test health
-curl https://dash.dealershipai.com/api/health
-
-# Check deployment status
-npx vercel ls
-
-# View logs
-npx vercel logs --follow
+# Or check via MCP
+# (We can check deployments programmatically)
 ```
 
-### Support Resources
-- **Documentation:** `DEPLOYMENT_READY.md`
-- **Checklist:** `DEPLOYMENT_CHECKLIST.md`
-- **Test Script:** `scripts/test-diagnostic-dashboard.sh`
+**Check Logs**:
+- Vercel Dashboard → Deployments → Latest → Build Logs
+- Or use: `vercel logs [deployment-url]`
+
+## 🔗 Quick Links
+
+- **Deployments**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/deployments
+- **Settings**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/settings
+- **Project**: https://vercel.com/brian-kramers-projects/dealership-ai-dashboard
+
+## ⏱️ Timeline
+
+- **Build Time**: 2-5 minutes
+- **Verification**: 1-2 minutes
+- **Total**: ~5-7 minutes
 
 ---
 
-## 🚀 Next Actions
-
-1. **Immediate:** Resolve Git merge conflicts
-2. **Today:** Complete deployment and verify health
-3. **This Week:** Set up monitoring and error tracking
-4. **Ongoing:** Monitor performance and user feedback
-
----
-
-**Status:** Ready to deploy after resolving merge conflicts.
-
-**Priority:** High - Resolve conflicts and deploy to production.
-
+**Current Action**: Monitor the new deployment in Vercel dashboard. The fix (removing rootDirectory) should resolve the build issue.

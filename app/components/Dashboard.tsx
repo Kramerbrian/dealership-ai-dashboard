@@ -92,8 +92,8 @@ export default function Dashboard() {
       
       const result = await response.json();
       
-      if (result.authenticated && result.user) {
-        setUser(result.user);
+      if ((result as any).authenticated && (result as any).user) {
+        setUser((result as any).user);
         await loadDashboardData();
       } else {
         // Redirect to login
@@ -119,11 +119,11 @@ export default function Dashboard() {
 
       const result = await response.json();
 
-      if (result.error) {
-        if (result.error === 'Session limit reached') {
+      if ((result as any).error) {
+        if ((result as any).error === 'Session limit reached') {
           setShowUpgradeModal(true);
         }
-        setError(result.error);
+        setError((result as any).error);
         return;
       }
 

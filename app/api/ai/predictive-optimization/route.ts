@@ -279,8 +279,8 @@ function generatePredictiveInsights(currentMetrics: any, _marketData: any): Pred
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const analysisType = searchParams.get('type') || 'full';
-    const dealerId = searchParams.get('dealerId') || 'demo-dealer';
+    const analysisType = searchParams.get('type') || undefined || 'full';
+    const dealerId = searchParams.get('dealerId') || undefined || 'demo-dealer';
     
     // Demo metrics
     const currentMetrics = {

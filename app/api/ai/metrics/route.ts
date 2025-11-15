@@ -202,8 +202,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Get parameters
-    const dealerId = req.nextUrl.searchParams.get('dealerId');
-    const domain = req.nextUrl.searchParams.get('domain');
+    const dealerId = req.nextUrl.searchParams.get('dealerId') || undefined;
+    const domain = req.nextUrl.searchParams.get('domain') || undefined;
 
     if (!dealerId && !domain) {
       return NextResponse.json(
@@ -226,7 +226,7 @@ export async function GET(req: NextRequest) {
       domain: domain || dealerId || '',
       source,
       options: {
-        forceRefresh: req.nextUrl.searchParams.get('refresh') === 'true',
+        forceRefresh: req.nextUrl.searchParams.get('refresh') || undefined === 'true',
       },
     });
 

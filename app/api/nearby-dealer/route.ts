@@ -5,8 +5,8 @@ export const runtime = 'edge';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const lat = searchParams.get("lat");
-  const lon = searchParams.get("lon");
+  const lat = searchParams.get("lat") || undefined;
+  const lon = searchParams.get("lon") || undefined;
   const key = process.env.GMAPS_KEY;
 
   if (!lat || !lon || !key) {

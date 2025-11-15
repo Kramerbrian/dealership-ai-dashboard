@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const cardId = searchParams.get('cardId');
+    const cardId = searchParams.get('cardId') || undefined;
 
     if (!cardId) {
       return NextResponse.json({ error: 'cardId required' }, { status: 400 });

@@ -135,18 +135,18 @@ export default function BulkUploadDialog({
 
       const result = await response.json()
 
-      if (!result.ok) {
-        setErrorMessage(result.error || 'Upload failed')
+      if (!(result as any).ok) {
+        setErrorMessage((result as any).error || 'Upload failed')
         setStep('error')
         return
       }
 
       // Set preview data
-      setUploadId(result.uploadId)
-      setFileChecksum(result.fileChecksum)
-      setPreview(result.preview || [])
-      setCounts(result.counts || { parsed: 0, valid: 0, invalid: 0, duplicates: 0 })
-      setErrors(result.invalid || [])
+      setUploadId((result as any).uploadId)
+      setFileChecksum((result as any).fileChecksum)
+      setPreview((result as any).preview || [])
+      setCounts((result as any).counts || { parsed: 0, valid: 0, invalid: 0, duplicates: 0 })
+      setErrors((result as any).invalid || [])
 
     } catch (error: any) {
       setErrorMessage(error.message || 'Network error')
@@ -174,17 +174,17 @@ export default function BulkUploadDialog({
 
       const result = await response.json()
 
-      if (!result.ok) {
-        setErrorMessage(result.error || 'Commit failed')
+      if (!(result as any).ok) {
+        setErrorMessage((result as any).error || 'Commit failed')
         setStep('error')
         return
       }
 
-      setCommitResult(result.results)
+      setCommitResult((result as any).results)
       setStep('success')
 
-      if (onSuccess && result.batchId) {
-        onSuccess(result.batchId)
+      if (onSuccess && (result as any).batchId) {
+        onSuccess((result as any).batchId)
       }
 
     } catch (error: any) {

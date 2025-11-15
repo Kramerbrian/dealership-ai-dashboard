@@ -7,11 +7,11 @@ import { traced } from '@/lib/api-wrap';
  * Returns review summary data for pulse adapter
  */
 export const GET = withAuth(
-  traced(async ({ req, tenantId }) => {
+  traced(async ({ req, tenantId }: any) => {
     try {
       const url = new URL(req.url);
-      const placeId = url.searchParams.get('placeId');
-      const domain = url.searchParams.get('domain');
+      const placeId = url.searchParams.get('placeId') || undefined;
+      const domain = url.searchParams.get('domain') || undefined;
 
       // TODO: Fetch real review data from Google Places API or database
       // For now, return synthetic data

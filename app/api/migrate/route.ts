@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   try {
     // Security check
     const { searchParams } = new URL(request.url);
-    const secret = searchParams.get('secret');
+    const secret = searchParams.get('secret') || undefined;
     const expectedSecret = process.env.MIGRATION_SECRET || 'temp-migrate-pulse-v2';
 
     if (secret !== expectedSecret) {
