@@ -3,6 +3,14 @@
  * Tests the core scoring logic in lib/scoring.ts
  */
 
+// Mock Next.js server environment
+if (typeof global.Request === 'undefined') {
+  const { Request, Response, Headers } = require('undici');
+  global.Request = Request;
+  global.Response = Response;
+  global.Headers = Headers;
+}
+
 import {
   scoreComposite,
   scoreAIVisibility,
