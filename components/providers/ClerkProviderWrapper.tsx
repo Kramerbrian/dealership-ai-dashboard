@@ -17,9 +17,7 @@ export function ClerkProviderWrapper({ children }: { children: React.ReactNode }
   // 1. dash.dealershipai.com (production dashboard)
   // 2. Vercel preview URLs (for testing)
   // 3. localhost (for development)
-  // 4. During SSR (window undefined) - assume dashboard to prevent errors
   const isDashboardDomain =
-    domain === '' ||  // SSR - always enable Clerk to prevent useContext errors
     domain === 'dash.dealershipai.com' ||
     domain.includes('vercel.app') ||
     domain === 'localhost' ||
