@@ -40,8 +40,12 @@ const executeBatchSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     // Check RBAC - requires marketing_director or higher
+    // Note: This endpoint requires authentication, so 401/403 responses are expected for unauthenticated requests
     const rbac = await requireRBAC(req, ['marketing_director', 'admin', 'superadmin']);
-    if (rbac instanceof NextResponse) return rbac;
+    if (rbac instanceof NextResponse) {
+      // Return early if auth check failed (401 or 403)
+      return rbac;
+    }
 
     // Verify role has access to APIs & Agents
     if (!canAccessAPIsAndAgents(rbac.role)) {
