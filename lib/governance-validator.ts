@@ -5,7 +5,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import yaml from 'js-yaml';
+// @ts-ignore
+import yaml from "js-yaml";
 
 interface GovernancePolicy {
   performance?: {

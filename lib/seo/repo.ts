@@ -9,7 +9,7 @@ export async function updatePosteriorFromBatch(tenantId: string, batch: Array<{ 
     grouped.set(r.variantId, g)
   }
   const ops = Array.from(grouped.entries()).map(([variantId, g]) =>
-    prisma.seoVariantPrior.upsert({
+    (prisma as any).seoVariantPrior.upsert({
       where: { tenantId_variantId: { tenantId, variantId } },
       update: { a: { increment: g.clk }, b: { increment: Math.max(0, g.imp - g.clk) } },
       create: { tenantId, variantId, a: 1 + g.clk, b: 1 + Math.max(0, g.imp - g.clk) },

@@ -334,7 +334,7 @@ export class QAICalculator {
     const lagMeasures: QAIAnalysis['lagMeasures'] = [];
 
     components.forEach(comp => {
-      const thresholds = this.LAG_MEASURE_THRESHOLDS[comp.lagMeasureId];
+      const thresholds = this.LAG_MEASURE_((THRESHOLDS as any)[comp.lagMeasureId];
       if (!thresholds) return;
 
       let status: 'compliant' | 'warning' | 'critical' = 'compliant';

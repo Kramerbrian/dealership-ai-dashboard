@@ -48,7 +48,7 @@ export class MicroInteractionEngine {
     const targetElement = element || document.querySelector(interaction.element);
     if (!targetElement) return;
 
-    this.executeAnimation(targetElement, interaction.animation);
+    this.executeAnimation(targetElement as HTMLElement, interaction.animation);
     this.executeFeedback(interaction.feedback);
   }
 

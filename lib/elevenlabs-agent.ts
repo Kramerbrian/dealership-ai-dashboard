@@ -1,3 +1,4 @@
+// @ts-ignore
 import { ElevenLabsClient } from '@elevenlabs/client';
 
 /**

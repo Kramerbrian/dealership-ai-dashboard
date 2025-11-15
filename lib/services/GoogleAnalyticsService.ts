@@ -60,7 +60,7 @@ export interface OverviewData {
 }
 
 export class GoogleAnalyticsService {
-  private client: BetaAnalyticsDataClient;
+  private client!: BetaAnalyticsDataClient;
   private isInitialized: boolean = false;
 
   constructor() {

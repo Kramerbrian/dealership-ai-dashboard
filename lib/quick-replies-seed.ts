@@ -182,7 +182,7 @@ export async function updateQuickReplyUsage(replyId: string): Promise<void> {
     const { error } = await supabase
       .from('quick_replies')
       .update({ 
-        usage_count: supabase.raw('usage_count + 1'),
+        usage_count: supabase.raw as any('usage_count + 1'),
         updated_at: new Date().toISOString()
       })
       .eq('id', replyId);

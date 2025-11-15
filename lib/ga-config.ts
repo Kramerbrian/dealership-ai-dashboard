@@ -50,9 +50,9 @@ export const initGA = () => {
   document.head.appendChild(script);
   
   // Initialize dataLayer
-  window.dataLayer = window.dataLayer || [];
+  window.dataLayer! = window.dataLayer! || [];
   function gtag(...args: any[]) {
-    window.dataLayer.push(args);
+    window.dataLayer!.push(args);
   }
   
   window.gtag = gtag;

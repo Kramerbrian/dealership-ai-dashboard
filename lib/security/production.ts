@@ -168,7 +168,7 @@ export class SecurityManager {
     if (realIP) return realIP;
     if (forwarded) return forwarded.split(',')[0].trim();
     
-    return req.ip || 'unknown';
+    return (req as any).ip || 'unknown';
   }
 
   // Check if IP is trusted

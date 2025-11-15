@@ -12,9 +12,9 @@ export type ParityReport = {
 };
 
 export function compareBots(bots: BotSignal[]): ParityReport {
-  const avg = bots.reduce((s, b) => s + b.schemaPct, 0) / bots.length;
-  const min = bots.reduce((m, b) => b.schemaPct < m.schemaPct ? b.schemaPct : m, bots[0].schemaPct);
-  const weakest = bots.find(b => b.schemaPct === min)?.bot || 'Unknown';
+  const avg = bots.reduce((s, b) => s + b.schemaPct as any, 0) / bots.length;
+  const min = bots.reduce((m, b) => b.schemaPct as any < m.schemaPct as any ? b.schemaPct as any : m, bots[0].schemaPct as any);
+  const weakest = bots.find(b => b.schemaPct as any === min)?.bot || 'Unknown';
   
   return {
     parityPct: +(100 - (avg - min)).toFixed(1),
@@ -45,9 +45,9 @@ export async function getBotParityData(domain: string): Promise<BotSignal[]> {
 export function calculateParityScore(bots: BotSignal[]): number {
   if (bots.length === 0) return 0;
   
-  const avg = bots.reduce((s, b) => s + b.schemaPct, 0) / bots.length;
-  const min = Math.min(...bots.map(b => b.schemaPct));
-  const max = Math.max(...bots.map(b => b.schemaPct));
+  const avg = bots.reduce((s, b) => s + b.schemaPct as any, 0) / bots.length;
+  const min = Math.min(...bots.map(b => b.schemaPct as any));
+  const max = Math.max(...bots.map(b => b.schemaPct as any));
   
   // Parity score based on how close all bots are to each other
   const range = max - min;
@@ -59,9 +59,9 @@ export function calculateParityScore(bots: BotSignal[]): number {
 // Get parity recommendations
 export function getParityRecommendations(bots: BotSignal[]): string[] {
   const recommendations: string[] = [];
-  const avg = bots.reduce((s, b) => s + b.schemaPct, 0) / bots.length;
-  const min = Math.min(...bots.map(b => b.schemaPct));
-  const max = Math.max(...bots.map(b => b.schemaPct));
+  const avg = bots.reduce((s, b) => s + b.schemaPct as any, 0) / bots.length;
+  const min = Math.min(...bots.map(b => b.schemaPct as any));
+  const max = Math.max(...bots.map(b => b.schemaPct as any));
   const range = max - min;
   
   if (range > 10) {
@@ -72,7 +72,7 @@ export function getParityRecommendations(bots: BotSignal[]): string[] {
     recommendations.push('Overall schema coverage below 80% - improve structured data implementation');
   }
   
-  const weakestBot = bots.find(b => b.schemaPct === min);
+  const weakestBot = bots.find(b => b.schemaPct as any === min);
   if (weakestBot) {
     recommendations.push(`Focus on ${weakestBot.bot} optimization - currently trailing by ${(max - min).toFixed(1)}%`);
   }

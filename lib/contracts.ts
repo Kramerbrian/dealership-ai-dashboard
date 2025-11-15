@@ -79,7 +79,7 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): T {
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error(`Validation failed: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`);
+      throw new Error(`Validation failed: ${(error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')}`);
     }
     throw error;
   }

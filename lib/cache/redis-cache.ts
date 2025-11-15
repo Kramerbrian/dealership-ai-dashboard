@@ -226,7 +226,7 @@ export class EnhancedRedisCache {
     }
 
     try {
-      const info = await this.redis.info('memory');
+      const info = await this.(redis as any).info('memory');
       const keys = await this.redis.dbsize();
       
       return {

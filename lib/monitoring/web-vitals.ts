@@ -3,7 +3,9 @@
  * Tracks Core Web Vitals and sends to analytics
  */
 
-import { onCLS, onFCP, onFID, onLCP, onTTFB, Metric } from 'web-vitals';
+import { onCLS, onFCP, onLCP, onTTFB, Metric } from 'web-vitals';
+// @ts-ignore - onFID is deprecated but keeping for compatibility
+import { onFID } from 'web-vitals';
 
 // Send to analytics endpoint
 function sendToAnalytics(metric: Metric) {

@@ -36,8 +36,8 @@ export class SmartNotificationManager {
   constructor() {
     this.slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
     this.emailConfig = {
-      from: process.env.NOTIFICATION_EMAIL_FROM,
-      to: process.env.NOTIFICATION_EMAIL_TO?.split(','),
+      from: process.env.NOTIFICATION_EMAIL_FROM || '',
+      to: process.env.NOTIFICATION_EMAIL_TO?.split(',') || [],
       smtp: {
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,

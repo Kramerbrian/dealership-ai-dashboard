@@ -36,7 +36,7 @@ export function encryptSensitiveData(data: any): string {
   try {
     const key = getEncryptionKey();
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipherGCM(ALGORITHM, key, iv);
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
     
     // Convert data to JSON string
     const jsonData = JSON.stringify(data);
@@ -70,7 +70,7 @@ export function decryptSensitiveData(encryptedData: string): any {
     const key = getEncryptionKey();
     const parsed = JSON.parse(Buffer.from(encryptedData, 'base64').toString('utf8'));
     
-    const decipher = crypto.createDecipherGCM(ALGORITHM, key, Buffer.from(parsed.iv, 'hex'));
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, Buffer.from(parsed.iv, 'hex'));
     decipher.setAuthTag(Buffer.from(parsed.tag, 'hex'));
     
     let decrypted = decipher.update(parsed.data, 'hex', 'utf8');

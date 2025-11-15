@@ -114,11 +114,11 @@ export class ClientTierManager {
    * Get upgrade benefits for a tier
    */
   static getUpgradeBenefits(tier: PlanTier): string {
-    const benefits = {
+    const benefits: Partial<Record<PlanTier, string>> = {
       PRO: '50 sessions/month • E-E-A-T scoring • Advanced analytics',
       ENTERPRISE: '200 sessions/month • Mystery shop • API access • White-label'
     };
-    
-    return benefits[tier] || '';
+
+    return (benefits as any)[tier] || '';
   }
 }

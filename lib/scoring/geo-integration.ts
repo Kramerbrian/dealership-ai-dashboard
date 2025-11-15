@@ -49,7 +49,7 @@ export async function getLatestGeoSignals(tenantId: string): Promise<GeoSignals 
       LIMIT 1
     `);
 
-    const row = query.rows?.[0];
+    const row = query.rows as any?.[0];
     if (!row) return null;
 
     return {

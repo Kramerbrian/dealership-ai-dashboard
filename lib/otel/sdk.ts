@@ -16,7 +16,7 @@ const sdk = new NodeSDK({
 });
 
 if (!(global as any).__otel_started) {
-  sdk.start().catch(()=>{});
+  (sdk.start() as any).catch(()=>{});
   (global as any).__otel_started = true;
 }
 

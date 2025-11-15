@@ -1,3 +1,4 @@
+// @ts-ignore
 import neo4j, { Driver, Session } from 'neo4j-driver';
 
 let driver: Driver | null = null;

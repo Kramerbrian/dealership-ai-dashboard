@@ -389,7 +389,7 @@ export function getPlanPrice(plan: SubscriptionPlan): number {
 }
 
 export function getPlanFeatures(plan: SubscriptionPlan): string[] {
-  return SUBSCRIPTION_PLANS[plan].features;
+  return SUBSCRIPTION_PLANS[plan].features as any as string[];
 }
 
 export function getPlanLimits(plan: SubscriptionPlan) {

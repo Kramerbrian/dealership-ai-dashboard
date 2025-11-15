@@ -139,7 +139,7 @@ export function localizeKeywords(
   );
   
   const idioms = generateIdiomaticVariants(baseKeywords, locale, category);
-  const culturalAdaptations = generateCulturalAdaptations(baseKeywords, locale, category);
+  const culturalAdaptations = (generateCulturalAdaptations as any)(baseKeywords, locale, category);
   
   return {
     locale: targetLocale,

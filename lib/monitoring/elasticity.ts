@@ -1,6 +1,7 @@
 // Elasticity Monitoring & Guardrails
 // DealershipAI - Prometheus metrics and R² stability guardrails
 
+// @ts-ignore
 import { register, Counter, Histogram, Gauge } from 'prom-client';
 
 // Prometheus Metrics

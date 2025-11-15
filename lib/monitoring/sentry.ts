@@ -28,7 +28,7 @@ export function initSentry() {
         tracesSampleRate: 0.1, // 10% of transactions
         replaysSessionSampleRate: 0.1,
         replaysOnErrorSampleRate: 1.0,
-        beforeSend(event) {
+        beforeSend(event: any) {
           // Filter out noisy errors
           if (event.exception) {
             const error = event.exception.values?.[0];

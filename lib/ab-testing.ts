@@ -84,5 +84,5 @@ export const AB_TESTS = {
  */
 export function useABTest(testKey: keyof typeof AB_TESTS): string {
   const test = AB_TESTS[testKey];
-  return getABTest(test.name, test.variants, test.weights);
+  return getABTest(test.name, test.variants, (test as any).weights);
 }

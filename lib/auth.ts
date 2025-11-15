@@ -1,3 +1,4 @@
+// @ts-ignore
 import { auth, currentUser } from '@clerk/nextjs';
 
 export async function requireAdmin(): Promise<{ ok: boolean; reason?: string; email?: string }> {

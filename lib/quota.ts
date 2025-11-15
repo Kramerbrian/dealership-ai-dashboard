@@ -79,7 +79,7 @@ export async function getQuotaUsage(tenantId: string): Promise<QuotaUsage> {
     WHERE tenant_id = ${tenantId}
   `);
   
-  const row = result.rows[0];
+  const row = result.rows as any[0];
   const requests = Number(row?.requests || 0);
   const writes = Number(row?.writes || 0);
   

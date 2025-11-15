@@ -47,9 +47,9 @@ export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): { succes
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { 
-        success: false, 
-        error: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      return {
+        success: false,
+        error: (error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
       };
     }
     return { 

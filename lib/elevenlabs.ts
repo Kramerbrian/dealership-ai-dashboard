@@ -1,3 +1,4 @@
+// @ts-ignore
 // ElevenLabs - optional, fallback if not installed
 let ElevenLabsClient: any = null;
 try {

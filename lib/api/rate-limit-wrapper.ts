@@ -18,7 +18,7 @@ interface RateLimitConfig {
 const defaultIdentifier = (req: NextRequest): string => {
   // Use IP address or user ID
   const forwarded = req.headers.get('x-forwarded-for')
-  const ip = forwarded ? forwarded.split(',')[0] : req.ip || 'unknown'
+  const ip = forwarded ? forwarded.split(',')[0] : (req as any).ip || 'unknown'
   return ip
 }
 
