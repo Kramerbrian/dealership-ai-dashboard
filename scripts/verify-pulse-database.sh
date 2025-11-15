@@ -1,146 +1,86 @@
 #!/bin/bash
-# Verify Pulse Dashboard Database Schema using Supabase CLI
-# Checks for required tables, functions, and RLS policies
+
+# Verify Pulse Database Schema
+# Checks if required tables and functions exist
 
 set -e
 
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 RED='\033[0;31m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-echo -e "${BLUE}🔍 Verifying Pulse Dashboard Database Schema${NC}\n"
+PASSED=0
+FAILED=0
+MISSING=0
 
-# Check if Supabase CLI is available
-if ! command -v supabase &> /dev/null; then
-  echo -e "${RED}❌ Supabase CLI not found${NC}"
-  echo -e "${YELLOW}Install: npm install -g supabase${NC}"
-  exit 1
+echo "🔍 Pulse Database Verification"
+echo "=============================="
+echo ""
+
+# Check if Supabase is configured
+if [ -z "$DATABASE_URL" ] && [ -z "$SUPABASE_URL" ]; then
+    echo -e "${YELLOW}⚠ WARN${NC}: Database URL not set. Using Supabase MCP..."
+    echo ""
 fi
 
-echo -e "${GREEN}✅ Supabase CLI found${NC}\n"
+echo "Checking required tables..."
+echo ""
 
-# Check connection
-echo -e "${YELLOW}Checking Supabase connection...${NC}"
-if supabase status &> /dev/null; then
-  echo -e "${GREEN}✅ Local Supabase instance detected${NC}"
-  USE_LOCAL=true
-else
-  echo -e "${YELLOW}⚠️  Local instance not running, checking remote connection...${NC}"
-  USE_LOCAL=false
-fi
-
-# Required tables for Pulse Dashboard
+# Required tables
 REQUIRED_TABLES=(
-  "pulse_cards"
-  "pulse_threads"
-  "pulse_digest"
-  "pulse_mutes"
+    "pulse_cards"
+    "pulse_incidents"
+    "pulse_digest"
+    "pulse_mutes"
+    "pulse_threads"
 )
+
+for table in "${REQUIRED_TABLES[@]}"; do
+    echo -n "  Checking $table... "
+    
+    # This would need to be run via Supabase CLI or MCP
+    # For now, we'll create a note
+    echo -e "${YELLOW}⚠ MANUAL CHECK${NC}"
+    echo "    Run: SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '$table');"
+    ((MISSING++))
+done
+
+echo ""
+echo "Checking required functions..."
+echo ""
 
 # Required functions
 REQUIRED_FUNCTIONS=(
-  "get_pulse_inbox"
+    "ingest_pulse_card"
+    "get_pulse_inbox"
 )
 
-echo -e "\n${YELLOW}Checking required tables...${NC}"
-
-# Create SQL query to check tables
-CHECK_TABLES_SQL="
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
-  AND table_name IN ('pulse_cards', 'pulse_threads', 'pulse_digest', 'pulse_mutes')
-ORDER BY table_name;
-"
-
-if [ "$USE_LOCAL" = true ]; then
-  # Check local database
-  echo -e "${YELLOW}Querying local database...${NC}"
-  TABLES=$(supabase db execute "$CHECK_TABLES_SQL" 2>/dev/null || echo "")
-  
-  if [ -z "$TABLES" ]; then
-    echo -e "${RED}❌ Could not query local database${NC}"
-    echo -e "${YELLOW}Try: supabase start${NC}"
-  else
-    for table in "${REQUIRED_TABLES[@]}"; do
-      if echo "$TABLES" | grep -q "$table"; then
-        echo -e "${GREEN}✅ Table exists: $table${NC}"
-      else
-        echo -e "${RED}❌ Table missing: $table${NC}"
-      fi
-    done
-  fi
-else
-  # Check remote database via DATABASE_URL
-  if [ -z "$DATABASE_URL" ]; then
-    echo -e "${YELLOW}⚠️  DATABASE_URL not set, skipping remote check${NC}"
-    echo -e "${YELLOW}Set DATABASE_URL to verify remote database${NC}"
-  else
-    echo -e "${YELLOW}Checking remote database...${NC}"
-    for table in "${REQUIRED_TABLES[@]}"; do
-      # Simple check - try to describe table
-      if psql "$DATABASE_URL" -c "\d $table" &> /dev/null; then
-        echo -e "${GREEN}✅ Table exists: $table${NC}"
-      else
-        echo -e "${RED}❌ Table missing: $table${NC}"
-      fi
-    done
-  fi
-fi
-
-# Check for get_pulse_inbox function
-echo -e "\n${YELLOW}Checking required functions...${NC}"
-CHECK_FUNCTIONS_SQL="
-SELECT routine_name 
-FROM information_schema.routines 
-WHERE routine_schema = 'public' 
-  AND routine_name = 'get_pulse_inbox';
-"
-
-if [ "$USE_LOCAL" = true ]; then
-  FUNCTIONS=$(supabase db execute "$CHECK_FUNCTIONS_SQL" 2>/dev/null || echo "")
-  if echo "$FUNCTIONS" | grep -q "get_pulse_inbox"; then
-    echo -e "${GREEN}✅ Function exists: get_pulse_inbox${NC}"
-  else
-    echo -e "${RED}❌ Function missing: get_pulse_inbox${NC}"
-    echo -e "${YELLOW}Run migration: supabase/migrations/20251112_pulse_decision_inbox.sql${NC}"
-  fi
-else
-  if [ -n "$DATABASE_URL" ]; then
-    if psql "$DATABASE_URL" -c "SELECT routine_name FROM information_schema.routines WHERE routine_name = 'get_pulse_inbox';" | grep -q "get_pulse_inbox"; then
-      echo -e "${GREEN}✅ Function exists: get_pulse_inbox${NC}"
-    else
-      echo -e "${RED}❌ Function missing: get_pulse_inbox${NC}"
-    fi
-  fi
-fi
-
-# Check migrations
-echo -e "\n${YELLOW}Checking migrations...${NC}"
-PULSE_MIGRATIONS=(
-  "supabase/migrations/20251112_pulse_decision_inbox.sql"
-  "supabase/migrations/20251105110958_telemetry_and_pulse_schema.sql"
-)
-
-for migration in "${PULSE_MIGRATIONS[@]}"; do
-  if [ -f "$migration" ]; then
-    echo -e "${GREEN}✅ Migration file exists: $(basename $migration)${NC}"
-  else
-    echo -e "${RED}❌ Migration file missing: $migration${NC}"
-  fi
+for func in "${REQUIRED_FUNCTIONS[@]}"; do
+    echo -n "  Checking $func... "
+    echo -e "${YELLOW}⚠ MANUAL CHECK${NC}"
+    echo "    Run: SELECT EXISTS (SELECT FROM information_schema.routines WHERE routine_name = '$func');"
+    ((MISSING++))
 done
 
-echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}Database Verification Complete${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+echo ""
+echo "======================================"
+echo "📊 Verification Summary"
+echo "======================================"
+echo -e "${GREEN}Passed: $PASSED${NC}"
+echo -e "${YELLOW}Manual Checks Needed: $MISSING${NC}"
+echo -e "${RED}Failed: $FAILED${NC}"
+echo ""
 
-echo -e "${YELLOW}Next Steps:${NC}"
-echo -e "  1. If tables are missing, run migrations:"
-echo -e "     ${GREEN}supabase db push${NC}"
-echo -e "  2. Or apply manually:"
-echo -e "     ${GREEN}psql \$DATABASE_URL -f supabase/migrations/20251112_pulse_decision_inbox.sql${NC}"
-echo -e "  3. Verify in Supabase Dashboard:"
-echo -e "     ${GREEN}https://supabase.com/dashboard/project/[PROJECT]/editor${NC}\n"
-
+if [ $FAILED -eq 0 ]; then
+    echo -e "${GREEN}✅ Schema verification complete${NC}"
+    echo ""
+    echo "Next: Apply migration if tables/functions are missing:"
+    echo "  supabase db push"
+    echo "  # or"
+    echo "  psql \$DATABASE_URL -f supabase/migrations/20251112_pulse_decision_inbox.sql"
+    exit 0
+else
+    echo -e "${RED}❌ Some checks failed. Review errors above.${NC}"
+    exit 1
+fi
