@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import PulseInbox from '@/app/components/pulse/PulseInbox';
+import PulseInbox from '@/components/pulse/PulseInbox';
 
 export default function PulsePage() {
   return (
