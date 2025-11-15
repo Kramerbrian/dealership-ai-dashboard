@@ -139,6 +139,26 @@ async function triggerAutoFix({
   card: any;
   userId: string;
 }) {
+  // Check consensus before auto-fixing
+  // Only auto-fix if issue has unanimous consensus (3/3 engines)
+  const issueHits = card.context?.issueHits || [];
+  if (issueHits.length > 0) {
+    const { canAutoFix } = await import('@/lib/auto-fix/consensus-filter');
+    const issueId = card.context?.issueId || pulseId;
+    const canFix = canAutoFix(issueHits, issueId);
+
+    if (!canFix) {
+      // Issue doesn't have unanimous consensus - queue for review
+      return {
+        success: false,
+        message: 'Issue requires review (not unanimous consensus)',
+        requiresApproval: true,
+        consensus: card.context?.consensus || 'weak',
+        executedAt: new Date().toISOString(),
+      };
+    }
+  }
+
   // Try to call the orchestrator or auto-fix endpoint
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -153,6 +173,7 @@ async function triggerAutoFix({
         fixType,
         card,
         userId,
+        consensus: card.context?.consensus || 'unanimous', // Only auto-fix if unanimous
       }),
     });
 

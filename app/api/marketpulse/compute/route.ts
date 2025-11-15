@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  scoreAIVisibility,
+  getMetricAlert,
+  type EngineCoverage,
+} from '@/lib/scoring';
 
 /**
  * /api/marketpulse/compute
@@ -26,8 +31,19 @@ export async function GET(req: NextRequest) {
   const mock = url.searchParams.get('mock') === 'true';
 
   // Simulated base metrics (tweak ranges for realism)
+  // TODO: Replace with actual data from database/APIs
+  const engineCoverage: EngineCoverage = {
+    perplexity: randomBetween(70, 90),
+    chatgpt: randomBetween(75, 95),
+    gemini: randomBetween(70, 90),
+  };
+
+  // Calculate AI Visibility using new scoring formula
+  const aivRaw = scoreAIVisibility(engineCoverage);
+  const aiv = aivRaw / 100; // Convert to 0-1 scale for backward compatibility
+
   const base = {
-    aiv: randomBetween(0.78, 0.93),
+    aiv,
     ati: randomBetween(0.75, 0.9),
     schemaCoverage: randomBetween(0.7, 0.9),
     trustScore: randomBetween(0.8, 0.95),
@@ -35,6 +51,8 @@ export async function GET(req: NextRequest) {
     ugcHealth: randomBetween(0.7, 0.92),
     geoIntegrity: randomBetween(0.76, 0.91),
     zeroClick: randomBetween(0.35, 0.6),
+    // Add alert band for AI Visibility
+    aivAlert: getMetricAlert('aiVisibility', aivRaw),
   };
 
   // AI insight synthesis (human-readable context)
