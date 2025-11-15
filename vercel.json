@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "rootDirectory": ".",
   "buildCommand": "npm install --legacy-peer-deps && prisma generate && NEXT_TELEMETRY_DISABLED=1 next build",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
