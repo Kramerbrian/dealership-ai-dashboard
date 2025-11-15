@@ -220,7 +220,9 @@ async function dashboardMiddleware(req: NextRequest) {
       throw new Error('Clerk middleware function not available');
     }
     
-    const clerkMw = clerkMiddlewareFn(async (auth) => {
+    // Use Clerk middleware directly - it returns a middleware function that Next.js will call
+    // Clerk middleware is designed to be used as the default export, not manually invoked
+    return clerkMiddlewareFn(async (auth) => {
       // CRITICAL: If this is a Clerk handshake, allow it through without auth check
       // Clerk will process the handshake token and set cookies
       // After handshake completes, Clerk will redirect to the same URL without the parameter
@@ -257,15 +259,7 @@ async function dashboardMiddleware(req: NextRequest) {
 
       // Default: allow through (for public routes or routes not in protectedRouteMatcher)
       return NextResponse.next();
-    }, clerkOptions);
-    
-    // Invoke the middleware with request
-    const event = {
-      waitUntil: async () => {},
-      passThroughOnException: () => {},
-    } as any;
-    const result = await clerkMw(req, event);
-    return result;
+    }, clerkOptions)(req);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
