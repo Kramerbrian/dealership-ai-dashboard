@@ -85,6 +85,8 @@ ENDPOINTS=(
     "/api/health"
     "/api/pulse"
     "/api/marketpulse/compute"
+    "/api/oem/gpt-parse"
+    "/api/agentic/execute"
 )
 
 for endpoint in "${ENDPOINTS[@]}"; do
