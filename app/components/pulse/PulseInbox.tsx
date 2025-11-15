@@ -42,6 +42,8 @@ export default function PulseInbox() {
   const threadFor = useHudStore((s) => s.threadFor);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+  const [actionError, setActionError] = useState<Record<string, string>>({});
 
   // initial load + poll
   useEffect(() => {
@@ -89,8 +91,123 @@ export default function PulseInbox() {
     return pulse.filter((p) => kindToBucket(p.kind) === bucket);
   }, [pulse, filter]);
 
-  const onSnooze = (mins: number) => {
-    /* global DND handled in header; per-card snooze could be added */
+  // Get dealerId from URL
+  const getDealerId = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('dealer') || 'demo-tenant';
+  };
+
+  // Reload pulse cards after action
+  const reloadPulse = async () => {
+    try {
+      const dealerId = getDealerId();
+      const r = await fetch(`/api/pulse?dealerId=${encodeURIComponent(dealerId)}`);
+      if (r.ok) {
+        const j = await r.json();
+        addMany((j.cards || j.items || []) as PulseCard[]);
+      }
+    } catch (err) {
+      console.error('[PulseInbox] Failed to reload:', err);
+    }
+  };
+
+  // Handle Fix action
+  const handleFix = async (cardId: string) => {
+    setActionLoading(prev => ({ ...prev, [cardId]: true }));
+    setActionError(prev => {
+      const next = { ...prev };
+      delete next[cardId];
+      return next;
+    });
+
+    try {
+      const dealerId = getDealerId();
+      const res = await fetch(`/api/pulse/${cardId}/fix?dealerId=${encodeURIComponent(dealerId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: 'Failed to fix issue' }));
+        throw new Error(error.error || 'Failed to fix issue');
+      }
+
+      const result = await res.json();
+      // Reload pulse cards to reflect changes
+      await reloadPulse();
+      
+      // Show success (could use toast notification)
+      console.log('[PulseInbox] Fix triggered:', result);
+    } catch (error: any) {
+      console.error('[PulseInbox] Fix error:', error);
+      setActionError(prev => ({ ...prev, [cardId]: error.message || 'Failed to fix issue' }));
+    } finally {
+      setActionLoading(prev => {
+        const next = { ...prev };
+        delete next[cardId];
+        return next;
+      });
+    }
+  };
+
+  // Handle Assign action
+  const handleAssign = async (cardId: string) => {
+    setActionLoading(prev => ({ ...prev, [cardId]: true }));
+    setActionError(prev => {
+      const next = { ...prev };
+      delete next[cardId];
+      return next;
+    });
+
+    try {
+      const dealerId = getDealerId();
+      // For now, assign to current user (could be enhanced with user picker)
+      const assigneeId = 'current-user';
+      const assigneeName = 'Current User';
+      
+      const res = await fetch(`/api/pulse/${cardId}/assign?dealerId=${encodeURIComponent(dealerId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assigneeId,
+          assigneeName,
+          note: 'Assigned from Pulse dashboard',
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: 'Failed to assign issue' }));
+        throw new Error(error.error || 'Failed to assign issue');
+      }
+
+      const result = await res.json();
+      // Reload pulse cards to reflect changes
+      await reloadPulse();
+      
+      // Show success
+      console.log('[PulseInbox] Assigned:', result);
+    } catch (error: any) {
+      console.error('[PulseInbox] Assign error:', error);
+      setActionError(prev => ({ ...prev, [cardId]: error.message || 'Failed to assign issue' }));
+    } finally {
+      setActionLoading(prev => {
+        const next = { ...prev };
+        delete next[cardId];
+        return next;
+      });
+    }
+  };
+
+  // Handle Snooze action
+  const handleSnooze = (cardId: string, duration: '15m' | '1h' | 'end_of_day' = '1h') => {
+    const card = pulse.find(p => p.id === cardId);
+    if (card?.dedupe_key) {
+      // Use store's snooze function (client-side)
+      const { snooze } = useHudStore.getState();
+      snooze(cardId, duration);
+      // Reload to reflect changes
+      reloadPulse();
+    }
   };
 
   return (
@@ -114,6 +231,9 @@ export default function PulseInbox() {
                 {e.detail && (
                   <div className="text-sm text-gray-600 mt-0.5">{e.detail}</div>
                 )}
+                {actionError[e.id] && (
+                  <div className="text-xs text-red-600 mt-1">{actionError[e.id]}</div>
+                )}
                 <div className="mt-2 flex gap-2">
                   {e.actions?.includes('open') && (
                     <button
@@ -130,28 +250,26 @@ export default function PulseInbox() {
                   )}
                   {e.actions?.includes('fix') && (
                     <button
-                      className="h-8 px-3 rounded bg-blue-600 text-white"
-                      onClick={() => {
-                        /* wire Tier-2 Auto-Fix here */
-                      }}
+                      className="h-8 px-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleFix(e.id)}
+                      disabled={actionLoading[e.id]}
                     >
-                      Fix
+                      {actionLoading[e.id] ? 'Fixing...' : 'Fix'}
                     </button>
                   )}
                   {e.actions?.includes('assign') && (
                     <button
-                      className="h-8 px-3 rounded border"
-                      onClick={() => {
-                        /* route to team */
-                      }}
+                      className="h-8 px-3 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleAssign(e.id)}
+                      disabled={actionLoading[e.id]}
                     >
-                      Assign
+                      {actionLoading[e.id] ? 'Assigning...' : 'Assign'}
                     </button>
                   )}
                   {e.actions?.includes('snooze') && (
                     <button
-                      className="h-8 px-3 rounded border"
-                      onClick={() => onSnooze(60)}
+                      className="h-8 px-3 rounded border hover:bg-gray-50"
+                      onClick={() => handleSnooze(e.id, '1h')}
                     >
                       Snooze
                     </button>
