@@ -18,6 +18,45 @@ async function fetchClarity(domain?: string) {
   return res.json();
 }
 
+/**
+ * Get user tier and role from authentication
+ * Defaults to Tier 1 (Ignition) and 'viewer' role if not available
+ */
+async function getUserTierAndRole(): Promise<{ tier: 1 | 2 | 3; role: string }> {
+  try {
+    const isClerkConfigured = !!(
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+      process.env.CLERK_SECRET_KEY
+    );
+
+    if (isClerkConfigured) {
+      const { auth, clerkClient } = await import('@clerk/nextjs/server');
+      const { userId } = await auth();
+      
+      if (userId) {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        
+        // Get role from public metadata (default: 'viewer')
+        const role = ((user.publicMetadata?.role as string) || 'viewer') as string;
+        
+        // Get tier from public metadata (default: 1)
+        // Tier mapping: Ignition=1, Momentum=2, Hyperdrive=3
+        const tier = ((user.publicMetadata?.tier as number) || 
+                     (user.publicMetadata?.plan === 'PRO' ? 2 : 
+                      user.publicMetadata?.plan === 'ENTERPRISE' ? 3 : 1)) as 1 | 2 | 3;
+        
+        return { tier, role };
+      }
+    }
+  } catch (error) {
+    console.warn('[dash/page] Could not get user tier/role:', error);
+  }
+  
+  // Defaults
+  return { tier: 1, role: 'viewer' };
+}
+
 export default async function DashPage({ searchParams }: { searchParams?: { domain?: string; dealer?: string; __clerk_handshake?: string } }) {
   // Check if this is a Clerk handshake - allow it to complete
   const isClerkHandshake = searchParams && '__clerk_handshake' in searchParams;
@@ -40,12 +79,15 @@ export default async function DashPage({ searchParams }: { searchParams?: { doma
     redirect(redirectUrl);
   }
 
+  // Get user tier and role for tile access control
+  const { tier, role } = await getUserTierAndRole();
+
   // Support both 'domain' and 'dealer' params for compatibility
   const domain = searchParams?.domain || searchParams?.dealer || 'exampledealer.com';
   const data = await fetchClarity(domain);
 
   return (
-    <DashboardShell>
+    <DashboardShell userTier={tier} userRole={role}>
       <PulseOverview
         domain={data.domain}
         scores={data.scores}
