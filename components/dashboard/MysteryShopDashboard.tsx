@@ -37,8 +37,8 @@ const generateRealisticData = () => {
     const deployedHours = Math.floor(Math.random() * 72);
     
     const responses = [];
-    const respondedDealers = [];
-    
+    const respondedDealers: string[] = [];
+
     // Generate 0-4 responses per shop
     const responseCount = Math.floor(Math.random() * 5);
     for (let j = 0; j < responseCount; j++) {
@@ -304,8 +304,8 @@ const MysteryShopDashboard = () => {
       });
     });
     
-    Object.values(dealerStats).forEach(dealer => {
-      dealer.avgTime = Math.round(dealer.times.reduce((a, b) => a + b, 0) / dealer.times.length);
+    Object.values(dealerStats).forEach((dealer: any) => {
+      dealer.avgTime = Math.round(dealer.times.reduce((a: number, b: number) => a + b, 0) / dealer.times.length);
       dealer.score = Math.round(100 - (dealer.avgTime / 2));
     });
     

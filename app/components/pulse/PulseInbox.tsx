@@ -48,21 +48,30 @@ export default function PulseInbox() {
     let alive = true;
     const load = async () => {
       try {
+        setError(null);
+        setLoading(true);
         // Extract dealer from URL params
         const urlParams = new URLSearchParams(window.location.search);
         const dealerId = urlParams.get('dealer') || 'demo-tenant';
         
         const r = await fetch(`/api/pulse?dealerId=${encodeURIComponent(dealerId)}`);
         if (!r.ok) {
-          throw new Error(`API returned ${r.status}`);
+          if (r.status === 401) {
+            throw new Error('Authentication required. Please sign in.');
+          }
+          throw new Error(`Failed to load pulse cards: ${r.status} ${r.statusText}`);
         }
         const j = await r.json();
         if (!alive) return;
         // API returns { cards: PulseCard[] } not { items: PulseCard[] }
         addMany((j.cards || j.items || []) as PulseCard[]);
-      } catch (error) {
+        setLoading(false);
+      } catch (error: any) {
         console.error('[PulseInbox] Failed to load cards:', error);
-        // Don't break the UI, just log the error
+        if (alive) {
+          setError(error.message || 'Failed to load pulse cards');
+          setLoading(false);
+        }
       }
     };
     load();

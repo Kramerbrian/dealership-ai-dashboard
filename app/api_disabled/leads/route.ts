@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const leadData = LeadSchema.parse(body);
 
     // Check if lead already exists
-    const existingLead = await prisma.lead.findUnique({
+    const existingLead = await (prisma as any).lead.findUnique({
       where: { email: leadData.email }
     });
 
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create new lead
-    const lead = await prisma.lead.create({
+    const lead = await (prisma as any).lead.create({
       data: {
         email: leadData.email,
         company: leadData.company,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         utmMedium: leadData.utm_medium,
         utmCampaign: leadData.utm_campaign,
         status: 'new',
-        ipAddress: req.ip || req.headers.get('x-forwarded-for') || 'unknown',
+        ipAddress: (req as any).ip || req.headers.get('x-forwarded-for') || 'unknown',
         userAgent: req.headers.get('user-agent') || 'unknown'
       }
     });
@@ -63,12 +63,12 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Lead capture error:', error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json({
         success: false,
         error: 'Invalid lead data',
-        details: error.errors
+        details: (error as any).errors
       }, { status: 400 });
     }
 

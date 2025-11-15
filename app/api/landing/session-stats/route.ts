@@ -14,7 +14,7 @@ interface SessionStats {
 export async function GET() {
   try {
     // Get Redis client (with graceful fallback if unavailable)
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (!redisClient) {
       // Return mock data if Redis not available
@@ -41,7 +41,7 @@ export async function GET() {
     // Get average revenue found (from last 100 scans)
     const revenueList = await redisClient.lrange('landing:revenue_found', 0, 99);
     const avgRevenueFound = revenueList.length > 0
-      ? revenueList.reduce((sum, val) => sum + parseInt(val), 0) / revenueList.length
+      ? revenueList.reduce((sum: number, val: any) => sum + parseInt(val), 0) / revenueList.length
       : 45000;
 
     // Track this visitor
@@ -88,7 +88,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { revenueFound } = await request.json();
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (!redisClient) {
       return NextResponse.json({ success: true });

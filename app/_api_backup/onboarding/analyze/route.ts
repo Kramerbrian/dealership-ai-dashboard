@@ -24,17 +24,17 @@ export async function POST(req: NextRequest) {
     const cleanDomain = `www.${normalizedDomain}`
 
     // Check cache first
-    const cache = new CacheManager()
-    const cacheKey = `${CACHE_KEYS.ONBOARDING_ANALYSIS}:${cleanDomain}`
+    const cache = new CacheManager() as any
+    const cacheKey = `${(CACHE_KEYS as any).ONBOARDING_ANALYSIS}:${cleanDomain}`
     const cached = await cache.get(cacheKey)
-    
+
     if (cached) {
       return NextResponse.json(cached)
     }
 
     // Initialize profile with personalization engine
     const profile = await personalizationEngine.initializeProfile(cleanDomain)
-    
+
     // Generate additional insights
     const insights = {
       profile,
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Cache the results
-    await cache.set(cacheKey, insights, CACHE_TTL.ONBOARDING_ANALYSIS)
+    await cache.set(cacheKey, insights, (CACHE_TTL as any).ONBOARDING_ANALYSIS)
 
     return NextResponse.json(insights)
   } catch (error) {

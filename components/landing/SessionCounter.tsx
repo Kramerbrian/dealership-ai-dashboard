@@ -6,9 +6,7 @@ import { Users, TrendingUp, Clock } from 'lucide-react';
 interface SessionStats {
   activeSessions: number;
   scansToday: number;
-  avgRevenueFo
-
-und: number;
+  avgRevenueFound: number;
   lastUpdate: string;
 }
 

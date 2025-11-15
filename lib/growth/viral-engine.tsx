@@ -124,8 +124,8 @@ export class ViralGrowthEngine {
     
     // Platform-specific (ChatGPT clout)
     const topPlatform = Object.entries(data.platformScores)
-      .sort(([,a]: any, [,b]: any) => b - a)[0];
-    if (topPlatform && topPlatform[1] > 75) {
+      .sort(([,a], [,b]) => (b as number) - (a as number))[0];
+    if (topPlatform && (topPlatform[1] as number) > 75) {
       hooks.push(`🤖 ${topPlatform[1]}% visible on ${topPlatform[0]}`);
     }
     
@@ -169,8 +169,8 @@ export class ViralGrowthEngine {
       gap: dealership.aiVisibility - competitor.aiVisibility,
       winner: dealership.aiVisibility > competitor.aiVisibility ? 'you' : 'them',
       insights: [
-        `${competitor.name} has ${Math.abs(competitor.reviewCount - dealership.reviewCount)} more reviews`,
-        `Their schema implementation is ${competitor.schemaScore > dealership.schemaScore ? 'stronger' : 'weaker'}`,
+        `${competitor.name} has ${Math.abs((competitor as any).reviewCount - (dealership as any).reviewCount)} more reviews`,
+        `Their schema implementation is ${(competitor as any).schemaScore > (dealership as any).schemaScore ? 'stronger' : 'weaker'}`,
         `They rank ${Math.abs(competitor.rank - dealership.rank)} positions ${competitor.rank < dealership.rank ? 'ahead' : 'behind'}`
       ]
     };
@@ -282,9 +282,11 @@ export class ViralGrowthEngine {
     } : null;
   }
   
-  private analytics = { 
+  private analytics = {
     track: async (event: string, data: any) => {
-      console.log(`Analytics: ${event}`, data);
+      if (typeof document !== 'undefined') {
+        console.log(`Analytics: ${event}`, data);
+      }
     }
   };
   
@@ -304,6 +306,8 @@ export interface ShareReportProps {
   report: CompetitiveReport;
   onShare: (channel: string) => void;
 }
+
+import React from 'react';
 
 export const ShareableReport: React.FC<ShareReportProps> = ({ report, onShare }) => {
   const [copied, setCopied] = React.useState(false);

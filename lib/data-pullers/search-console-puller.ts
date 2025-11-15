@@ -3,7 +3,7 @@
  * Fetches Search Console data with cursor-based pagination and data quality checks
  */
 
-import { SearchConsole } from 'googleapis';
+import { searchconsole_v1 } from 'googleapis';
 
 export interface SearchConsoleConfig {
   siteUrl: string;
@@ -39,12 +39,13 @@ export interface SearchConsolePullResult {
 }
 
 export class SearchConsolePuller {
-  private client: SearchConsole;
+  private client: any;
   private config: SearchConsoleConfig;
 
   constructor(config: SearchConsoleConfig) {
     this.config = config;
-    this.client = new SearchConsole({
+    this.client = new (require('googleapis').google.searchconsole)({
+      version: 'v1',
       auth: new (require('google-auth-library').GoogleAuth)({
         credentials: {
           client_email: config.credentials.client_email,
@@ -85,7 +86,7 @@ export class SearchConsolePuller {
         },
       });
 
-      const data: SearchConsoleDataPoint[] = response.data.rows?.map(row => ({
+      const data: SearchConsoleDataPoint[] = response.data.rows?.map((row: any) => ({
         date: row.keys?.[0] || '',
         query: row.keys?.[1] || '',
         page: row.keys?.[2] || '',
@@ -160,7 +161,7 @@ export class SearchConsolePuller {
         },
       });
 
-      return response.data.rows?.map(row => ({
+      return response.data.rows?.map((row: any) => ({
         date: '',
         query: row.keys?.[0] || '',
         page: '',
@@ -200,7 +201,7 @@ export class SearchConsolePuller {
         },
       });
 
-      return response.data.rows?.map(row => ({
+      return response.data.rows?.map((row: any) => ({
         date: '',
         query: '',
         page: row.keys?.[0] || '',

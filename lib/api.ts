@@ -183,8 +183,7 @@ class APIClient {
     try {
       const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
-        timeout: 5000
-      })
+      } as any)
       return response.ok
     } catch (error) {
       console.error('Health check failed:', error)
@@ -218,6 +217,3 @@ class APIClient {
 // Export singleton instance
 const api = new APIClient()
 export default api
-
-// Export types for use in components
-export type { AIScores, MetricData, DashboardMetrics }

@@ -217,7 +217,7 @@ export default function ConversationalAssistant({
 
   const getTokenUsageColor = () => {
     if (!session) return 'bg-gray-200'
-    const percentage = (session.tokenUsage.used / session.tokenUsage.limit) * 100
+    const percentage = ((session.tokenUsage as any).used / session.tokenUsage.limit) * 100
     if (percentage > 90) return 'bg-red-500'
     if (percentage > 75) return 'bg-yellow-500'
     return 'bg-green-500'
@@ -250,14 +250,14 @@ export default function ConversationalAssistant({
           <div className="bg-gray-50 px-4 py-2 border-b">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">
-                {session.tokenUsage.provider === 'claude' ? 'Claude' : 'GPT-4'} • 
-                {session.tokenUsage.used.toLocaleString()} / {session.tokenUsage.limit.toLocaleString()} tokens
+                {(session.tokenUsage as any).provider === 'claude' ? 'Claude' : 'GPT-4'} •
+                {(session.tokenUsage as any).used.toLocaleString()} / {session.tokenUsage.limit.toLocaleString()} tokens
               </span>
               <div className="w-32 bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className={`h-2 rounded-full transition-all ${getTokenUsageColor()}`}
-                  style={{ 
-                    width: `${Math.min((session.tokenUsage.used / session.tokenUsage.limit) * 100, 100)}%` 
+                  style={{
+                    width: `${Math.min(((session.tokenUsage as any).used / session.tokenUsage.limit) * 100, 100)}%`
                   }}
                 />
               </div>

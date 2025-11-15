@@ -233,7 +233,7 @@ export class UserFlowTester {
         timestamp: new Date().toISOString(),
         duration: Date.now() - startTime,
         success: false,
-        errors: [error.toString()],
+        errors: [(error as Error).toString()],
       };
     }
   }
@@ -275,7 +275,7 @@ export class UserFlowTester {
         timestamp: new Date().toISOString(),
         duration: Date.now() - startTime,
         success: false,
-        errors: [error.toString()],
+        errors: [(error as Error).toString()],
       };
     }
   }
@@ -317,7 +317,7 @@ export class UserFlowTester {
         timestamp: new Date().toISOString(),
         duration: Date.now() - startTime,
         success: false,
-        errors: [error.toString()],
+        errors: [(error as Error).toString()],
       };
     }
   }
@@ -465,9 +465,9 @@ export class UserFlowTester {
     return breakdown;
   }
 
-  private analyzeStepPerformance(results: FlowTestResult[]): Record<string, number> {
+  private analyzeStepPerformance(results: FlowTestResult[]): Record<string, any> {
     const breakdown: Record<string, { success: number; total: number; avgDuration: number }> = {};
-    
+
     results.forEach(result => {
       result.steps.forEach(step => {
         if (!breakdown[step.step]) {
@@ -485,7 +485,7 @@ export class UserFlowTester {
       data.avgDuration = data.avgDuration / data.total;
     });
 
-    return breakdown;
+    return breakdown as Record<string, any>;
   }
 
   private getTopFlowIssues(results: FlowTestResult[]): string[] {

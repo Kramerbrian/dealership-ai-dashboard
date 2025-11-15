@@ -83,18 +83,20 @@ export function scoreAnomaly(anomaly: { delta: number; severity: string; trend: 
   let score = Math.abs(anomaly.delta);
   
   // Severity multiplier
-  const severityMultiplier = {
+  const severityMap = {
     'low': 1,
     'medium': 1.5,
     'high': 2
-  }[anomaly.severity as keyof typeof severityMultiplier] || 1;
-  
+  };
+  const severityMultiplier: number = severityMap[anomaly.severity as keyof typeof severityMap] || 1;
+
   // Trend multiplier
-  const trendMultiplier = {
+  const trendMap = {
     'accelerating': 1.3,
     'stable': 1,
     'decelerating': 0.8
-  }[anomaly.trend as keyof typeof trendMultiplier] || 1;
+  };
+  const trendMultiplier: number = trendMap[anomaly.trend as keyof typeof trendMap] || 1;
   
   return score * severityMultiplier * trendMultiplier;
 }

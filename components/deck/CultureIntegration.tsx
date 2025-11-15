@@ -42,7 +42,7 @@ export default function CultureIntegration() {
               <div className="flex items-center justify-between text-sm">
                 <span style={{ color: TOKENS.color.text.secondary }}>Current</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold" style={{ color: isOnTarget ? TOKENS.color.accent.emerald : isWarning ? TOKENS.color.accent.amber : TOKENS.color.accent.critical }}>
+                  <span className="text-2xl font-bold" style={{ color: isOnTarget ? TOKENS.color.accent.emerald : isWarning ? TOKENS.color.accent.risk : TOKENS.color.accent.alert }}>
                     {metric.current_score}
                   </span>
                   <span style={{ color: TOKENS.color.text.muted }}>/ {metric.target_threshold}</span>
@@ -60,8 +60,8 @@ export default function CultureIntegration() {
                     background: isOnTarget
                       ? `linear-gradient(90deg, ${TOKENS.color.accent.emerald}, ${TOKENS.color.accent.clarityCyan})`
                       : isWarning
-                      ? TOKENS.color.accent.amber
-                      : TOKENS.color.accent.critical
+                      ? TOKENS.color.accent.risk
+                      : TOKENS.color.accent.alert
                   }}
                 />
               </div>

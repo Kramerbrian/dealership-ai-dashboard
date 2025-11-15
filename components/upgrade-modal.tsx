@@ -4,8 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { DealershipTier } from '@prisma/client';
 import { X, Check, Star, Zap, Shield } from 'lucide-react';
+
+type DealershipTier = 'FREE' | 'PRO' | 'ENTERPRISE';
 
 interface UpgradeModalProps {
   feature: string;
@@ -23,8 +24,17 @@ export function UpgradeModal({
   onClose
 }: UpgradeModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('annual');
-  
-  const plans = {
+
+  const plans: Record<DealershipTier, any> = {
+    FREE: {
+      name: 'Free',
+      monthly: 0,
+      annual: 0,
+      savings: 0,
+      features: [],
+      icon: <Check className="text-gray-600" size={24} />,
+      color: 'gray'
+    },
     PRO: {
       name: 'Professional',
       monthly: 499,
@@ -129,7 +139,7 @@ export function UpgradeModal({
           
           {/* Features */}
           <div className="space-y-3 mb-8">
-            {plan.features.map((feature, index) => (
+            {plan.features.map((feature: string, index: number) => (
               <div key={index} className="flex items-center gap-3">
                 <Check className="text-green-600 flex-shrink-0" size={20} />
                 <span className="text-gray-700">{feature}</span>

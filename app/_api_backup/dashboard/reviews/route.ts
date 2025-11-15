@@ -186,8 +186,8 @@ export async function GET(req: NextRequest) {
     const timeRange = searchParams.get('timeRange') || '30d';
 
     // Check cache first
-    const cache = CacheManager.getInstance();
-    const cacheKey = CACHE_KEYS.REVIEWS_DATA(domain, timeRange);
+    const cache = (CacheManager as any).getInstance();
+    const cacheKey = (CACHE_KEYS as any).REVIEWS_DATA(domain, timeRange);
 
     const cachedData = await cache.get(cacheKey);
     if (cachedData) {
@@ -214,12 +214,12 @@ export async function GET(req: NextRequest) {
     // Generate Review data with performance tracking
     const reviewData = await monitor.trackApiCall(
       'reviews_analysis',
-      () => generateReviewData(),
+      async () => await generateReviewData(),
       { domain, timeRange }
-    );
+    ) as any;
 
     // Cache the result
-    await cache.set(cacheKey, reviewData, CACHE_TTL.REVIEWS_DATA);
+    await cache.set(cacheKey, reviewData, (CACHE_TTL as any).REVIEWS_DATA);
 
     const duration = Date.now() - startTime;
 

@@ -63,9 +63,9 @@ export async function GET() {
           .single();
 
         if (latestExport) {
-          stats.latestVersion = latestExport.version;
-          stats.lastUpdated = latestExport.exported_at;
-          stats.totalDownloads = latestExport.download_count || 0;
+          stats.latestVersion = (latestExport as any).version;
+          stats.lastUpdated = (latestExport as any).exported_at;
+          stats.totalDownloads = (latestExport as any).download_count || 0;
         }
 
         // Get total downloads across all versions
@@ -74,8 +74,8 @@ export async function GET() {
           .select('download_count');
 
         if (allExports) {
-          stats.totalDownloads = allExports.reduce(
-            (sum, exp) => sum + (exp.download_count || 0),
+          stats.totalDownloads = (allExports as any[]).reduce(
+            (sum, exp) => sum + ((exp as any).download_count || 0),
             0
           );
         }

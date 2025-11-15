@@ -256,8 +256,8 @@ async function simulateAutomotiveMarketAnalysis(location: any) {
 }
 
 async function simulateAIOpportunityAnalysis(location: any) {
-  const aiAdoptionLevels = ['low', 'medium', 'high'];
-  const localAIOdoption = aiAdoptionLevels[Math.floor(Math.random() * aiAdoptionLevels.length)];
+  const aiAdoptionLevels = ['low', 'medium', 'high'] as const;
+  const localAIOdoption = aiAdoptionLevels[Math.floor(Math.random() * aiAdoptionLevels.length)] as 'low' | 'medium' | 'high';
   
   const competitorAIScores = {
     average: Math.floor(Math.random() * 30 + 50), // 50-80

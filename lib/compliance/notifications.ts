@@ -62,7 +62,7 @@ export async function sendPolicyDriftEmail(
     const resend = getResendClient();
     const recipients = getEmailRecipients();
 
-    if (recipients.compliance.length === 0) {
+    if (!recipients.compliance || recipients.compliance.length === 0) {
       console.warn('[Notifications] No compliance email recipients configured');
       return;
     }
@@ -135,7 +135,7 @@ export async function sendPolicyDriftEmail(
 
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'alerts@dealershipai.com',
-      to: recipients.compliance,
+      to: recipients.compliance as string | string[],
       subject: `[DealershipAI] Google Ads Policy Update: ${oldVersion} → ${newVersion}`,
       html,
     });
@@ -163,7 +163,7 @@ export async function sendCriticalViolationEmail(
     const resend = getResendClient();
     const recipients = getEmailRecipients();
 
-    if (recipients.alerts.length === 0) {
+    if (!recipients.alerts || recipients.alerts.length === 0) {
       console.warn('[Notifications] No alert email recipients configured');
       return;
     }
@@ -233,7 +233,7 @@ export async function sendCriticalViolationEmail(
 
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'alerts@dealershipai.com',
-      to: recipients.alerts,
+      to: recipients.alerts as string | string[],
       subject: `[URGENT] Critical Google Ads Policy Violations Detected`,
       html,
     });

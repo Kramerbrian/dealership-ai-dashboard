@@ -64,13 +64,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       export: {
-        version: manifest?.version || latestExport?.version || '3.0.0',
+        version: manifest?.version || (latestExport as any)?.version || '3.0.0',
         downloadUrl,
         manifestUrl: `${baseUrl}/api/claude/manifest`,
         fileSize: fileSizeBytes,
         fileSizeMB: (fileSizeBytes / (1024 * 1024)).toFixed(2),
-        lastExported: latestExport?.exported_at || new Date().toISOString(),
-        downloadCount: latestExport?.download_count || 0,
+        lastExported: (latestExport as any)?.exported_at || new Date().toISOString(),
+        downloadCount: (latestExport as any)?.download_count || 0,
         manifest: manifest ? {
           projectName: manifest.project_name,
           description: manifest.description,
@@ -126,7 +126,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    );
+
     const { data, error } = await supabase
       .from('claude_exports')
       .insert({
