@@ -27,11 +27,38 @@ export default function OnboardingPage() {
     if (step > 0) setStep(step - 1);
   }
 
-  function finish() {
-    // TODO: send onboarding data to your backend / profile store.
-    const qs = new URLSearchParams();
-    if (domain) qs.set('domain', domain);
-    router.push(qs.toString() ? `/dash?${qs.toString()}` : '/dash');
+  async function finish() {
+    try {
+      // Save onboarding data to backend
+      const response = await fetch('/api/user/onboarding-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          websiteUrl: domain,
+          // Additional form data can be added here if needed
+          location: city && state ? { city, state, storeName } : undefined,
+          metrics: monthlyUsed && avgGross ? { monthlyUsed, avgGross } : undefined,
+          role
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Failed to save' }));
+        console.error('Onboarding save error:', error);
+        // Continue with redirect even if save fails (graceful degradation)
+      }
+
+      // Redirect to dashboard
+      const qs = new URLSearchParams();
+      if (domain) qs.set('domain', domain);
+      router.push(qs.toString() ? `/dash?${qs.toString()}` : '/dash');
+    } catch (error) {
+      console.error('Onboarding completion error:', error);
+      // Continue with redirect even on error
+      const qs = new URLSearchParams();
+      if (domain) qs.set('domain', domain);
+      router.push(qs.toString() ? `/dash?${qs.toString()}` : '/dash');
+    }
   }
 
   return (
