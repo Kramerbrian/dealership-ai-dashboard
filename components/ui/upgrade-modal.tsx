@@ -82,7 +82,7 @@ export function UpgradeModal({
     }
   };
 
-  const plan = PRICING_PLANS[requiredTier];
+  const plan = PRICING_PLANS[requiredTier as 'PROFESSIONAL' | 'ENTERPRISE'] || PRICING_PLANS.PROFESSIONAL;
   const Icon = TIER_ICONS[requiredTier];
   const colors = TIER_COLORS[requiredTier];
 
@@ -144,7 +144,7 @@ export function UpgradeModal({
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900">What you'll get:</h3>
               <div className="space-y-2">
-                {plan.features.map((feature, index) => (
+                {plan.features.map((feature: string, index: number) => (
                   <div key={index} className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                     <span className="text-gray-700">{feature}</span>

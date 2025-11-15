@@ -114,10 +114,15 @@ export default function InstantAnalyzer({
         content: searchParams.get("utm_content") || undefined,
       };
 
-      await fetch("/api/capture-email", {
+      // Use active email capture endpoint
+      await fetch("/api/landing/email-unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dealer, email, scanResults, utm }),
+        body: JSON.stringify({ 
+          email, 
+          dealerName: dealer,
+          revenueAtRisk: scanResults?.revenueAtRisk || 0
+        }),
       });
     } catch (err) {
       console.error("[Email Capture]", err);
