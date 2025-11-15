@@ -190,10 +190,9 @@ export async function GET(req: NextRequest) {
   try {
     // Rate limiting
     const rateLimit = await checkRateLimit(req, {
-      requests: 100,
       window: '1h',
       identifier: req.headers.get('x-forwarded-for') || 'unknown',
-    });
+    } as any);
 
     if (!rateLimit.success) {
       return NextResponse.json(

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const ip = req.headers.get('x-forwarded-for') || req.ip || 'seed';
+  const ip = req.headers.get('x-forwarded-for') || (req as any).ip || 'seed';
   const ok = await allow(rl_publicAPI, `admin:seed:${ip}`);
   if (!ok.success) return NextResponse.json({ ok:false, rateLimited:true }, { status: 429 });
 
@@ -34,14 +34,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = supabase;
-    if (!supabase) {
-      return NextResponse.json(
-        { error: 'Database not configured' },
-        { status: 503 }
-      );
-    }
-
     let sbAdmin;
     try {
       sbAdmin = getSbAdmin();

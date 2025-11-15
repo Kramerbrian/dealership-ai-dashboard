@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Get query parameters
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const action = searchParams.get('action');
     const dealershipId = searchParams.get('dealershipId');
 
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST endpoint for review actions
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     // 1. Verify authentication
     const { userId } = await auth();
@@ -83,7 +83,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { action, platform, reviewId, response } = await request.json();
+    const { action, platform, reviewId, response } = await req.json();
 
     if (!action) {
       return NextResponse.json({ error: 'Action is required' }, { status: 400 });

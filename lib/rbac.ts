@@ -1,6 +1,8 @@
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+// This file must only be imported in server components/API routes
+
 export type Role = 'viewer' | 'dealer_user' | 'ops' | 'manager' | 'marketing_director' | 'admin' | 'superadmin'
 export type RBAC = { userId:string; role:Role; tenant:string }
 

@@ -9,7 +9,7 @@
  * @author DealershipAI Team
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 import { EnhancedDAIEngine, EnhancedDAIMetrics } from '@/lib/scoring/enhanced-dai-engine';

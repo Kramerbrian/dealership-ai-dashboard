@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     const duration = Date.now() - startTime;
+    const propertyId = new URL((req as any).url || '').searchParams.get('propertyId');
     logger.googleAnalytics.apiError('GET', propertyId || 'unknown', error as Error);
     
     return NextResponse.json(
@@ -132,7 +133,8 @@ export async function POST(req: NextRequest) {
     }
 
   } catch (error) {
-    logger.googleAnalytics.apiError('POST', propertyId || 'unknown', error as Error);
+    const propertyId = 'unknown';
+    logger.googleAnalytics.apiError('POST', propertyId, error as Error);
     
     return NextResponse.json(
       { 

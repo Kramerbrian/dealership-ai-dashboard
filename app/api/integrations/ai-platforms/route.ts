@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 import { auth } from '@clerk/nextjs/server';
 import { AIPlatformsIntegration } from '@/lib/integrations/ai-platforms';
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     // 1. Verify authentication
     const { userId } = await auth();
@@ -12,7 +12,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { action, query, dealershipName, keywords } = await request.json();
+    const { action, query, dealershipName, keywords } = await req.json();
 
     if (!action) {
       return NextResponse.json({ error: 'Action is required' }, { status: 400 });

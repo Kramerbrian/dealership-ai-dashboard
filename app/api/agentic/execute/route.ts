@@ -6,8 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { CommerceAction, CommerceActionBatch } from '@/models/CommerceAction';
-import { canAccessAPIsAndAgents } from '@/lib/rbac';
-import { requireRBAC } from '@/lib/rbac';
+import { canAccessAPIsAndAgents, requireRBAC } from '@/lib/rbac';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

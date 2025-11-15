@@ -52,10 +52,11 @@ fi
 # Check root directory setting
 echo ""
 echo -e "${BLUE}📋 Step 3: Checking root directory setting${NC}"
-echo -e "${YELLOW}⚠️  Root directory must be set to '.' in Vercel dashboard${NC}"
+echo -e "${YELLOW}⚠️  Root directory should be EMPTY for root-level Next.js apps${NC}"
 echo "   Go to: https://vercel.com/[your-team]/${PROJECT_NAME}/settings"
 echo "   Find: Build & Development Settings → Root Directory"
-echo "   Set to: . (single dot)"
+echo "   For root-level apps: Leave EMPTY (Vercel defaults to repository root)"
+echo "   For monorepos: Use relative path like 'apps/web' (no './' prefix, no '../')"
 echo ""
 
 # Check latest deployment

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     // Track share event
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (redisClient) {
       // Increment platform-specific counter
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 // Get share stats
 export async function GET() {
   try {
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (!redisClient) {
       return NextResponse.json({

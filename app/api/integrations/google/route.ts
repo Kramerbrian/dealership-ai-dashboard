@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Get query parameters
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const action = searchParams.get('action');
     const accountId = searchParams.get('accountId');
 
@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST endpoint for updating Google data
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     // 1. Verify authentication
     const { userId } = await auth();
@@ -101,7 +101,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { action, accountId, data } = await request.json();
+    const { action, accountId, data } = await req.json();
 
     if (!action || !accountId) {
       return NextResponse.json({ error: 'Action and account ID are required' }, { status: 400 });

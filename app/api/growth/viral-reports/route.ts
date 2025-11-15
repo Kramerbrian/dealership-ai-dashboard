@@ -5,9 +5,9 @@ import { ViralGrowthEngine } from '@/lib/growth/viral-growth-engine';
 
 const viralEngine = new ViralGrowthEngine();
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const { dealershipId } = await request.json();
+    const { dealershipId } = await req.json();
     
     if (!dealershipId) {
       return NextResponse.json(
@@ -34,7 +34,7 @@ export async function POST() {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const shareToken = searchParams.get('token');
     
     if (!shareToken) {

@@ -1,98 +1,30 @@
-# Deployment Status
+# Deployment Status Report
 
-## Completed Steps
+## Latest Deployment Status
 
-### 1. Repository Update
-- ✅ Updated Reddit integration to use OAuth (Path B) instead of Devvit token
-- ✅ Created `lib/reddit/reddit-oauth-client.ts` for OAuth script flow
-- ✅ Updated `/api/ugc/reddit` to use OAuth client
-- ✅ Added documentation: `docs/REDDIT_OAUTH_SETUP.md`
+**Deployment ID**: `dpl_6hkVD86RaK6kHTZoERyvFGTsu3zV`  
+**State**: ❌ **ERROR**  
+**Commit**: `0a094ebb9` - "Fix: Add rootDirectory to vercel.json"  
+**Created**: Just now  
+**URL**: https://dealership-ai-dashboard-9lholet8o-brian-kramers-projects.vercel.app
 
-### 2. Files Modified
-- `lib/reddit/reddit-oauth-client.ts` - New OAuth client (Path B)
-- `app/api/ugc/reddit/route.ts` - Updated to use OAuth
-- `docs/REDDIT_OAUTH_SETUP.md` - Setup documentation
+## Recent Deployments
 
-### 3. Git Status
-- ✅ Changes committed: "Deploy dashboard: Update Reddit integration to OAuth (Path B), add reddit-oauth-client"
+1. **Latest** (ERROR): `dpl_6hkVD86RaK6kHTZoERyvFGTsu3zV` - "Fix: Add rootDirectory to vercel.json"
+2. **Previous** (BUILDING): `dpl_Ch3eBnbMQkH3niL9sD15K1PUSe1W` - "Trigger rebuild after root directory fix"
+3. **Earlier** (READY): `dpl_CHUZcUFmeU5481AVveTsfzsob1tX` - "Fix: Vercel root directory configuration"
 
-## Next Steps (Manual)
+## Next Steps
 
-### 1. Download and Integrate agent_package.zip
-```bash
-# Download from GitHub
-curl -L -o /tmp/agent_package.zip https://raw.githubusercontent.com/Kramerbrian/dealership-ai-dashboard/main/agent_package.zip
+1. **Check Build Logs**: View detailed error in Vercel dashboard
+2. **Review Error**: The build failed - need to see specific error message
+3. **Fix Issue**: Address the root cause of the build failure
+4. **Redeploy**: Push fix and monitor new deployment
 
-# Unzip into repo root
-unzip -o /tmp/agent_package.zip -d .
+## Inspector URL
 
-# Move legacy API routes (if they exist)
-mkdir -p app/api_disabled
-# Move any routes using SendGrid/Cheerio to app/api_disabled
-```
+https://vercel.com/brian-kramers-projects/dealership-ai-dashboard/6hkVD86RaK6kHTZoERyvFGTsu3zV
 
-### 2. Move Legacy API Routes
-If you have routes using `@sendgrid/mail` or `cheerio`, move them:
-```bash
-# Example (adjust paths as needed)
-mv app/api/capture-email app/api_disabled/ 2>/dev/null || true
-mv app/api/analyze app/api_disabled/ 2>/dev/null || true
-```
+---
 
-### 3. Set Environment Variables in Vercel
-Go to Vercel Dashboard → Project Settings → Environment Variables:
-
-**Required:**
-- `NEXT_PUBLIC_MAPBOX_KEY` - Mapbox access token
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
-- `CLERK_SECRET_KEY` - Clerk secret key
-- `REDDIT_CLIENT_ID` - Reddit OAuth client ID (NEW)
-- `REDDIT_CLIENT_SECRET` - Reddit OAuth client secret (NEW)
-- `REDDIT_USER_AGENT` - Reddit user agent string (NEW)
-
-**Optional:**
-- `NEXT_PUBLIC_BASE_URL` - Production domain URL
-
-### 4. Commit and Push
-```bash
-git add .
-git commit -m "Deploy dashboard from agent_package.zip"
-git push origin main
-```
-
-### 5. Monitor Vercel Build
-- Watch build logs in Vercel dashboard
-- Verify build completes successfully
-- Check for any missing environment variables
-
-### 6. Post-Deploy Verification
-
-**Landing Page:**
-- ✅ `https://dealershipai.com` renders landing page
-- ✅ AI analyzer and map components load
-- ✅ CTA redirects to `/sign-in`
-
-**Dashboard:**
-- ✅ `https://dash.dealershipai.com` requires Clerk auth
-- ✅ `/dash` shows Pulse overview
-- ✅ `/dash/onboarding` works
-- ✅ `/dash/insights/ai-story` loads
-- ✅ `/dash/autopilot` displays
-
-**Reddit UGC:**
-- ✅ `/api/ugc/reddit?dealershipName=Test&limit=10` returns data
-- ✅ UGC dashboard tab shows Reddit feed
-
-## Notes
-
-- **Reddit Integration**: Now uses OAuth (Path B) - see `docs/REDDIT_OAUTH_SETUP.md`
-- **Devvit Token**: Not used for dashboard - only for CLI/Devvit apps
-- **Legacy Routes**: Any SendGrid/Cheerio routes should be moved to `app/api_disabled`
-
-## Error Handling
-
-If build fails:
-1. Check Vercel build logs
-2. Verify all environment variables are set
-3. Check for missing dependencies
-4. Verify no legacy routes are causing issues
+**Action Required**: Check build logs to identify the specific error causing the deployment failure.

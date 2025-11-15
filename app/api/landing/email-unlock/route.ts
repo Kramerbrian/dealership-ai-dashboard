@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     // Track email capture
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (redisClient) {
       // Add to email list
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 // Get email capture stats
 export async function GET() {
   try {
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (!redisClient) {
       return NextResponse.json({

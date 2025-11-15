@@ -33,10 +33,10 @@ export async function POST(req: NextRequest) {
 
     // Get user agent for context
     const userAgent = req.headers.get('user-agent') || 'unknown';
-    const country = req.geo?.country || 'unknown';
-    const city = req.geo?.city || 'unknown';
+    const country = (req as any).geo?.country || 'unknown';
+    const city = (req as any).geo?.city || 'unknown';
 
-    const supabase = getSupabase();
+    const supabase = getSupabase() as any;
     if (supabase) {
       // Store in Supabase
       await supabase.from('web_vitals').insert({

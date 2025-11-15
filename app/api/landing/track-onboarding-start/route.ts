@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const { dealerName, score, revenueAtRisk } = await request.json();
 
     // Track onboarding start event
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (redisClient) {
       // Increment onboarding starts counter
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 // Get onboarding stats
 export async function GET() {
   try {
-    const redisClient = redis();
+    const redisClient = (redis as any)();
 
     if (!redisClient) {
       return NextResponse.json({
