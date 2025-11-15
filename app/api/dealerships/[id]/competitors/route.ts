@@ -3,7 +3,7 @@
  * Get competitive intelligence with tier-based limits
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 import { auth } from '@clerk/nextjs/server';

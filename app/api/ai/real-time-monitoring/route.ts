@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     };
 
     // Log monitoring data to database
-    await prisma.intelTask.create({
+    await (prisma as any).intelTask.create({
       data: {
         type: 'REAL_TIME_MONITORING',
         status: 'COMPLETED',

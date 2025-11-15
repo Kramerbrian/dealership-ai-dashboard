@@ -21,7 +21,7 @@ export function ActionDrawer() {
           )}
           {drawerContent.items && drawerContent.items.length > 0 && (
             <div className="space-y-2">
-              {drawerContent.items.map((item, idx) => (
+              {drawerContent.items.map((item: any, idx: any) => (
                 <div
                   key={idx}
                   className="rounded-xl border border-neural-800 p-3 flex items-center justify-between"

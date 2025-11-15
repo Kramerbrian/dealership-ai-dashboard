@@ -72,7 +72,7 @@ export async function GET() {
     return NextResponse.json({
       totalOnboardings: parseInt(totalOnboardings || '0'),
       todayCount: parseInt(todayCount || '0'),
-      recent: recentOnboardings.map((event) => JSON.parse(event)),
+      recent: recentOnboardings.map((event: any) => JSON.parse(event)),
     });
   } catch (error) {
     console.error('Failed to get onboarding stats:', error);

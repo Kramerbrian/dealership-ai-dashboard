@@ -1,12 +1,14 @@
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-export type Role = 'dealer_user' | 'manager' | 'marketing_director' | 'admin' | 'superadmin'
+export type Role = 'viewer' | 'dealer_user' | 'ops' | 'manager' | 'marketing_director' | 'admin' | 'superadmin'
 export type RBAC = { userId:string; role:Role; tenant:string }
 
 // Role hierarchy for access control
 export const ROLE_HIERARCHY: Record<Role, number> = {
+  viewer: 0,
   dealer_user: 1,
+  ops: 1,
   manager: 2,
   marketing_director: 3,
   admin: 4,

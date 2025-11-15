@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     };
 
     // Save analysis to database
-    await prisma.intelTask.create({
+    await (prisma as any).intelTask.create({
       data: {
         type: 'COMPETITOR_INTELLIGENCE',
         status: 'COMPLETED',

@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     };
 
     // Save prediction to database
-    await prisma.intelTask.create({
+    await (prisma as any).intelTask.create({
       data: {
         type: 'PREDICTIVE_ANALYTICS',
         status: 'COMPLETED',

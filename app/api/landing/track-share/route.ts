@@ -86,7 +86,7 @@ export async function GET() {
         linkedin: parseInt(linkedinShares || '0'),
         facebook: parseInt(facebookShares || '0'),
       },
-      recent: recentShares.map((share) => JSON.parse(share)),
+      recent: recentShares.map((share: any) => JSON.parse(share)),
     });
   } catch (error) {
     console.error('Failed to get share stats:', error);

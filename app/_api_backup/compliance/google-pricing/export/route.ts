@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       'Violations Details'
     ];
     
-    const csvRows = audits?.map(audit => [
+    const csvRows = audits?.map((audit: any) => [
       new Date(audit.created_at).toISOString().split('T')[0],
       audit.tenant_id || '',
       audit.ad_url || '',
@@ -88,13 +88,13 @@ export async function GET(request: NextRequest) {
       audit.violations?.filter((v: any) => v.type === 'warning').length || 0,
       JSON.stringify(audit.violations || [])
     ]) || [];
-    
+
     const csvContent = [
       csvHeaders.join(','),
-      ...csvRows.map(row => 
-        row.map(cell => 
-          typeof cell === 'string' && cell.includes(',') 
-            ? `"${cell.replace(/"/g, '""')}"` 
+      ...csvRows.map((row: any) =>
+        row.map((cell: any) =>
+          typeof cell === 'string' && cell.includes(',')
+            ? `"${cell.replace(/"/g, '""')}"`
             : cell
         ).join(',')
       )

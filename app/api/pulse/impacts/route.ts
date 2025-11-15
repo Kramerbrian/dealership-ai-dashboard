@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') || req.ip || 'anon';
+  const ip = req.headers.get('x-forwarded-for') || (req as any).ip || 'anon';
   const ok = await allow(rl_publicAPI, `impacts:${ip}`);
   
   if (!ok.success) {

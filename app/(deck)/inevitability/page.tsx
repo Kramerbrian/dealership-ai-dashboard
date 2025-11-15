@@ -20,7 +20,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
       }}
     >
       <div className="p-4 border-b" style={{ borderColor: TOKENS.color.surface.border }}>
-        <div style={{ fontFamily: TOKENS.font.family.sans, fontSize: TOKENS.font.size.lg, color: TOKENS.color.text.primary }}>
+        <div style={{ fontFamily: (TOKENS as any).font?.family?.sans || 'sans-serif', fontSize: (TOKENS as any).font?.size?.lg || '18px', color: TOKENS.color.text.primary }}>
           {title}
         </div>
       </div>
@@ -30,30 +30,30 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function TokenSwatches() {
-  const c = TOKENS.color;
+  const c = TOKENS.color as any;
   const cell = (name: string, val: string) => (
     <div className="rounded-xl p-4 border" style={{ background: val, borderColor: TOKENS.color.surface.border }}>
-      <div style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)', fontSize: TOKENS.font.size.sm }}>{name}</div>
-      <div className="text-xs opacity-80" style={{ color: '#fff', fontFamily: TOKENS.font.family.mono }}>{val}</div>
+      <div style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)', fontSize: (TOKENS as any).font?.size?.sm || '14px' }}>{name}</div>
+      <div className="text-xs opacity-80" style={{ color: '#fff', fontFamily: (TOKENS as any).font?.family?.mono || 'monospace' }}>{val}</div>
     </div>
   );
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      {cell('Graphite', c.surface.graphite)}
+      {cell('Graphite', c.surface?.graphite || '#333')}
       {cell('Panel', c.surface.panel)}
       {cell('Border', c.surface.border)}
       {cell('Glass', c.surface.glass)}
       {cell('Clarity Blue', c.accent.clarityBlue)}
       {cell('Clarity Cyan', c.accent.clarityCyan)}
       {cell('Emerald', c.accent.emerald)}
-      {cell('Amber', c.accent.amber)}
-      {cell('Critical', c.accent.critical)}
+      {cell('Amber', c.accent?.amber || '#F59E0B')}
+      {cell('Critical', c.accent?.critical || '#EF4444')}
     </div>
   );
 }
 
 function PersonaMatrix() {
-  const personas = TOKENS.persona as any;
+  const personas = (TOKENS as any).persona as any;
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       {Object.keys(personas).map((k) => {
@@ -203,13 +203,13 @@ export default function InevitabilityDeck() {
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm uppercase tracking-wide font-mono mb-1" style={{ color: TOKENS.color.text.muted }}>
-              {TOKENS.meta.brand} • {TOKENS.meta.name}
+              {(TOKENS as any).meta.brand} • {(TOKENS as any).meta.name}
             </div>
-            <div className="text-4xl font-bold" style={{ color: TOKENS.color.text.primary, fontFamily: TOKENS.font.family.sans }}>
+            <div className="text-4xl font-bold" style={{ color: TOKENS.color.text.primary, fontFamily: (TOKENS as any).font.family.sans }}>
               Inevitability Spec
             </div>
             <div className="text-sm mt-2" style={{ color: TOKENS.color.text.secondary }}>
-              Doctrine: {TOKENS.meta.doctrine.clarity} / {TOKENS.meta.doctrine.trust}
+              Doctrine: {(TOKENS as any).meta.doctrine.clarity} / {(TOKENS as any).meta.doctrine.trust}
             </div>
           </div>
           <div className="flex gap-2">
@@ -220,7 +220,7 @@ export default function InevitabilityDeck() {
                 borderColor: TOKENS.color.surface.border,
                 background: mode==='design' ? `linear-gradient(90deg, ${TOKENS.color.accent.clarityBlue}, ${TOKENS.color.accent.clarityCyan})` : TOKENS.color.surface.panel,
                 color: mode==='design' ? '#fff' : TOKENS.color.text.secondary,
-                boxShadow: mode==='design' ? TOKENS.shadow.glowBlue : 'none'
+                boxShadow: mode==='design' ? (TOKENS.shadow as any)?.glowBlue || "0 0 20px rgba(59, 130, 246, 0.3)" : 'none'
               }}>
               🎨 Design
             </button>
@@ -231,7 +231,7 @@ export default function InevitabilityDeck() {
                 borderColor: TOKENS.color.surface.border,
                 background: mode==='code' ? TOKENS.color.surface.panel : 'transparent',
                 color: TOKENS.color.text.secondary,
-                fontFamily: TOKENS.font.family.mono
+                fontFamily: (TOKENS as any).font.family.mono
               }}>
               {'</>'} Code
             </button>
@@ -242,7 +242,7 @@ export default function InevitabilityDeck() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Panel title="Neural Glass • Design Tokens">
             {mode==='design' ? <TokenSwatches/> : (
-              <pre className="text-xs overflow-auto max-h-96" style={{ color: TOKENS.color.text.secondary, fontFamily: TOKENS.font.family.mono }}>
+              <pre className="text-xs overflow-auto max-h-96" style={{ color: TOKENS.color.text.secondary, fontFamily: (TOKENS as any).font.family.mono }}>
                 {JSON.stringify(TOKENS, null, 2)}
               </pre>
             )}
@@ -265,8 +265,8 @@ export default function InevitabilityDeck() {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs opacity-60 mt-8 pb-8" style={{ color: TOKENS.color.text.muted, fontFamily: TOKENS.font.family.mono }}>
-          v{TOKENS.meta.version} • Updated {TOKENS.meta.updated} • Single source of truth for Figma + Cursor
+        <div className="text-center text-xs opacity-60 mt-8 pb-8" style={{ color: TOKENS.color.text.muted, fontFamily: (TOKENS as any).font.family.mono }}>
+          v{(TOKENS as any).meta.version} • Updated {(TOKENS as any).meta.updated} • Single source of truth for Figma + Cursor
         </div>
       </div>
     </div>

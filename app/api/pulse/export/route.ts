@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const pulseCards: PulseCard[] = (cards || []).map((card: any) => ({
+    const pulseCards: PulseCard[] = ((cards as any) || []).map((card: any) => ({
       id: card.id,
       ts: card.ts,
       level: card.level,

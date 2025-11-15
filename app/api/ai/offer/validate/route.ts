@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Get inventory item
-    const inventoryItem = await prisma.inventoryItem.findUnique({
+    const inventoryItem = await (prisma as any).inventoryItem.findUnique({
       where: { vin },
       include: {
         paritySnapshots: {
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const confidence = validationScore;
     
     // Log validation event
-    await prisma.intelTaskEvent.create({
+    await (prisma as any).intelTaskEvent.create({
       data: {
         taskId: null,
         eventType: 'offer_validation',

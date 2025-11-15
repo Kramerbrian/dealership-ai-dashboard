@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         receipts: card.receipts || [],
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .rpc('ingest_pulse_card', {
           p_dealer_id: dealerId,
           p_card: cardJson,
@@ -145,7 +145,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
 
     // Fetch cards using stored function
-    const { data: cards, error } = await supabase
+    const { data: cards, error } = await (supabase as any)
       .rpc('get_pulse_inbox', {
         p_dealer_id: dealerId,
         p_filter: filter,
@@ -161,7 +161,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Transform to PulseCard format
-    const pulseCards: PulseCard[] = (cards || []).map((card: any) => ({
+    const pulseCards: PulseCard[] = ((cards as any) || []).map((card: any) => ({
       id: card.id,
       ts: card.ts,
       level: card.level,

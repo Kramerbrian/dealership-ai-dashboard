@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
     };
 
     // Log analytics request to database
-    await prisma.intelTask.create({
+    await (prisma as any).intelTask.create({
       data: {
         type: 'ENHANCED_ANALYTICS',
         status: 'COMPLETED',

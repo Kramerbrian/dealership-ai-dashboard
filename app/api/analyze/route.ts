@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const dealershipName = cleanDomain
       .split('.')[0]
       .split('-')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
 
     const result = {

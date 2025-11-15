@@ -8,16 +8,16 @@ import { Role } from "../rbac";
  * Expects x-role header to be set after auth callback
  */
 export function getRole(req: Request): Role {
-  const roleHeader = req.headers.get("x-role") || "viewer";
-  const validRoles: Role[] = ["admin", "manager", "viewer"];
+  const roleHeader = req.headers.get("x-role") || "dealer_user";
+  const validRoles: Role[] = ["dealer_user", "manager", "marketing_director", "admin", "superadmin"];
 
   if (validRoles.includes(roleHeader as Role)) {
     return roleHeader as Role;
   }
 
-  // Fallback to viewer for invalid roles
-  console.warn(`Invalid role in x-role header: ${roleHeader}, defaulting to viewer`);
-  return "viewer";
+  // Fallback to dealer_user for invalid roles
+  console.warn(`Invalid role in x-role header: ${roleHeader}, defaulting to dealer_user`);
+  return "dealer_user";
 }
 
 /**
@@ -53,13 +53,21 @@ export function getSessionData(req: Request): {
 }
 
 /**
+ * Check if role is valid
+ */
+function isValidRole(role: string): role is Role {
+  const validRoles: Role[] = ["dealer_user", "manager", "marketing_director", "admin", "superadmin"];
+  return validRoles.includes(role as Role);
+}
+
+/**
  * Check if request has valid session headers
  */
 export function hasValidSession(req: Request): boolean {
   const userId = getUserId(req);
   const tenantId = getTenantId(req);
   const role = getRole(req);
-  
+
   return !!(userId && tenantId && isValidRole(role));
 }
 
@@ -114,13 +122,13 @@ export function getRoleFromJWT(token: string): Role {
     // This is a placeholder implementation
     // In a real app, you would decode the JWT and extract the role
     // const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // return decoded.role || "viewer";
-    
-    console.warn("JWT role extraction not implemented, defaulting to viewer");
-    return "viewer";
+    // return decoded.role || "dealer_user";
+
+    console.warn("JWT role extraction not implemented, defaulting to dealer_user");
+    return "dealer_user";
   } catch (error) {
     console.error("Failed to extract role from JWT:", error);
-    return "viewer";
+    return "dealer_user";
   }
 }
 
@@ -134,43 +142,43 @@ export function getRoleFromCookie(req: Request): Role {
     // In a real app, you would parse the session cookie and extract the role
     // const sessionCookie = req.headers.get("cookie");
     // const session = parseSessionCookie(sessionCookie);
-    // return session.role || "viewer";
-    
-    console.warn("Cookie role extraction not implemented, defaulting to viewer");
-    return "viewer";
+    // return session.role || "dealer_user";
+
+    console.warn("Cookie role extraction not implemented, defaulting to dealer_user");
+    return "dealer_user";
   } catch (error) {
     console.error("Failed to extract role from cookie:", error);
-    return "viewer";
+    return "dealer_user";
   }
 }
 
 /**
  * Multi-source role extraction with fallback chain
- * Tries header first, then JWT, then cookie, then defaults to viewer
+ * Tries header first, then JWT, then cookie, then defaults to dealer_user
  */
 export function getRoleWithFallback(req: Request): Role {
   // Try header first (most common for API routes)
   const headerRole = req.headers.get("x-role");
   if (headerRole && isValidRole(headerRole)) {
-    return headerRole;
+    return headerRole as Role;
   }
-  
+
   // Try JWT token
   const authHeader = req.headers.get("authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.substring(7);
     const jwtRole = getRoleFromJWT(token);
-    if (jwtRole !== "viewer") {
+    if (jwtRole !== "dealer_user") {
       return jwtRole;
     }
   }
-  
+
   // Try cookie
   const cookieRole = getRoleFromCookie(req);
-  if (cookieRole !== "viewer") {
+  if (cookieRole !== "dealer_user") {
     return cookieRole;
   }
-  
+
   // Default fallback
-  return "viewer";
+  return "dealer_user";
 }

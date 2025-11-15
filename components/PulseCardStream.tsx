@@ -14,7 +14,7 @@ export default function PulseCardStream({ prompt, onComplete }: PulseCardStreamP
 
   // Watch for final JSON payload
   useEffect(() => {
-    const finalEvt = events.findLast((e) => e.event === "final_json");
+    const finalEvt = events.findLast((e: any) => e.event === "final_json");
     if (finalEvt) {
       setFinalCard(finalEvt.data);
       if (onComplete) {

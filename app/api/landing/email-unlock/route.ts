@@ -92,7 +92,7 @@ export async function GET() {
     return NextResponse.json({
       todayCount: parseInt(todayCount || '0'),
       uniqueEmails: uniqueEmailsSet,
-      recent: recentCaptures.map((capture) => JSON.parse(capture)),
+      recent: recentCaptures.map((capture: any) => JSON.parse(capture)),
     });
   } catch (error) {
     console.error('Failed to get email stats:', error);

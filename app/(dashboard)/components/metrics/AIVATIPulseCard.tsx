@@ -186,12 +186,12 @@ function MetricPulse({
   }[health.color];
 
   return (
-    <div className={`p-3 rounded-lg border ${colorClasses} bg-white/5`}>
+    <div className={`p-3 rounded-lg border ${colorClasses || ""} bg-white/5`}>
       <div className="flex items-center justify-between mb-1">
         <div className="text-xs text-white/60">{label}</div>
-        <Icon size={14} className={colorClasses.split(' ')[0]} />
+        <Icon size={14} className={colorClasses?.split(' ')[0] || ""} />
       </div>
-      <div className={`text-2xl font-light ${colorClasses.split(' ')[0]}`}>
+      <div className={`text-2xl font-light ${colorClasses?.split(' ')[0] || ""}`}>
         {value}%
       </div>
       {trend !== "neutral" && (

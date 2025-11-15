@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     } = scenario;
     
     // Get current inventory data
-    const inventoryItems = await prisma.inventoryItem.findMany({
+    const inventoryItems = await (prisma as any).inventoryItem.findMany({
       where: { dealerId },
       include: {
         paritySnapshots: {

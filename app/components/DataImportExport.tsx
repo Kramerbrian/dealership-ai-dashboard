@@ -319,7 +319,7 @@ const DataImportExport: React.FC = () => {
                 <label>Data Type</label>
                 <select
                   value={importConfig.dataType}
-                  onChange={(e) => setImportConfig(prev => ({ ...prev, dataType: e.target.value as any }))}
+                  onChange={(e: any) => setImportConfig(prev => ({ ...prev, dataType: e.target.value as any }))}
                 >
                   <option value="sales">Sales Data</option>
                   <option value="inventory">Inventory</option>
@@ -331,7 +331,7 @@ const DataImportExport: React.FC = () => {
                 <label>Delimiter</label>
                 <select
                   value={importConfig.delimiter}
-                  onChange={(e) => setImportConfig(prev => ({ ...prev, delimiter: e.target.value }))}
+                  onChange={(e: any) => setImportConfig(prev => ({ ...prev, delimiter: e.target.value }))}
                 >
                   <option value=",">Comma (,)</option>
                   <option value=";">Semicolon (;)</option>
@@ -344,7 +344,7 @@ const DataImportExport: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={importConfig.skipFirstRow}
-                    onChange={(e) => setImportConfig(prev => ({ ...prev, skipFirstRow: e.target.checked }))}
+                    onChange={(e: any) => setImportConfig(prev => ({ ...prev, skipFirstRow: e.target.checked }))}
                   />
                   Skip First Row (Headers)
                 </label>
@@ -438,7 +438,7 @@ const DataImportExport: React.FC = () => {
                 <label>Data Type</label>
                 <select
                   value={exportConfig.dataType}
-                  onChange={(e) => setExportConfig(prev => ({ ...prev, dataType: e.target.value as any }))}
+                  onChange={(e: any) => setExportConfig(prev => ({ ...prev, dataType: e.target.value as any }))}
                 >
                   <option value="sales">Sales Data</option>
                   <option value="inventory">Inventory</option>
@@ -451,7 +451,7 @@ const DataImportExport: React.FC = () => {
                 <label>Export Format</label>
                 <select
                   value={exportConfig.format}
-                  onChange={(e) => setExportConfig(prev => ({ ...prev, format: e.target.value as any }))}
+                  onChange={(e: any) => setExportConfig(prev => ({ ...prev, format: e.target.value as any }))}
                 >
                   <option value="csv">CSV</option>
                   <option value="excel">Excel</option>
@@ -465,7 +465,7 @@ const DataImportExport: React.FC = () => {
                   <input
                     type="date"
                     value={exportConfig.dateRange.start}
-                    onChange={(e) => setExportConfig(prev => ({ 
+                    onChange={(e: any) => setExportConfig(prev => ({ 
                       ...prev, 
                       dateRange: { ...prev.dateRange, start: e.target.value }
                     }))}
@@ -474,7 +474,7 @@ const DataImportExport: React.FC = () => {
                   <input
                     type="date"
                     value={exportConfig.dateRange.end}
-                    onChange={(e) => setExportConfig(prev => ({ 
+                    onChange={(e: any) => setExportConfig(prev => ({ 
                       ...prev, 
                       dateRange: { ...prev.dateRange, end: e.target.value }
                     }))}

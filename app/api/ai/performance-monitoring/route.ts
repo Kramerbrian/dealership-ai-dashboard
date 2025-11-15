@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
     };
 
     // Log performance data to database
-    await prisma.intelTask.create({
+    await (prisma as any).intelTask.create({
       data: {
         type: 'PERFORMANCE_MONITORING',
         status: 'COMPLETED',

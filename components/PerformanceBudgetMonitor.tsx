@@ -91,7 +91,7 @@ export default function PerformanceBudgetMonitor() {
 
       {/* Metrics List */}
       <div className="space-y-3">
-        {data.vitals.map((vital) => (
+        {data.vitals.map((vital: any) => (
           <div key={vital.name} className="border-t pt-3 first:border-t-0 first:pt-0">
             {/* Metric Header */}
             <div className="flex items-center justify-between mb-1">

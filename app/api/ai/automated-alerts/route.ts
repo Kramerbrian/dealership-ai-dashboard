@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     // Log alert configuration to database (if Prisma is available)
     if (prisma) {
       try {
-        await prisma.intelTask.create({
+        await (prisma as any).intelTask.create({
           data: {
             type: 'AUTOMATED_ALERTS',
             status: 'COMPLETED',

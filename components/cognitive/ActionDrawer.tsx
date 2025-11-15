@@ -53,7 +53,7 @@ export function ActionDrawer({ open, onClose }: ActionDrawerProps) {
 
               {drawerContent.items && drawerContent.items.length > 0 && (
                 <div className="space-y-3 rounded-xl border border-neural-800 bg-neural-950/60 p-4">
-                  {drawerContent.items.map((item) => (
+                  {drawerContent.items.map((item: any) => (
                     <div
                       key={item.label}
                       className={`flex items-center justify-between text-sm ${

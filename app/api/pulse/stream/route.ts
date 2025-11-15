@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
             }
 
             // Transform to PulseCard format
-            const pulseCards = (cards || []).map((card: any) => ({
+            const pulseCards = ((cards as any) || []).map((card: any) => ({
               id: card.id,
               ts: card.ts,
               level: card.level,

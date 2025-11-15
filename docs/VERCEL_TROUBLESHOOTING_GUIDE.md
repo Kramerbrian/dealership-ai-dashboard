@@ -9,8 +9,11 @@
 **Fix**:
 1. Go to: https://vercel.com/[your-team]/[project]/settings
 2. Find: "Build & Development Settings" → "Root Directory"
-3. Set to: `.` (single dot)
-4. Save
+3. **For root-level Next.js apps**: Leave Root Directory **empty** (not set)
+   - If it's currently set to `.` or `./`, clear it
+   - Vercel will default to the repository root
+4. **For monorepo apps**: Set to relative path like `apps/web` (no `./` prefix, no `../`)
+5. Save
 
 ### Step 2: Run Verification Script
 

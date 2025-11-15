@@ -44,23 +44,23 @@ function logMetric(metric: Metric) {
 // Report all available metrics
 export function reportWebVitals() {
   try {
-    onCLS((metric) => {
+    onCLS((metric: any) => {
       logMetric(metric);
       sendToAnalytics(metric);
     });
-    onFID((metric) => {
+    onFID((metric: any) => {
       logMetric(metric);
       sendToAnalytics(metric);
     });
-    onFCP((metric) => {
+    onFCP((metric: any) => {
       logMetric(metric);
       sendToAnalytics(metric);
     });
-    onLCP((metric) => {
+    onLCP((metric: any) => {
       logMetric(metric);
       sendToAnalytics(metric);
     });
-    onTTFB((metric) => {
+    onTTFB((metric: any) => {
       logMetric(metric);
       sendToAnalytics(metric);
     });
