@@ -22,17 +22,24 @@ export function hasRoleAccess(userRole: Role, requiredRole: Role): boolean {
 }
 
 export async function requireRBAC(req: NextRequest, roles: Role[] = ['admin']): Promise<RBAC|NextResponse> {
-  const { userId, orgId } = await auth()
-  if (!userId) return NextResponse.json({ ok:false, error:'unauthorized' }, { status:401 })
+  try {
+    const { userId, orgId } = await auth()
+    if (!userId) return NextResponse.json({ ok:false, error:'unauthorized' }, { status:401 })
 
-  // Role + tenant from org membership or public metadata
-  const user = await clerkClient.users.getUser(userId)
-  const role = ((user.publicMetadata?.role as string) || 'viewer') as Role
-  const tenant = (orgId || (user.publicMetadata?.tenant as string) || 'default-tenant')
+    // Role + tenant from org membership or public metadata
+    const user = await clerkClient.users.getUser(userId)
+    const role = ((user.publicMetadata?.role as string) || 'viewer') as Role
+    const tenant = (orgId || (user.publicMetadata?.tenant as string) || 'default-tenant')
 
-  if (!roles.includes(role)) return NextResponse.json({ ok:false, error:'forbidden' }, { status:403 })
+    if (!roles.includes(role)) return NextResponse.json({ ok:false, error:'forbidden' }, { status:403 })
 
-  return { userId, role, tenant }
+    return { userId, role, tenant }
+  } catch (error: any) {
+    // Handle cases where Clerk auth() fails (e.g., wrong domain, not configured)
+    console.error('[requireRBAC] Auth error:', error)
+    // Return 401 instead of letting error propagate to 500
+    return NextResponse.json({ ok:false, error:'unauthorized', message: 'Authentication failed' }, { status:401 })
+  }
 }
 
 // Attach to outbound fleet calls
