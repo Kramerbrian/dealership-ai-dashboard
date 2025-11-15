@@ -23,7 +23,7 @@ export interface AgentContext {
 }
 
 export interface AgentResult {
-  consensus_score: number;
+  consensus_score: 0, cached: false, number;
   confidence: 'high' | 'medium' | 'low';
   unanimous_issues: string[];
   recommendations: string[];

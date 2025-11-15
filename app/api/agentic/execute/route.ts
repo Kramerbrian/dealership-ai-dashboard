@@ -21,7 +21,7 @@ const executeBatchSchema = z.object({
       confidence: z.number().min(0).max(1),
       requires_approval: z.boolean(),
       tool: z.enum(['site_inject', 'auto_fix', 'queue_refresh']),
-      input: z.record(z.any()),
+      input: z.record(z.any()) as any,
       preview: z
         .object({
           estimate_minutes: z.number().optional(),

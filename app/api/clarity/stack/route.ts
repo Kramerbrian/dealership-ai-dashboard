@@ -1,4 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  scoreComposite,
+  scoreAIVisibility,
+  scoreOverall,
+  rarCPC,
+  getMetricAlert,
+  type MetricBlock,
+  type EngineCoverage,
+} from '@/lib/scoring';
 
 export const runtime = 'edge';
 
@@ -48,28 +57,51 @@ type ClarityStackResponse = {
   ai_intro_current: string;
   ai_intro_improved: string;
   confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  alert_bands?: {
+    seo: 'green' | 'yellow' | 'red';
+    aeo: 'green' | 'yellow' | 'red';
+    geo: 'green' | 'yellow' | 'red';
+    avi: 'green' | 'yellow' | 'red';
+  };
 };
 
-function clampScore(x: number) {
-  return Math.max(0, Math.min(100, Math.round(x)));
-}
-
-function computeAvi(seo: number, aeo: number, geo: number): number {
+/**
+ * Compute AI Visibility using new scoring formula
+ * Formula: 0.25*Perplexity + 0.40*ChatGPT + 0.35*Gemini
+ * For now, we'll use a simplified calculation based on SEO/AEO/GEO
+ */
+function computeAvi(seo: number, aeo: number, geo: number, engineCoverage?: EngineCoverage): number {
+  if (engineCoverage) {
+    // Use actual engine coverage if available
+    return scoreAIVisibility(engineCoverage);
+  }
+  // Fallback: weighted average of SEO/AEO/GEO (legacy calculation)
+  // Note: This is a simplified approximation. In production, use actual engine coverage data.
   const avi = 0.4 * geo + 0.3 * aeo + 0.3 * seo;
-  return clampScore(avi);
+  return Math.max(0, Math.min(100, Math.round(avi)));
 }
 
+/**
+ * Compute Revenue at Risk using CPC proxy method
+ */
 function computeRevenueAtRisk(scores: Scores): RevenueAtRisk {
   const monthly_opportunities = 450;
   const avg_gross_per_unit = 1200;
   const ai_influence_rate = 0.35;
 
   const visibilityFraction = scores.avi / 100;
-  const missingFraction = 1 - visibilityFraction;
+  const missingFraction = Math.max(0, 1 - visibilityFraction);
 
-  const monthly = Math.round(
-    missingFraction * monthly_opportunities * avg_gross_per_unit * ai_influence_rate
-  );
+  // Calculate missed clicks by intent (simplified)
+  const missedClicksByIntent = {
+    buy: Math.round(missingFraction * monthly_opportunities * 0.4),
+    sell: Math.round(missingFraction * monthly_opportunities * 0.3),
+    service: Math.round(missingFraction * monthly_opportunities * 0.2),
+    trade: Math.round(missingFraction * monthly_opportunities * 0.1),
+  };
+
+  // Use CPC proxy method (default CPCs: Buy=$14, Sell=$12, Service=$8, Trade=$10)
+  const monthly = rarCPC(missedClicksByIntent);
   const annual = monthly * 12;
 
   return {
@@ -85,12 +117,49 @@ export async function GET(req: NextRequest) {
   const tenant = url.searchParams.get('tenant') || undefined || undefined;
   const domain = domainParam || 'exampledealer.com';
 
-  // Stubbed scores for now. Replace with real analysis later.
-  const seo = 68;
-  const aeo = 54;
-  const geo = 41;
-  const avi = computeAvi(seo, aeo, geo);
+  // Calculate scores using new scoring functions
+  // TODO: Replace with actual data from database/APIs
+  const seoMetrics: MetricBlock = {
+    mentions: 68,
+    citations: 72,
+    sentiment: 65,
+    shareOfVoice: 60,
+  };
+  const aeoMetrics: MetricBlock = {
+    mentions: 54,
+    citations: 58,
+    sentiment: 50,
+    shareOfVoice: 52,
+  };
+  const geoMetrics: MetricBlock = {
+    mentions: 41,
+    citations: 45,
+    sentiment: 40,
+    shareOfVoice: 38,
+  };
+
+  // Calculate composite scores using new formulas
+  const seo = scoreComposite(seoMetrics, 'seo');
+  const aeo = scoreComposite(aeoMetrics, 'aeo');
+  const geo = scoreComposite(geoMetrics, 'geo');
+
+  // AI Visibility (using simplified calculation for now)
+  // TODO: Replace with actual engine coverage data
+  const engineCoverage: EngineCoverage = {
+    perplexity: 65,
+    chatgpt: 70,
+    gemini: 60,
+  };
+  const avi = computeAvi(seo, aeo, geo, engineCoverage);
   const scores: Scores = { seo, aeo, geo, avi };
+
+  // Get alert bands
+  const alert_bands = {
+    seo: getMetricAlert('seo', seo),
+    aeo: getMetricAlert('aeo', aeo),
+    geo: getMetricAlert('geo', geo),
+    avi: getMetricAlert('aiVisibility', avi),
+  };
 
   const revenue_at_risk = computeRevenueAtRisk(scores);
 
@@ -144,7 +213,8 @@ export async function GET(req: NextRequest) {
       'This dealership has solid reviews, but limited information on service pricing and few guides that help shoppers make decisions.',
     ai_intro_improved:
       'This dealership is seen as a trusted local store with clear pricing, up-to-date service information, and simple guides that help shoppers choose the right vehicle.',
-    confidence: 'MEDIUM'
+    confidence: 'MEDIUM',
+    alert_bands,
   };
 
   return NextResponse.json(data, { status: 200 });

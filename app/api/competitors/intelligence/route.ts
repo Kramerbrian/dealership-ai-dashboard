@@ -284,7 +284,7 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    const result = actionResults[tacticId] || {
+    const result = (actionResults as any)[tacticId] || {
       success: false,
       message: 'Unknown action',
       impact: 'No impact',

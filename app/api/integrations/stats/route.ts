@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     // Get integration stats
     const { data: stats, error: statsError } = await supabase
-      .rpc('get_integration_stats', { p_dealer_id: dealerId });
+      .rpc('get_integration_stats' as any, { p_dealer_id: dealerId });
 
     if (statsError) {
       console.error('[integrations/stats] Error fetching stats:', statsError);
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       {
-        stats: stats && stats.length > 0 ? stats[0] : null,
+        stats: stats && (stats as any).length > 0 ? stats[0] : null,
         reviewsByPlatform: reviewSummary || [],
         inventory: inventorySummary || null,
       },

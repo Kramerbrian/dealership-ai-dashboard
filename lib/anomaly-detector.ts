@@ -66,7 +66,7 @@ export class AnomalyDetector {
   private detectZScoreAnomalies(values: number[], timestamps: Date[]): AnomalyResult[] {
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
-    const stdDev = Math.sqrt(variance);
+    const stdDev = (Math.sqrt(variance) as any);
 
     if (stdDev === 0) return [];
 

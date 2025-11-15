@@ -245,7 +245,7 @@ export class PerformanceOptimizer {
       
       return {
         totalKeys: keys.length,
-        memoryUsage: info.split('\n').find(line: any => line.startsWith('used_memory_human:'))?.split(':')[1] || 'Unknown',
+        memoryUsage: info.split('\n').find((line: any) => line.startsWith('used_memory_human:'))?.split(':')[1] || 'Unknown',
         hitRate: 0.85, // Mock hit rate
         missRate: 0.15 // Mock miss rate
       };

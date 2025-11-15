@@ -18,7 +18,7 @@ const progressStorage = new Map<string, OnboardingProgress>();
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const method = searchParams.get('method') || undefined as 'guided' | 'agent';
+    const method = searchParams.get('method') || undefined as any as 'guided' | 'agent';
     const userId = searchParams.get('userId') || undefined;
     const sessionId = searchParams.get('sessionId') || undefined;
 

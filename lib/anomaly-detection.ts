@@ -211,7 +211,7 @@ export class AnomalyDetector {
       return [{
         id: `correlation_anomaly_${Date.now()}`,
         timestamp: data[data.length - 1].date,
-        tenant_id,
+        tenant_id: tenantId,
         metric: 'DTRI-Revenue Correlation',
         value: recentCorrelation,
         expected_value: correlation,

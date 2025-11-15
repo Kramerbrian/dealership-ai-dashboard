@@ -99,7 +99,7 @@ function detectSeasonality(dataPoints: HistoricalDataPoint[], metric: keyof Hist
   const weeklyValues: number[][] = Array(7).fill(0).map(() => []);
   dataPoints.forEach((point, idx) => {
     const dayOfWeek = new Date(point.timestamp).getDay();
-    const value = point[metric] as number;
+    const value = point[metric as any] as number;
     if (typeof value === 'number') {
       weeklyValues[dayOfWeek].push(value);
     }

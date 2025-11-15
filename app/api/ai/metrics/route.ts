@@ -226,7 +226,7 @@ export async function GET(req: NextRequest) {
       domain: domain || dealerId || '',
       source,
       options: {
-        forceRefresh: req.nextUrl.searchParams.get('refresh') || undefined === 'true',
+        forceRefresh: (req.nextUrl.searchParams.get('refresh') === 'true') as boolean,
       },
     });
 

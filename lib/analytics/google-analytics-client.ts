@@ -1,7 +1,7 @@
 // Optional Google Analytics import - gracefully fail if not installed
 let BetaAnalyticsDataClient: any;
 try {
-  BetaAnalyticsDataClient = require('@google-analytics/data').BetaAnalyticsDataClient;
+  BetaAnalyticsDataClient = require('@google-analytics/data').BetaAnalyticsDataClient as any;
 } catch (e) {
   // Google Analytics not installed - client will handle gracefully
 }

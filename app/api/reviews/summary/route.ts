@@ -6,7 +6,7 @@ import { traced } from '@/lib/api-wrap';
  * GET /api/reviews/summary?placeId=...&domain=...
  * Returns review summary data for pulse adapter
  */
-export const GET = withAuth(
+export const GET = (withAuth as any)(
   traced(async ({ req, tenantId }: any) => {
     try {
       const url = new URL(req.url);

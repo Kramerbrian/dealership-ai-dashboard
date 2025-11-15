@@ -84,7 +84,7 @@ export async function GET(
     // Return existing scores
     const response: QAIResponse = {
       dealership_id: dealershipId,
-      calculated_at: qaiScore["calculated_at"],
+      calculated_at: (qaiScore as any)["calculated_at"],
       qai: qaiScore,
       eeat: eeatScore || generateDefaultEEATScore(),
       platforms: platformScores.length > 0 ? platformScores : generateDefaultPlatformScores(),

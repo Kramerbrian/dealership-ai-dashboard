@@ -22,10 +22,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   // Support both 'domain' and 'dealer' params for backward compatibility
-  const dealer = url.searchParams.get('domain') || undefined?.toLowerCase() || 
-                 url.searchParams.get('dealer') || undefined?.toLowerCase() || 
-                 'unknown-dealer';
-  const mock = url.searchParams.get('mock') || undefined === 'true';
+  const dealer = (url.searchParams.get('domain') || url.searchParams.get('dealer') || 'unknown-dealer').toLowerCase();
+  const mock = url.searchParams.get('mock') === 'true';
 
   // Simulated base metrics (tweak ranges for realism)
   const base = {

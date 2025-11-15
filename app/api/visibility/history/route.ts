@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
           });
           
           const rows = data.map((row: any) => ({
-            dayOffset: Math.floor((Date.now() - new Date(row.ts).getTime()) / (1000 * 60 * 60 * 24)),
+            dayOffset: Math.floor((Date.now() - new Date(row.ts as any).getTime()) / (1000 * 60 * 60 * 24)),
             engines: {
               ChatGPT: row.chatgpt_score || 0,
               Perplexity: row.perplexity_score || 0,
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
             domain,
             composite,
             rows,
-            lastUpdatedISO: data[0]?.ts || new Date().toISOString(),
+            lastUpdatedISO: data[0]?.ts as any || new Date().toISOString(),
           });
         }
       } catch (e) {

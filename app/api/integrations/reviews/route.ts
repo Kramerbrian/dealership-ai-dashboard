@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
       case 'monitor_mentions':
         const dealershipName = searchParams.get('dealershipName') || undefined;
-        const keywords = searchParams.get('keywords') || undefined?.split(',') || [];
+        const keywords = (searchParams.get('keywords') || '')?.split(',') || [];
         
         if (!dealershipName) {
           return NextResponse.json({ error: 'Dealership name is required' }, { status: 400 });

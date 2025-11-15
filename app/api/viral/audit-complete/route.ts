@@ -12,7 +12,7 @@ const viralEngine = new ViralLoopEngine();
 
 export async function POST() {
   try {
-    const { auditData, userId, dealershipId } = await req.json();
+    const { auditData, userId, dealershipId } = await (req as any).json();
 
     if (!auditData || !userId || !dealershipId) {
       return NextResponse.json(

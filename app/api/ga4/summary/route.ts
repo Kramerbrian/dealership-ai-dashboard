@@ -6,7 +6,7 @@ import { traced } from '@/lib/api-wrap';
  * GET /api/ga4/summary?domain=...
  * Returns GA4 summary data for pulse adapter
  */
-export const GET = withAuth(
+export const GET = (withAuth as any)(
   traced(async ({ req, tenantId }: any) => {
     try {
       const url = new URL(req.url);

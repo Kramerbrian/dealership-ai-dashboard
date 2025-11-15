@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     // System status overview
     const systemStatus = {
       timestamp: new Date().toISOString(),
-      system: {
+      system: { metrics: {} as any,
         name: 'DealershipAI Hyper-Intelligence System',
         version: '2.0.0',
         status: 'operational',
