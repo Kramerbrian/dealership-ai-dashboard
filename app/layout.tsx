@@ -12,9 +12,10 @@ try {
 }
 import { ClerkProviderWrapper } from '@/components/providers/ClerkProviderWrapper'
 import { MonitoringProvider } from '@/components/providers/MonitoringProvider'
-import { AccessibilityProvider } from '@/components/providers/AccessibilityProvider'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { ThemeProvider } from '@/lib/theme'
+import { CoachProvider } from '@/hooks/useCoachContext'
+import { headers } from 'next/headers'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -77,38 +78,45 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const headerList = headers();
+  const host = headerList.get('host');
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Preconnect to improve performance */}
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <ClerkProviderWrapper initialHost={host}>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          {/* Preconnect to improve performance */}
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 
-        {/* JSON-LD Structured Data - Removed to fix build error */}
+          {/* JSON-LD Structured Data - Removed to fix build error */}
 
-        {process.env.NEXT_PUBLIC_GA && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA}`} />
-            <script dangerouslySetInnerHTML={{__html:`
-              window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
-              gtag('js', new Date()); gtag('config','${process.env.NEXT_PUBLIC_GA}');
-            `}} />
-          </>
-        )}
-      </head>
-      <body className={inter.className}>
-        <ErrorBoundary>
-          <ClerkProviderWrapper>
-            <ThemeProvider>
-              <MonitoringProvider>
-                {children}
-                <Analytics />
-                <Toaster position="top-right" richColors />
-              </MonitoringProvider>
-            </ThemeProvider>
-          </ClerkProviderWrapper>
-        </ErrorBoundary>
-      </body>
-    </html>
+          {process.env.NEXT_PUBLIC_GA && (
+            <>
+              <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA}`} />
+              <script dangerouslySetInnerHTML={{__html:`
+                window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+                gtag('js', new Date()); gtag('config','${process.env.NEXT_PUBLIC_GA}');
+              `}} />
+            </>
+          )}
+        </head>
+        <body className={inter.className}>
+          <ErrorBoundary>
+            <ClerkProviderWrapper initialHost={host}>
+              <ThemeProvider>
+                <MonitoringProvider>
+                  <CoachProvider>
+                    {children}
+                    <Analytics />
+                    <Toaster position="top-right" richColors />
+                  </CoachProvider>
+                </MonitoringProvider>
+              </ThemeProvider>
+            </ClerkProviderWrapper>
+          </ErrorBoundary>
+        </body>
+      </html>
+    </ClerkProviderWrapper>
   )
 }

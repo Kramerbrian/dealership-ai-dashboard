@@ -2,53 +2,49 @@
 'use client';
 
 import { ClerkProvider as Clerk } from '@clerk/nextjs';
-import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-export function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
+type ClerkProviderWrapperProps = {
+  children: React.ReactNode;
+  initialHost?: string | null;
+};
+
+export function ClerkProviderWrapper({ children, initialHost }: ClerkProviderWrapperProps) {
   // Get publishable key - Next.js makes NEXT_PUBLIC_ vars available on client
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  const pathname = usePathname();
 
   // Get domain to check if we're on the dashboard subdomain
-  // During SSR, window is undefined, so we default to assuming dashboard domain
-  // to avoid hydration mismatches and useContext errors
-  const domain = typeof window !== 'undefined' ? window.location.hostname : '';
+  // During SSR we get host from props; hydrate with window once available
+  const [resolvedHost, setResolvedHost] = useState(initialHost || '');
 
-  // Clerk should be enabled on:
-  // 1. dash.dealershipai.com (production dashboard)
-  // 2. Vercel preview URLs (for testing)
-  // 3. localhost (for development)
-  const isDashboardDomain =
-    domain === 'dash.dealershipai.com' ||
-    domain.includes('vercel.app') ||
-    domain === 'localhost' ||
-    domain.startsWith('localhost:');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setResolvedHost(window.location.hostname);
+    }
+  }, []);
 
-  // Debug logging in development
+  const hasKey = !!(publishableKey && publishableKey.trim() !== '');
+
   if (process.env.NODE_ENV === 'development') {
-    console.log('[ClerkProviderWrapper] Domain:', domain);
-    console.log('[ClerkProviderWrapper] Is dashboard domain:', isDashboardDomain);
-    console.log('[ClerkProviderWrapper] publishableKey exists:', !!publishableKey);
+    console.log('[ClerkProviderWrapper] Domain:', resolvedHost);
+    console.log('[ClerkProviderWrapper] publishableKey exists:', hasKey);
   }
 
-  // Skip Clerk if:
-  // 1. No publishable key
-  // 2. Not on dashboard domain (e.g., on main dealershipai.com landing page)
-  if (!publishableKey || publishableKey.trim() === '' || !isDashboardDomain) {
+  if (!hasKey) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ClerkProviderWrapper] Skipping ClerkProvider - not on dashboard domain or no key');
+      console.log('[ClerkProviderWrapper] Skipping ClerkProvider - no key configured');
     }
     return <>{children}</>;
   }
 
-  // Log that we're rendering ClerkProvider
   if (process.env.NODE_ENV === 'development') {
-    console.log('[ClerkProviderWrapper] Rendering ClerkProvider with key on dashboard domain');
+    console.log('[ClerkProviderWrapper] Rendering ClerkProvider');
   }
 
-  // Use custom domain for SSO if on production dashboard domain
-  // Only set domain prop for production dashboard (not Vercel previews or localhost)
-  const isCustomDomain = domain === 'dash.dealershipai.com';
+  // CRITICAL FIX: Do NOT set domain prop - it causes Clerk to use wrong custom domain
+  // Setting domain=dash.dealershipai.com makes Clerk try clerk.dash.dealershipai.com
+  // The actual custom Clerk domain is clerk.dealershipai.com (set via CLERK_FRONTEND_API)
+  // Let Clerk use default behavior - it will use CLERK_FRONTEND_API env var automatically
 
   return (
     <Clerk
@@ -57,7 +53,7 @@ export function ClerkProviderWrapper({ children }: { children: React.ReactNode }
       signUpFallbackRedirectUrl="/onboarding"
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      domain={isCustomDomain ? domain : undefined}
+      // DO NOT set domain prop - causes CSP errors and "browser not secure" errors
       appearance={{
         elements: {
           formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white',
@@ -75,3 +71,4 @@ export function ClerkProviderWrapper({ children }: { children: React.ReactNode }
     </Clerk>
   );
 }
+

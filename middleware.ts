@@ -219,9 +219,14 @@ async function dashboardMiddleware(req: NextRequest) {
     ]
   };
 
-  // IMPORTANT: Only set domain in production to avoid cookie issues in dev/preview
-  if (isProductionDashboard) {
-    clerkOptions.domain = 'dash.dealershipai.com';
+  // CRITICAL FIX: Set cookie domain to parent domain for SSO across subdomains
+  // Use '.dealershipai.com' (with leading dot) to share cookies across:
+  // - dealershipai.com
+  // - dash.dealershipai.com
+  // - www.dealershipai.com
+  // This enables SSO across all subdomains
+  if (isProductionDashboard || hostname.includes('dealershipai.com')) {
+    clerkOptions.domain = '.dealershipai.com';
   }
 
   // Call Clerk middleware with proper error handling
