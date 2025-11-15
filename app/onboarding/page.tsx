@@ -274,7 +274,7 @@ function OnboardingContent() {
               className="text-center"
             >
               <Link
-                href={`/dash?domain=${encodeURIComponent(dealer)}`}
+                href={`/pulse?dealer=${encodeURIComponent(dealer)}`}
                 className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-lg hover:opacity-90 transition-all"
               >
                 Activate Pulse Dashboard

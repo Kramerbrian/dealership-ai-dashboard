@@ -98,7 +98,7 @@ export function useCoach() {
  * Hook to emit coach events from components
  */
 export function useCoachEvent() {
-  const { showCoach } = useCoach();
+  const { showCoach, recordOutcome } = useCoach();
 
   const emitEvent = useCallback(
     (event: Omit<CoachEvent, 'id' | 'occurredAt'>) => {
@@ -112,6 +112,6 @@ export function useCoachEvent() {
     [showCoach]
   );
 
-  return { emitEvent };
+  return { emitEvent, recordOutcome };
 }
 

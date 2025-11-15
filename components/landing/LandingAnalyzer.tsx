@@ -24,13 +24,34 @@ export function LandingAnalyzer() {
     e.preventDefault();
     if (!domain.trim()) return;
     setLoading(true);
+    setScores(null);
+    setRevenue(null);
+    setLocation(null);
+    setIntroCurrent(null);
+    setIntroImproved(null);
     try {
       const res = await fetch(`/api/clarity/stack?domain=${encodeURIComponent(domain.trim())}`, {
         cache: 'no-store'
       });
+      if (!res.ok) {
+        throw new Error(`API returned ${res.status}: ${res.statusText}`);
+      }
       const data = await res.json();
-      setScores(data.scores);
-      setRevenue(data.revenue_at_risk);
+      console.log('[LandingAnalyzer] API response:', data);
+      
+      // Set scores - handle both formats
+      if (data.scores) {
+        setScores(data.scores);
+      }
+      
+      // Set revenue - handle both formats
+      if (data.revenue_at_risk) {
+        setRevenue(data.revenue_at_risk);
+      } else if (data.revenue) {
+        setRevenue(data.revenue);
+      }
+      
+      // Set location
       if (data.location?.lat && data.location?.lng) {
         setLocation({
           lat: data.location.lat,
@@ -39,8 +60,14 @@ export function LandingAnalyzer() {
           state: data.location.state
         });
       }
+      
+      // Set AI intros
       setIntroCurrent(data.ai_intro_current || null);
       setIntroImproved(data.ai_intro_improved || null);
+    } catch (error: any) {
+      console.error('[LandingAnalyzer] Error:', error);
+      // Show error to user - could add error state UI here
+      alert(`Failed to analyze: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -78,6 +105,15 @@ export function LandingAnalyzer() {
           We&apos;ll run a light AI visibility scan. Full details unlock in the free dashboard.
         </p>
       </form>
+
+      {loading && (
+        <div className="mt-8 text-center text-white/60">
+          <div className="inline-flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span>Analyzing visibility...</span>
+          </div>
+        </div>
+      )}
 
       {scores && revenue && (
         <>
