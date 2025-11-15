@@ -42,6 +42,7 @@ export function ClerkProviderWrapper({ children }: { children: React.ReactNode }
   }
 
   // Use custom domain for SSO if on production dashboard domain
+  // Only set domain prop for production dashboard (not Vercel previews or localhost)
   const isCustomDomain = domain === 'dash.dealershipai.com';
 
   return (
