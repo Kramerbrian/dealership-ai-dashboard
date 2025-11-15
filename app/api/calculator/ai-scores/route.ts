@@ -4,6 +4,16 @@ import { DTRIMaximusEngine } from '@/lib/dtri-maximus-engine';
 import { calculatePIQR } from '@/lib/metrics/piqr';
 import { calculateQAIComposite } from '@/lib/qai-composite';
 
+/**
+ * NOTE: This endpoint uses a different calculator system (QAI, PIQR, DTRI, OVI, VAI)
+ * which is separate from lib/scoring.ts (AI visibility scoring).
+ * 
+ * - This endpoint: Comprehensive AI scores (QAI, PIQR, DTRI, OVI, VAI)
+ * - lib/scoring.ts: AI visibility metrics (SEO, AEO, GEO, AI Visibility)
+ * 
+ * Both systems serve different purposes and can be used together.
+ */
+
 interface AIScoresRequest {
   domain: string;
   dealershipSize?: 'small' | 'medium' | 'large';

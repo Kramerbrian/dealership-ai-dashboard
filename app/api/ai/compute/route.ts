@@ -1,6 +1,14 @@
 /**
  * AI Score Computation API
  * Computes SEO, AEO, GEO, QAI, Trust Score, and financials in one shot
+ * 
+ * NOTE: This endpoint uses lib/score/formulas (technical SEO scoring system)
+ * which is different from lib/scoring.ts (AI visibility scoring system).
+ * 
+ * - lib/score/formulas: Technical metrics (CWV, crawl index, content quality)
+ * - lib/scoring.ts: AI visibility metrics (mentions, citations, sentiment)
+ * 
+ * Both systems serve different purposes and are maintained separately.
  */
 
 import { NextResponse } from "next/server";

@@ -12,16 +12,52 @@ interface TierGateProps {
   fallback?: React.ReactNode;
 }
 
+/**
+ * TierGate Component - Safely handles ClerkProvider availability
+ * 
+ * This component uses useUser hook which requires ClerkProvider context.
+ * If ClerkProvider is not available (e.g., on landing pages), it will
+ * gracefully fall back to showing children or the fallback prop.
+ */
 export const TierGate: React.FC<TierGateProps> = ({
   requiredTier,
   feature,
   children,
   fallback
 }) => {
-  const { user } = useUser();
+  // Check if Clerk is configured before using the hook
+  const isClerkConfigured = typeof window !== 'undefined' && 
+    !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   
-  // Get user's current tier from metadata or database
-  const currentTier = user?.publicMetadata?.tier as string || 'FREE';
+  // If Clerk is not configured, show children (for demo/landing pages)
+  if (!isClerkConfigured) {
+    if (fallback) {
+      return <>{fallback}</>;
+    }
+    return <>{children}</>;
+  }
+  
+  // Use Clerk hook - this will throw if ClerkProvider isn't in the tree
+  // We handle this by checking configuration first
+  let user = null;
+  let currentTier = 'FREE';
+  
+  try {
+    // Only call useUser if Clerk is configured
+    // Note: This will still throw if ClerkProvider isn't rendered,
+    // but we've already checked for configuration
+    const userData = useUser();
+    user = userData?.user || null;
+    currentTier = user?.publicMetadata?.tier as string || 'FREE';
+  } catch (error) {
+    // If ClerkProvider isn't available despite configuration,
+    // gracefully fall back (this shouldn't happen in normal flow)
+    console.warn('[TierGate] ClerkProvider not available, showing children');
+    if (fallback) {
+      return <>{fallback}</>;
+    }
+    return <>{children}</>;
+  }
   
   // Check if user has access
   const hasAccess = checkTierAccess(currentTier, requiredTier);

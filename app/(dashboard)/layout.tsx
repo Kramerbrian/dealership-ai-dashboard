@@ -22,7 +22,9 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { user } = useUser();
+  // useUser hook - requires ClerkProvider context
+  // This layout is only used in dashboard routes which should have ClerkProvider
+  const { user, isLoaded } = useUser();
   const [showSystemOnline, setShowSystemOnline] = useState(false);
 
   // Get dealer domain from user metadata

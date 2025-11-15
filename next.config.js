@@ -154,7 +154,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://*.ingest.us.sentry.io https://*.ingest.sentry.io https://o4510049793605632.ingest.us.sentry.io",
+              "connect-src 'self' https://api.stripe.com https://api.clerk.com https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://clerk.dash.dealershipai.com https://*.clerk.dash.dealershipai.com https://www.google-analytics.com https://analytics.google.com https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://*.ingest.us.sentry.io https://*.ingest.sentry.io https://o4510049793605632.ingest.us.sentry.io",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.dealershipai.com https://*.clerk.dealershipai.com https://clerk.dash.dealershipai.com https://*.clerk.dash.dealershipai.com",
               "object-src 'none'",
               "base-uri 'self'",

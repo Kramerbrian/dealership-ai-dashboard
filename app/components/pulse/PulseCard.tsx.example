@@ -1,0 +1,65 @@
+/**
+ * Example: Pulse Card Integration with Coach
+ * 
+ * This shows how to wire Coach into Pulse cards
+ */
+
+'use client';
+
+import { useCoachEvent } from '@/hooks/useCoachContext';
+import { useEffect, useRef } from 'react';
+
+export function PulseCard({ card, onAction }: PulseCardProps) {
+  const { emitEvent } = useCoachEvent();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const openedAtRef = useRef<number | null>(null);
+  const actionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track when card is opened
+  useEffect(() => {
+    if (cardRef.current) {
+      openedAtRef.current = Date.now();
+      
+      // If no action after 2 minutes, trigger coach
+      actionTimeoutRef.current = setTimeout(() => {
+        emitEvent({
+          dealerId: card.dealerId,
+          userId: card.userId,
+          persona: 'sales', // Detect from user context
+          app: 'dash',
+          sourceAgent: 'Pulse',
+          kind: 'agent_recommendation_ignored',
+          context: {
+            cardId: card.id,
+            cardType: card.type,
+            topic: card.topic,
+            revenueAtRisk: card.revenueAtRisk,
+          },
+        });
+      }, 2 * 60 * 1000); // 2 minutes
+    }
+
+    return () => {
+      if (actionTimeoutRef.current) {
+        clearTimeout(actionTimeoutRef.current);
+      }
+    };
+  }, [card.id, emitEvent]);
+
+  const handleAction = () => {
+    // Clear timeout if user takes action
+    if (actionTimeoutRef.current) {
+      clearTimeout(actionTimeoutRef.current);
+      actionTimeoutRef.current = null;
+    }
+    onAction();
+  };
+
+  return (
+    <div ref={cardRef} className="pulse-card">
+      {/* Card content */}
+      <button onClick={handleAction}>Take Action</button>
+    </div>
+  );
+}
+

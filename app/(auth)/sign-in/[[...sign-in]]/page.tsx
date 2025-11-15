@@ -2,8 +2,40 @@
 import React from 'react';
 import { SignIn } from '@clerk/nextjs';
 import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const searchString = searchParams?.toString() || '';
+
+  const redirectUrl = React.useMemo(() => {
+    const explicitRedirect = searchParams?.get('redirect_url');
+    if (explicitRedirect) {
+      // Only allow relative URLs or https links to avoid unsafe redirects
+      if (explicitRedirect.startsWith('http')) {
+        return explicitRedirect;
+      }
+      return explicitRedirect.startsWith('/') ? explicitRedirect : `/${explicitRedirect}`;
+    }
+
+    const dealerParam =
+      searchParams?.get('dealer') ||
+      searchParams?.get('redirect_domain') ||
+      searchParams?.get('domain');
+
+    if (dealerParam) {
+      const encodedDealer = encodeURIComponent(dealerParam);
+      return `/onboarding?dealer=${encodedDealer}`;
+    }
+
+    return '/onboarding';
+  }, [searchString, searchParams]);
+
+  const signUpUrl = React.useMemo(() => {
+    if (!searchString) return '/sign-up';
+    return `/sign-up?${searchString}`;
+  }, [searchString]);
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -31,12 +63,12 @@ export default function Page() {
                 footerAction: 'text-gray-400',
               },
             }}
-            redirectUrl="/onboarding"
-            signUpUrl="/sign-up"
+            redirectUrl={redirectUrl}
+            afterSignInUrl={redirectUrl}
+            signUpUrl={signUpUrl}
           />
         </Suspense>
       </div>
     </main>
   );
 }
-

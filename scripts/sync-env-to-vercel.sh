@@ -1,86 +1,132 @@
 #!/bin/bash
-# Sync .env.local to Vercel Environment Variables
 
-echo "🔄 Syncing .env.local to Vercel..."
+# Sync environment variables from .env.local to Vercel
+# This script reads .env.local and sets variables in Vercel
+
+set -e
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo "🔄 Syncing Environment Variables to Vercel"
+echo "=========================================="
 echo ""
 
+# Check if .env.local exists
 if [ ! -f .env.local ]; then
-  echo "❌ .env.local not found"
-  exit 1
+    echo -e "${RED}❌ .env.local not found${NC}"
+    exit 1
 fi
 
-# Load .env.local
-export $(grep -v '^#' .env.local | xargs)
-
-# Required Clerk variables
-if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ] || [ -z "$CLERK_SECRET_KEY" ]; then
-  echo "❌ Clerk keys not found in .env.local"
-  echo "   Make sure NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY are set"
-  exit 1
+# Check if vercel CLI is installed
+if ! command -v vercel &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Vercel CLI not found. Installing...${NC}"
+    npm install -g vercel
 fi
 
-echo "📤 Uploading to Vercel..."
-
-# Detect vercel command (use npx if not in PATH)
-VERCEL_CMD="vercel"
-if ! command -v vercel &> /dev/null && command -v npx &> /dev/null; then
-  VERCEL_CMD="npx vercel"
+# Check if logged in
+if ! vercel whoami &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Not logged in to Vercel. Please run: vercel login${NC}"
+    exit 1
 fi
 
-# Sync all variables from .env.local
-echo "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" | $VERCEL_CMD env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production 2>/dev/null || \
-  ($VERCEL_CMD env rm NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production --yes 2>/dev/null && \
-   echo "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" | $VERCEL_CMD env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production)
-echo "  ✅ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+# Project ID from Vercel
+PROJECT_ID="prj_n5a2az9ZjfIyAtv6izWeSb5vvVQH"
+TEAM_ID="team_J5h3AZhwYBLSHC561ioEMwGH"
 
-echo "$CLERK_SECRET_KEY" | $VERCEL_CMD env add CLERK_SECRET_KEY production 2>/dev/null || \
-  ($VERCEL_CMD env rm CLERK_SECRET_KEY production --yes 2>/dev/null && \
-   echo "$CLERK_SECRET_KEY" | $VERCEL_CMD env add CLERK_SECRET_KEY production)
-echo "  ✅ CLERK_SECRET_KEY"
-
-# Optional variables
+echo "📋 Reading .env.local..."
 echo ""
-echo "📤 Syncing optional variables..."
 
-if [ ! -z "$FLEET_API_BASE" ]; then
-  echo "$FLEET_API_BASE" | $VERCEL_CMD env add FLEET_API_BASE production 2>/dev/null || \
-    ($VERCEL_CMD env rm FLEET_API_BASE production --yes 2>/dev/null && \
-     echo "$FLEET_API_BASE" | $VERCEL_CMD env add FLEET_API_BASE production)
-  echo "  ✅ FLEET_API_BASE"
-fi
+# Critical variables to sync
+CRITICAL_VARS=(
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+    "CLERK_SECRET_KEY"
+    "NEXT_PUBLIC_SUPABASE_URL"
+    "SUPABASE_ANON_KEY"
+    "SUPABASE_SERVICE_ROLE_KEY"
+    "DATABASE_URL"
+)
 
-if [ ! -z "$X_API_KEY" ]; then
-  echo "$X_API_KEY" | $VERCEL_CMD env add X_API_KEY production 2>/dev/null || \
-    ($VERCEL_CMD env rm X_API_KEY production --yes 2>/dev/null && \
-     echo "$X_API_KEY" | $VERCEL_CMD env add X_API_KEY production)
-  echo "  ✅ X_API_KEY"
-fi
+# Optional but recommended
+OPTIONAL_VARS=(
+    "NEXT_PUBLIC_BASE_URL"
+    "NEXT_PUBLIC_GA"
+    "OPENAI_API_KEY"
+    "ANTHROPIC_API_KEY"
+)
 
-if [ ! -z "$DEFAULT_TENANT" ]; then
-  echo "$DEFAULT_TENANT" | $VERCEL_CMD env add DEFAULT_TENANT production 2>/dev/null || \
-    ($VERCEL_CMD env rm DEFAULT_TENANT production --yes 2>/dev/null && \
-     echo "$DEFAULT_TENANT" | $VERCEL_CMD env add DEFAULT_TENANT production)
-  echo "  ✅ DEFAULT_TENANT"
-fi
+SYNCED=0
+SKIPPED=0
+FAILED=0
 
-if [ ! -z "$UPSTASH_REDIS_REST_URL" ]; then
-  echo "$UPSTASH_REDIS_REST_URL" | $VERCEL_CMD env add UPSTASH_REDIS_REST_URL production 2>/dev/null || \
-    ($VERCEL_CMD env rm UPSTASH_REDIS_REST_URL production --yes 2>/dev/null && \
-     echo "$UPSTASH_REDIS_REST_URL" | $VERCEL_CMD env add UPSTASH_REDIS_REST_URL production)
-  echo "  ✅ UPSTASH_REDIS_REST_URL"
-fi
+# Function to set env var in Vercel
+set_vercel_env() {
+    local key=$1
+    local value=$2
+    local env=${3:-production}
+    
+    echo -n "  Setting $key for $env... "
+    
+    # Use vercel env add command
+    if echo "$value" | vercel env add "$key" "$env" --yes 2>/dev/null; then
+        echo -e "${GREEN}✓${NC}"
+        ((SYNCED++))
+        return 0
+    else
+        # Try updating if it exists
+        if echo "$value" | vercel env rm "$key" "$env" --yes 2>/dev/null && \
+           echo "$value" | vercel env add "$key" "$env" --yes 2>/dev/null; then
+            echo -e "${GREEN}✓ (updated)${NC}"
+            ((SYNCED++))
+            return 0
+        else
+            echo -e "${RED}✗${NC}"
+            ((FAILED++))
+            return 1
+        fi
+    fi
+}
 
-if [ ! -z "$UPSTASH_REDIS_REST_TOKEN" ]; then
-  echo "$UPSTASH_REDIS_REST_TOKEN" | $VERCEL_CMD env add UPSTASH_REDIS_REST_TOKEN production 2>/dev/null || \
-    ($VERCEL_CMD env rm UPSTASH_REDIS_REST_TOKEN production --yes 2>/dev/null && \
-     echo "$UPSTASH_REDIS_REST_TOKEN" | $VERCEL_CMD env add UPSTASH_REDIS_REST_TOKEN production)
-  echo "  ✅ UPSTASH_REDIS_REST_TOKEN"
-fi
+# Read .env.local and extract values
+while IFS='=' read -r key value || [ -n "$key" ]; do
+    # Skip comments and empty lines
+    [[ "$key" =~ ^#.*$ ]] && continue
+    [[ -z "$key" ]] && continue
+    
+    # Remove quotes from value
+    value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+    
+    # Check if it's a critical variable
+    if [[ " ${CRITICAL_VARS[@]} " =~ " ${key} " ]]; then
+        echo "🔑 Critical: $key"
+        set_vercel_env "$key" "$value" "production"
+        set_vercel_env "$key" "$value" "preview"
+        set_vercel_env "$key" "$value" "development"
+    elif [[ " ${OPTIONAL_VARS[@]} " =~ " ${key} " ]]; then
+        echo "📌 Optional: $key"
+        set_vercel_env "$key" "$value" "production"
+    else
+        ((SKIPPED++))
+    fi
+done < .env.local
 
 echo ""
-echo "✅ Environment variables synced to Vercel!"
+echo "=========================================="
+echo "📊 Summary"
+echo "=========================================="
+echo -e "${GREEN}Synced: $SYNCED${NC}"
+echo -e "${YELLOW}Skipped: $SKIPPED${NC}"
+echo -e "${RED}Failed: $FAILED${NC}"
 echo ""
-echo "📋 Manual sync (if needed):"
-echo "   vercel env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production"
-echo "   vercel env add CLERK_SECRET_KEY production"
 
+if [ $FAILED -eq 0 ]; then
+    echo -e "${GREEN}✅ Environment variables synced successfully!${NC}"
+    echo ""
+    echo "Next: Redeploy your project to apply changes"
+    echo "  vercel --prod"
+else
+    echo -e "${RED}❌ Some variables failed to sync. Check errors above.${NC}"
+    exit 1
+fi
